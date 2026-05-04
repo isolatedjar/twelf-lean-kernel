@@ -13,7 +13,6 @@ export default defineConfig([
     "**/.stryker-tmp/", // stryker mutation reports
     "**/coverage", // istanbul coverage reports
     "**/playwright-report/", // playwright test reports
-    "eslint.config.mjs", // eslint-plugin-import has trouble with this config file
   ]),
   {
     files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
@@ -22,6 +21,12 @@ export default defineConfig([
       eslintPluginImport.flatConfigs.recommended,
       eslintPluginImport.flatConfigs.typescript,
     ],
+    languageOptions: {
+      // obscure fix for a failure to import of "eslint-plugin-react-refresh"
+      // if this file passes the linter without this `languageOptions` in the
+      // future, try removing it
+      sourceType: "module",
+    },
     settings: {
       "import/resolver": { typescript: true },
     },
@@ -35,6 +40,7 @@ export default defineConfig([
         {
           // devDependencies can be imported in config and test files
           devDependencies: [
+            "*.config.mjs",
             "**/*.config.mjs",
             "**/*.{spec,test}.{ts,tsx}",
             "**/tests/**/*.{ts,tsx}",
@@ -50,6 +56,10 @@ export default defineConfig([
       "no-throw-literal": "error",
       "no-unused-vars": ["error", { args: "none", caughtErrors: "none" }],
     },
+  },
+  {
+    files: ["**/*.config.mjs"],
+    languageOptions: { globals: { process: "readonly" } }, // config files are Node and can read the `process` global
   },
   {
     files: ["**/*.{ts,tsx}"],
