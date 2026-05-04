@@ -25,7 +25,7 @@ export default defineConfig([
       // Obscure fix for a failure to import "eslint-plugin-react-refresh".
       // If this file passes the linter without this `languageOptions` in the
       // future, try removing this `languageOptions` section.
-      sourceType: "module",
+      ecmaVersion: "latest",
     },
     settings: {
       "import/resolver": { typescript: true },
@@ -40,7 +40,6 @@ export default defineConfig([
         {
           // devDependencies can be imported in config and test files
           devDependencies: [
-            "*.config.mjs",
             "**/*.config.mjs",
             "**/*.{spec,test}.{ts,tsx}",
             "**/tests/**/*.{ts,tsx}",
