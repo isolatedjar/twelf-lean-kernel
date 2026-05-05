@@ -127,6 +127,9 @@ Git branches that build off of one another.
   setup
 - [`fullstack-react`](https://github.com/robsimmons/sourdough/tree/fullstack-react),
   makes the Vite frontend use React
+- [`workspaces`](https://github.com/robsimmons/sourdough/tree/workspaces),
+  uses NPM workspaces to mediate validation and types that can be productively
+  shared between the frontend and backend
 
 ## Using Sourdough as a Starter
 
