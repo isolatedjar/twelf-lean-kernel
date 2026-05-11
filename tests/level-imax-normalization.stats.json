@@ -1,0 +1,15 @@
+{
+  "size": 5897,
+  "size_str": "5.8\u202fKB",
+  "lines": 96,
+  "lines_str": "96",
+  "lean4export_version": "3.1.0",
+  "lean_version": "4.26.0",
+  "lean_githash": "0000000000000000000000000000000000000000",
+  "name": "level-imax-normalization",
+  "yaml_file": "tests/level-imax-normalization.yaml",
+  "outcome": "reject",
+  "description": "Proof of False via incorrect universe level normalization for `imax`.\n\nA correct kernel must distinguish `imax 0 v` from `succ(imax 0 v)`, since at `v=0` these\nevaluate to `0` and `1` respectively. However, a level normalization algorithm that drops an\naccumulated successor offset when decomposing `imax u (param v)` will produce identical normal\nforms for both, causing the equivalence check to incorrectly return true.\n\nThis allows defining a universe-collapsing identity function\n`down.{v} : Sort (succ (imax 0 v)) \u2192 Sort (imax 0 v)`, and then\n`myProp : Prop := down.{0} Bool` (a Prop that is computationally Bool). Proof irrelevance on\n`myProp` equates `Bool.true` and `Bool.false`, and `Bool.rec` maps this into `False`.\n",
+  "declaration_url": "https://github.com/leanprover/lean-kernel-arena/blob/b92e1f5c551b9f68510bd22c6e121d22f52d3c56/tests/level-imax-normalization.yaml",
+  "source_url": null
+}

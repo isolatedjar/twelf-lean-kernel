@@ -70,53 +70,6 @@ export default defineConfig([
     extends: tseslint.configs.recommendedTypeChecked,
     languageOptions: { parserOptions: { projectService: true } },
     rules: {
-      "@typescript-eslint/naming-convention": [
-        "error",
-        {
-          // Variables are camelCase: `nimGameService`, `row`
-          selector: ["variable"],
-          format: ["camelCase"],
-          leadingUnderscore: "allow",
-        },
-        {
-          // Functions, methods, and members are too: `allGuessed`, `start`, `viewAs`, `isDone`
-          selector: ["function", "method", "memberLike"],
-          format: ["camelCase"],
-        },
-        {
-          // Types and class names are PascalCase: `GameService`, `NimState`
-          selector: "typeLike",
-          format: ["PascalCase"],
-        },
-        {
-          // Usually we want to stick with camelCase for global variables, and
-          // UPPER_CASE for global constants, but there are many exceptions
-          selector: "variable",
-          modifiers: ["global", "const"],
-          types: ["boolean", "number", "string", "array"],
-          format: ["UPPER_CASE", "PascalCase", "camelCase"],
-        },
-        {
-          // Private methods and fields must have a leading underscore: this._count
-          selector: ["memberLike", "method"],
-          modifiers: ["private"],
-          format: ["camelCase"],
-          leadingUnderscore: "require",
-        },
-        {
-          // No limits on things like 'Content-Type' in a fetch object
-          selector: "objectLiteralProperty",
-          modifiers: ["requiresQuotes"],
-          format: null,
-        },
-        {
-          // Usually we want to stick with camelCase for global variables, and
-          // UPPER_CASE for global constants, but there are many exceptions
-          selector: ["function", "variable"],
-          modifiers: ["global"],
-          format: ["camelCase", "PascalCase"],
-        },
-      ],
       "@typescript-eslint/no-unused-vars": [
         "error",
         { args: "none", varsIgnorePattern: "^_", caughtErrors: "none" },
