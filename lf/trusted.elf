@@ -211,8 +211,16 @@ of/ax   : decl N LS T  ax                                       -> of (const N L
 % string-literal inhabits String" conventions), so they are not
 % counted as axioms-added-per-file.
 
-of/lit/Nat : {N:integer} of (natLit N) (const n_Nat    lnil).
-of/lit/Str : {S:string}  of (strLit S) (const n_String lnil).
+% The `N >= 0` premise on `of/lit/Nat` enforces that only non-negative
+% integer literals inhabit `Nat`.  The translator discharges the
+% premise at each use site with a per-literal `%solve` witness, e.g.
+%   %solve nat_geq_5 : 5 >= 0.
+%   check/n_X : ... = (of/lit/Nat 5 nat_geq_5).
+% A bad input like `(natLit -7)` cannot produce such a witness: Twelf's
+% search reports "No solution to %solve found" and the file aborts.
+% (String has no analogous non-negativity constraint.)
+of/lit/Nat : {N:integer} N >= 0 -> of (natLit N) (const n_Nat    lnil).
+of/lit/Str : {S:string}              of (strLit S) (const n_String lnil).
 
 
 % =====================================================================

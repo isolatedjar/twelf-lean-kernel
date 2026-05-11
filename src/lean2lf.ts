@@ -978,7 +978,7 @@ function trExpr(idx: number, ctx: ExprCtx, lc: LvlCtx): string {
     return `(${stub} ${trExpr(e.proj.struct, ctx, lc)})`;
   }
 
-  if ("natVal" in e) return `(natLit ${e.natVal})`;
+  if ("natVal" in e) return `(natLit ${natValAsTwelfInteger(e.natVal)})`;
   if ("strVal" in e) return `(strLit ${twelfString(e.strVal)})`;
 
   throw new Error(`internal: expr ${idx} matched no kind`);
@@ -1084,7 +1084,8 @@ function deriveOf(idx: number, ctx: ExprCtx, derCtx: string[], lc: LvlCtx): stri
 
   if ("natVal" in e) {
     if (!natLitOf) throw new Error("natVal seen but Nat inductive not yet declared");
-    return `(${natLitOf} ${e.natVal})`;
+    const witness = emitNatGeqSolve(e.natVal);
+    return `(${natLitOf} ${natValAsTwelfInteger(e.natVal)} ${witness})`;
   }
   if ("strVal" in e) {
     if (!strLitOf) throw new Error("strVal seen but String inductive not yet declared");
@@ -1398,12 +1399,57 @@ let strLitOf: string | null = null;
 // out at the end of `main`.
 const checksBuf: string[] = [];
 
+// Per-literal `%solve` witnesses for the `N >= 0` premise of
+// `of/lit/Nat`.  We emit one `%solve nat_geq_N : N >= 0.` declaration
+// per distinct non-negative literal value used in the file, then refer
+// to the witness by name at the use site.  Twelf's `%solve` invokes
+// its integer constraint domain — succeeds for non-negative N,
+// reports "No solution to %solve found" for negative N (causing the
+// file to abort, which is what we want).
+// Format a decimal-string natVal as a Twelf integer literal.  Negative
+// values must use unary minus `~` so Twelf parses them as integers
+// rather than as undeclared identifiers; the resulting `>= 0` check
+// will then be properly rejected by Twelf's constraint domain at
+// `%solve`-time rather than at parse time.
+function natValAsTwelfInteger(natVal: string): string {
+  if (natVal.startsWith("-")) return `(~ ${natVal.slice(1)})`;
+  return natVal;
+}
+
+const natGeqWitnesses = new Set<string>();
+function natGeqWitnessName(natVal: string): string {
+  const sanitized = natVal.replace(/-/g, "neg");
+  return `nat_geq_${sanitized}`;
+}
+function emitNatGeqSolve(natVal: string): string {
+  const wname = natGeqWitnessName(natVal);
+  if (!natGeqWitnesses.has(wname)) {
+    natGeqWitnesses.add(wname);
+    checksBuf.push(`%solve ${wname} : ${natValAsTwelfInteger(natVal)} >= 0.`);
+  }
+  return wname;
+}
+
 function buildLvlCtx(levelParams: number[]): { ctx: LvlCtx; vars: string[] } {
   const ctx: LvlCtx = new Map();
   const vars: string[] = [];
+  const seen = new Set<number>();
   for (let i = 0; i < levelParams.length; i++) {
+    const p = levelParams[i];
+    if (seen.has(p)) {
+      // Lean's parser rejects declarations with duplicate level-param
+      // names (e.g. `def foo.{u, u}`).  lean4export still emits these
+      // with both entries resolving to the same name-id, but the result
+      // does not correspond to any Lean declaration.  Reject at the
+      // translator boundary; otherwise we'd silently translate it as
+      // a valid two-distinct-params declaration and Twelf would accept.
+      throw new Error(
+        `duplicate level-parameter name (Lean name-id ${p}) — declaration header is malformed`,
+      );
+    }
+    seen.add(p);
     const v = `U${i}`;
-    ctx.set(levelParams[i], v);
+    ctx.set(p, v);
     vars.push(v);
   }
   return { ctx, vars };
