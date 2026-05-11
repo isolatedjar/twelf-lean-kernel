@@ -1424,10 +1424,21 @@ function emitName(name: string): void {
 // Unified env-fact emitter.  The `payload` argument is the LF
 // expression for the `dkind` slot: `(defn V)`, `(thm V)`, `(opq V)`,
 // or `ax`.
+//
+// Env-facts with the `ax` payload (Lean axioms, inductive types,
+// constructors, recursors, Quot.ind, projection-stub-using decls)
+// are counted in the trust ledger: they assert `of (const N LS) T`
+// via `of/ax` without any check derivation backing them.  Defn/thm/opq
+// payloads are NOT counted at emission time — their typing obligations
+// are handled by the corresponding `check/n_X` (and `prop/n_X` for
+// thms), which are themselves counted on a per-fallback basis.
 function emitDecl(name: string, vars: string[], tyLF: string, payload: string): void {
   const binders = vars.map((v) => `{${v}:level}`).join(" ");
   const prefix = binders === "" ? "" : binders + " ";
   line(`decl/${name} : ${prefix}decl ${name} ${lvlsLF(vars)} ${tyLF} ${payload}.`);
+  if (payload === "ax") {
+    axiomsAdded.push(`decl/${name}:ax`);
+  }
 }
 
 // Best-effort: errors surface as Twelf comments inside the
@@ -1928,6 +1939,12 @@ function emitIotaRule(
     line(`deq/${ruleName} : ${binders}`);
     line(`  defeq ${lhs}`);
     line(`        ${rhs}.`);
+
+    // Each emitted ι rule asserts a `defeq` between a recursor
+    // application on a constructor and its rhs.  We can't yet derive
+    // these from a more primitive notion, so they're trusted axioms
+    // in the per-file ledger.
+    axiomsAdded.push(`deq/${ruleName}`);
   });
 }
 
