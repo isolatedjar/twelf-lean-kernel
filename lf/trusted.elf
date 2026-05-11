@@ -88,13 +88,9 @@ letx : exp -> exp -> (exp -> exp) -> exp.
 % --- Literals --------------------------------------------------------
 %
 % These wrap raw values from the integer / string constraint domains
-% as expressions.  Their typing rules are emitted by the translator,
-% paired with the user's mangled `Nat` / `String` LF constants (which
-% it learns only when those inductives are encountered in the export
-% stream).  Example output:
-%     of/lit/Nat : {N:integer} of (natLit N) c_X_Nat.
-% These rules glue the literal back into the user's inductive type so
-% the rest of the kernel terms typecheck without surgery.
+% as expressions.  Their typing rules (see `of/lit/Nat`, `of/lit/Str`
+% below) live in the trusted core and reference the canonical names
+% `n_Nat` and `n_String` declared in §2a.
 
 natLit : integer -> exp.
 strLit : string  -> exp.
@@ -107,7 +103,8 @@ strLit : string  -> exp.
 %
 % Names themselves are *not* expressions — they are records in an
 % environment that the translator extends one entry at a time.  The
-% env facts and the of/defeq rules that read them appear in §§ 3–4.
+% env-fact family `decl` and the of/defeq rules that read it appear
+% in §§ 3–4.
 
 name : type.
 
@@ -117,6 +114,19 @@ lcons : level -> lvls -> lvls.
 
 const : name -> lvls -> exp.
 
+% --- Canonical names for literal-typed inductives --------------------
+%
+% Nat and String are referenced by the literal typing rules emitted
+% below (after `of` is in scope).  We pin canonical names for them in
+% the trusted core rather than letting the translator mint a fresh
+% name-id per file: this puts the literal rules `of/lit/Nat` and
+% `of/lit/Str` in the "not counted" trust column (a fixed trusted-core
+% axiom, like the rules for `pi` or `app`).  The translator maps the
+% Lean inductives `Nat` and `String` to these canonical names directly.
+
+n_Nat    : name.
+n_String : name.
+
 
 % =====================================================================
 %  3. TYPING JUDGEMENT
@@ -125,32 +135,42 @@ const : name -> lvls -> exp.
 of    : exp -> exp -> type.
 defeq : exp -> exp -> type.
 
-% --- Environment facts (per-kind) ------------------------------------
+% --- Environment facts: the `decl` family ----------------------------
 %
-% Lean has four declaration kinds.  We give each its own env-fact
-% family so the signature can carry kind-specific obligations:
+% A Lean environment is a partial map from names to declarations.  We
+% model the *kind* of a declaration's payload as a separate datatype:
 %
-%   defn — definition: value V, type T, supports δ-unfolding.
-%   thm  — theorem: value V (proof term), type T (must be a Prop).
-%   opq  — opaque definition: value V, type T, no δ-unfolding.
-%   ax   — axiom: type T only.
+%   dkind : type
+%     defn V — definition: value V, supports δ-unfolding.
+%     thm  V — theorem: proof term V (must inhabit a Prop).
+%     opq  V — opaque definition: value V, no δ-unfolding.
+%     ax     — axiom: no value.
 %
-% Critically `thm` is given a separate env-fact family precisely so
-% the `of/thm` rule below can require `of T (univ lz)` — the Lean
-% kernel obligation that a theorem's stated type be a proposition.
-% Encoding it in the signature (rather than as a translator-side
-% check) makes the obligation a precondition of every use site.
+% Then `decl N LS T DK` says "name N at levels LS has type T and
+% declaration-payload DK".  The translator extends `decl` one entry
+% at a time, just like `name`.
 %
-% The translator emits one env-fact constant per Lean declaration:
-%   defn/n_X : ... defn n_X ... V T.    -- def
-%   thm/n_X  : ... thm  n_X ... V T.    -- theorem
-%   opq/n_X  : ... opq  n_X ... V T.    -- opaque
-%   ax/n_X   : ... ax   n_X ... T.      -- axiom
+% There is a critical *unenforced* invariant on `decl`:
+%
+%   For each name N, there is at most one entry  decl N LS T DK.
+%
+% That is, `decl` has a functional dependency on its first argument.
+% Twelf cannot express or check this; we rely on the translator to
+% maintain it (and treat duplicate-name Lean inputs as a known-problem
+% category for which we lack a sound verdict).  See the duplicate-def
+% test family in tutorial/bad/.
+%
+% The translator emits, per Lean declaration:
+%   decl/n_X : ... decl n_X ... T DK.
+% where DK is `(defn V)`, `(thm V)`, `(opq V)`, or `ax`.
 
-defn : name -> lvls -> exp -> exp -> type.
-thm  : name -> lvls -> exp -> exp -> type.
-opq  : name -> lvls -> exp -> exp -> type.
-ax   : name -> lvls -> exp -> type.
+dkind : type.
+defn  : exp -> dkind.   % defn V — has value V, δ-unfolds
+thm   : exp -> dkind.   % thm  V — has proof term V, needs T : Prop
+opq   : exp -> dkind.   % opq  V — has value V, no δ
+ax    :        dkind.   % ax    — axiom
+
+decl : name -> lvls -> exp -> dkind -> type.
 
 of/univ : of (univ L) (univ (ls L)).
 
@@ -176,14 +196,23 @@ of/conv: of M A
       -> of B (univ L)
       -> of M B.
 
-% Typing rules for `const`-headed terms.  Each kind has its own rule;
-% `of/thm` additionally requires `of T (univ lz)` — the Lean kernel
-% obligation that a theorem's stated type be a proposition.
+% Typing rules for `const`-headed terms.  Each kind of `decl` payload
+% has its own rule; `of/thm` additionally requires `of T (univ lz)` —
+% the Lean kernel obligation that a theorem's stated type is a Prop.
 
-of/defn : defn N LS V T -> of V T                       -> of (const N LS) T.
-of/thm  : thm  N LS V T -> of V T -> of T (univ lz)     -> of (const N LS) T.
-of/opq  : opq  N LS V T -> of V T                       -> of (const N LS) T.
-of/ax   : ax   N LS T                                    -> of (const N LS) T.
+of/defn : decl N LS T (defn V) -> of V T                       -> of (const N LS) T.
+of/thm  : decl N LS T (thm  V) -> of V T -> of T (univ lz)     -> of (const N LS) T.
+of/opq  : decl N LS T (opq  V) -> of V T                       -> of (const N LS) T.
+of/ax   : decl N LS T  ax                                       -> of (const N LS) T.
+
+% Literal typing rules: typed against the canonical `n_Nat` and
+% `n_String` declared in §2a.  These are part of the trusted core
+% (they encode Lean's "every nat-literal inhabits Nat" and "every
+% string-literal inhabits String" conventions), so they are not
+% counted as axioms-added-per-file.
+
+of/lit/Nat : {N:integer} of (natLit N) (const n_Nat    lnil).
+of/lit/Str : {S:string}  of (strLit S) (const n_String lnil).
 
 
 % =====================================================================
@@ -197,9 +226,10 @@ deq/trans : defeq E1 E2 -> defeq E2 E3 -> defeq E1 E3.
 deq/univ  : leq L L' -> defeq (univ L) (univ L').
 
 % δ-unfolding: read a value off a `defn` env fact.  By construction
-% this rule is unavailable for `thm` and `opq` — their values are
-% intentionally hidden from the kernel's conversion engine.
-deq/delta : defn N LS V T -> defeq (const N LS) V.
+% this rule fires only on `defn V` payloads — `thm V` and `opq V` are
+% structurally hidden from the kernel's conversion engine, and `ax`
+% has no value.
+deq/delta : decl N LS T (defn V) -> defeq (const N LS) V.
 
 deq/pi    : defeq A A'
          -> ({x:exp} of x A -> defeq (B x) (B' x))

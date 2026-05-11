@@ -358,8 +358,25 @@ function nameToString(idx: number): string {
 // LF-safe identifier including the declaration's id so the result is
 // collision-free across Lean names that mangle to the same string
 // (e.g. names with non-ASCII chars).
+// Pinned core name overrides: Lean inductives `Nat` and `String` are
+// mapped to canonical names declared in lean-core-v2.elf (§2a) so that
+// the literal typing rules `of/lit/Nat` and `of/lit/Str` in the
+// trusted core can reference them.  When the translator encounters
+// these inductives in the export stream, it MUST also skip emitting
+// their `decl/n_X` env-fact (the canonical name is its own env entry,
+// see emitInductiveDecl).
+const pinnedNames: Record<string, string> = {
+  Nat: "n_Nat",
+  String: "n_String",
+};
+const pinnedNamesReverse: Record<string, true> = Object.fromEntries(
+  Object.values(pinnedNames).map((n) => [n, true]),
+);
+
 function mangle(idx: number): string {
   const s = nameToString(idx);
+  const pinned = pinnedNames[s];
+  if (pinned !== undefined) return pinned;
   let out = "";
   for (const c of s) {
     if (/[A-Za-z0-9_]/.test(c)) out += c;
@@ -1140,10 +1157,10 @@ function deriveConstHead(
   }
 
   // Non-kernel-primitive constant: route through the per-kind of-rule.
-  //   def → of/defn  (env fact defn/n_X, body witness check/n_X)
-  //   thm → of/thm   (env fact thm/n_X, body witness check/n_X, prop witness prop/n_X)
-  //   opq → of/opq   (env fact opq/n_X, body witness check/n_X)
-  //   ax  → of/ax    (env fact ax/n_X — inductive members, axioms, projections)
+  //   def → of/defn  (env fact decl/n_X, body witness check/n_X)
+  //   thm → of/thm   (env fact decl/n_X, body witness check/n_X, prop witness prop/n_X)
+  //   opq → of/opq   (env fact decl/n_X, body witness check/n_X)
+  //   ax  → of/ax    (env fact decl/n_X — inductive members, axioms, projections)
   const lfName = mangle(nameIdx);
   const lvlStrs = us.map((u) => trLevel(u, lc));
   const apply = (head: string, args: string[]) =>
@@ -1151,25 +1168,21 @@ function deriveConstHead(
   const kind = declKinds.get(nameIdx) ?? "ax";
   let pf: string;
   if (kind === "def" || kind === "thm" || kind === "opq") {
-    // Env fact binds every level param; check/n_X binds only those
-    // that appear in V or T; prop/n_X (thms only) binds only those
-    // that appear in T.  Consult checkLvlIdx / propLvlIdx for the
-    // right subset.
     const checkIdx = checkLvlIdx.get(nameIdx) ?? [];
     const checkArgs = checkIdx.map((i) => lvlStrs[i]);
     if (kind === "def") {
-      pf = `(of/defn ${apply("defn/" + lfName, lvlStrs)} ${apply("check/" + lfName, checkArgs)})`;
+      pf = `(of/defn ${apply("decl/" + lfName, lvlStrs)} ${apply("check/" + lfName, checkArgs)})`;
     } else if (kind === "opq") {
-      pf = `(of/opq ${apply("opq/" + lfName, lvlStrs)} ${apply("check/" + lfName, checkArgs)})`;
+      pf = `(of/opq ${apply("decl/" + lfName, lvlStrs)} ${apply("check/" + lfName, checkArgs)})`;
     } else {
       // thm
       const propIdx = propLvlIdx.get(nameIdx) ?? [];
       const propArgs = propIdx.map((i) => lvlStrs[i]);
-      pf = `(of/thm ${apply("thm/" + lfName, lvlStrs)} ${apply("check/" + lfName, checkArgs)} ${apply("prop/" + lfName, propArgs)})`;
+      pf = `(of/thm ${apply("decl/" + lfName, lvlStrs)} ${apply("check/" + lfName, checkArgs)} ${apply("prop/" + lfName, propArgs)})`;
     }
   } else {
-    // `ax/n_X` binds every level param.
-    pf = `(of/ax ${apply("ax/" + lfName, lvlStrs)})`;
+    // `decl/n_X` with payload `ax` binds every level param.
+    pf = `(of/ax ${apply("decl/" + lfName, lvlStrs)})`;
   }
   for (const a of args) {
     pf = `(of/app ${pf} ${deriveOf(a, ctx, derCtx, lc)})`;
@@ -1290,6 +1303,11 @@ function ensureProjStub(typeNameIdx: number, idx: number): string {
     emittedProjs.add(stubName);
     const sn = nameToString(typeNameIdx);
     preBuf.push(`${stubName} : exp -> exp.   % stub for proj ${sn}.${idx} (untyped)`);
+    // The stub is a syntactic axiom: it extends `exp` with a fresh
+    // constructor, untyped, that participates in no reduction rule.
+    // Any LF term mentioning it is therefore admitting new syntax —
+    // we count one axiom per distinct stub introduced in a file.
+    axiomsAdded.push(stubName);
   }
   return stubName;
 }
@@ -1393,9 +1411,8 @@ function buildLvlCtx(levelParams: number[]): { ctx: LvlCtx; vars: string[] } {
 
 // In v2 representation each Lean declaration introduces:
 //   * a `name` atom        (`n_X : name.`)
-//   * one env-fact constant — `def/n_X : ... decl ... .` for declarations
-//     carrying a value (def/thm/opaque), or `ax/n_X : ... ax ... .` for
-//     axioms and inductive members.
+//   * one env-fact constant — `decl/n_X : ... decl n_X LS T DK.` where
+//     DK is one of `(defn V)`, `(thm V)`, `(opq V)`, or `ax`.
 //   * (for declarations with a value) a `check/n_X` deferred to the
 //     end-of-file block — either a definition (when our checker can
 //     derive `of V T`) or an axiom fallback.
@@ -1404,28 +1421,13 @@ function emitName(name: string): void {
   line(`${name} : name.`);
 }
 
-function emitDefnEnv(name: string, vars: string[], valLF: string, tyLF: string): void {
+// Unified env-fact emitter.  The `payload` argument is the LF
+// expression for the `dkind` slot: `(defn V)`, `(thm V)`, `(opq V)`,
+// or `ax`.
+function emitDecl(name: string, vars: string[], tyLF: string, payload: string): void {
   const binders = vars.map((v) => `{${v}:level}`).join(" ");
   const prefix = binders === "" ? "" : binders + " ";
-  line(`defn/${name} : ${prefix}defn ${name} ${lvlsLF(vars)} ${valLF} ${tyLF}.`);
-}
-
-function emitThmEnv(name: string, vars: string[], valLF: string, tyLF: string): void {
-  const binders = vars.map((v) => `{${v}:level}`).join(" ");
-  const prefix = binders === "" ? "" : binders + " ";
-  line(`thm/${name} : ${prefix}thm ${name} ${lvlsLF(vars)} ${valLF} ${tyLF}.`);
-}
-
-function emitOpqEnv(name: string, vars: string[], valLF: string, tyLF: string): void {
-  const binders = vars.map((v) => `{${v}:level}`).join(" ");
-  const prefix = binders === "" ? "" : binders + " ";
-  line(`opq/${name} : ${prefix}opq ${name} ${lvlsLF(vars)} ${valLF} ${tyLF}.`);
-}
-
-function emitAxEnv(name: string, vars: string[], tyLF: string): void {
-  const binders = vars.map((v) => `{${v}:level}`).join(" ");
-  const prefix = binders === "" ? "" : binders + " ";
-  line(`ax/${name} : ${prefix}ax ${name} ${lvlsLF(vars)} ${tyLF}.`);
+  line(`decl/${name} : ${prefix}decl ${name} ${lvlsLF(vars)} ${tyLF} ${payload}.`);
 }
 
 // Best-effort: errors surface as Twelf comments inside the
@@ -1456,7 +1458,7 @@ function emitAxiom(a: Axiom["axiom"]): void {
   declKinds.set(a.name, "ax");
   withErrCtx(`axiom ${declName}`, () => {
     const { ctx, vars } = buildLvlCtx(a.levelParams);
-    emitAxEnv(name, vars, trExpr(a.type, [], ctx));
+    emitDecl(name, vars, trExpr(a.type, [], ctx), "ax");
   });
   line("");
   flush();
@@ -1477,7 +1479,7 @@ function emitDef(d: Def["def"]): void {
   declKinds.set(d.name, "def");
   withErrCtx(`def ${declName}`, () => {
     const { ctx, vars } = buildLvlCtx(d.levelParams);
-    emitDefnEnv(name, vars, trExpr(d.value, [], ctx), trExpr(d.type, [], ctx));
+    emitDecl(name, vars, trExpr(d.type, [], ctx), `(defn ${trExpr(d.value, [], ctx)})`);
   });
   tryEmitCheck(`def ${declName}`, d.name, name, "def", d.levelParams, d.type, d.value);
   line("");
@@ -1499,7 +1501,7 @@ function emitThm(t: Thm["thm"]): void {
   declKinds.set(t.name, "thm");
   withErrCtx(`thm ${declName}`, () => {
     const { ctx, vars } = buildLvlCtx(t.levelParams);
-    emitThmEnv(name, vars, trExpr(t.value, [], ctx), trExpr(t.type, [], ctx));
+    emitDecl(name, vars, trExpr(t.type, [], ctx), `(thm ${trExpr(t.value, [], ctx)})`);
   });
   tryEmitCheck(`thm ${declName}`, t.name, name, "thm", t.levelParams, t.type, t.value);
   line("");
@@ -1708,7 +1710,7 @@ function emitOpaque(o: Opaque["opaque"]): void {
     // `opq` is its own env-fact family in the signature — there's no
     // `deq/delta` rule for it, so the value is structurally hidden
     // from δ-conversion (rather than relying on a translator convention).
-    emitOpqEnv(name, vars, trExpr(o.value, [], ctx), trExpr(o.type, [], ctx));
+    emitDecl(name, vars, trExpr(o.type, [], ctx), `(opq ${trExpr(o.value, [], ctx)})`);
   });
   tryEmitCheck(`opaque ${declName}`, o.name, name, "opq", o.levelParams, o.type, o.value);
   line("");
@@ -1731,7 +1733,7 @@ function emitQuotDecl(q: QuotDecl["quot"]): void {
     declKinds.set(q.name, "ax");
     withErrCtx(`quot ${declName}`, () => {
       const { ctx, vars } = buildLvlCtx(q.levelParams);
-      emitAxEnv(name, vars, trExpr(q.type, [], ctx));
+      emitDecl(name, vars, trExpr(q.type, [], ctx), "ax");
     });
     line("");
   } else {
@@ -1750,13 +1752,22 @@ function emitInductiveMember(
     return;
   }
   const name = mangle(v.name);
+  // If this Lean name is pinned to a core name (e.g. Nat → n_Nat),
+  // the name atom and env fact already exist in lean-core-v2.elf §2a.
+  // Skip our own emission to avoid duplicating them.
+  if (name in pinnedNamesReverse) {
+    line(`%   ${kind} ${declName} (pinned to core name ${name})`);
+    declaredConsts.add(name);
+    declKinds.set(v.name, "ax");
+    return;
+  }
   line(`%   ${kind} ${declName}`);
   emitName(name);
   declaredConsts.add(name);
   declKinds.set(v.name, "ax");
   withErrCtx(`${kind} ${declName}`, () => {
     const { ctx, vars } = buildLvlCtx(v.levelParams);
-    emitAxEnv(name, vars, trExpr(v.type, [], ctx));
+    emitDecl(name, vars, trExpr(v.type, [], ctx), "ax");
   });
 }
 
@@ -1778,15 +1789,17 @@ function emitInductiveDecl(ind: InductiveDecl["inductive"]): void {
   // a typing rule connecting the literal constructor to the user's
   // mangled LF constant.  This is what makes `natLit 5 : c_X_Nat`
   // and `strLit "..." : c_Y_String` typecheck downstream.
+  // Nat and String: their canonical names (`n_Nat`, `n_String`) and
+  // literal rules (`of/lit/Nat`, `of/lit/Str`) live in the trusted core
+  // (lean-core-v2.elf §2a), so emit nothing here — just record the
+  // core rule name so trExpr's natVal/strVal can reference it.
   for (const v of ind.types) {
     const name = nameToString(v.name);
     if (name === "Nat") {
-      line(`of/lit/${mangle(v.name)} : {N:integer} of (natLit N) (const ${mangle(v.name)} lnil).`);
-      natLitOf = `of/lit/${mangle(v.name)}`;
+      natLitOf = "of/lit/Nat";
     }
     if (name === "String") {
-      line(`of/lit/${mangle(v.name)} : {S:string}  of (strLit S) (const ${mangle(v.name)} lnil).`);
-      strLitOf = `of/lit/${mangle(v.name)}`;
+      strLitOf = "of/lit/Str";
     }
   }
 
