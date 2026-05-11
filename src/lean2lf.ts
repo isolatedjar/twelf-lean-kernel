@@ -366,7 +366,22 @@ function mangle(idx: number): string {
     else if (c === ".") out += "_";
     else out += "_u" + c.codePointAt(0)!.toString(16);
   }
-  return `c_${idx}_${out}`;
+  return `n_${idx}_${out}`;
+}
+
+// LF representation of a list of level arguments:
+//   []           → `lnil`
+//   [U]          → `(lcons U lnil)`
+//   [U1, U2]     → `(lcons U1 (lcons U2 lnil))`
+function lvlsLF(vars: string[]): string {
+  let s = "lnil";
+  for (let i = vars.length - 1; i >= 0; i--) s = `(lcons ${vars[i]} ${s})`;
+  return s;
+}
+
+// Return the subset of `vars` that occurs as a whole-token in `lf`.
+function levelVarsUsed(lf: string, vars: string[]): string[] {
+  return vars.filter((v) => new RegExp(`(^|[^A-Za-z0-9_])${v}([^A-Za-z0-9_]|$)`).test(lf));
 }
 
 // Format a string literal for the Twelf strings constraint domain.
@@ -1124,9 +1139,38 @@ function deriveConstHead(
     return pf;
   }
 
+  // Non-kernel-primitive constant: route through the per-kind of-rule.
+  //   def → of/defn  (env fact defn/n_X, body witness check/n_X)
+  //   thm → of/thm   (env fact thm/n_X, body witness check/n_X, prop witness prop/n_X)
+  //   opq → of/opq   (env fact opq/n_X, body witness check/n_X)
+  //   ax  → of/ax    (env fact ax/n_X — inductive members, axioms, projections)
+  const lfName = mangle(nameIdx);
   const lvlStrs = us.map((u) => trLevel(u, lc));
-  const ctor = `of/${mangle(nameIdx)}`;
-  let pf = lvlStrs.length === 0 ? ctor : `(${ctor} ${lvlStrs.join(" ")})`;
+  const apply = (head: string, args: string[]) =>
+    args.length === 0 ? head : `(${head} ${args.join(" ")})`;
+  const kind = declKinds.get(nameIdx) ?? "ax";
+  let pf: string;
+  if (kind === "def" || kind === "thm" || kind === "opq") {
+    // Env fact binds every level param; check/n_X binds only those
+    // that appear in V or T; prop/n_X (thms only) binds only those
+    // that appear in T.  Consult checkLvlIdx / propLvlIdx for the
+    // right subset.
+    const checkIdx = checkLvlIdx.get(nameIdx) ?? [];
+    const checkArgs = checkIdx.map((i) => lvlStrs[i]);
+    if (kind === "def") {
+      pf = `(of/defn ${apply("defn/" + lfName, lvlStrs)} ${apply("check/" + lfName, checkArgs)})`;
+    } else if (kind === "opq") {
+      pf = `(of/opq ${apply("opq/" + lfName, lvlStrs)} ${apply("check/" + lfName, checkArgs)})`;
+    } else {
+      // thm
+      const propIdx = propLvlIdx.get(nameIdx) ?? [];
+      const propArgs = propIdx.map((i) => lvlStrs[i]);
+      pf = `(of/thm ${apply("thm/" + lfName, lvlStrs)} ${apply("check/" + lfName, checkArgs)} ${apply("prop/" + lfName, propArgs)})`;
+    }
+  } else {
+    // `ax/n_X` binds every level param.
+    pf = `(of/ax ${apply("ax/" + lfName, lvlStrs)})`;
+  }
   for (const a of args) {
     pf = `(of/app ${pf} ${deriveOf(a, ctx, derCtx, lc)})`;
   }
@@ -1204,10 +1248,10 @@ function trConstHead(
     return s;
   }
 
-  // Non-primitive constant: emit as a mangled LF constant.
+  // Non-primitive constant: emit as `(const n_X <lvl-list>)`.
   const ctor = mangle(nameIdx);
-  const lvlStr = us.length === 0 ? "" : ` ${us.map((u) => trLevel(u, lc)).join(" ")}`;
-  let head = us.length === 0 ? ctor : `(${ctor}${lvlStr})`;
+  const lvlList = lvlsLF(us.map((u) => trLevel(u, lc)));
+  let head = `(const ${ctor} ${lvlList})`;
   for (const a of args) head = `(app ${head} ${trExpr(a, ctx, lc)})`;
   return head;
 }
@@ -1263,6 +1307,60 @@ function flush(): void {
 
 const declaredConsts = new Set<string>();
 
+// Per-Lean-name kind, populated as declarations are emitted.  Used by
+// `deriveConstHead` to choose between the `of/const + check` path (for
+// value-carrying decls — def/thm/opaque) and the `of/ax` path (for
+// axioms, inductive types/ctors/recursors, projection stubs).
+type DeclKind = "def" | "thm" | "opq" | "ax";
+const declKinds = new Map<number, DeclKind>();
+
+// For each value-carrying decl, the POSITIONAL indices (into the
+// decl's levelParams) of the level params that actually occur inside
+// V or T — these are the levels that `check/n_X` binds.  At use
+// sites we apply exactly these levels to `check/n_X`; applying more
+// or fewer would oversaturate the term or break Twelf's strict-
+// variable reconstruction.  Populated by `tryEmitCheck`.
+const checkLvlIdx = new Map<number, number[]>();
+
+// For each thm, the positional indices (into levelParams) of the
+// level params that occur inside T (the stated type) — these bind
+// `prop/n_X`, the witness that T : Prop.  Empty for non-thm decls
+// (they don't need a prop check).
+const propLvlIdx = new Map<number, number[]>();
+
+// =====================================================================
+// Trust tracking
+// =====================================================================
+//
+// In a verification setting, a translated file's outcome falls into
+// one of three buckets relative to the Twelf signature:
+//
+//   * "verified"  — every Lean declaration in the file has its `of V T`
+//                   obligation discharged by a Twelf-checkable derivation
+//                   (i.e. `check/n_X = body.`).  No new axioms added.
+//
+//   * "trusted"   — one or more `check/n_X` entries fell back to AXIOM
+//                   form because our engine could not build a derivation.
+//                   Twelf will still accept the file, but the of-claim
+//                   for that declaration rests on a new axiom — morally
+//                   the same axiom Lean's kernel discharged for us, but
+//                   we're trusting Lean's discharge rather than
+//                   reproducing it.
+//
+//   * "failed"    — translator threw on a Lean declaration, or Twelf
+//                   rejected the result.  Nothing trusted, just
+//                   unverified.
+//
+// `axiomsAdded`       — mangled names whose check fell back to axiom.
+// `translationErrors` — labels for declarations the translator could
+//                       not emit at all (trExpr/withErrCtx/processItem).
+//
+// `flushTrustSummary` emits these as a comment block the harness can
+// grep to classify the file.
+
+const axiomsAdded: string[] = [];
+const translationErrors: string[] = [];
+
 // Names of the per-Lean-inductive literal-typing rules, set the first
 // time the relevant inductive is encountered.  Used by `deriveOf` to
 // build a derivation for `Expr.lit (NatVal n)` / `(StrVal s)`.
@@ -1293,25 +1391,41 @@ function buildLvlCtx(levelParams: number[]): { ctx: LvlCtx; vars: string[] } {
   return { ctx, vars };
 }
 
-function emitConstHeader(lfName: string, levelArity: number): void {
-  const arrow = Array(levelArity).fill("level").concat(["exp"]).join(" -> ");
-  line(`${lfName} : ${arrow}.`);
+// In v2 representation each Lean declaration introduces:
+//   * a `name` atom        (`n_X : name.`)
+//   * one env-fact constant — `def/n_X : ... decl ... .` for declarations
+//     carrying a value (def/thm/opaque), or `ax/n_X : ... ax ... .` for
+//     axioms and inductive members.
+//   * (for declarations with a value) a `check/n_X` deferred to the
+//     end-of-file block — either a definition (when our checker can
+//     derive `of V T`) or an axiom fallback.
+
+function emitName(name: string): void {
+  line(`${name} : name.`);
 }
 
-function applyLvls(lfName: string, vars: string[]): string {
-  return vars.length === 0 ? lfName : `(${lfName} ${vars.join(" ")})`;
-}
-
-function emitOfLine(lfName: string, vars: string[], ty: string): void {
+function emitDefnEnv(name: string, vars: string[], valLF: string, tyLF: string): void {
   const binders = vars.map((v) => `{${v}:level}`).join(" ");
   const prefix = binders === "" ? "" : binders + " ";
-  line(`of/${lfName} : ${prefix}of ${applyLvls(lfName, vars)} ${ty}.`);
+  line(`defn/${name} : ${prefix}defn ${name} ${lvlsLF(vars)} ${valLF} ${tyLF}.`);
 }
 
-function emitDeqLine(lfName: string, vars: string[], val: string): void {
+function emitThmEnv(name: string, vars: string[], valLF: string, tyLF: string): void {
   const binders = vars.map((v) => `{${v}:level}`).join(" ");
   const prefix = binders === "" ? "" : binders + " ";
-  line(`deq/${lfName} : ${prefix}defeq ${applyLvls(lfName, vars)} ${val}.`);
+  line(`thm/${name} : ${prefix}thm ${name} ${lvlsLF(vars)} ${valLF} ${tyLF}.`);
+}
+
+function emitOpqEnv(name: string, vars: string[], valLF: string, tyLF: string): void {
+  const binders = vars.map((v) => `{${v}:level}`).join(" ");
+  const prefix = binders === "" ? "" : binders + " ";
+  line(`opq/${name} : ${prefix}opq ${name} ${lvlsLF(vars)} ${valLF} ${tyLF}.`);
+}
+
+function emitAxEnv(name: string, vars: string[], tyLF: string): void {
+  const binders = vars.map((v) => `{${v}:level}`).join(" ");
+  const prefix = binders === "" ? "" : binders + " ";
+  line(`ax/${name} : ${prefix}ax ${name} ${lvlsLF(vars)} ${tyLF}.`);
 }
 
 // Best-effort: errors surface as Twelf comments inside the
@@ -1322,6 +1436,7 @@ function withErrCtx(label: string, fn: () => void): void {
   try {
     fn();
   } catch (err: any) {
+    translationErrors.push(label);
     line(`% TRANSLATION ERROR (${label}): ${err.message}`);
   }
 }
@@ -1336,11 +1451,12 @@ function emitAxiom(a: Axiom["axiom"]): void {
   }
   const name = mangle(a.name);
   line(`% axiom ${declName}`);
-  emitConstHeader(name, a.levelParams.length);
+  emitName(name);
   declaredConsts.add(name);
+  declKinds.set(a.name, "ax");
   withErrCtx(`axiom ${declName}`, () => {
     const { ctx, vars } = buildLvlCtx(a.levelParams);
-    emitOfLine(name, vars, trExpr(a.type, [], ctx));
+    emitAxEnv(name, vars, trExpr(a.type, [], ctx));
   });
   line("");
   flush();
@@ -1356,14 +1472,14 @@ function emitDef(d: Def["def"]): void {
   }
   const name = mangle(d.name);
   line(`% def ${declName}`);
-  emitConstHeader(name, d.levelParams.length);
+  emitName(name);
   declaredConsts.add(name);
+  declKinds.set(d.name, "def");
   withErrCtx(`def ${declName}`, () => {
     const { ctx, vars } = buildLvlCtx(d.levelParams);
-    emitOfLine(name, vars, trExpr(d.type, [], ctx));
-    emitDeqLine(name, vars, trExpr(d.value, [], ctx));
+    emitDefnEnv(name, vars, trExpr(d.value, [], ctx), trExpr(d.type, [], ctx));
   });
-  tryEmitCheck(`def ${declName}`, name, d.levelParams, d.type, d.value);
+  tryEmitCheck(`def ${declName}`, d.name, name, "def", d.levelParams, d.type, d.value);
   line("");
   flush();
 }
@@ -1378,14 +1494,14 @@ function emitThm(t: Thm["thm"]): void {
   }
   const name = mangle(t.name);
   line(`% theorem ${declName}`);
-  emitConstHeader(name, t.levelParams.length);
+  emitName(name);
   declaredConsts.add(name);
+  declKinds.set(t.name, "thm");
   withErrCtx(`thm ${declName}`, () => {
     const { ctx, vars } = buildLvlCtx(t.levelParams);
-    emitOfLine(name, vars, trExpr(t.type, [], ctx));
-    emitDeqLine(name, vars, trExpr(t.value, [], ctx));
+    emitThmEnv(name, vars, trExpr(t.value, [], ctx), trExpr(t.type, [], ctx));
   });
-  tryEmitCheck(`thm ${declName}`, name, t.levelParams, t.type, t.value);
+  tryEmitCheck(`thm ${declName}`, t.name, name, "thm", t.levelParams, t.type, t.value);
   line("");
   flush();
 }
@@ -1396,22 +1512,63 @@ function emitThm(t: Thm["thm"]): void {
 // it's just a named witness that of/<value-translated> <type-translated>
 // is inhabited.  On failure to build, leaves a (per-decl) comment;
 // on success, queues the check for emission at the end of the file.
+// In v2 the per-decl block contains the env fact (`def/n_X` or
+// `ax/n_X`) but NOT the typing axiom — `of (const n_X LS) T` is
+// derived at every use site via `(of/const def/n_X check/n_X)`.
+// `check/n_X` is therefore an obligation: either a Twelf definition
+// whose body is a kernel-checkable derivation of `of V T`, or an
+// axiom fallback when our checker can't (yet) build one.
+//
+// Per-decl protocol:
+//   * Always emit one `check/n_X` entry into `checksBuf`.
+//   * Populate `checkLvlIdx` so use sites apply the right level args.
+//   * Bind only the level params that actually appear in V or T —
+//     otherwise Twelf's strict-variable check rejects the entry.
 function tryEmitCheck(
   label: string,
+  nameIdx: number,
   name: string,
+  kind: "def" | "thm" | "opq",
   levelParams: number[],
   typeIdx: number,
   valueIdx: number,
 ): void {
+  const { ctx: lc, vars } = buildLvlCtx(levelParams);
+
+  let tyLF: string;
+  let valLF: string;
   try {
-    const { ctx: lc, vars } = buildLvlCtx(levelParams);
-    const tyLF = trExpr(typeIdx, [], lc);
-    const valLF = trExpr(valueIdx, [], lc);
+    tyLF = trExpr(typeIdx, [], lc);
+    valLF = trExpr(valueIdx, [], lc);
+  } catch (err: any) {
+    // Couldn't even translate V or T — leave a comment and skip the
+    // check.  Downstream uses of n_X will fail to typecheck (no
+    // check/n_X exists), so the rest of this file likely aborts.
+    translationErrors.push(label);
+    line(`% (check ${label}: trExpr failed: ${err.message})`);
+    checkLvlIdx.set(nameIdx, []);
+    if (kind === "thm") propLvlIdx.set(nameIdx, []);
+    return;
+  }
+
+  // -------------------------------------------------------------------
+  // Body-typing obligation: of V T
+  // -------------------------------------------------------------------
+  // Subset of `vars` actually appearing in V or T (whole-token match).
+  const usedVars = levelVarsUsed(`${valLF} ${tyLF}`, vars);
+  const usedIndices = usedVars.map((v) => vars.indexOf(v));
+  checkLvlIdx.set(nameIdx, usedIndices);
+
+  const binders = usedVars.map((v) => `{${v}:level}`).join(" ");
+  const prefix = binders === "" ? "" : binders + " ";
+  const absPrefix = usedVars.length === 0 ? "" : `[${usedVars.join("] [")}] `;
+
+  try {
     let der = deriveOf(valueIdx, [], [], lc);
 
-    // Outermost-only level conversion: if the declared type is a sort
-    // and the value's inferred outer level differs from the declared
-    // level, wrap `der` in `of/conv` with a `deq/univ` over a
+    // Phase A outermost-only level conversion: if the declared type
+    // is a sort and the value's inferred outer level differs from the
+    // declared level, wrap `der` in `of/conv` with a `deq/univ` over a
     // proveLeq witness.  Failure here is silent — fall back to the
     // unwrapped derivation, which is then Twelf's problem to discover.
     const tyExpr = exprs[typeIdx];
@@ -1421,23 +1578,75 @@ function tryEmitCheck(
         const inferredLvl = levelOfType(valueIdx, [], lc);
         if (!lvlEq(inferredLvl, declaredLvl)) {
           const leqW = proveLeq(inferredLvl, declaredLvl);
-          // `of/univ : of (univ L) (univ (ls L))` typechecks the target
-          // universe; we use it for the third arg of of/conv.
           der = `(of/conv ${der} (deq/univ ${leqW}) of/univ)`;
         }
       } catch (_) {
-        // levelOfType or proveLeq failed; emit unwrapped derivation
+        /* fall back to unwrapped der */
       }
     }
 
-    const binders = vars.map((v) => `{${v}:level}`).join(" ");
-    const prefix = binders === "" ? "" : binders + " ";
-    const absPrefix = vars.length === 0 ? "" : `[${vars.join("] [")}] `;
     checksBuf.push(`check/${name} : ${prefix}of ${valLF} ${tyLF}`);
     checksBuf.push(`              = ${absPrefix}${der}.`);
     checksBuf.push("");
   } catch (err: any) {
-    line(`% (check ${label}: ${err.message})`);
+    // Derivation engine punted on the body — emit as axiom so use
+    // sites still typecheck.  Per our trust model, an axiom here is
+    // an unresolved obligation that might be false.
+    axiomsAdded.push(`check/${name}`);
+    checksBuf.push(`% (check ${label}: derivation punted: ${err.message})`);
+    checksBuf.push(`check/${name} : ${prefix}of ${valLF} ${tyLF}.`);
+    checksBuf.push("");
+  }
+
+  // -------------------------------------------------------------------
+  // Prop side-condition for thms: of T (univ lz)
+  // -------------------------------------------------------------------
+  // This is the Lean kernel obligation that a theorem's stated type
+  // be a proposition.  `of/thm` requires it as a precondition; we
+  // build a derivation here and emit as `prop/n_X`, axiomatizing on
+  // engine failure (same trust model as the body check).
+  if (kind === "thm") {
+    const propUsedVars = levelVarsUsed(tyLF, vars);
+    const propUsedIndices = propUsedVars.map((v) => vars.indexOf(v));
+    propLvlIdx.set(nameIdx, propUsedIndices);
+
+    const propBinders = propUsedVars.map((v) => `{${v}:level}`).join(" ");
+    const propPrefix = propBinders === "" ? "" : propBinders + " ";
+    const propAbsPrefix = propUsedVars.length === 0 ? "" : `[${propUsedVars.join("] [")}] `;
+
+    try {
+      let propDer = deriveOf(typeIdx, [], [], lc);
+
+      // Phase A wrapping for the prop check: deriveOf produces
+      // `of T (univ L_inf)` where L_inf is the inferred level (e.g.
+      // `(limax L1 L2)` for a pi type).  The target is `of T (univ lz)`.
+      // If L_inf ≠ lz syntactically, wrap with of/conv + deq/univ + leqW.
+      // If levelOfType or proveLeq fails (e.g. the type has an `app`
+      // head whose level our engine can't infer), we let the exception
+      // propagate to the outer catch and axiomatize the prop check —
+      // emitting a wrong-level derivation here would cascade into a
+      // Twelf abort downstream.
+      const inferredLvl = levelOfType(typeIdx, [], lc);
+      const target: Lvl = { kind: "z" };
+      if (!lvlEq(inferredLvl, target)) {
+        const leqW = proveLeq(inferredLvl, target);
+        propDer = `(of/conv ${propDer} (deq/univ ${leqW}) of/univ)`;
+      }
+
+      checksBuf.push(`prop/${name} : ${propPrefix}of ${tyLF} (univ lz)`);
+      checksBuf.push(`             = ${propAbsPrefix}${propDer}.`);
+      checksBuf.push("");
+    } catch (err: any) {
+      // The type's of-claim couldn't be built.  Two reasons this
+      // could happen: (1) our engine is incomplete for this type, or
+      // (2) the obligation is actually false (T is not a Prop).  Per
+      // our trust model we cannot distinguish these — both yield an
+      // axiom that might be false.
+      axiomsAdded.push(`prop/${name}`);
+      checksBuf.push(`% (prop ${label}: derivation punted: ${err.message})`);
+      checksBuf.push(`prop/${name} : ${propPrefix}of ${tyLF} (univ lz).`);
+      checksBuf.push("");
+    }
   }
 }
 
@@ -1458,6 +1667,31 @@ function flushChecks(): void {
   for (const l of checksBuf) console.log(l);
 }
 
+// Emit the trust summary as a structured comment block at the end of
+// the output file.  The harness parses these lines (prefix-matched
+// against `% TRUST_SUMMARY:` and `% TRUST_FIELD:`) to classify each
+// translated case as verified / trusted / failed without rerunning
+// the translator.
+//
+// Always emitted, even when both counts are zero, so the harness can
+// distinguish "translator ran to completion with no flagged issues"
+// from "translator never reached end of stream" (in which case no
+// summary block appears at all and we treat the file as failed).
+function flushTrustSummary(): void {
+  console.log();
+  console.log("% =====================================================================");
+  console.log("% TRUST_SUMMARY");
+  console.log("% =====================================================================");
+  console.log(`% TRUST_FIELD axioms_added: ${axiomsAdded.length}`);
+  console.log(`% TRUST_FIELD translation_errors: ${translationErrors.length}`);
+  if (axiomsAdded.length > 0) {
+    console.log(`% TRUST_FIELD axiom_names: ${axiomsAdded.join(", ")}`);
+  }
+  if (translationErrors.length > 0) {
+    console.log(`% TRUST_FIELD error_labels: ${translationErrors.join(" | ")}`);
+  }
+}
+
 function emitOpaque(o: Opaque["opaque"]): void {
   const declName = nameToString(o.name);
   if (skipDecls.has(declName)) {
@@ -1466,14 +1700,17 @@ function emitOpaque(o: Opaque["opaque"]): void {
   }
   const name = mangle(o.name);
   line(`% opaque ${declName}`);
-  emitConstHeader(name, o.levelParams.length);
+  emitName(name);
   declaredConsts.add(name);
+  declKinds.set(o.name, "opq");
   withErrCtx(`opaque ${declName}`, () => {
     const { ctx, vars } = buildLvlCtx(o.levelParams);
-    emitOfLine(name, vars, trExpr(o.type, [], ctx));
-    // No delta-rule emitted: opaque value is hidden from the kernel.
+    // `opq` is its own env-fact family in the signature — there's no
+    // `deq/delta` rule for it, so the value is structurally hidden
+    // from δ-conversion (rather than relying on a translator convention).
+    emitOpqEnv(name, vars, trExpr(o.value, [], ctx), trExpr(o.type, [], ctx));
   });
-  tryEmitCheck(`opaque ${declName}`, name, o.levelParams, o.type, o.value);
+  tryEmitCheck(`opaque ${declName}`, o.name, name, "opq", o.levelParams, o.type, o.value);
   line("");
   flush();
 }
@@ -1483,17 +1720,18 @@ function emitQuotDecl(q: QuotDecl["quot"]): void {
   // The four members of Quot's package have kind type/ctor/lift/ind.
   // Three are LF kernel primitives (quot, qmk, qlift) handled via
   // kernelPrims, so we skip their emission.  Quot.ind has no LF
-  // counterpart, so we emit it as a regular user constant — its
-  // type references `Quot` and `Quot.mk` which map back to `quot`
-  // and `qmk`, so the result is well-formed LF.
+  // counterpart, so we emit it as a regular user-axiom — its type
+  // references `Quot` and `Quot.mk` which map back to `quot` and `qmk`,
+  // so the result is well-formed LF.
   if (q.kind === "ind") {
     const name = mangle(q.name);
-    line(`% quot ${declName} (kind=ind, emitted as user constant)`);
-    emitConstHeader(name, q.levelParams.length);
+    line(`% quot ${declName} (kind=ind, emitted as user-axiom)`);
+    emitName(name);
     declaredConsts.add(name);
+    declKinds.set(q.name, "ax");
     withErrCtx(`quot ${declName}`, () => {
       const { ctx, vars } = buildLvlCtx(q.levelParams);
-      emitOfLine(name, vars, trExpr(q.type, [], ctx));
+      emitAxEnv(name, vars, trExpr(q.type, [], ctx));
     });
     line("");
   } else {
@@ -1513,11 +1751,12 @@ function emitInductiveMember(
   }
   const name = mangle(v.name);
   line(`%   ${kind} ${declName}`);
-  emitConstHeader(name, v.levelParams.length);
+  emitName(name);
   declaredConsts.add(name);
+  declKinds.set(v.name, "ax");
   withErrCtx(`${kind} ${declName}`, () => {
     const { ctx, vars } = buildLvlCtx(v.levelParams);
-    emitOfLine(name, vars, trExpr(v.type, [], ctx));
+    emitAxEnv(name, vars, trExpr(v.type, [], ctx));
   });
 }
 
@@ -1542,11 +1781,11 @@ function emitInductiveDecl(ind: InductiveDecl["inductive"]): void {
   for (const v of ind.types) {
     const name = nameToString(v.name);
     if (name === "Nat") {
-      line(`of/lit/${mangle(v.name)} : {N:integer} of (natLit N) ${mangle(v.name)}.`);
+      line(`of/lit/${mangle(v.name)} : {N:integer} of (natLit N) (const ${mangle(v.name)} lnil).`);
       natLitOf = `of/lit/${mangle(v.name)}`;
     }
     if (name === "String") {
-      line(`of/lit/${mangle(v.name)} : {S:string}  of (strLit S) ${mangle(v.name)}.`);
+      line(`of/lit/${mangle(v.name)} : {S:string}  of (strLit S) (const ${mangle(v.name)} lnil).`);
       strLitOf = `of/lit/${mangle(v.name)}`;
     }
   }
@@ -1655,15 +1894,13 @@ function emitIotaRule(
     const iVars = Array.from({ length: rec.numIndices }, (_, i) => `ii${i}`);
     const fVars = Array.from({ length: rule.nfields }, (_, i) => `ff${i}`);
 
-    // Constructor application: (c U0..) P0..P(p-1) F0..F(nfields-1).
+    // Constructor application: (const n_ctor <lvls>) P0..F0..F(nfields-1).
     // Non-nested case: ctor's param count == recursor's numParams.
-    const ctorLvlStr = ctorUVars.length === 0 ? "" : ` ${ctorUVars.join(" ")}`;
-    let ctorApp = `(${ctorLfName}${ctorLvlStr})`;
+    let ctorApp = `(const ${ctorLfName} ${lvlsLF(ctorUVars)})`;
     for (const v of [...pVars, ...fVars]) ctorApp = `(app ${ctorApp} ${v})`;
 
-    // LHS: (rec U0..) P0..C0..N0..I0..ctorApp
-    const recLvlStr = uvars.length === 0 ? "" : ` ${uvars.join(" ")}`;
-    let lhs = `(${recLfName}${recLvlStr})`;
+    // LHS: (const n_rec <lvls>) P0..C0..N0..I0..ctorApp
+    let lhs = `(const ${recLfName} ${lvlsLF(uvars)})`;
     for (const v of [...pVars, ...mVars, ...nVars, ...iVars, ctorApp]) lhs = `(app ${lhs} ${v})`;
 
     // RHS: trExpr(rhs) P0..C0..N0..F0..  (note: no indices)
@@ -1738,6 +1975,7 @@ async function main(): Promise<void> {
       parsed = JSON.parse(t);
     } catch (err: any) {
       process.stderr.write(`line ${lineNo}: JSON parse error: ${err.message}\n`);
+      translationErrors.push(`NDJSON line ${lineNo}: JSON parse`);
       continue;
     }
     const result = zItem.safeParse(parsed);
@@ -1749,16 +1987,19 @@ async function main(): Promise<void> {
       process.stderr.write(
         `line ${lineNo}: schema mismatch [${issues}]: ` + `${t.slice(0, 120)}\n`,
       );
+      translationErrors.push(`NDJSON line ${lineNo}: schema mismatch`);
       continue;
     }
     try {
       processItem(result.data);
     } catch (err: any) {
       process.stderr.write(`line ${lineNo}: ${err.message}\n`);
+      translationErrors.push(`NDJSON line ${lineNo}`);
       console.log(`% TRANSLATION ERROR at NDJSON line ${lineNo}: ${err.message}`);
     }
   }
   flushChecks();
+  flushTrustSummary();
 }
 
 main().catch((err) => {
