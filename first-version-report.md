@@ -1,5 +1,3 @@
-# Lean-to-LF Kernel Checker — Summary Report
-
 A prototype that translates Lean 4 declarations (via lean4export NDJSON)
 into Twelf LF signatures and checks them. The goal is faithfulness to
 Lean's kernel, not performance; the test corpus is the
