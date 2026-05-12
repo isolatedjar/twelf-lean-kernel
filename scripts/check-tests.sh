@@ -31,6 +31,8 @@ if [[ ! -x "$TWELF" ]]; then
     echo "Error: not executable: $TWELF" >&2
     exit 1
 fi
+# Resolve to absolute so we don't lose it when we cd into $LF_DIR.
+TWELF="$(cd "$(dirname "$TWELF")" && pwd)/$(basename "$TWELF")"
 shift  # remaining args, if any, are specific test files
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

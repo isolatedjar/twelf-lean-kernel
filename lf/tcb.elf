@@ -7,15 +7,15 @@
 %%%   1. Do not add new constructors to closed families:
 %%%      `lvl`, `lvl-eq`, `lvls`, `expr`, `dkind`, `defeq`, `dkind-ok`.
 %%%      (No %freeze yet — checked by code review only.)
-%%%   2. Each declaration introduces a unique `name` constant and exactly
-%%%      one `declared` constant whose conclusion fixes N, LS, T, DK.
-%%%      The required `dkind-ok` proof is constructed using only the
-%%%      closed-family rules above; in particular, no axiomatic
-%%%      `dkind-ok` constants.
+%%%   2. Each declaration introduces exactly one `declared` constant whose
+%%%      conclusion fixes N (a string literal), LS, T, DK.  The required
+%%%      `dkind-ok` proof is constructed using only the closed-family
+%%%      rules above; no axiomatic `dkind-ok` constants.
 %%%   3. At the end of a development, append a `%unique` check on
 %%%      `declared` to verify the functional dependency on names.
+%%%      Because `name = string`, this catches duplicate declarations.
 %%%
-%%% Open families (extended by clients):  `name`, `declared`.
+%%% Open family (extended by clients):  `declared`.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Universe levels
@@ -52,6 +52,8 @@ lvl-eq/imax-succ : lvl-eq (limax L1 (lsucc L2)) (lmax L1 (lsucc L2)).
 %%% imax(L, 0) = 0   (from thesis §2.2)
 lvl-eq/imax-zero : lvl-eq (limax L lzero) lzero.
 
+%%% imax(_, 0) = 0                  (from thesis §2.2)
+lvl-eq/imax-zero : lvl-eq (limax L lzero) lzero.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Universe-level instantiation lists
@@ -66,11 +68,21 @@ lnil  : lvls.
 lcons : lvl -> lvls -> lvls.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Built-in string equality (for names)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%use equality/strings.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Names
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Open family: each declared definition adds one constant of type `name`.
+%%% Lean names are string literals — full dotted form, e.g. "List.cons".
+%%% This makes name equality string equality, which means a `%unique`
+%%% check on `declared` actually catches duplicate-name declarations
+%%% (declaring `c : name.` twice in Twelf shadows rather than colliding,
+%%% so an opaque-constant representation would silently miss this).
 
-name : type.   %name name N.
+%abbrev name = string.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Expressions (HOAS)

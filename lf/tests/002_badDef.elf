@@ -3,8 +3,6 @@
 %% TRANSLATOR: could not construct lvl-eq (lsucc (lsucc lzero)) ≈ lzero
 %%   emitting value-typed at declared type; Twelf will reject if mismatch is real.
 %% def badDef
-badDef : name.
-
 badDef/type-wf :
    defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
    = defeq/sort-refl.
@@ -13,7 +11,7 @@ badDef/value-typed :
    defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero)
    = defeq/sort-refl.
 
-badDef/decl : declared badDef lnil
+badDef/decl : declared "badDef" lnil
    (esort lzero)
    (defn (esort (lsucc lzero)))
    (dkind-ok/defn badDef/type-wf badDef/value-typed).

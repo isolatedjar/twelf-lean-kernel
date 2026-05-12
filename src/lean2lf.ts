@@ -34,51 +34,33 @@ type NameRec =
 // --- Levels. Index 0 = zero (implicit).
 type LevelRec =
   | { tag: "succ"; idx: number; arg: number }
-  | { tag: "max"; idx: number; l: number; r: number }
+  | { tag: "max";  idx: number; l: number; r: number }
   | { tag: "imax"; idx: number; l: number; r: number }
-  | { tag: "param"; idx: number; name: number };
+  | { tag: "param";idx: number; name: number };
 
 // --- Expressions.
 type BinderInfo = "default" | "implicit" | "strictImplicit" | "instImplicit";
 type ExprRec =
-  | { tag: "bvar"; idx: number; deBruijn: number }
-  | { tag: "sort"; idx: number; level: number }
-  | { tag: "const"; idx: number; name: number; us: number[] }
-  | { tag: "app"; idx: number; fn: number; arg: number }
-  | { tag: "lam"; idx: number; bi: BinderInfo; name: number; type: number; body: number }
+  | { tag: "bvar";    idx: number; deBruijn: number }
+  | { tag: "sort";    idx: number; level: number }
+  | { tag: "const";   idx: number; name: number; us: number[] }
+  | { tag: "app";     idx: number; fn: number; arg: number }
+  | { tag: "lam";     idx: number; bi: BinderInfo; name: number; type: number; body: number }
   | { tag: "forallE"; idx: number; bi: BinderInfo; name: number; type: number; body: number }
-  | { tag: "letE"; idx: number; name: number; type: number; value: number; body: number }
-  | { tag: "proj"; idx: number; typeName: number; pidx: number; struct: number }
-  | { tag: "natLit"; idx: number; value: string }
-  | { tag: "strLit"; idx: number; value: string };
+  | { tag: "letE";    idx: number; name: number; type: number; value: number; body: number }
+  | { tag: "proj";    idx: number; typeName: number; pidx: number; struct: number }
+  | { tag: "natLit";  idx: number; value: string }
+  | { tag: "strLit";  idx: number; value: string };
 
 // --- Top-level items (declarations).
-type DefRec = {
-  tag: "def";
-  name: number;
-  levelParams: number[];
-  type: number;
-  value: number;
-  hints: any;
-  safety: string;
-};
-type ThmRec = { tag: "thm"; name: number; levelParams: number[]; type: number; value: number };
-type AxRec = { tag: "axiom"; name: number; levelParams: number[]; type: number };
-type OpqRec = { tag: "opaque"; name: number; levelParams: number[]; type: number; value: number };
-type QuotRec = { tag: "quot" };
-type IndRec = { tag: "inductive"; raw: any }; // not yet handled
-type MetaRec = { tag: "meta" };
-type Item =
-  | NameRec
-  | LevelRec
-  | ExprRec
-  | DefRec
-  | ThmRec
-  | AxRec
-  | OpqRec
-  | QuotRec
-  | IndRec
-  | MetaRec;
+type DefRec    = { tag: "def";    name: number; levelParams: number[]; type: number; value: number; hints: any; safety: string };
+type ThmRec    = { tag: "thm";    name: number; levelParams: number[]; type: number; value: number };
+type AxRec     = { tag: "axiom";  name: number; levelParams: number[]; type: number };
+type OpqRec    = { tag: "opaque"; name: number; levelParams: number[]; type: number; value: number };
+type QuotRec   = { tag: "quot" };
+type IndRec    = { tag: "inductive"; raw: any };  // not yet handled
+type MetaRec   = { tag: "meta" };
+type Item      = NameRec | LevelRec | ExprRec | DefRec | ThmRec | AxRec | OpqRec | QuotRec | IndRec | MetaRec;
 
 // =====================================================================
 // 2. NDJSON parsing (hand-rolled; would be one z.discriminatedUnion)
@@ -93,21 +75,13 @@ function asStr(x: unknown): string | null {
 function asArrayOfInts(x: unknown): number[] | null {
   if (!Array.isArray(x)) return null;
   const out: number[] = [];
-  for (const e of x) {
-    const n = asInt(e);
-    if (n === null) return null;
-    out.push(n);
-  }
+  for (const e of x) { const n = asInt(e); if (n === null) return null; out.push(n); }
   return out;
 }
 
 function parseLine(line: string): Item | null {
   let obj: any;
-  try {
-    obj = JSON.parse(line);
-  } catch {
-    return null;
-  }
+  try { obj = JSON.parse(line); } catch { return null; }
   if (typeof obj !== "object" || obj === null) return null;
 
   // Names
@@ -122,69 +96,33 @@ function parseLine(line: string): Item | null {
   }
 
   // Levels
-  if ("il" in obj && "succ" in obj)
-    return { tag: "succ", idx: asInt(obj.il)!, arg: asInt(obj.succ)! };
-  if ("il" in obj && "max" in obj)
-    return { tag: "max", idx: asInt(obj.il)!, l: obj.max[0], r: obj.max[1] };
-  if ("il" in obj && "imax" in obj)
-    return { tag: "imax", idx: asInt(obj.il)!, l: obj.imax[0], r: obj.imax[1] };
-  if ("il" in obj && "param" in obj)
-    return { tag: "param", idx: asInt(obj.il)!, name: asInt(obj.param)! };
+  if ("il" in obj && "succ" in obj) return { tag: "succ", idx: asInt(obj.il)!, arg: asInt(obj.succ)! };
+  if ("il" in obj && "max"  in obj) return { tag: "max",  idx: asInt(obj.il)!, l: obj.max[0], r: obj.max[1] };
+  if ("il" in obj && "imax" in obj) return { tag: "imax", idx: asInt(obj.il)!, l: obj.imax[0], r: obj.imax[1] };
+  if ("il" in obj && "param" in obj) return { tag: "param", idx: asInt(obj.il)!, name: asInt(obj.param)! };
 
   // Expressions
   if ("ie" in obj) {
     const idx = asInt(obj.ie)!;
     if ("bvar" in obj) return { tag: "bvar", idx, deBruijn: asInt(obj.bvar)! };
     if ("sort" in obj) return { tag: "sort", idx, level: asInt(obj.sort)! };
-    if ("const" in obj)
-      return { tag: "const", idx, name: asInt(obj.const.name)!, us: asArrayOfInts(obj.const.us)! };
+    if ("const" in obj) return { tag: "const", idx, name: asInt(obj.const.name)!, us: asArrayOfInts(obj.const.us)! };
     if ("app" in obj) return { tag: "app", idx, fn: asInt(obj.app.fn)!, arg: asInt(obj.app.arg)! };
-    if ("lam" in obj)
-      return {
-        tag: "lam",
-        idx,
-        bi: obj.lam.binderInfo,
-        name: asInt(obj.lam.name)!,
-        type: asInt(obj.lam.type)!,
-        body: asInt(obj.lam.body)!,
-      };
-    if ("forallE" in obj)
-      return {
-        tag: "forallE",
-        idx,
-        bi: obj.forallE.binderInfo,
-        name: asInt(obj.forallE.name)!,
-        type: asInt(obj.forallE.type)!,
-        body: asInt(obj.forallE.body)!,
-      };
-    if ("letE" in obj)
-      return {
-        tag: "letE",
-        idx,
-        name: asInt(obj.letE.name)!,
-        type: asInt(obj.letE.type)!,
-        value: asInt(obj.letE.value)!,
-        body: asInt(obj.letE.body)!,
-      };
-    if ("proj" in obj)
-      return {
-        tag: "proj",
-        idx,
-        typeName: asInt(obj.proj.typeName)!,
-        pidx: asInt(obj.proj.idx)!,
-        struct: asInt(obj.proj.struct)!,
-      };
+    if ("lam" in obj) return { tag: "lam", idx, bi: obj.lam.binderInfo, name: asInt(obj.lam.name)!, type: asInt(obj.lam.type)!, body: asInt(obj.lam.body)! };
+    if ("forallE" in obj) return { tag: "forallE", idx, bi: obj.forallE.binderInfo, name: asInt(obj.forallE.name)!, type: asInt(obj.forallE.type)!, body: asInt(obj.forallE.body)! };
+    if ("letE" in obj) return { tag: "letE", idx, name: asInt(obj.letE.name)!, type: asInt(obj.letE.type)!, value: asInt(obj.letE.value)!, body: asInt(obj.letE.body)! };
+    if ("proj" in obj) return { tag: "proj", idx, typeName: asInt(obj.proj.typeName)!, pidx: asInt(obj.proj.idx)!, struct: asInt(obj.proj.struct)! };
     return null;
   }
 
   // Top-level items
-  if ("def" in obj) return { tag: "def", ...obj.def };
-  if ("thm" in obj) return { tag: "thm", ...obj.thm };
-  if ("axiom" in obj) return { tag: "axiom", ...obj.axiom };
-  if ("opaque" in obj) return { tag: "opaque", ...obj.opaque };
-  if ("quot" in obj) return { tag: "quot" };
+  if ("def"     in obj) return { tag: "def",     ...obj.def };
+  if ("thm"     in obj) return { tag: "thm",     ...obj.thm };
+  if ("axiom"   in obj) return { tag: "axiom",   ...obj.axiom };
+  if ("opaque"  in obj) return { tag: "opaque",  ...obj.opaque };
+  if ("quot"    in obj) return { tag: "quot" };
   if ("inductive" in obj) return { tag: "inductive", raw: obj.inductive };
-  if ("meta" in obj) return { tag: "meta" };
+  if ("meta"    in obj) return { tag: "meta" };
   return null;
 }
 
@@ -192,16 +130,8 @@ function parseLine(line: string): Item | null {
 // 3. In-memory IR
 // =====================================================================
 
-type Name =
-  | { kind: "anon" }
-  | { kind: "str"; pre: Name; str: string }
-  | { kind: "num"; pre: Name; i: number };
-type Level =
-  | { kind: "zero" }
-  | { kind: "succ"; arg: Level }
-  | { kind: "max"; l: Level; r: Level }
-  | { kind: "imax"; l: Level; r: Level }
-  | { kind: "param"; name: Name };
+type Name = { kind: "anon" } | { kind: "str"; pre: Name; str: string } | { kind: "num"; pre: Name; i: number };
+type Level = { kind: "zero" } | { kind: "succ"; arg: Level } | { kind: "max"; l: Level; r: Level } | { kind: "imax"; l: Level; r: Level } | { kind: "param"; name: Name };
 type Expr =
   | { kind: "bvar"; deBruijn: number }
   | { kind: "sort"; level: Level }
@@ -236,85 +166,20 @@ class Env {
 
   ingest(rec: Item): void {
     switch (rec.tag) {
-      case "str":
-        this.names.set(rec.idx, { kind: "str", pre: this.names.get(rec.pre)!, str: rec.str });
-        break;
-      case "num":
-        this.names.set(rec.idx, { kind: "num", pre: this.names.get(rec.pre)!, i: rec.i });
-        break;
-      case "succ":
-        this.levels.set(rec.idx, { kind: "succ", arg: this.levels.get(rec.arg)! });
-        break;
-      case "max":
-        this.levels.set(rec.idx, {
-          kind: "max",
-          l: this.levels.get(rec.l)!,
-          r: this.levels.get(rec.r)!,
-        });
-        break;
-      case "imax":
-        this.levels.set(rec.idx, {
-          kind: "imax",
-          l: this.levels.get(rec.l)!,
-          r: this.levels.get(rec.r)!,
-        });
-        break;
-      case "param":
-        this.levels.set(rec.idx, { kind: "param", name: this.names.get(rec.name)! });
-        break;
-      case "bvar":
-        this.exprs.set(rec.idx, { kind: "bvar", deBruijn: rec.deBruijn });
-        break;
-      case "sort":
-        this.exprs.set(rec.idx, { kind: "sort", level: this.levels.get(rec.level)! });
-        break;
-      case "const":
-        this.exprs.set(rec.idx, {
-          kind: "const",
-          name: this.names.get(rec.name)!,
-          us: rec.us.map((i) => this.levels.get(i)!),
-        });
-        break;
-      case "app":
-        this.exprs.set(rec.idx, {
-          kind: "app",
-          fn: this.exprs.get(rec.fn)!,
-          arg: this.exprs.get(rec.arg)!,
-        });
-        break;
-      case "lam":
-        this.exprs.set(rec.idx, {
-          kind: "lam",
-          name: this.names.get(rec.name)!,
-          type: this.exprs.get(rec.type)!,
-          body: this.exprs.get(rec.body)!,
-        });
-        break;
-      case "forallE":
-        this.exprs.set(rec.idx, {
-          kind: "forallE",
-          name: this.names.get(rec.name)!,
-          type: this.exprs.get(rec.type)!,
-          body: this.exprs.get(rec.body)!,
-        });
-        break;
-      case "letE":
-        this.exprs.set(rec.idx, {
-          kind: "letE",
-          name: this.names.get(rec.name)!,
-          type: this.exprs.get(rec.type)!,
-          value: this.exprs.get(rec.value)!,
-          body: this.exprs.get(rec.body)!,
-        });
-        break;
-      case "proj":
-        this.exprs.set(rec.idx, {
-          kind: "proj",
-          typeName: this.names.get(rec.typeName)!,
-          idx: rec.pidx,
-          struct: this.exprs.get(rec.struct)!,
-        });
-        break;
+      case "str":   this.names.set(rec.idx, { kind: "str", pre: this.names.get(rec.pre)!, str: rec.str }); break;
+      case "num":   this.names.set(rec.idx, { kind: "num", pre: this.names.get(rec.pre)!, i: rec.i }); break;
+      case "succ":  this.levels.set(rec.idx, { kind: "succ", arg: this.levels.get(rec.arg)! }); break;
+      case "max":   this.levels.set(rec.idx, { kind: "max",  l: this.levels.get(rec.l)!, r: this.levels.get(rec.r)! }); break;
+      case "imax":  this.levels.set(rec.idx, { kind: "imax", l: this.levels.get(rec.l)!, r: this.levels.get(rec.r)! }); break;
+      case "param": this.levels.set(rec.idx, { kind: "param", name: this.names.get(rec.name)! }); break;
+      case "bvar":  this.exprs.set(rec.idx, { kind: "bvar", deBruijn: rec.deBruijn }); break;
+      case "sort":  this.exprs.set(rec.idx, { kind: "sort", level: this.levels.get(rec.level)! }); break;
+      case "const": this.exprs.set(rec.idx, { kind: "const", name: this.names.get(rec.name)!, us: rec.us.map((i) => this.levels.get(i)!) }); break;
+      case "app":   this.exprs.set(rec.idx, { kind: "app", fn: this.exprs.get(rec.fn)!, arg: this.exprs.get(rec.arg)! }); break;
+      case "lam":   this.exprs.set(rec.idx, { kind: "lam", name: this.names.get(rec.name)!, type: this.exprs.get(rec.type)!, body: this.exprs.get(rec.body)! }); break;
+      case "forallE": this.exprs.set(rec.idx, { kind: "forallE", name: this.names.get(rec.name)!, type: this.exprs.get(rec.type)!, body: this.exprs.get(rec.body)! }); break;
+      case "letE":  this.exprs.set(rec.idx, { kind: "letE", name: this.names.get(rec.name)!, type: this.exprs.get(rec.type)!, value: this.exprs.get(rec.value)!, body: this.exprs.get(rec.body)! }); break;
+      case "proj":  this.exprs.set(rec.idx, { kind: "proj", typeName: this.names.get(rec.typeName)!, idx: rec.pidx, struct: this.exprs.get(rec.struct)! }); break;
     }
   }
 
@@ -323,14 +188,10 @@ class Env {
     const levelParams = rec.levelParams.map((i) => this.names.get(i)!);
     const type = this.exprs.get(rec.type)!;
     switch (rec.tag) {
-      case "def":
-        return { kind: "def", name, levelParams, type, value: this.exprs.get(rec.value)! };
-      case "thm":
-        return { kind: "thm", name, levelParams, type, value: this.exprs.get(rec.value)! };
-      case "axiom":
-        return { kind: "axiom", name, levelParams, type };
-      case "opaque":
-        return { kind: "opaque", name, levelParams, type, value: this.exprs.get(rec.value)! };
+      case "def":    return { kind: "def", name, levelParams, type, value: this.exprs.get(rec.value)! };
+      case "thm":    return { kind: "thm", name, levelParams, type, value: this.exprs.get(rec.value)! };
+      case "axiom":  return { kind: "axiom", name, levelParams, type };
+      case "opaque": return { kind: "opaque", name, levelParams, type, value: this.exprs.get(rec.value)! };
     }
   }
 }
@@ -357,16 +218,11 @@ function mangle(n: Name): string {
 
 function lfLevel(l: Level): string {
   switch (l.kind) {
-    case "zero":
-      return "lzero";
-    case "succ":
-      return `(lsucc ${lfLevel(l.arg)})`;
-    case "max":
-      return `(lmax ${lfLevel(l.l)} ${lfLevel(l.r)})`;
-    case "imax":
-      return `(limax ${lfLevel(l.l)} ${lfLevel(l.r)})`;
-    case "param":
-      throw new Error(`level param not yet supported: ${nameToString(l.name)}`);
+    case "zero":  return "lzero";
+    case "succ":  return `(lsucc ${lfLevel(l.arg)})`;
+    case "max":   return `(lmax ${lfLevel(l.l)} ${lfLevel(l.r)})`;
+    case "imax":  return `(limax ${lfLevel(l.l)} ${lfLevel(l.r)})`;
+    case "param": throw new Error(`level param not yet supported: ${nameToString(l.name)}`);
   }
 }
 
@@ -383,16 +239,12 @@ function lfExpr(e: Expr, boundVars: string[]): string {
   switch (e.kind) {
     case "bvar": {
       const name = boundVars[e.deBruijn];
-      if (name === undefined)
-        throw new Error(`bvar ${e.deBruijn} out of scope (depth ${boundVars.length})`);
+      if (name === undefined) throw new Error(`bvar ${e.deBruijn} out of scope (depth ${boundVars.length})`);
       return name;
     }
-    case "sort":
-      return `(esort ${lfLevel(e.level)})`;
-    case "const":
-      return `(econst ${mangle(e.name)} ${lfLvls(e.us)})`;
-    case "app":
-      return `(eapp ${lfExpr(e.fn, boundVars)} ${lfExpr(e.arg, boundVars)})`;
+    case "sort":  return `(esort ${lfLevel(e.level)})`;
+    case "const": return `(econst "${nameToString(e.name)}" ${lfLvls(e.us)})`;
+    case "app":   return `(eapp ${lfExpr(e.fn, boundVars)} ${lfExpr(e.arg, boundVars)})`;
     case "lam": {
       const v = freshVar(boundVars);
       return `(elam ${lfExpr(e.type, boundVars)} ([${v}] ${lfExpr(e.body, [v, ...boundVars])}))`;
@@ -401,14 +253,10 @@ function lfExpr(e: Expr, boundVars: string[]): string {
       const v = freshVar(boundVars);
       return `(eforall ${lfExpr(e.type, boundVars)} ([${v}] ${lfExpr(e.body, [v, ...boundVars])}))`;
     }
-    case "letE":
-      throw new Error("letE not yet supported");
-    case "proj":
-      throw new Error("proj not yet supported");
-    case "natLit":
-      throw new Error("natLit not yet supported");
-    case "strLit":
-      throw new Error("strLit not yet supported");
+    case "letE":  throw new Error("letE not yet supported");
+    case "proj":  throw new Error("proj not yet supported");
+    case "natLit": throw new Error("natLit not yet supported");
+    case "strLit": throw new Error("strLit not yet supported");
   }
 }
 
@@ -435,15 +283,11 @@ function freshVar(scope: string[]): string {
 function levelEq(a: Level, b: Level): boolean {
   if (a.kind !== b.kind) return false;
   switch (a.kind) {
-    case "zero":
-      return true;
-    case "succ":
-      return levelEq(a.arg, (b as any).arg);
+    case "zero": return true;
+    case "succ": return levelEq(a.arg, (b as any).arg);
     case "max":
-    case "imax":
-      return levelEq((a as any).l, (b as any).l) && levelEq((a as any).r, (b as any).r);
-    case "param":
-      return nameEq(a.name, (b as any).name);
+    case "imax": return levelEq((a as any).l, (b as any).l) && levelEq((a as any).r, (b as any).r);
+    case "param": return nameEq(a.name, (b as any).name);
   }
 }
 function nameEq(a: Name, b: Name): boolean {
@@ -503,17 +347,14 @@ function parseLvlSyntax(s: string): Level {
     const inner = s.slice(1, -1);
     const parts = splitTopLevel(inner);
     if (parts[0] === "lsucc") return { kind: "succ", arg: parseLvlSyntax(parts[1]) };
-    if (parts[0] === "lmax")
-      return { kind: "max", l: parseLvlSyntax(parts[1]), r: parseLvlSyntax(parts[2]) };
-    if (parts[0] === "limax")
-      return { kind: "imax", l: parseLvlSyntax(parts[1]), r: parseLvlSyntax(parts[2]) };
+    if (parts[0] === "lmax")  return { kind: "max",  l: parseLvlSyntax(parts[1]), r: parseLvlSyntax(parts[2]) };
+    if (parts[0] === "limax") return { kind: "imax", l: parseLvlSyntax(parts[1]), r: parseLvlSyntax(parts[2]) };
   }
   throw new Error(`parseLvlSyntax: cannot parse ${s}`);
 }
 function splitTopLevel(s: string): string[] {
   const out: string[] = [];
-  let depth = 0,
-    start = 0;
+  let depth = 0, start = 0;
   for (let i = 0; i < s.length; i++) {
     const c = s[i];
     if (c === "(") depth++;
@@ -568,7 +409,7 @@ function synth(e: Expr, scope: { vars: string[]; hyps: string[]; tys: string[] }
       const innerScope = {
         vars: [v, ...scope.vars],
         hyps: [h, ...scope.hyps],
-        tys: [lfExpr(e.type, scope.vars), ...scope.tys],
+        tys:  [lfExpr(e.type, scope.vars), ...scope.tys],
       };
       const bodySynth = synth(e.body, innerScope);
       // The body's type must be (esort _).
@@ -587,7 +428,7 @@ function synth(e: Expr, scope: { vars: string[]; hyps: string[]; tys: string[] }
       const innerScope = {
         vars: [v, ...scope.vars],
         hyps: [h, ...scope.hyps],
-        tys: [lfExpr(e.type, scope.vars), ...scope.tys],
+        tys:  [lfExpr(e.type, scope.vars), ...scope.tys],
       };
       const bodySynth = synth(e.body, innerScope);
       // bodySynth.ty is parameterized on v but we emit it as a closure;
@@ -621,39 +462,21 @@ function stripSuccSort(esortTy: string): string {
 const out: string[] = [];
 const skips: string[] = [];
 
-function emit(s: string): void {
-  out.push(s);
-}
-function emitBlank(): void {
-  out.push("");
-}
+function emit(s: string): void { out.push(s); }
+function emitBlank(): void { out.push(""); }
 
 function emitDef(d: Decl & { kind: "def" }): void {
   if (d.levelParams.length !== 0) {
     skips.push(`def ${nameToString(d.name)}: universe polymorphism not yet supported`);
-    emit(
-      `%% SKIP: def ${nameToString(d.name)} — universe-polymorphic (${d.levelParams.length} params)`,
-    );
+    emit(`%% SKIP: def ${nameToString(d.name)} — universe-polymorphic (${d.levelParams.length} params)`);
     emitBlank();
     return;
   }
 
   const mn = mangle(d.name);
   const declName = nameToString(d.name);
-  const T_lf = (() => {
-    try {
-      return lfExpr(d.type, []);
-    } catch (e: any) {
-      return null;
-    }
-  })();
-  const V_lf = (() => {
-    try {
-      return lfExpr(d.value, []);
-    } catch (e: any) {
-      return null;
-    }
-  })();
+  const T_lf = (() => { try { return lfExpr(d.type, []); } catch (e: any) { return null; } })();
+  const V_lf = (() => { try { return lfExpr(d.value, []); } catch (e: any) { return null; } })();
   if (T_lf === null || V_lf === null) {
     skips.push(`def ${declName}: untranslatable expression`);
     emit(`%% SKIP: def ${declName} — could not translate type/value to LF`);
@@ -662,10 +485,10 @@ function emitDef(d: Decl & { kind: "def" }): void {
   }
 
   let typeWf: Synth;
-  let valTy: Synth;
+  let valTy:  Synth;
   try {
-    typeWf = synth(d.type, { vars: [], hyps: [], tys: [] });
-    valTy = synth(d.value, { vars: [], hyps: [], tys: [] });
+    typeWf = synth(d.type,  { vars: [], hyps: [], tys: [] });
+    valTy  = synth(d.value, { vars: [], hyps: [], tys: [] });
   } catch (e: any) {
     skips.push(`def ${declName}: synth failed (${e.message})`);
     emit(`%% SKIP: def ${declName} — synth failed: ${e.message}`);
@@ -703,8 +526,6 @@ function emitDef(d: Decl & { kind: "def" }): void {
 
   // Emit.
   emit(`%% def ${declName}`);
-  emit(`${mn} : name.`);
-  emitBlank();
   emit(`${mn}/type-wf :`);
   emit(`   defeq ${T_lf} ${T_lf} ${typeWf.ty}`);
   emit(`   = ${typeWf.proof}.`);
@@ -713,7 +534,7 @@ function emitDef(d: Decl & { kind: "def" }): void {
   emit(`   defeq ${V_lf} ${V_lf} ${T_lf}`);
   emit(`   = ${valuePf}.`);
   emitBlank();
-  emit(`${mn}/decl : declared ${mn} lnil`);
+  emit(`${mn}/decl : declared "${declName}" lnil`);
   emit(`   ${T_lf}`);
   emit(`   (defn ${V_lf})`);
   emit(`   (dkind-ok/defn ${mn}/type-wf ${mn}/value-typed).`);
@@ -737,11 +558,11 @@ async function main(): Promise<void> {
       continue;
     }
     env.ingest(rec);
-    if (rec.tag === "def") emitDef(env.resolveDecl(rec) as any);
-    else if (rec.tag === "thm") emit(`%% SKIP: thm not yet supported`);
-    else if (rec.tag === "axiom") emit(`%% SKIP: axiom not yet supported`);
+    if (rec.tag === "def")    emitDef(env.resolveDecl(rec) as any);
+    else if (rec.tag === "thm")    emit(`%% SKIP: thm not yet supported`);
+    else if (rec.tag === "axiom")  emit(`%% SKIP: axiom not yet supported`);
     else if (rec.tag === "opaque") emit(`%% SKIP: opaque not yet supported`);
-    else if (rec.tag === "quot") emit(`%% SKIP: quot not yet supported`);
+    else if (rec.tag === "quot")   emit(`%% SKIP: quot not yet supported`);
     else if (rec.tag === "inductive") emit(`%% SKIP: inductive not yet supported`);
   }
 

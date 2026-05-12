@@ -3,8 +3,6 @@
 %% TRANSLATOR: could not construct lvl-eq (lsucc (limax lzero (lsucc lzero))) ≈ (lsucc (lsucc lzero))
 %%   emitting value-typed at declared type; Twelf will reject if mismatch is real.
 %% def levelComp2
-levelComp2 : name.
-
 levelComp2/type-wf :
    defeq (esort (lsucc (lsucc lzero))) (esort (lsucc (lsucc lzero))) (esort (lsucc (lsucc (lsucc lzero))))
    = defeq/sort-refl.
@@ -13,7 +11,7 @@ levelComp2/value-typed :
    defeq (esort (limax lzero (lsucc lzero))) (esort (limax lzero (lsucc lzero))) (esort (lsucc (lsucc lzero)))
    = defeq/sort-refl.
 
-levelComp2/decl : declared levelComp2 lnil
+levelComp2/decl : declared "levelComp2" lnil
    (esort (lsucc (lsucc lzero)))
    (defn (esort (limax lzero (lsucc lzero))))
    (dkind-ok/defn levelComp2/type-wf levelComp2/value-typed).

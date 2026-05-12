@@ -1,8 +1,6 @@
 %%% Expected outcome: accept
 %%% Type inference for forall using imax
 %% def imax2
-imax2 : name.
-
 imax2/type-wf :
    defeq (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc lzero))))) (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc lzero))))) (esort (limax (lsucc (lsucc lzero)) (lsucc (lsucc (lsucc lzero)))))
    = (defeq/forall defeq/sort-refl ([x] [y] defeq/sort-refl)).
@@ -11,7 +9,7 @@ imax2/value-typed :
    defeq (elam (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] x)))) (elam (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] x)))) (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc lzero)))))
    = (defeq/lam defeq/sort-refl ([x] [y] (defeq/forall defeq/sort-refl ([z] [w] y)))).
 
-imax2/decl : declared imax2 lnil
+imax2/decl : declared "imax2" lnil
    (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc lzero)))))
    (defn (elam (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] x)))))
    (dkind-ok/defn imax2/type-wf imax2/value-typed).

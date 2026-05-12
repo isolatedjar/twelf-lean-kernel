@@ -1,8 +1,6 @@
 %%% Expected outcome: reject
 %%% A definition and a recursor with the same name
 %% def dup_rec_def.rec
-dup_rec_def_rec : name.
-
 dup_rec_def_rec/type-wf :
    defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = defeq/sort-refl.
@@ -11,7 +9,7 @@ dup_rec_def_rec/value-typed :
    defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
    = defeq/sort-refl.
 
-dup_rec_def_rec/decl : declared dup_rec_def_rec lnil
+dup_rec_def_rec/decl : declared "dup_rec_def.rec" lnil
    (esort (lsucc lzero))
    (defn (esort lzero))
    (dkind-ok/defn dup_rec_def_rec/type-wf dup_rec_def_rec/value-typed).
