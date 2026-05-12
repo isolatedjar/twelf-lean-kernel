@@ -7,7 +7,7 @@ imax1/type-wf :
 
 imax1/value-typed :
    defeq (elam (esort lzero) ([x] (eforall (esort (lsucc lzero)) ([y] x)))) (elam (esort lzero) ([x] (eforall (esort (lsucc lzero)) ([y] x)))) (eforall (esort lzero) ([x] (esort lzero)))
-   = (defeq/lam defeq/sort-refl ([x] [y] (defeq/forall defeq/sort-refl ([z] [w] y)))).
+   = (defeq/conv (defeq/forall defeq/sort-refl ([x] [y] (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-zero lvl-eq/refl)))) (defeq/lam defeq/sort-refl ([x] [y] (defeq/forall defeq/sort-refl ([z] [w] y))))).
 
 imax1/decl : declared "imax1" lnil
    (eforall (esort lzero) ([x] (esort lzero)))

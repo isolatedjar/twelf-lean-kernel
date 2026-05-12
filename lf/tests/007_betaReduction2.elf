@@ -14,11 +14,20 @@ constType/decl : declared "constType" lnil
    (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))
    (dkind-ok/defn constType/type-wf constType/value-typed).
 
-%% SKIP: def betaReduction2 — synth failed: synth: case app not yet supported
+%% def betaReduction2
+betaReduction2/type-wf :
+   defeq (eforall (esort lzero) ([x] (eapp (eapp (econst "constType" lnil) (esort lzero)) (eforall (esort lzero) ([y] (esort lzero)))))) (eforall (esort lzero) ([x] (eapp (eapp (econst "constType" lnil) (esort lzero)) (eforall (esort lzero) ([y] (esort lzero)))))) (esort (limax (lsucc lzero) (lsucc lzero)))
+   = (defeq/forall defeq/sort-refl ([x] [y] (defeq/app (defeq/app (defeq/const constType/decl) defeq/sort-refl) (defeq/conv (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-succ (lvl-eq/trans lvl-eq/max-idem lvl-eq/refl))) (defeq/forall defeq/sort-refl ([z] [w] defeq/sort-refl)))))).
+
+betaReduction2/value-typed :
+   defeq (elam (esort lzero) ([x] x)) (elam (esort lzero) ([x] x)) (eforall (esort lzero) ([x] (eapp (eapp (econst "constType" lnil) (esort lzero)) (eforall (esort lzero) ([y] (esort lzero))))))
+   = (defeq/conv (defeq/forall defeq/sort-refl ([x] [y] (defeq/symm (defeq/trans (defeq/trans (defeq/app (defeq/app (defeq/delta constType/decl) defeq/sort-refl) (defeq/conv (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-succ (lvl-eq/trans lvl-eq/max-idem lvl-eq/refl))) (defeq/forall defeq/sort-refl ([z] [w] defeq/sort-refl)))) (defeq/app (defeq/beta ([z] [w] (defeq/lam defeq/sort-refl ([x1] [y1] w))) defeq/sort-refl) (defeq/conv (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-succ (lvl-eq/trans lvl-eq/max-idem lvl-eq/refl))) (defeq/forall defeq/sort-refl ([z] [w] defeq/sort-refl))))) (defeq/beta ([z] [w] defeq/sort-refl) (defeq/conv (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-succ (lvl-eq/trans lvl-eq/max-idem lvl-eq/refl))) (defeq/forall defeq/sort-refl ([z] [w] defeq/sort-refl)))))))) (defeq/lam defeq/sort-refl ([x] [y] y))).
+
+betaReduction2/decl : declared "betaReduction2" lnil
+   (eforall (esort lzero) ([x] (eapp (eapp (econst "constType" lnil) (esort lzero)) (eforall (esort lzero) ([y] (esort lzero))))))
+   (defn (elam (esort lzero) ([x] x)))
+   (dkind-ok/defn betaReduction2/type-wf betaReduction2/value-typed).
 
 %mode declared +N -LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N -1LS -1T -1DK *W.
-
-%% Translator summary:
-%%   - def betaReduction2: synth failed (synth: case app not yet supported)

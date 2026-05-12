@@ -14,11 +14,24 @@ constType/decl : declared "constType" lnil
    (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))
    (dkind-ok/defn constType/type-wf constType/value-typed).
 
-%% SKIP: def nonTypeType — synth failed: synth: case const not yet supported
+%% TRANSLATOR: could not bridge inferred type to declared type
+%%   inferred type kind: sort
+%%   declared type kind: const
+%%   emitting valTy.proof; Twelf will likely reject.
+%% def nonTypeType
+nonTypeType/type-wf :
+   defeq (econst "constType" lnil) (econst "constType" lnil) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero))))))
+   = (defeq/const constType/decl).
+
+nonTypeType/value-typed :
+   defeq (esort lzero) (esort lzero) (econst "constType" lnil)
+   = defeq/sort-refl.
+
+nonTypeType/decl : declared "nonTypeType" lnil
+   (econst "constType" lnil)
+   (defn (esort lzero))
+   (dkind-ok/defn nonTypeType/type-wf nonTypeType/value-typed).
 
 %mode declared +N -LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N -1LS -1T -1DK *W.
-
-%% Translator summary:
-%%   - def nonTypeType: synth failed (synth: case const not yet supported)
