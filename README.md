@@ -251,7 +251,7 @@ These don't fall neatly into size buckets because their cost is mostly
 the migration itself rather than new logic, but each one would tighten
 the architecture in a way that pays dividends downstream.
 
-#### Replace `leq` with Mario's algorithmic `aleq`
+#### Replace Phase A with Mario Carneiro's algorithmic level inequality
 
 The current `leq` family on universe levels is equivalence-shaped:
 `leq/refl`, `leq/sym`, `leq/trans`, plus a dozen named lemmas. Because
@@ -259,130 +259,208 @@ The current `leq` family on universe levels is equivalence-shaped:
 deliberately don't let Twelf search over `leq` — instead we built
 `proveLeq` in TypeScript (Phase A, ~150 lines spanning a `Lvl`
 discriminated union, `simplifyMax`, `lvlNorm`, and a witness-threading
-walker). The signature has the rules; the engine that uses them lives
-in the translator.
+walker). Phase A is incomplete: it handles outermost-only conversions
+and the level shapes that came up in the first batch of tutorial cases.
 
-Mario Carneiro's algorithmic ≤ on Lean universe levels is a
-structural-recursive relation: each rule fires on a distinct LHS
-pattern, no `sym` or `trans`, and search is decidable via Twelf's
-backwards chaining alone. The migration would move the level-leq
-engine out of TypeScript and into Twelf's `%solve`, in the same
-discharge pattern we use for the `N >= 0` premise on `of/lit/Nat`.
+Mario Carneiro's "The Type Theory of Lean" (2019) gives an algorithmic
+inference-rule system for level inequality on page 7. The relation is
+`ℓ ≤ ℓ' + n` where `n ∈ ℤ` is an integer offset, with `ℓ ≤ ℓ'`
+abbreviating `ℓ ≤ ℓ' + 0`. The rules are structural, with each rule
+firing on a distinct LHS pattern — well-suited for Twelf's backwards
+chaining via `%solve`. (Note: this is the *thesis* algorithm, which is
+inference-rule shaped. Lean4Lean's `VLevel.LE` in
+`Lean4Lean/Theory/VLevel.lean` is a different, semantic definition
+based on universal quantification over valuations, which isn't
+directly searchable by Twelf.)
 
-##### The proposed signature
+##### Mario's algorithmic relation (page 7 of the thesis)
 
 ```
-aleq : level -> level -> type.
+ℓ ≡ ℓ'             n ≥ 0          n ≥ 0
+─────  ───────     ────────       ────────
+ℓ ≤ ℓ' ℓ' ≤ ℓ      0 ≤ ℓ + n      ℓ ≤ ℓ + n
 
-% Reflexivity.
-aleq/refl     : aleq L L.
+ℓ ≤ ℓ' + (n-1)     ℓ ≤ ℓ' + (n+1)
+──────────         ──────────────
+Sℓ ≤ ℓ' + n        ℓ ≤ Sℓ' + n
 
-% Bottom.
-aleq/lz       : aleq lz L.
+ℓ ≤ ℓ₁ + n            ℓ ≤ ℓ₂ + n           ℓ₁ ≤ ℓ + n  ℓ₂ ≤ ℓ + n
+───────────────       ───────────────      ──────────────────────
+ℓ ≤ max(ℓ₁,ℓ₂) + n    ℓ ≤ max(ℓ₁,ℓ₂) + n   max(ℓ₁,ℓ₂) ≤ ℓ + n
 
-% Successor.
-aleq/sR       : aleq L1 L2 -> aleq L1 (ls L2).
-aleq/ss       : aleq L1 L2 -> aleq (ls L1) (ls L2).
+0 ≤ ℓ + n              max(ℓ₁, Sℓ₂) ≤ ℓ + n
+──────────────────     ─────────────────────
+imax(ℓ₁, 0) ≤ ℓ + n    imax(ℓ₁, Sℓ₂) ≤ ℓ + n
 
-% Max splits / lifts.
-aleq/maxL     : aleq L1a L2 -> aleq L1b L2 -> aleq (lmax L1a L1b) L2.
-aleq/maxR_l   : aleq L1 L2a -> aleq L1 (lmax L2a L2b).
-aleq/maxR_r   : aleq L1 L2b -> aleq L1 (lmax L2a L2b).
+max(imax(ℓ₁,ℓ₃), imax(ℓ₂,ℓ₃)) ≤ ℓ + n
+─────────────────────────────────────
+imax(ℓ₁, imax(ℓ₂,ℓ₃)) ≤ ℓ + n
 
-% imax reductions on the right: each rule matches a specific shape
-% for the inner level.
-aleq/imax_lz  : aleq L1 lz                        -> aleq L1 (limax L lz).
-aleq/imax_ls  : aleq L1 (lmax L (ls L'))          -> aleq L1 (limax L (ls L')).
-aleq/imax_mx  : aleq L1 (lmax (limax L A) (limax L B))
-                -> aleq L1 (limax L (lmax A B)).
-aleq/imax_im  : aleq L1 (lmax (limax L B) (limax A B))
-                -> aleq L1 (limax L (limax A B)).
+ℓ ≤ max(imax(ℓ₁,ℓ₃), imax(ℓ₂,ℓ₃)) + n
+─────────────────────────────────────
+ℓ ≤ imax(ℓ₁, imax(ℓ₂,ℓ₃)) + n
 
-% imax reductions on the left: mirror.
-aleq/imax_lzL : aleq lz L2                       -> aleq (limax L lz) L2.
-aleq/imax_lsL : aleq (lmax L (ls L')) L2         -> aleq (limax L (ls L')) L2.
-aleq/imax_mxL : aleq (lmax (limax L A) (limax L B)) L2
-                -> aleq (limax L (lmax A B)) L2.
-aleq/imax_imL : aleq (lmax (limax L B) (limax A B)) L2
-                -> aleq (limax L (limax A B)) L2.
+max(imax(ℓ₁,ℓ₂), imax(ℓ₁,ℓ₃)) ≤ ℓ + n
+─────────────────────────────────────
+imax(ℓ₁, max(ℓ₂,ℓ₃)) ≤ ℓ + n
 
-% Variable-position case on the left: a free var V in `limax L V`
-% could be 0 (so imax = 0) or non-zero (so imax = max).  Either way,
-% imax(L,V) ≤ max(L,V), so reducing the upper-bound goal to max is
-% sound.  No analogous safe rule for the right-position variable case.
-aleq/imax_vL  : aleq (lmax L V) L2 -> aleq (limax L V) L2.
+ℓ ≤ max(imax(ℓ₁,ℓ₂), imax(ℓ₁,ℓ₃)) + n
+─────────────────────────────────────
+ℓ ≤ imax(ℓ₁, max(ℓ₂,ℓ₃)) + n
+
+ℓ[0/u] ≤ ℓ'[0/u] + n    ℓ[Su/u] ≤ ℓ'[Su/u] + n
+─────────────────────────────────────────────
+ℓ ≤ ℓ' + n                            (variable elimination)
 ```
 
-Then `deq/univ : aleq L L' -> defeq (univ L) (univ L')`. Same change
-to `of/ulift`. The translator stops calling `proveLeq` and instead
-emits, per conversion site, a `%solve leq_<N> : aleq <inferred> <declared>.`
-and references the resulting witness in the `of/conv` wrapping.
+##### Empirical results: transcription of the non-variable-elim rules
 
-##### Empirical results
+Transcribing the first thirteen rules into Twelf using the integer
+constraint domain for the offset:
 
-Probed all the cases Phase A currently handles, plus a stress set of
-boundary patterns:
+```
+mleq : level -> level -> integer -> type.
 
-| Goal | Time | Witness |
+mleq/lz       : N >= 0 -> mleq lz L N.
+mleq/self     : N >= 0 -> mleq L L N.
+mleq/sL       : mleq L L' (N - 1) -> mleq (ls L) L' N.
+mleq/sR       : mleq L L' (N + 1) -> mleq L (ls L') N.
+mleq/maxR_l   : mleq L L1 N -> mleq L (lmax L1 L2) N.
+mleq/maxR_r   : mleq L L2 N -> mleq L (lmax L1 L2) N.
+mleq/maxL     : mleq L1 L N -> mleq L2 L N -> mleq (lmax L1 L2) L N.
+mleq/imax_lzL : mleq lz L N -> mleq (limax L1 lz) L N.
+mleq/imax_lsL : mleq (lmax L1 (ls L2)) L N -> mleq (limax L1 (ls L2)) L N.
+mleq/imax_imL : mleq (lmax (limax L1 L3) (limax L2 L3)) L N
+                  -> mleq (limax L1 (limax L2 L3)) L N.
+mleq/imax_imR : mleq L (lmax (limax L1 L3) (limax L2 L3)) N
+                  -> mleq L (limax L1 (limax L2 L3)) N.
+mleq/imax_mxL : mleq (lmax (limax L1 L2) (limax L1 L3)) L N
+                  -> mleq (limax L1 (lmax L2 L3)) L N.
+mleq/imax_mxR : mleq L (lmax (limax L1 L2) (limax L1 L3)) N
+                  -> mleq L (limax L1 (lmax L2 L3)) N.
+```
+
+Probed `%solve` results:
+
+| Goal | Time | Result |
 |---|---|---|
-| `aleq (limax (ls lz) (ls lz)) (ls lz)` | <10 ms | `aleq/imax_lsL (aleq/maxL aleq/refl aleq/refl)` |
-| `{U} aleq (limax U U) U` | <10 ms | `[U] aleq/imax_vL (aleq/maxL aleq/refl aleq/refl)` |
-| `{U}{V} aleq (lmax U V) (lmax V U)` | <10 ms | proves commutativity via the maxL/maxR rules |
-| `{U}{V} aleq (limax U (lmax V (ls V))) (lmax U (lmax V (ls V)))` | <10 ms | proves the harder nested case |
-| Negative: `aleq (ls lz) lz` | <10 ms | `No solution to %solve found` |
-| Negative: `{U} aleq (limax U U) lz` | <10 ms | `No solution to %solve found` |
+| `mleq (lz (ls (ls (ls lz)))) (ls (ls (ls (ls (ls lz))))) 0` (3 ≤ 5) | <10 ms | witness |
+| `mleq (lis^5 lz) (ls^3 lz) 2` (5 ≤ 3+2) | <10 ms | witness |
+| `mleq (limax (ls lz) (ls lz)) (ls lz) 0` (003-style) | <10 ms | witness |
+| `mleq (limax (limax ..) (limax ..)) (ls lz) 0` (014-style nested) | <10 ms | witness |
+| `mleq (ls lz) lz 0` (1 ≤ 0, false) | <10 ms | `No solution to %solve found` |
 
-Total stress test of 8 polymorphic cases: 43 ms. Per-witness overhead
-is well below the per-file Twelf invocation cost.
+All five queries together: 29 ms. Polymorphic queries that don't need
+variable elimination (commutativity, idempotency, max-zero collapse,
+mixed imax/lmax/ls) also work via the structural rules alone:
 
-##### Soundness check on `aleq/imax_vL`
+| Goal | Time | Result |
+|---|---|---|
+| `{U} mleq U U 0` | <10 ms | via mleq/self |
+| `{U} mleq lz U 0` | <10 ms | via mleq/lz |
+| `{U} mleq U (ls U) 0` | <10 ms | via mleq/sR |
+| `{U}{V} mleq U (lmax U V) 0` | <10 ms | via mleq/maxR_l |
+| `{U}{V} mleq (lmax U V) (lmax V U) 0` (commutativity) | <10 ms | witness |
 
-The rule overconstrains in the direction that's safe. `limax L V ≤ X`
-is the goal; the rule reduces it to `lmax L V ≤ X`. Lean's semantics
-say `limax(L, V) = if V = 0 then 0 else max(L, V)`. So `limax L V ≤ max L V`
-holds always (when `V = 0`, LHS is 0; when `V ≠ 0`, both sides equal
-`max L V`). Reducing the goal from "≤ X for `limax L V`" to "≤ X for
-`max L V`" therefore demands a strictly stronger property. We use
-`aleq` only to construct positive witnesses for conversion, never to
-*disprove* a level inequality, so the conservative direction is what
-we want.
+Negative direction `{U} mleq (limax U U) lz 0` correctly fails.
 
-The dual rule on the right would be unsound (`L1 ≤ max(L,V)` doesn't
-imply `L1 ≤ limax(L, V)` when `V = 0`), and is correctly absent from
-the proposed signature.
+##### The variable-elimination rule is the sticking point
 
-##### Cost of migration
+Mario's fourteenth rule case-splits on a universe parameter:
 
-- Signature: ~30 lines added (`aleq` family + var-case rule), ~14
-  lines removed (`leq/refl`, `leq/sym`, `leq/trans`, the named lemmas).
-- Translator: ~150 lines deleted. The discriminated union `Lvl`, the
-  walkers `lvlAst`/`lvlEq`/`simplifyMax`/`lvlNorm`, and `proveLeq`
-  itself all go. `levelOfType` / `levelOfBinder` stay (we still need
-  to compute the inferred level to pass to `%solve`).
-- Two trusted-core sites updated: `deq/univ` and `of/ulift`.
+```
+ℓ[0/u] ≤ ℓ'[0/u] + n    ℓ[Su/u] ≤ ℓ'[Su/u] + n
+─────────────────────────────────────────────
+ℓ ≤ ℓ' + n
+```
 
-##### Open questions before committing
+This is what makes the algorithm complete for cases like
+`{U} mleq (limax U U) U 0` — where `imax`'s second argument is a
+free universe variable, no structural rule applies, but the
+substitution-and-recurse pattern resolves it (when `U = 0`,
+`imax U 0 = 0 ≤ 0`; when `U = Su'`, `imax U (Su') = max U (Su') ≤ U`
+which the structural rules can handle).
 
-1. **Does `aleq/refl` interact safely with the full harness?** Tested
-   cases don't loop, but the absence of `sym` and `trans` is what
-   keeps refl safe. Any future rule of the shape `aleq A B → aleq A B'`
-   with `B ≠ B'` would need re-auditing.
-2. **Migration approach.** Cleanest path is to add `aleq` alongside
-   `leq` as a parallel signature, prove out the new translator path
-   under it, and switch over once stable. Avoids a single big-bang
-   change.
+Direct transcription using higher-order Twelf abstraction:
 
-##### Why this fits the "%solve template"
+```
+mleq/var : mleq (L lz) (L' lz) N
+        -> ({u:level} mleq (L (ls u)) (L' (ls u)) N)
+        -> mleq (L U) (L' U) N.
+```
 
-The earlier `of/lit/Nat` change established a pattern: kernel-side
-side condition encoded in the signature, translator emits a `%solve`
-witness per use site, Twelf's search decides. The `aleq` migration
-applies the same template at much larger scale — every level
-conversion in every Lean declaration becomes a `%solve` invocation,
-replacing the entire TS-side proof-construction engine. If it holds,
-the architectural reading is "Twelf is now responsible for level
-reasoning, the translator is responsible for declaration-shape
-translation," with a clean trust seam between them.
+Loops in Twelf's search (30-second timeout). The pattern variables
+`L, L' : level -> level` unify with any goal by setting
+`L := λ_. <current goal>`, recursing forever. This is a known issue
+with higher-order Twelf patterns whose hole isn't constrained to be
+used in the body.
+
+##### Three architectural options going forward
+
+**A. Mario's algorithm minus variable-elim, used directly via %solve.**
+Decides closed levels and polymorphic levels that don't need
+variable elimination. The empirical evidence from the current test
+suite suggests most level reasoning falls in the latter category —
+the cases Phase A currently handles, plus many more (commutativity,
+non-trivially-nested max/imax). Cases that *do* need variable
+elimination correctly fail to find a witness. Conservative; the trust
+seam is "Twelf for the relation, search for the proof."
+
+**B. Hybrid: Twelf for structural cases, TypeScript for variable
+elimination.** The translator detects when a goal contains an `imax`
+whose RHS is a free universe variable, performs the case-split in
+TypeScript (substituting `lz` and `(ls u')`), and invokes `%solve`
+on both branches separately. Recombines the witnesses via a meta-rule
+in the signature (one new `mleq/var-discharge` axiom). This is the
+"%solve template" applied at scale, with the one structurally
+hard rule lifted into TS. Larger TS surface than Option A, but
+materially complete relative to Mario's algorithm.
+
+**C. Explicit level-variable substitution in the signature.**
+Introduce a separate sort `lvar` for level variables, with a
+`lsubst : level -> lvar -> level -> level` operation that's a
+first-class part of the level algebra. Then the variable-elimination
+rule can be written without higher-order patterns. Substantial
+restructuring of the level encoding throughout the signature —
+`deq/univ`, `of/ulift`, all the `of/pi`/`of/lam` level uses would
+need to thread through level variables explicitly. Most invasive.
+
+##### Recommendation
+
+**Option B (hybrid).** Mario's thirteen structural rules in Twelf
+handle the algorithmic backbone, with a TypeScript hook for the
+variable-elimination case. The TS hook is small — it detects
+"goal has `imax _ U` for free `U`", substitutes both branches, and
+emits two `%solve` directives. The variable-elimination case is
+rare in practice (most universe arithmetic doesn't actually need it,
+as the empirical results show), so the hook firing is the exception
+rather than the rule.
+
+Cost estimate:
+- Signature: ~30 lines (the thirteen `mleq` rules) plus a
+  `mleq/var-discharge` axiom for recombining the TS-handled cases.
+  Update `deq/univ` and `of/ulift` to use `mleq L L' 0` instead
+  of `leq L L'`.
+- Translator: ~80 lines for the variable-elim detector and case-split
+  emitter, plus retirement of Phase A's `proveLeq`/`simplifyMax`/
+  `lvlNorm` (~150 lines).
+- Net: ~70 lines deleted, plus an architectural simplification.
+
+##### Open questions
+
+1. **Does Mario's algorithm with the variable rule strictly subsume
+   Phase A on the current test suite?** Empirically yes for the closed
+   and most polymorphic cases; the variable rule fires only on
+   `imax _ U` patterns for free `U`, which we should grep the tutorial
+   corpus to find.
+2. **What's the right shape for the `mleq/var-discharge` axiom?**
+   Something like
+   `mleq L0 L'0 N -> ({u} mleq L1 L'1 N) -> mleq L L' N`
+   where `L, L', L0, L'0, L1, L'1` are concrete (not higher-order)
+   levels passed in from TS, with the relationship between them being
+   the substitution that TS performs. This makes the rule a no-op for
+   Twelf search (it never fires on its own) but a usable hook for the
+   translator.
 
 ### Medium (a week each)
 
