@@ -245,6 +245,145 @@ is a distinct project of comparable size to the Phase A level engine.
    axiomatized because the engine can't infer the level of an
    `App` head). Likely moves a handful of partial → verified.
 
+### Structural refactor candidates
+
+These don't fall neatly into size buckets because their cost is mostly
+the migration itself rather than new logic, but each one would tighten
+the architecture in a way that pays dividends downstream.
+
+#### Replace `leq` with Mario's algorithmic `aleq`
+
+The current `leq` family on universe levels is equivalence-shaped:
+`leq/refl`, `leq/sym`, `leq/trans`, plus a dozen named lemmas. Because
+`sym` and `trans` are obvious loop sources for backwards search, we
+deliberately don't let Twelf search over `leq` — instead we built
+`proveLeq` in TypeScript (Phase A, ~150 lines spanning a `Lvl`
+discriminated union, `simplifyMax`, `lvlNorm`, and a witness-threading
+walker). The signature has the rules; the engine that uses them lives
+in the translator.
+
+Mario Carneiro's algorithmic ≤ on Lean universe levels is a
+structural-recursive relation: each rule fires on a distinct LHS
+pattern, no `sym` or `trans`, and search is decidable via Twelf's
+backwards chaining alone. The migration would move the level-leq
+engine out of TypeScript and into Twelf's `%solve`, in the same
+discharge pattern we use for the `N >= 0` premise on `of/lit/Nat`.
+
+##### The proposed signature
+
+```
+aleq : level -> level -> type.
+
+% Reflexivity.
+aleq/refl     : aleq L L.
+
+% Bottom.
+aleq/lz       : aleq lz L.
+
+% Successor.
+aleq/sR       : aleq L1 L2 -> aleq L1 (ls L2).
+aleq/ss       : aleq L1 L2 -> aleq (ls L1) (ls L2).
+
+% Max splits / lifts.
+aleq/maxL     : aleq L1a L2 -> aleq L1b L2 -> aleq (lmax L1a L1b) L2.
+aleq/maxR_l   : aleq L1 L2a -> aleq L1 (lmax L2a L2b).
+aleq/maxR_r   : aleq L1 L2b -> aleq L1 (lmax L2a L2b).
+
+% imax reductions on the right: each rule matches a specific shape
+% for the inner level.
+aleq/imax_lz  : aleq L1 lz                        -> aleq L1 (limax L lz).
+aleq/imax_ls  : aleq L1 (lmax L (ls L'))          -> aleq L1 (limax L (ls L')).
+aleq/imax_mx  : aleq L1 (lmax (limax L A) (limax L B))
+                -> aleq L1 (limax L (lmax A B)).
+aleq/imax_im  : aleq L1 (lmax (limax L B) (limax A B))
+                -> aleq L1 (limax L (limax A B)).
+
+% imax reductions on the left: mirror.
+aleq/imax_lzL : aleq lz L2                       -> aleq (limax L lz) L2.
+aleq/imax_lsL : aleq (lmax L (ls L')) L2         -> aleq (limax L (ls L')) L2.
+aleq/imax_mxL : aleq (lmax (limax L A) (limax L B)) L2
+                -> aleq (limax L (lmax A B)) L2.
+aleq/imax_imL : aleq (lmax (limax L B) (limax A B)) L2
+                -> aleq (limax L (limax A B)) L2.
+
+% Variable-position case on the left: a free var V in `limax L V`
+% could be 0 (so imax = 0) or non-zero (so imax = max).  Either way,
+% imax(L,V) ≤ max(L,V), so reducing the upper-bound goal to max is
+% sound.  No analogous safe rule for the right-position variable case.
+aleq/imax_vL  : aleq (lmax L V) L2 -> aleq (limax L V) L2.
+```
+
+Then `deq/univ : aleq L L' -> defeq (univ L) (univ L')`. Same change
+to `of/ulift`. The translator stops calling `proveLeq` and instead
+emits, per conversion site, a `%solve leq_<N> : aleq <inferred> <declared>.`
+and references the resulting witness in the `of/conv` wrapping.
+
+##### Empirical results
+
+Probed all the cases Phase A currently handles, plus a stress set of
+boundary patterns:
+
+| Goal | Time | Witness |
+|---|---|---|
+| `aleq (limax (ls lz) (ls lz)) (ls lz)` | <10 ms | `aleq/imax_lsL (aleq/maxL aleq/refl aleq/refl)` |
+| `{U} aleq (limax U U) U` | <10 ms | `[U] aleq/imax_vL (aleq/maxL aleq/refl aleq/refl)` |
+| `{U}{V} aleq (lmax U V) (lmax V U)` | <10 ms | proves commutativity via the maxL/maxR rules |
+| `{U}{V} aleq (limax U (lmax V (ls V))) (lmax U (lmax V (ls V)))` | <10 ms | proves the harder nested case |
+| Negative: `aleq (ls lz) lz` | <10 ms | `No solution to %solve found` |
+| Negative: `{U} aleq (limax U U) lz` | <10 ms | `No solution to %solve found` |
+
+Total stress test of 8 polymorphic cases: 43 ms. Per-witness overhead
+is well below the per-file Twelf invocation cost.
+
+##### Soundness check on `aleq/imax_vL`
+
+The rule overconstrains in the direction that's safe. `limax L V ≤ X`
+is the goal; the rule reduces it to `lmax L V ≤ X`. Lean's semantics
+say `limax(L, V) = if V = 0 then 0 else max(L, V)`. So `limax L V ≤ max L V`
+holds always (when `V = 0`, LHS is 0; when `V ≠ 0`, both sides equal
+`max L V`). Reducing the goal from "≤ X for `limax L V`" to "≤ X for
+`max L V`" therefore demands a strictly stronger property. We use
+`aleq` only to construct positive witnesses for conversion, never to
+*disprove* a level inequality, so the conservative direction is what
+we want.
+
+The dual rule on the right would be unsound (`L1 ≤ max(L,V)` doesn't
+imply `L1 ≤ limax(L, V)` when `V = 0`), and is correctly absent from
+the proposed signature.
+
+##### Cost of migration
+
+- Signature: ~30 lines added (`aleq` family + var-case rule), ~14
+  lines removed (`leq/refl`, `leq/sym`, `leq/trans`, the named lemmas).
+- Translator: ~150 lines deleted. The discriminated union `Lvl`, the
+  walkers `lvlAst`/`lvlEq`/`simplifyMax`/`lvlNorm`, and `proveLeq`
+  itself all go. `levelOfType` / `levelOfBinder` stay (we still need
+  to compute the inferred level to pass to `%solve`).
+- Two trusted-core sites updated: `deq/univ` and `of/ulift`.
+
+##### Open questions before committing
+
+1. **Does `aleq/refl` interact safely with the full harness?** Tested
+   cases don't loop, but the absence of `sym` and `trans` is what
+   keeps refl safe. Any future rule of the shape `aleq A B → aleq A B'`
+   with `B ≠ B'` would need re-auditing.
+2. **Migration approach.** Cleanest path is to add `aleq` alongside
+   `leq` as a parallel signature, prove out the new translator path
+   under it, and switch over once stable. Avoids a single big-bang
+   change.
+
+##### Why this fits the "%solve template"
+
+The earlier `of/lit/Nat` change established a pattern: kernel-side
+side condition encoded in the signature, translator emits a `%solve`
+witness per use site, Twelf's search decides. The `aleq` migration
+applies the same template at much larger scale — every level
+conversion in every Lean declaration becomes a `%solve` invocation,
+replacing the entire TS-side proof-construction engine. If it holds,
+the architectural reading is "Twelf is now responsible for level
+reasoning, the translator is responsible for declaration-shape
+translation," with a clean trust seam between them.
+
 ### Medium (a week each)
 
 3. **Inner-level conversion.** Generalize Phase A to apply at every
