@@ -1,0 +1,27 @@
+%%% Expected outcome: accept
+%%% When checking inductives, we expect the kernel to reduce the types of constructor arguments.
+%% SKIP: def id — universe-polymorphic (1 params)
+
+%% def constType
+constType : name.
+
+constType/type-wf :
+   defeq (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort (limax (lsucc (lsucc lzero)) (limax (lsucc (lsucc lzero)) (lsucc (lsucc lzero)))))
+   = (defeq/forall defeq/sort-refl ([x] [y] (defeq/forall defeq/sort-refl ([z] [w] defeq/sort-refl)))).
+
+constType/value-typed :
+   defeq (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero))))))
+   = (defeq/lam defeq/sort-refl ([x] [y] (defeq/lam defeq/sort-refl ([z] [w] y)))).
+
+constType/decl : declared constType lnil
+   (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero))))))
+   (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))
+   (dkind-ok/defn constType/type-wf constType/value-typed).
+
+%% SKIP: inductive not yet supported
+%mode declared +N -LS -T -DK -W.
+%worlds () (declared _ _ _ _ _).
+%unique declared +N -1LS -1T -1DK *W.
+
+%% Translator summary:
+%%   - def id: universe polymorphism not yet supported

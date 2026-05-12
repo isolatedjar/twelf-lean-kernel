@@ -1,21 +1,22 @@
-%%% Expected outcome: accept
-%%% Basic definition
-%% def basicDef
-basicDef : name.
+%%% Expected outcome: reject
+%%% A definition and a constructor with the same name
+%% def dup_ind_def
+dup_ind_def : name.
 
-basicDef/type-wf :
+dup_ind_def/type-wf :
    defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = defeq/sort-refl.
 
-basicDef/value-typed :
+dup_ind_def/value-typed :
    defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
    = defeq/sort-refl.
 
-basicDef/decl : declared basicDef lnil
+dup_ind_def/decl : declared dup_ind_def lnil
    (esort (lsucc lzero))
    (defn (esort lzero))
-   (dkind-ok/defn basicDef/type-wf basicDef/value-typed).
+   (dkind-ok/defn dup_ind_def/type-wf dup_ind_def/value-typed).
 
+%% SKIP: inductive not yet supported
 %mode declared +N -LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N -1LS -1T -1DK *W.

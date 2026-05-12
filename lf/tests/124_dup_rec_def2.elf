@@ -1,0 +1,24 @@
+%%% Expected outcome: reject
+%%% A definition with the name of a recursor, and the recursor named differently.
+This would pass simple checks for duplicate definitions in the parser, but should still
+be rejected by the checker.
+%% def dup_rec_def2.rec
+dup_rec_def2_rec : name.
+
+dup_rec_def2_rec/type-wf :
+   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
+   = defeq/sort-refl.
+
+dup_rec_def2_rec/value-typed :
+   defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
+   = defeq/sort-refl.
+
+dup_rec_def2_rec/decl : declared dup_rec_def2_rec lnil
+   (esort (lsucc lzero))
+   (defn (esort lzero))
+   (dkind-ok/defn dup_rec_def2_rec/type-wf dup_rec_def2_rec/value-typed).
+
+%% SKIP: inductive not yet supported
+%mode declared +N -LS -T -DK -W.
+%worlds () (declared _ _ _ _ _).
+%unique declared +N -1LS -1T -1DK *W.

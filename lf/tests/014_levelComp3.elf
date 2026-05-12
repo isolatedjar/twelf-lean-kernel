@@ -1,0 +1,23 @@
+%%% Expected outcome: accept
+%%% Some level computation
+%% TRANSLATOR: could not construct lvl-eq (lsucc (limax (lsucc (lsucc lzero)) (lsucc lzero))) ≈ (lsucc (lsucc (lsucc lzero)))
+%%   emitting value-typed at declared type; Twelf will reject if mismatch is real.
+%% def levelComp3
+levelComp3 : name.
+
+levelComp3/type-wf :
+   defeq (esort (lsucc (lsucc (lsucc lzero)))) (esort (lsucc (lsucc (lsucc lzero)))) (esort (lsucc (lsucc (lsucc (lsucc lzero)))))
+   = defeq/sort-refl.
+
+levelComp3/value-typed :
+   defeq (esort (limax (lsucc (lsucc lzero)) (lsucc lzero))) (esort (limax (lsucc (lsucc lzero)) (lsucc lzero))) (esort (lsucc (lsucc (lsucc lzero))))
+   = defeq/sort-refl.
+
+levelComp3/decl : declared levelComp3 lnil
+   (esort (lsucc (lsucc (lsucc lzero))))
+   (defn (esort (limax (lsucc (lsucc lzero)) (lsucc lzero))))
+   (dkind-ok/defn levelComp3/type-wf levelComp3/value-typed).
+
+%mode declared +N -LS -T -DK -W.
+%worlds () (declared _ _ _ _ _).
+%unique declared +N -1LS -1T -1DK *W.
