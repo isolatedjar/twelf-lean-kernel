@@ -1,0 +1,20 @@
+%%% Expected outcome: accept
+%% def basicDef
+basicDef : name.
+
+basicDef/type-wf :
+   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
+   = defeq/sort-refl.
+
+basicDef/value-typed :
+   defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
+   = defeq/sort-refl.
+
+basicDef/decl : declared basicDef lnil
+   (esort (lsucc lzero))
+   (defn (esort lzero))
+   (dkind-ok/defn basicDef/type-wf basicDef/value-typed).
+
+%mode declared +N -LS -T -DK -W.
+%worlds () (declared _ _ _ _ _).
+%unique declared +N -1LS -1T -1DK *W.

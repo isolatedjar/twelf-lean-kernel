@@ -1,0 +1,210 @@
+%%% tcb.elf — Trusted base for a Twelf-as-LF kernel checker for Lean.
+%%%
+%%% Following Carneiro's "The Type Theory of Lean" (2019) and the abstract
+%%% specification in lean4lean's Theory/Typing/Basic.lean.
+%%%
+%%% Discipline / "imperfectly enforced" rules clients must obey:
+%%%   1. Do not add new constructors to closed families:
+%%%      `lvl`, `lvl-eq`, `lvls`, `expr`, `dkind`, `defeq`, `dkind-ok`.
+%%%      (No %freeze yet — checked by code review only.)
+%%%   2. Each declaration introduces a unique `name` constant and exactly
+%%%      one `declared` constant whose conclusion fixes N, LS, T, DK.
+%%%      The required `dkind-ok` proof is constructed using only the
+%%%      closed-family rules above; in particular, no axiomatic
+%%%      `dkind-ok` constants.
+%%%   3. At the end of a development, append a `%unique` check on
+%%%      `declared` to verify the functional dependency on names.
+%%%
+%%% Open families (extended by clients):  `name`, `declared`.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Universe levels
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+lvl : type.   %name lvl L.
+
+lzero : lvl.
+lsucc : lvl -> lvl.
+lmax  : lvl -> lvl -> lvl.
+limax : lvl -> lvl -> lvl.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Level equivalence   ℓ ≈ ℓ'
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Equivalence-shaped (Phase A of prior session).  Closed family;
+%%% identities are added to the TCB only when forced by an arena
+%%% example.  We do not (yet) attempt Mario's algorithmic mleq.
+
+lvl-eq : lvl -> lvl -> type.   %name lvl-eq E.
+
+%%% --- equivalence relation ---
+lvl-eq/refl  : lvl-eq L L.
+lvl-eq/symm  : lvl-eq L1 L2 -> lvl-eq L2 L1.
+lvl-eq/trans : lvl-eq L1 L2 -> lvl-eq L2 L3 -> lvl-eq L1 L3.
+
+%%% --- algebraic identities (grow as forced) ---
+%%% lmax L L ≈ L
+lvl-eq/max-idem  : lvl-eq (lmax L L) L.
+
+%%% imax(L1, S L2) = max(L1, S L2)   (from thesis §2.2)
+lvl-eq/imax-succ : lvl-eq (limax L1 (lsucc L2)) (lmax L1 (lsucc L2)).
+
+%%% imax(L, 0) = 0   (from thesis §2.2)
+lvl-eq/imax-zero : lvl-eq (limax L lzero) lzero.
+
+%%% imax(_, 0) = 0                  (from thesis §2.2)
+lvl-eq/imax-zero : lvl-eq (limax L lzero) lzero.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Universe-level instantiation lists
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Each reference to a (potentially universe-polymorphic) const
+%%% carries the list of levels to instantiate.  For non-polymorphic
+%%% definitions this is `lnil`.
+
+lvls : type.   %name lvls LS.
+
+lnil  : lvls.
+lcons : lvl -> lvls -> lvls.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Names
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Open family: each declared definition adds one constant of type `name`.
+
+name : type.   %name name N.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Expressions (HOAS)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+expr : type.   %name expr E.
+
+esort   : lvl -> expr.
+econst  : name -> lvls -> expr.
+eapp    : expr -> expr -> expr.
+elam    : expr -> (expr -> expr) -> expr.
+eforall : expr -> (expr -> expr) -> expr.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Definitional equality   Γ ⊢ e₁ ≡ e₂ : A
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Lifted directly from lean4lean Theory/Typing/Basic.lean.
+%%% Context is implicit: hypotheses `defeq x x A` ("x has type A")
+%%% live in the LF context and are introduced under binders.
+
+defeq : expr -> expr -> expr -> type.   %name defeq D.
+
+%%% --- equivalence rules ---
+
+defeq/symm  : defeq E1 E2 A -> defeq E2 E1 A.
+defeq/trans : defeq E1 E2 A -> defeq E2 E3 A -> defeq E1 E3 A.
+
+%%% --- type conversion (defeqDF) ---
+
+defeq/conv  : defeq A B (esort U) -> defeq E1 E2 A -> defeq E1 E2 B.
+
+%%% --- sortDF ---
+%%% U_ℓ ≡ U_ℓ' : U_{S ℓ}   when ℓ ≈ ℓ'.
+%%% (For the diagonal case use `defeq/sort-eq lvl-eq/refl`,
+%%% or the derived `defeq/sort-refl` in derived.elf.)
+
+defeq/sort-eq :
+   lvl-eq L L' -> defeq (esort L) (esort L') (esort (lsucc L)).
+
+%%% --- forallEDF ---
+
+defeq/forall :
+   defeq A A' (esort U)
+   -> ({x : expr} defeq x x A -> defeq (B x) (B' x) (esort V))
+   -> defeq (eforall A B) (eforall A' B') (esort (limax U V)).
+
+%%% --- lamDF ---
+
+defeq/lam :
+   defeq A A' (esort U)
+   -> ({x : expr} defeq x x A -> defeq (Body x) (Body' x) (B x))
+   -> defeq (elam A Body) (elam A' Body') (eforall A B).
+
+%%% --- appDF ---
+
+defeq/app :
+   defeq F F' (eforall A B)
+   -> defeq A1 A1' A
+   -> defeq (eapp F A1) (eapp F' A1') (B A1).
+
+%%% --- β ---
+
+defeq/beta :
+   ({x : expr} defeq x x A -> defeq (Body x) (Body x) (B x))
+   -> defeq E' E' A
+   -> defeq (eapp (elam A Body) E') (Body E') (B E').
+
+%%% --- η ---
+
+defeq/eta :
+   defeq F F (eforall A B)
+   -> defeq (elam A ([x] eapp F x)) F (eforall A B).
+
+%%% --- proof irrelevance (defer until we hit Prop-typed proofs) ---
+%%% defeq/proofIrrel : defeq P P (esort lzero) -> defeq H H P -> defeq H' H' P
+%%%                    -> defeq H H' P.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Declarations
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% Declaration payload — discriminates the four declaration kinds.
+%%%   defn V — definition with value V (supports δ-unfolding)
+%%%   thm  V — theorem with proof V (type T must be a Prop)
+%%%   opq  V — opaque definition with value V (no δ-unfolding)
+%%%   ax     — axiom (no value)
+
+dkind : type.   %name dkind DK.
+
+defn : expr -> dkind.
+thm  : expr -> dkind.
+opq  : expr -> dkind.
+ax   : dkind.
+
+%%% `dkind-ok K T` is the per-kind well-formedness obligation:
+%%%   defn V at T: T is a well-formed type AND V has type T
+%%%   thm  V at T: T is specifically Prop AND V has type T
+%%%   opq  V at T: same as defn
+%%%   ax     at T: T is a well-formed type (no value to check)
+%%% Closed family.
+
+dkind-ok : dkind -> expr -> type.
+
+dkind-ok/defn :
+   defeq T T (esort U) -> defeq V V T -> dkind-ok (defn V) T.
+
+dkind-ok/thm  :
+   defeq T T (esort lzero) -> defeq V V T -> dkind-ok (thm V) T.
+
+dkind-ok/opq  :
+   defeq T T (esort U) -> defeq V V T -> dkind-ok (opq V) T.
+
+dkind-ok/ax   :
+   defeq T T (esort U) -> dkind-ok ax T.
+
+%%% `declared N LS T K W` is a well-formed declaration of name N at level
+%%% instantiation LS, type T, payload kind K, witnessed by W : dkind-ok K T.
+%%% Open family — each (proven) declaration adds one constant.  Because
+%%% W is in the type, inhabitants of `declared` cannot omit the proof.
+
+declared : {N : name} {LS : lvls} {T : expr} {K : dkind}
+           dkind-ok K T
+           -> type.
+
+%%% defeq facts earned by a well-formed declaration.
+
+defeq/const :
+   declared N LS T DK W
+   -> defeq (econst N LS) (econst N LS) T.
+
+%%% δ-reduction is restricted to `defn` payloads.
+
+defeq/delta :
+   declared N LS T (defn V) W
+   -> defeq (econst N LS) V T.
