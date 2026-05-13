@@ -21,7 +21,7 @@ inductWrongCtorResParams_mk/type-wf :
 
 inductWrongCtorResParams_mk/positivity :
    ctor-positive "inductWrongCtorResParams" lnil (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResParams" lnil) y) x)))))
-   = (ctor-positive/intro ([S] (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp S y) x)))))) ([S] (ctor-spine/arg (strict-pos/absent absent/sort) ([_y0] [_h0] (ctor-spine/arg (strict-pos/absent absent/sort) ([_y1] [_h1] (ctor-spine/result (applies-self/app (applies-self/app applies-self/refl))))))))).
+   = (ctor-positive/intro ([S] (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp S y) x)))))) (ctor-spine/arg (strict-pos/no-occur (esort lzero)) ([_y0] (ctor-spine/arg (strict-pos/no-occur (esort lzero)) ([_y1] (ctor-spine/result (applies-self/app (applies-self/app applies-self/refl)))))))).
 
 inductWrongCtorResParams_mk/decl : declared "inductWrongCtorResParams.mk" lnil
    (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResParams" lnil) y) x)))))

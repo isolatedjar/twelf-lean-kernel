@@ -23,7 +23,7 @@ Bool_false/type-wf :
 
 Bool_false/positivity :
    ctor-positive "Bool" lnil (econst "Bool" lnil)
-   = (ctor-positive/intro ([S] S) ([S] (ctor-spine/result applies-self/refl))).
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
 Bool_false/decl : declared "Bool.false" lnil
    (econst "Bool" lnil)
@@ -37,7 +37,7 @@ Bool_true/type-wf :
 
 Bool_true/positivity :
    ctor-positive "Bool" lnil (econst "Bool" lnil)
-   = (ctor-positive/intro ([S] S) ([S] (ctor-spine/result applies-self/refl))).
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
 Bool_true/decl : declared "Bool.true" lnil
    (econst "Bool" lnil)
@@ -89,7 +89,7 @@ SortElimProp2_mk/type-wf :
 
 SortElimProp2_mk/positivity :
    ctor-positive "SortElimProp2" lnil (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) z) (eapp (eapp (econst "id" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) y))))))))
-   = (ctor-positive/intro ([S] (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp (eapp (eapp S x) z) (eapp (eapp (econst "id" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) y))))))))) ([S] (ctor-spine/arg (strict-pos/absent absent/const) ([_y0] [_h0] (ctor-spine/arg (strict-pos/absent absent/const) ([_y1] [_h1] (ctor-spine/arg (strict-pos/absent absent/const) ([_y2] [_h2] (ctor-spine/result (applies-self/app (applies-self/app (applies-self/app applies-self/refl)))))))))))).
+   = (ctor-positive/intro ([S] (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp (eapp (eapp S x) z) (eapp (eapp (econst "id" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) y))))))))) (ctor-spine/arg (strict-pos/no-occur (econst "Bool" lnil)) ([_y0] (ctor-spine/arg (strict-pos/no-occur (econst "Bool" lnil)) ([_y1] (ctor-spine/arg (strict-pos/no-occur (econst "Bool" lnil)) ([_y2] (ctor-spine/result (applies-self/app (applies-self/app (applies-self/app applies-self/refl))))))))))).
 
 SortElimProp2_mk/decl : declared "SortElimProp2.mk" lnil
    (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) z) (eapp (eapp (econst "id" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) y))))))))

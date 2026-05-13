@@ -21,7 +21,7 @@ PProd_mk/type-wf :
 
 PProd_mk/positivity :
    {u : lvl} {v : lvl} ctor-positive "PProd" (lcons u (lcons v lnil)) (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y)))))))))
-   = [u] [v] (ctor-positive/intro ([S] (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp S x) y)))))))))) ([S] (ctor-spine/arg (strict-pos/absent absent/sort) ([_y0] [_h0] (ctor-spine/arg (strict-pos/absent absent/sort) ([_y1] [_h1] (ctor-spine/arg (strict-pos/absent _h0) ([_y2] [_h2] (ctor-spine/arg (strict-pos/absent _h1) ([_y3] [_h3] (ctor-spine/result (applies-self/app (applies-self/app applies-self/refl))))))))))))).
+   = [u] [v] (ctor-positive/intro ([S] (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp S x) y)))))))))) (ctor-spine/arg (strict-pos/no-occur (esort u)) ([_y0] (ctor-spine/arg (strict-pos/no-occur (esort v)) ([_y1] (ctor-spine/arg (strict-pos/no-occur _y0) ([_y2] (ctor-spine/arg (strict-pos/no-occur _y1) ([_y3] (ctor-spine/result (applies-self/app (applies-self/app applies-self/refl)))))))))))).
 
 PProd_mk/decl : {u : lvl} {v : lvl} declared "PProd.mk" (lcons u (lcons v lnil))
    (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y)))))))))

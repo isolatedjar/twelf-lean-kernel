@@ -21,7 +21,7 @@ TypeWithTypeFieldPoly_mk/type-wf :
 
 TypeWithTypeFieldPoly_mk/positivity :
    {u : lvl} ctor-positive "TypeWithTypeFieldPoly" (lcons u lnil) (eforall (esort (lsucc u)) ([x] (econst "TypeWithTypeFieldPoly" (lcons u lnil))))
-   = [u] (ctor-positive/intro ([S] (eforall (esort (lsucc u)) ([x] S))) ([S] (ctor-spine/arg (strict-pos/absent absent/sort) ([_y0] [_h0] (ctor-spine/result applies-self/refl))))).
+   = [u] (ctor-positive/intro ([S] (eforall (esort (lsucc u)) ([x] S))) (ctor-spine/arg (strict-pos/no-occur (esort (lsucc u))) ([_y0] (ctor-spine/result applies-self/refl)))).
 
 TypeWithTypeFieldPoly_mk/decl : {u : lvl} declared "TypeWithTypeFieldPoly.mk" (lcons u lnil)
    (eforall (esort (lsucc u)) ([x] (econst "TypeWithTypeFieldPoly" (lcons u lnil))))

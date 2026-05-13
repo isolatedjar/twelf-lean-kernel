@@ -1,21 +1,31 @@
 %%% tcb.elf — Trusted base for a Twelf-as-LF kernel checker for Lean.
 %%%
-%%% Following Carneiro's "The Type Theory of Lean" (2019) and the abstract
-%%% specification in lean4lean's Theory/Typing/Basic.lean.
+%%% Specifically following Carneiro's "The Type Theory of Lean" (2019) and the
+%%% abstract specification in lean4lean's Theory/Typing/Basic.lean, but
+%%% unapologetically incomplete and incrementally in development following the
+%%% Lean Kernel Arena test cases (https://arena.lean-lang.org/tutorial/).
 %%%
-%%% Discipline / "imperfectly enforced" rules clients must obey:
-%%%   1. Do not add new constructors to closed families:
-%%%      `lvl`, `lvl-eq`, `lvls`, `expr`, `dkind`, `defeq`, `dkind-ok`.
-%%%      (No %freeze yet — checked by code review only.)
-%%%   2. Each declaration introduces exactly one `declared` constant whose
-%%%      conclusion fixes N (a string literal), LS, T, DK.  The required
-%%%      `dkind-ok` proof is constructed using only the closed-family
-%%%      rules above; no axiomatic `dkind-ok` constants.
-%%%   3. At the end of a development, append a `%unique` check on
-%%%      `declared` to verify the functional dependency on names.
-%%%      Because `name = string`, this catches duplicate declarations.
+%%% Lean environments are checked by appending them after the sequence of
+%%% files in sources.cfg.
 %%%
-%%% Open family (extended by clients):  `declared`.
+%%% Conventions that these environments must obey:
+%%%   1. The *ONLY* declarations allowed are those that define new `declared`
+%%%      constants. Twelf's `%freeze` doesn't really support these kinds of
+%%%      open-worlds exceptions. Everything else must be a definition.
+%%%   2. Each string must be the first argument of *AT MOST ONE* `declared`
+%%%      constant — there must be a functional dependency on the first
+%%%      argument. This can be imperfectly checked with a `%unique`
+%%%      declaration at the end of a development.
+%%%
+%%% Intention: any LF signature accepted by Twelf that obeys these two 
+%%% conventions can be mapped onto a valid Lean environment.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Twelf constraint domain extensions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%use equality/strings.
+%use inequality/integers.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Universe levels
@@ -31,9 +41,9 @@ limax : lvl -> lvl -> lvl.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Level equivalence   ℓ ≈ ℓ'
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Equivalence-shaped (Phase A of prior session).  Closed family;
-%%% identities are added to the TCB only when forced by an arena
-%%% example.  We do not (yet) attempt Mario's algorithmic mleq.
+%%% Currently an ad-hoc under approximation of level equivalence as defined
+%%% in the specification of Lean rather than a comprehensive artifact. This
+%%% will likely hit headwinds at some point.
 
 lvl-eq : lvl -> lvl -> type.   %name lvl-eq E.
 
@@ -63,14 +73,7 @@ lvl-eq/imax-zero : lvl-eq (limax L lzero) lzero.
 %%% because if L = 0 then imax = 0 = L, else imax = max L L = L.)
 lvl-eq/imax-idem : lvl-eq (limax L L) L.
 
-%%% --- congruences (forced by reduction chains under sort-eq) ---
-%%% A sort-level reduction has type `(esort (lsucc L_from))`; chaining it
-%%% with non-sort-level reductions (whose type is whatever synth gave)
-%%% via `defeq/trans` requires the type indices to agree syntactically.
-%%% Twelf's unification doesn't see through lvl-eq, so we need congruences
-%%% to construct `lvl-eq (lsucc L) (lsucc L')` etc. and use defeq/conv
-%%% to re-index proof steps.
-
+%%% --- structural congruence rules ---
 lvl-eq/lsucc-cong : lvl-eq L1 L2 -> lvl-eq (lsucc L1) (lsucc L2).
 lvl-eq/lmax-cong  : lvl-eq L1 L1' -> lvl-eq L2 L2' -> lvl-eq (lmax L1 L2) (lmax L1' L2').
 lvl-eq/limax-cong : lvl-eq L1 L1' -> lvl-eq L2 L2' -> lvl-eq (limax L1 L2) (limax L1' L2').
@@ -88,24 +91,14 @@ lnil  : lvls.
 lcons : lvl -> lvls -> lvls.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Built-in string equality (for names)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%use equality/strings.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Names
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Lean names are string literals — full dotted form, e.g. "List.cons".
-%%% This makes name equality string equality, which means a `%unique`
-%%% check on `declared` actually catches duplicate-name declarations
-%%% (declaring `c : name.` twice in Twelf shadows rather than colliding,
-%%% so an opaque-constant representation would silently miss this).
 
 %abbrev name = string.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Expressions (HOAS)
+%%% Expressions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 expr : type.   %name expr E.
@@ -329,81 +322,83 @@ ends-in-sort/forall :
 %%%       the recursor to be soundly large-eliminating.  Strict
 %%%       positivity is a separate concern from universe consistency.
 %%%
-%%% The TCB below precisely captures (i)-naive strict positivity.
+%%% The TCB below precisely captures (i)-naive strict positivity in
+%%% a linear-logic-style HOAS encoding (cf. Twelf's wiki page on
+%%% linear logic, which uses the same trick to enforce "variable x
+%%% does not occur in subterm M" without an explicit absent judgment).
+%%%
+%%% Key move: a ctor's type, viewed as a function of the inductive's
+%%% self-reference, has LF type `expr -> expr`.  Each positivity
+%%% judgment below is parameterized by such a function.  Positions
+%%% where the self-reference may NOT appear are typed `expr` (closed);
+%%% LF's parameter discipline enforces the absence syntactically.  No
+%%% explicit `absent` judgment is needed.
 
-%%% --- `applies-self S E` : E is a (possibly applied) instance of S.
-%%% Captures the "Foo p_1 ... p_k" form a constructor's result must
-%%% take, and the "Foo args" form a recursive argument may take.
+%%% --- `applies-self M` : the function M : expr -> expr returns
+%%% the bound self-reference applied to zero or more arguments.
+%%% Captures both the "Foo p_1 ... p_k" form a constructor's result
+%%% must take and the "Foo args" form a recursive argument may take.
+%%% Arguments to the recursive use may freely mention the self-
+%%% reference — they're typed `expr -> expr`.
 
-applies-self : expr -> expr -> type.   %name applies-self AS.
+applies-self : (expr -> expr) -> type.   %name applies-self AS.
 
-applies-self/refl : applies-self S S.
-applies-self/app  : applies-self S F -> applies-self S (eapp F A).
+applies-self/refl : applies-self ([S] S).
+applies-self/app  :
+   applies-self ([S] F S)
+   -> applies-self ([S] eapp (F S) (A S)).
 
-%%% --- `absent S E` : the LF variable S does not occur in E.
-%%% Note: there is no constructor producing `absent S S`.  When S is
-%%% a fresh HOAS-bound parameter at the LF level, the closure of this
-%%% family witnesses true syntactic absence.
+%%% --- `strict-pos M` : the self-reference, as bound inside M,
+%%% occurs only strictly positively in M's body.  Three cases:
+%%%
+%%%   * /head     : the body is S applied to args.
+%%%   * /no-occur : the body doesn't mention S at all.  This is the
+%%%                 linear-logic move: the rule takes a closed
+%%%                 expression `E : expr` and concludes
+%%%                 `strict-pos ([S] E)`.  Because E has type `expr`
+%%%                 (not `expr -> expr`), LF guarantees E does not
+%%%                 depend on S — absence is enforced by typing.
+%%%   * /forall   : the body is a Π whose *domain* A is S-free
+%%%                 (typed `expr`) and whose codomain B is
+%%%                 recursively strictly positive.
 
-absent : expr -> expr -> type.   %name absent AB.
+strict-pos : (expr -> expr) -> type.   %name strict-pos SP.
 
-absent/sort   : absent S (esort L).
-absent/const  : absent S (econst N LS).
-absent/app    : absent S F -> absent S A -> absent S (eapp F A).
-absent/forall :
-   absent S A
-   -> ({y : expr} absent S y -> absent S (B y))
-   -> absent S (eforall A B).
-absent/lam    :
-   absent S A
-   -> ({y : expr} absent S y -> absent S (B y))
-   -> absent S (elam A B).
+strict-pos/head     : applies-self M -> strict-pos M.
 
-%%% Note the `{y : expr} absent S y -> ...` pattern: when we enter
-%%% a binder, we extend the LF context with both the parameter y and
-%%% the hypothesis `absent S y`.  This hypothesis is needed to discharge
-%%% subsequent recursive `absent S y` goals — y is fresh, so it is
-%%% distinct from S, but LF doesn't auto-derive disequalities; we
-%%% explicitly carry the disequality as a hypothesis.  Adequacy:
-%%% inside `{y : expr}`, y stands for an arbitrary Lean expression,
-%%% and Lean's strict-positivity check explicitly treats the bound
-%%% variable as "different from Foo".
+strict-pos/no-occur : {E : expr} strict-pos ([S] E).
 
-%%% --- `strict-pos S E` : S occurs only strictly positively in E.
-
-strict-pos : expr -> expr -> type.   %name strict-pos SP.
-
-strict-pos/absent : absent S E -> strict-pos S E.
-strict-pos/head   : applies-self S E -> strict-pos S E.
 strict-pos/forall :
-   absent S A
-   -> ({y : expr} absent S y -> strict-pos S (B y))
-   -> strict-pos S (eforall A B).
+   {A : expr}
+   ({y : expr} strict-pos ([S] B S y))
+   -> strict-pos ([S] eforall A ([y] B S y)).
 
-%%% Note the asymmetry: in `strict-pos/forall`, the *domain* A must
-%%% be S-absent (per Lean's strict positivity), but the *codomain*
-%%% (B y) is recursively strictly positive (S may appear strictly-
-%%% positively in the codomain, just not in the domain).  This is
-%%% the soundness-critical clause.
+%%% Soundness-critical: in /forall, the domain A has type `expr`,
+%%% not `expr -> expr`.  LF will not let the translator supply an
+%%% A that depends on S.  This is the same syntactic enforcement
+%%% the linear-logic encoding uses to keep a linear variable out of
+%%% a `letb`'s body or a `bang`'s scope.
 
-%%% --- `ctor-spine S E` : E is a Π-chain whose result is S-applied,
-%%% with every argument type strictly positive in S.  This is the
-%%% shape Lean requires of every constructor of the inductive whose
-%%% self-reference is S.
+%%% --- `ctor-spine M` : M : expr -> expr, viewed as a Π-chain
+%%% under self-binding, has every argument type strictly positive
+%%% and a result that's S-applied.  Unlike `strict-pos`, the
+%%% argument types here may mention S (they're typed `expr -> expr`),
+%%% subject to the strict-pos check.
 
-ctor-spine : expr -> expr -> type.   %name ctor-spine CS.
+ctor-spine : (expr -> expr) -> type.   %name ctor-spine CS.
 
-ctor-spine/result : applies-self S E -> ctor-spine S E.
-ctor-spine/arg    :
-   strict-pos S A
-   -> ({y : expr} absent S y -> ctor-spine S (B y))
-   -> ctor-spine S (eforall A B).
+ctor-spine/result : applies-self M -> ctor-spine M.
+
+ctor-spine/arg :
+   strict-pos A
+   -> ({y : expr} ctor-spine ([S] B S y))
+   -> ctor-spine ([S] eforall (A S) ([y] B S y)).
 
 %%% --- `ctor-positive N0 LS0 T` : T (a ctor's type) is positive
 %%% with respect to the type former named N0 at level instantiation
-%%% LS0.  The HOAS-bound `T_HOAS` is an LF-level function turning
-%%% occurrences of (econst N0 LS0) into the bound `S`; the translator
-%%% supplies T_HOAS explicitly as `[S] <T with N0 substituted>`.
+%%% LS0.  The HOAS-bound `T_HOAS : expr -> expr` is an LF-level
+%%% function turning occurrences of (econst N0 LS0) into the bound
+%%% self-reference; the translator supplies it explicitly.
 %%%
 %%% T_HOAS is taken as an *explicit* argument because Twelf's higher-
 %%% order pattern unification cannot reconstruct it when the same
@@ -415,15 +410,15 @@ ctor-positive : name -> lvls -> expr -> type.   %name ctor-positive CP.
 
 ctor-positive/intro :
    {T_HOAS : expr -> expr}
-   ({S : expr} ctor-spine S (T_HOAS S))
+   ctor-spine T_HOAS
    -> ctor-positive N0 LS0 (T_HOAS (econst N0 LS0)).
 
-%%% Adequacy of `ctor-positive/intro`'s premise
-%%%   {S : expr} ctor-spine S (T_HOAS S)
-%%% is the standard HOAS adequacy: closed inhabitants are in
-%%% bijection with Lean's strict-positivity derivations on
-%%% `T_HOAS (econst N0 LS0)` (viewed as the ctor's type), in the
-%%% non-nested-inductive fragment.
+%%% Adequacy: closed inhabitants of `ctor-positive N0 LS0 T` are in
+%%% bijection with Lean's strict-positivity derivations on T (viewed
+%%% as the ctor's type, with N0 LS0 the inductive's self-reference)
+%%% in the non-nested-inductive fragment.  The bijection passes
+%%% through T_HOAS = (λS. T[N0 LS0 ↦ S]); the inverse is application
+%%% to (econst N0 LS0).
 
 dkind-ok : dkind -> expr -> type.
 

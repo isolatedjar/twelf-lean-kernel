@@ -21,7 +21,7 @@ N_zero/type-wf :
 
 N_zero/positivity :
    ctor-positive "N" lnil (econst "N" lnil)
-   = (ctor-positive/intro ([S] S) ([S] (ctor-spine/result applies-self/refl))).
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
 N_zero/decl : declared "N.zero" lnil
    (econst "N" lnil)
@@ -35,7 +35,7 @@ N_succ/type-wf :
 
 N_succ/positivity :
    ctor-positive "N" lnil (eforall (econst "N" lnil) ([x] (econst "N" lnil)))
-   = (ctor-positive/intro ([S] (eforall S ([x] S))) ([S] (ctor-spine/arg (strict-pos/head applies-self/refl) ([_y0] [_h0] (ctor-spine/result applies-self/refl))))).
+   = (ctor-positive/intro ([S] (eforall S ([x] S))) (ctor-spine/arg (strict-pos/head applies-self/refl) ([_y0] (ctor-spine/result applies-self/refl)))).
 
 N_succ/decl : declared "N.succ" lnil
    (eforall (econst "N" lnil) ([x] (econst "N" lnil)))
@@ -73,7 +73,7 @@ True_intro/type-wf :
 
 True_intro/positivity :
    ctor-positive "True" lnil (econst "True" lnil)
-   = (ctor-positive/intro ([S] S) ([S] (ctor-spine/result applies-self/refl))).
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
 True_intro/decl : declared "True.intro" lnil
    (econst "True" lnil)
@@ -111,7 +111,7 @@ ProjDataIndex_mk/type-wf :
 
 ProjDataIndex_mk/positivity :
    ctor-positive "ProjDataIndex" lnil (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp (econst "ProjDataIndex" lnil) x)))))
-   = (ctor-positive/intro ([S] (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp S x)))))) ([S] (ctor-spine/arg (strict-pos/absent absent/const) ([_y0] [_h0] (ctor-spine/arg (strict-pos/absent absent/const) ([_y1] [_h1] (ctor-spine/result (applies-self/app applies-self/refl)))))))).
+   = (ctor-positive/intro ([S] (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp S x)))))) (ctor-spine/arg (strict-pos/no-occur (econst "N" lnil)) ([_y0] (ctor-spine/arg (strict-pos/no-occur (econst "True" lnil)) ([_y1] (ctor-spine/result (applies-self/app applies-self/refl))))))).
 
 ProjDataIndex_mk/decl : declared "ProjDataIndex.mk" lnil
    (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp (econst "ProjDataIndex" lnil) x)))))

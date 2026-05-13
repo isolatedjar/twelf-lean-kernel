@@ -21,7 +21,7 @@ Eq_refl/type-wf :
 
 Eq_refl/positivity :
    {u_1 : lvl} ctor-positive "Eq" (lcons u_1 lnil) (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y)))))
-   = [u_1] (ctor-positive/intro ([S] (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp S x) y) y)))))) ([S] (ctor-spine/arg (strict-pos/absent absent/sort) ([_y0] [_h0] (ctor-spine/arg (strict-pos/absent _h0) ([_y1] [_h1] (ctor-spine/result (applies-self/app (applies-self/app (applies-self/app applies-self/refl)))))))))).
+   = [u_1] (ctor-positive/intro ([S] (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp S x) y) y)))))) (ctor-spine/arg (strict-pos/no-occur (esort u_1)) ([_y0] (ctor-spine/arg (strict-pos/no-occur _y0) ([_y1] (ctor-spine/result (applies-self/app (applies-self/app (applies-self/app applies-self/refl))))))))).
 
 Eq_refl/decl : {u_1 : lvl} declared "Eq.refl" (lcons u_1 lnil)
    (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y)))))
@@ -59,7 +59,7 @@ Bool_false/type-wf :
 
 Bool_false/positivity :
    ctor-positive "Bool" lnil (econst "Bool" lnil)
-   = (ctor-positive/intro ([S] S) ([S] (ctor-spine/result applies-self/refl))).
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
 Bool_false/decl : declared "Bool.false" lnil
    (econst "Bool" lnil)
@@ -73,7 +73,7 @@ Bool_true/type-wf :
 
 Bool_true/positivity :
    ctor-positive "Bool" lnil (econst "Bool" lnil)
-   = (ctor-positive/intro ([S] S) ([S] (ctor-spine/result applies-self/refl))).
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
 Bool_true/decl : declared "Bool.true" lnil
    (econst "Bool" lnil)
@@ -111,7 +111,7 @@ Prod_mk/type-wf :
 
 Prod_mk/positivity :
    {u : lvl} {v : lvl} ctor-positive "Prod" (lcons u (lcons v lnil)) (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y)))))))))
-   = [u] [v] (ctor-positive/intro ([S] (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp S x) y)))))))))) ([S] (ctor-spine/arg (strict-pos/absent absent/sort) ([_y0] [_h0] (ctor-spine/arg (strict-pos/absent absent/sort) ([_y1] [_h1] (ctor-spine/arg (strict-pos/absent _h0) ([_y2] [_h2] (ctor-spine/arg (strict-pos/absent _h1) ([_y3] [_h3] (ctor-spine/result (applies-self/app (applies-self/app applies-self/refl))))))))))))).
+   = [u] [v] (ctor-positive/intro ([S] (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp S x) y)))))))))) (ctor-spine/arg (strict-pos/no-occur (esort (lsucc u))) ([_y0] (ctor-spine/arg (strict-pos/no-occur (esort (lsucc v))) ([_y1] (ctor-spine/arg (strict-pos/no-occur _y0) ([_y2] (ctor-spine/arg (strict-pos/no-occur _y1) ([_y3] (ctor-spine/result (applies-self/app (applies-self/app applies-self/refl)))))))))))).
 
 Prod_mk/decl : {u : lvl} {v : lvl} declared "Prod.mk" (lcons u (lcons v lnil))
    (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y)))))))))

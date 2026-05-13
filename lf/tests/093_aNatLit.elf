@@ -21,7 +21,7 @@ Nat_zero/type-wf :
 
 Nat_zero/positivity :
    ctor-positive "Nat" lnil (econst "Nat" lnil)
-   = (ctor-positive/intro ([S] S) ([S] (ctor-spine/result applies-self/refl))).
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
 Nat_zero/decl : declared "Nat.zero" lnil
    (econst "Nat" lnil)
@@ -35,7 +35,7 @@ Nat_succ/type-wf :
 
 Nat_succ/positivity :
    ctor-positive "Nat" lnil (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil)))
-   = (ctor-positive/intro ([S] (eforall S ([x] S))) ([S] (ctor-spine/arg (strict-pos/head applies-self/refl) ([_y0] [_h0] (ctor-spine/result applies-self/refl))))).
+   = (ctor-positive/intro ([S] (eforall S ([x] S))) (ctor-spine/arg (strict-pos/head applies-self/refl) ([_y0] (ctor-spine/result applies-self/refl)))).
 
 Nat_succ/decl : declared "Nat.succ" lnil
    (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil)))

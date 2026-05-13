@@ -21,7 +21,7 @@ Exists_intro/type-wf :
 
 Exists_intro/positivity :
    {u : lvl} ctor-positive "Exists" (lcons u lnil) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "Exists" (lcons u lnil)) x) y)))))))))
-   = [u] (ctor-positive/intro ([S] (eforall (esort u) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp S x) y)))))))))) ([S] (ctor-spine/arg (strict-pos/absent absent/sort) ([_y0] [_h0] (ctor-spine/arg (strict-pos/absent (absent/forall _h0 ([_y1] [_h1] absent/sort))) ([_y1] [_h1] (ctor-spine/arg (strict-pos/absent _h0) ([_y2] [_h2] (ctor-spine/arg (strict-pos/absent (absent/app _h1 _h2)) ([_y3] [_h3] (ctor-spine/result (applies-self/app (applies-self/app applies-self/refl))))))))))))).
+   = [u] (ctor-positive/intro ([S] (eforall (esort u) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp S x) y)))))))))) (ctor-spine/arg (strict-pos/no-occur (esort u)) ([_y0] (ctor-spine/arg (strict-pos/no-occur (eforall _y0 ([x] (esort lzero)))) ([_y1] (ctor-spine/arg (strict-pos/no-occur _y0) ([_y2] (ctor-spine/arg (strict-pos/no-occur (eapp _y1 _y2)) ([_y3] (ctor-spine/result (applies-self/app (applies-self/app applies-self/refl)))))))))))).
 
 Exists_intro/decl : {u : lvl} declared "Exists.intro" (lcons u lnil)
    (eforall (esort u) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "Exists" (lcons u lnil)) x) y)))))))))

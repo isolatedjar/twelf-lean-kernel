@@ -21,7 +21,7 @@ Color_r/type-wf :
 
 Color_r/positivity :
    ctor-positive "Color" lnil (econst "Color" lnil)
-   = (ctor-positive/intro ([S] S) ([S] (ctor-spine/result applies-self/refl))).
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
 Color_r/decl : declared "Color.r" lnil
    (econst "Color" lnil)
@@ -35,7 +35,7 @@ Color_b/type-wf :
 
 Color_b/positivity :
    ctor-positive "Color" lnil (econst "Color" lnil)
-   = (ctor-positive/intro ([S] S) ([S] (ctor-spine/result applies-self/refl))).
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
 Color_b/decl : declared "Color.b" lnil
    (econst "Color" lnil)
@@ -73,7 +73,7 @@ N_zero/type-wf :
 
 N_zero/positivity :
    ctor-positive "N" lnil (econst "N" lnil)
-   = (ctor-positive/intro ([S] S) ([S] (ctor-spine/result applies-self/refl))).
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
 N_zero/decl : declared "N.zero" lnil
    (econst "N" lnil)
@@ -87,7 +87,7 @@ N_succ/type-wf :
 
 N_succ/positivity :
    ctor-positive "N" lnil (eforall (econst "N" lnil) ([x] (econst "N" lnil)))
-   = (ctor-positive/intro ([S] (eforall S ([x] S))) ([S] (ctor-spine/arg (strict-pos/head applies-self/refl) ([_y0] [_h0] (ctor-spine/result applies-self/refl))))).
+   = (ctor-positive/intro ([S] (eforall S ([x] S))) (ctor-spine/arg (strict-pos/head applies-self/refl) ([_y0] (ctor-spine/result applies-self/refl)))).
 
 N_succ/decl : declared "N.succ" lnil
    (eforall (econst "N" lnil) ([x] (econst "N" lnil)))
@@ -125,7 +125,7 @@ RBTree_leaf/type-wf :
 
 RBTree_leaf/positivity :
    {u : lvl} ctor-positive "RBTree" (lcons u lnil) (eforall (esort (lsucc u)) ([x] (eapp (eapp (eapp (econst "RBTree" (lcons u lnil)) x) (econst "Color.b" lnil)) (econst "N.zero" lnil))))
-   = [u] (ctor-positive/intro ([S] (eforall (esort (lsucc u)) ([x] (eapp (eapp (eapp S x) (econst "Color.b" lnil)) (econst "N.zero" lnil))))) ([S] (ctor-spine/arg (strict-pos/absent absent/sort) ([_y0] [_h0] (ctor-spine/result (applies-self/app (applies-self/app (applies-self/app applies-self/refl)))))))).
+   = [u] (ctor-positive/intro ([S] (eforall (esort (lsucc u)) ([x] (eapp (eapp (eapp S x) (econst "Color.b" lnil)) (econst "N.zero" lnil))))) (ctor-spine/arg (strict-pos/no-occur (esort (lsucc u))) ([_y0] (ctor-spine/result (applies-self/app (applies-self/app (applies-self/app applies-self/refl))))))).
 
 RBTree_leaf/decl : {u : lvl} declared "RBTree.leaf" (lcons u lnil)
    (eforall (esort (lsucc u)) ([x] (eapp (eapp (eapp (econst "RBTree" (lcons u lnil)) x) (econst "Color.b" lnil)) (econst "N.zero" lnil))))
@@ -139,7 +139,7 @@ RBTree_red/type-wf :
 
 RBTree_red/positivity :
    {u : lvl} ctor-positive "RBTree" (lcons u lnil) (eforall (esort (lsucc u)) ([x] (eforall (econst "N" lnil) ([y] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons u lnil)) x) (econst "Color.b" lnil)) y) ([z] (eforall x ([w] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons u lnil)) x) (econst "Color.b" lnil)) y) ([x1] (eapp (eapp (eapp (econst "RBTree" (lcons u lnil)) x) (econst "Color.r" lnil)) y)))))))))))
-   = [u] (ctor-positive/intro ([S] (eforall (esort (lsucc u)) ([x] (eforall (econst "N" lnil) ([y] (eforall (eapp (eapp (eapp S x) (econst "Color.b" lnil)) y) ([z] (eforall x ([w] (eforall (eapp (eapp (eapp S x) (econst "Color.b" lnil)) y) ([x1] (eapp (eapp (eapp S x) (econst "Color.r" lnil)) y)))))))))))) ([S] (ctor-spine/arg (strict-pos/absent absent/sort) ([_y0] [_h0] (ctor-spine/arg (strict-pos/absent absent/const) ([_y1] [_h1] (ctor-spine/arg (strict-pos/head (applies-self/app (applies-self/app (applies-self/app applies-self/refl)))) ([_y2] [_h2] (ctor-spine/arg (strict-pos/absent _h0) ([_y3] [_h3] (ctor-spine/arg (strict-pos/head (applies-self/app (applies-self/app (applies-self/app applies-self/refl)))) ([_y4] [_h4] (ctor-spine/result (applies-self/app (applies-self/app (applies-self/app applies-self/refl)))))))))))))))).
+   = [u] (ctor-positive/intro ([S] (eforall (esort (lsucc u)) ([x] (eforall (econst "N" lnil) ([y] (eforall (eapp (eapp (eapp S x) (econst "Color.b" lnil)) y) ([z] (eforall x ([w] (eforall (eapp (eapp (eapp S x) (econst "Color.b" lnil)) y) ([x1] (eapp (eapp (eapp S x) (econst "Color.r" lnil)) y)))))))))))) (ctor-spine/arg (strict-pos/no-occur (esort (lsucc u))) ([_y0] (ctor-spine/arg (strict-pos/no-occur (econst "N" lnil)) ([_y1] (ctor-spine/arg (strict-pos/head (applies-self/app (applies-self/app (applies-self/app applies-self/refl)))) ([_y2] (ctor-spine/arg (strict-pos/no-occur _y0) ([_y3] (ctor-spine/arg (strict-pos/head (applies-self/app (applies-self/app (applies-self/app applies-self/refl)))) ([_y4] (ctor-spine/result (applies-self/app (applies-self/app (applies-self/app applies-self/refl))))))))))))))).
 
 RBTree_red/decl : {u : lvl} declared "RBTree.red" (lcons u lnil)
    (eforall (esort (lsucc u)) ([x] (eforall (econst "N" lnil) ([y] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons u lnil)) x) (econst "Color.b" lnil)) y) ([z] (eforall x ([w] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons u lnil)) x) (econst "Color.b" lnil)) y) ([x1] (eapp (eapp (eapp (econst "RBTree" (lcons u lnil)) x) (econst "Color.r" lnil)) y)))))))))))
@@ -153,7 +153,7 @@ RBTree_black/type-wf :
 
 RBTree_black/positivity :
    {u : lvl} ctor-positive "RBTree" (lcons u lnil) (eforall (esort (lsucc u)) ([x] (eforall (econst "Color" lnil) ([y] (eforall (econst "Color" lnil) ([z] (eforall (econst "N" lnil) ([w] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons u lnil)) x) y) w) ([x1] (eforall x ([y1] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons u lnil)) x) z) w) ([z1] (eapp (eapp (eapp (econst "RBTree" (lcons u lnil)) x) (econst "Color.b" lnil)) (eapp (econst "N.succ" lnil) w))))))))))))))))
-   = [u] (ctor-positive/intro ([S] (eforall (esort (lsucc u)) ([x] (eforall (econst "Color" lnil) ([y] (eforall (econst "Color" lnil) ([z] (eforall (econst "N" lnil) ([w] (eforall (eapp (eapp (eapp S x) y) w) ([x1] (eforall x ([y1] (eforall (eapp (eapp (eapp S x) z) w) ([z1] (eapp (eapp (eapp S x) (econst "Color.b" lnil)) (eapp (econst "N.succ" lnil) w))))))))))))))))) ([S] (ctor-spine/arg (strict-pos/absent absent/sort) ([_y0] [_h0] (ctor-spine/arg (strict-pos/absent absent/const) ([_y1] [_h1] (ctor-spine/arg (strict-pos/absent absent/const) ([_y2] [_h2] (ctor-spine/arg (strict-pos/absent absent/const) ([_y3] [_h3] (ctor-spine/arg (strict-pos/head (applies-self/app (applies-self/app (applies-self/app applies-self/refl)))) ([_y4] [_h4] (ctor-spine/arg (strict-pos/absent _h0) ([_y5] [_h5] (ctor-spine/arg (strict-pos/head (applies-self/app (applies-self/app (applies-self/app applies-self/refl)))) ([_y6] [_h6] (ctor-spine/result (applies-self/app (applies-self/app (applies-self/app applies-self/refl)))))))))))))))))))).
+   = [u] (ctor-positive/intro ([S] (eforall (esort (lsucc u)) ([x] (eforall (econst "Color" lnil) ([y] (eforall (econst "Color" lnil) ([z] (eforall (econst "N" lnil) ([w] (eforall (eapp (eapp (eapp S x) y) w) ([x1] (eforall x ([y1] (eforall (eapp (eapp (eapp S x) z) w) ([z1] (eapp (eapp (eapp S x) (econst "Color.b" lnil)) (eapp (econst "N.succ" lnil) w))))))))))))))))) (ctor-spine/arg (strict-pos/no-occur (esort (lsucc u))) ([_y0] (ctor-spine/arg (strict-pos/no-occur (econst "Color" lnil)) ([_y1] (ctor-spine/arg (strict-pos/no-occur (econst "Color" lnil)) ([_y2] (ctor-spine/arg (strict-pos/no-occur (econst "N" lnil)) ([_y3] (ctor-spine/arg (strict-pos/head (applies-self/app (applies-self/app (applies-self/app applies-self/refl)))) ([_y4] (ctor-spine/arg (strict-pos/no-occur _y0) ([_y5] (ctor-spine/arg (strict-pos/head (applies-self/app (applies-self/app (applies-self/app applies-self/refl)))) ([_y6] (ctor-spine/result (applies-self/app (applies-self/app (applies-self/app applies-self/refl))))))))))))))))))).
 
 RBTree_black/decl : {u : lvl} declared "RBTree.black" (lcons u lnil)
    (eforall (esort (lsucc u)) ([x] (eforall (econst "Color" lnil) ([y] (eforall (econst "Color" lnil) ([z] (eforall (econst "N" lnil) ([w] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons u lnil)) x) y) w) ([x1] (eforall x ([y1] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons u lnil)) x) z) w) ([z1] (eapp (eapp (eapp (econst "RBTree" (lcons u lnil)) x) (econst "Color.b" lnil)) (eapp (econst "N.succ" lnil) w))))))))))))))))

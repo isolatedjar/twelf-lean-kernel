@@ -21,7 +21,7 @@ Bool_false/type-wf :
 
 Bool_false/positivity :
    ctor-positive "Bool" lnil (econst "Bool" lnil)
-   = (ctor-positive/intro ([S] S) ([S] (ctor-spine/result applies-self/refl))).
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
 Bool_false/decl : declared "Bool.false" lnil
    (econst "Bool" lnil)
@@ -35,7 +35,7 @@ Bool_true/type-wf :
 
 Bool_true/positivity :
    ctor-positive "Bool" lnil (econst "Bool" lnil)
-   = (ctor-positive/intro ([S] S) ([S] (ctor-spine/result applies-self/refl))).
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
 Bool_true/decl : declared "Bool.true" lnil
    (econst "Bool" lnil)
@@ -73,7 +73,7 @@ RTree_leaf/type-wf :
 
 RTree_leaf/positivity :
    ctor-positive "RTree" lnil (econst "RTree" lnil)
-   = (ctor-positive/intro ([S] S) ([S] (ctor-spine/result applies-self/refl))).
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
 RTree_leaf/decl : declared "RTree.leaf" lnil
    (econst "RTree" lnil)
@@ -87,7 +87,7 @@ RTree_node/type-wf :
 
 RTree_node/positivity :
    ctor-positive "RTree" lnil (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil)))
-   = (ctor-positive/intro ([S] (eforall (eforall (econst "Bool" lnil) ([x] S)) ([x] S))) ([S] (ctor-spine/arg (strict-pos/forall absent/const ([_y0] [_h0] (strict-pos/head applies-self/refl))) ([_y0] [_h0] (ctor-spine/result applies-self/refl))))).
+   = (ctor-positive/intro ([S] (eforall (eforall (econst "Bool" lnil) ([x] S)) ([x] S))) (ctor-spine/arg (strict-pos/forall (econst "Bool" lnil) ([_y0] (strict-pos/head applies-self/refl))) ([_y0] (ctor-spine/result applies-self/refl)))).
 
 RTree_node/decl : declared "RTree.node" lnil
    (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil)))

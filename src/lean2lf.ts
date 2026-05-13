@@ -517,7 +517,10 @@ function endsInSortProof(t: Expr, lfScope: string[]): string | null {
 // hypothesis.  De-Bruijn lookup uses this scope; the innermost binder
 // is at the END.
 
-type AbsentScope = { y: string; hy: string }[];
+// Positivity scope: LF binder names (innermost-first) introduced by
+// strict-pos/forall and ctor-spine/arg as we descend into Π-bodies.
+// Same convention as lfExpr's boundVars — they're combined below.
+type PosScope = string[];
 
 function isSelfRef(t: Expr, selfName: string, selfLevels: Level[]): boolean {
   if (t.kind !== "const") return false;
@@ -529,52 +532,41 @@ function isSelfRef(t: Expr, selfName: string, selfLevels: Level[]): boolean {
   return true;
 }
 
-// Build a witness of `absent S t` where S represents the inductive.
-// Returns null if t mentions the inductive's self-reference anywhere.
-function buildAbsent(
-  t: Expr,
-  selfName: string,
-  selfLevels: Level[],
-  scope: AbsentScope,
-): string | null {
-  if (isSelfRef(t, selfName, selfLevels)) return null;
+// Does t syntactically mention the inductive's self-reference?
+// Used to decide between strict-pos/no-occur (E : expr — must be
+// closed wrt S in LF) and the recursive cases.
+function exprMentions(t: Expr, selfName: string, selfLevels: Level[]): boolean {
+  if (isSelfRef(t, selfName, selfLevels)) return true;
   switch (t.kind) {
     case "sort":
-      return "absent/sort";
     case "const":
-      return "absent/const";
-    case "bvar": {
-      const idx = t.deBruijn;
-      if (idx >= scope.length) return null;
-      return scope[scope.length - 1 - idx].hy;
-    }
-    case "app": {
-      const pF = buildAbsent(t.fn, selfName, selfLevels, scope);
-      const pA = buildAbsent(t.arg, selfName, selfLevels, scope);
-      if (pF === null || pA === null) return null;
-      return `(absent/app ${pF} ${pA})`;
-    }
-    case "forallE":
-    case "lam": {
-      const pA = buildAbsent(t.type, selfName, selfLevels, scope);
-      if (pA === null) return null;
-      const y = `_y${scope.length}`;
-      const hy = `_h${scope.length}`;
-      const pB = buildAbsent(t.body, selfName, selfLevels, [...scope, { y, hy }]);
-      if (pB === null) return null;
-      const ctor = t.kind === "forallE" ? "absent/forall" : "absent/lam";
-      return `(${ctor} ${pA} ([${y}] [${hy}] ${pB}))`;
-    }
-    case "letE":
-    case "proj":
+    case "bvar":
     case "natLit":
     case "strLit":
-      return null; // not yet supported in positivity proofs
+      return false;
+    case "app":
+      return exprMentions(t.fn, selfName, selfLevels) || exprMentions(t.arg, selfName, selfLevels);
+    case "forallE":
+    case "lam":
+      return (
+        exprMentions(t.type, selfName, selfLevels) || exprMentions(t.body, selfName, selfLevels)
+      );
+    case "letE":
+      return (
+        exprMentions(t.type, selfName, selfLevels) ||
+        exprMentions(t.value, selfName, selfLevels) ||
+        exprMentions(t.body, selfName, selfLevels)
+      );
+    case "proj":
+      return exprMentions(t.struct, selfName, selfLevels);
   }
 }
 
-// Build a witness of `applies-self S t` — i.e., t = S applied to
-// arbitrary args.  Returns null if t's head isn't S.
+// Build a witness of `applies-self ([S] T_with_S)` — i.e., t's head,
+// after substituting S for the self-reference, is the bound S.
+// applies-self/refl when t IS the self-reference; otherwise walks
+// applications.  Argument terms aren't checked — the rule allows
+// them to be arbitrary (typed expr -> expr).
 function buildAppliesSelf(t: Expr, selfName: string, selfLevels: Level[]): string | null {
   if (isSelfRef(t, selfName, selfLevels)) return "applies-self/refl";
   if (t.kind === "app") {
@@ -585,51 +577,57 @@ function buildAppliesSelf(t: Expr, selfName: string, selfLevels: Level[]): strin
   return null;
 }
 
-// Build a witness of `strict-pos S t`.  Tries head, absent, then
-// Pi-codomain in turn.
+// Build a witness of `strict-pos ([S] T_with_S)`.  Tries head, then
+// no-occur (LF parameter discipline), then the Π case.
 function buildStrictPos(
   t: Expr,
   selfName: string,
   selfLevels: Level[],
-  scope: AbsentScope,
+  scope: PosScope,
 ): string | null {
-  // Head case: t = S applied to args.
+  // Head case: S applied to args.
   const head = buildAppliesSelf(t, selfName, selfLevels);
   if (head !== null) return `(strict-pos/head ${head})`;
-  // Absent case: S doesn't occur in t.
-  const abs = buildAbsent(t, selfName, selfLevels, scope);
-  if (abs !== null) return `(strict-pos/absent ${abs})`;
-  // Pi case: t = forall A B, A absent of S, B strict-pos in S.
+  // No-occur: t doesn't mention S anywhere.  The /no-occur rule has
+  // signature `{E : expr} strict-pos ([S] E)` — E being typed `expr`
+  // (not `expr -> expr`) is precisely what enforces absence of S in
+  // E.  We render t as a closed LF expression (lfExpr ignores S).
+  if (!exprMentions(t, selfName, selfLevels)) {
+    return `(strict-pos/no-occur ${lfExpr(t, scope)})`;
+  }
+  // Π case: domain must NOT mention S (so the rule's `{A : expr}`
+  // can take it as a closed expression), codomain recursively strict-
+  // positive under a fresh LF param for the bound variable.
   if (t.kind === "forallE") {
-    const pA = buildAbsent(t.type, selfName, selfLevels, scope);
-    if (pA === null) return null;
+    if (exprMentions(t.type, selfName, selfLevels)) return null;
+    const A_lf = lfExpr(t.type, scope);
     const y = `_y${scope.length}`;
-    const hy = `_h${scope.length}`;
-    const pB = buildStrictPos(t.body, selfName, selfLevels, [...scope, { y, hy }]);
-    if (pB === null) return null;
-    return `(strict-pos/forall ${pA} ([${y}] [${hy}] ${pB}))`;
+    const innerSP = buildStrictPos(t.body, selfName, selfLevels, [y, ...scope]);
+    if (innerSP === null) return null;
+    return `(strict-pos/forall ${A_lf} ([${y}] ${innerSP}))`;
   }
   return null;
 }
 
-// Build a witness of `ctor-spine S t`.  Walks t's foralls, requires
-// each arg type strict-pos and the final result to be S-applied.
+// Build a witness of `ctor-spine ([S] T_with_S)`.  Π-bodies descend
+// via ctor-spine/arg; the leaf (result type) must be S-applied.
 function buildCtorSpine(
   t: Expr,
   selfName: string,
   selfLevels: Level[],
-  scope: AbsentScope,
+  scope: PosScope,
 ): string | null {
   if (t.kind === "forallE") {
+    // Note: unlike strict-pos/forall, ctor-spine/arg takes A : expr -> expr
+    // (the argument type may mention S, gated by the strict-pos premise).
     const argSP = buildStrictPos(t.type, selfName, selfLevels, scope);
     if (argSP === null) return null;
     const y = `_y${scope.length}`;
-    const hy = `_h${scope.length}`;
-    const bodyCS = buildCtorSpine(t.body, selfName, selfLevels, [...scope, { y, hy }]);
+    const bodyCS = buildCtorSpine(t.body, selfName, selfLevels, [y, ...scope]);
     if (bodyCS === null) return null;
-    return `(ctor-spine/arg ${argSP} ([${y}] [${hy}] ${bodyCS}))`;
+    return `(ctor-spine/arg ${argSP} ([${y}] ${bodyCS}))`;
   }
-  // Result type: must apply self.
+  // Result: must be S-applied.
   const result = buildAppliesSelf(t, selfName, selfLevels);
   if (result === null) return null;
   return `(ctor-spine/result ${result})`;
@@ -1770,7 +1768,7 @@ function emitStructuralDecl(
         "S",
       );
       const indLvlsLF = lfLvls(positivityInfo.selfLevels);
-      const positivityProof = `(ctor-positive/intro ([S] ${hoasBody}) ([S] ${cs}))`;
+      const positivityProof = `(ctor-positive/intro ([S] ${hoasBody}) ${cs})`;
       // Same strict-occurrence concern as /type-wf and /ends-in-sort:
       // if no level binder appears in T_lf or the proof, %abbrev.
       const cp_decl =

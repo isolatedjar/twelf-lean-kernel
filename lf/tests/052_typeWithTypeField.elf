@@ -21,7 +21,7 @@ TypeWithTypeField_mk/type-wf :
 
 TypeWithTypeField_mk/positivity :
    ctor-positive "TypeWithTypeField" lnil (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil)))
-   = (ctor-positive/intro ([S] (eforall (esort (lsucc lzero)) ([x] S))) ([S] (ctor-spine/arg (strict-pos/absent absent/sort) ([_y0] [_h0] (ctor-spine/result applies-self/refl))))).
+   = (ctor-positive/intro ([S] (eforall (esort (lsucc lzero)) ([x] S))) (ctor-spine/arg (strict-pos/no-occur (esort (lsucc lzero))) ([_y0] (ctor-spine/result applies-self/refl)))).
 
 TypeWithTypeField_mk/decl : declared "TypeWithTypeField.mk" lnil
    (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil)))
