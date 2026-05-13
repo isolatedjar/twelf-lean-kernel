@@ -1,12 +1,39 @@
 %%% Expected outcome: accept
 %%% Type checking a dependent let
-%% SKIP: axiom not yet supported
-%% SKIP: axiom not yet supported
-%% SKIP: def letTypeDep — could not translate type/value to LF
+%% axiom aDepProp
+aDepProp/type-wf :
+   defeq (eforall (esort (lsucc lzero)) ([x] (esort lzero))) (eforall (esort (lsucc lzero)) ([x] (esort lzero))) (esort (limax (lsucc (lsucc lzero)) (lsucc lzero)))
+   = (defeq/forall defeq/sort-refl ([x] [y] defeq/sort-refl)).
+
+aDepProp/decl : declared "aDepProp" lnil
+   (eforall (esort (lsucc lzero)) ([x] (esort lzero)))
+   ax
+   (dkind-ok/ax aDepProp/type-wf).
+
+%% axiom mkADepProp
+mkADepProp/type-wf :
+   defeq (eforall (esort (lsucc lzero)) ([x] (eapp (econst "aDepProp" lnil) x))) (eforall (esort (lsucc lzero)) ([x] (eapp (econst "aDepProp" lnil) x))) (esort (limax (lsucc (lsucc lzero)) lzero))
+   = (defeq/forall defeq/sort-refl ([x] [y] (defeq/app (defeq/const aDepProp/decl) y))).
+
+mkADepProp/decl : declared "mkADepProp" lnil
+   (eforall (esort (lsucc lzero)) ([x] (eapp (econst "aDepProp" lnil) x)))
+   ax
+   (dkind-ok/ax mkADepProp/type-wf).
+
+%% def letTypeDep
+letTypeDep/type-wf :
+   defeq (eapp (econst "aDepProp" lnil) (esort lzero)) (eapp (econst "aDepProp" lnil) (esort lzero)) (esort lzero)
+   = (defeq/app (defeq/const aDepProp/decl) defeq/sort-refl).
+
+letTypeDep/value-typed :
+   defeq (eapp (elam (esort (lsucc lzero)) ([x] (eapp (econst "mkADepProp" lnil) x))) (esort lzero)) (eapp (elam (esort (lsucc lzero)) ([x] (eapp (econst "mkADepProp" lnil) x))) (esort lzero)) (eapp (econst "aDepProp" lnil) (esort lzero))
+   = (defeq/app (defeq/lam defeq/sort-refl ([x] [y] (defeq/app (defeq/const mkADepProp/decl) y))) defeq/sort-refl).
+
+letTypeDep/decl : declared "letTypeDep" lnil
+   (eapp (econst "aDepProp" lnil) (esort lzero))
+   (defn (eapp (elam (esort (lsucc lzero)) ([x] (eapp (econst "mkADepProp" lnil) x))) (esort lzero)))
+   (dkind-ok/defn letTypeDep/type-wf letTypeDep/value-typed).
 
 %mode declared +N -LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N -1LS -1T -1DK *W.
-
-%% Translator summary:
-%%   - def letTypeDep: untranslatable expression

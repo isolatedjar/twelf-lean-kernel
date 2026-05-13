@@ -1,10 +1,19 @@
 %%% Expected outcome: accept
 %%% Type checking a non-dependent let
-%% SKIP: def letType — could not translate type/value to LF
+%% def letType
+letType/type-wf :
+   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
+   = defeq/sort-refl.
+
+letType/value-typed :
+   defeq (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (esort (lsucc lzero))
+   = (defeq/app (defeq/lam defeq/sort-refl ([x] [y] y)) defeq/sort-refl).
+
+letType/decl : declared "letType" lnil
+   (esort (lsucc lzero))
+   (defn (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)))
+   (dkind-ok/defn letType/type-wf letType/value-typed).
 
 %mode declared +N -LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N -1LS -1T -1DK *W.
-
-%% Translator summary:
-%%   - def letType: untranslatable expression

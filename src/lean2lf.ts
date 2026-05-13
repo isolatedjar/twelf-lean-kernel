@@ -321,17 +321,68 @@ class Env {
   resolveDecl(rec: DefRec | ThmRec | AxRec | OpqRec): Decl {
     const name = this.names.get(rec.name)!;
     const levelParams = rec.levelParams.map((i) => this.names.get(i)!);
-    const type = this.exprs.get(rec.type)!;
+    const type = desugarLetE(this.exprs.get(rec.type)!);
     switch (rec.tag) {
       case "def":
-        return { kind: "def", name, levelParams, type, value: this.exprs.get(rec.value)! };
+        return {
+          kind: "def",
+          name,
+          levelParams,
+          type,
+          value: desugarLetE(this.exprs.get(rec.value)!),
+        };
       case "thm":
-        return { kind: "thm", name, levelParams, type, value: this.exprs.get(rec.value)! };
+        return {
+          kind: "thm",
+          name,
+          levelParams,
+          type,
+          value: desugarLetE(this.exprs.get(rec.value)!),
+        };
       case "axiom":
         return { kind: "axiom", name, levelParams, type };
       case "opaque":
-        return { kind: "opaque", name, levelParams, type, value: this.exprs.get(rec.value)! };
+        return {
+          kind: "opaque",
+          name,
+          levelParams,
+          type,
+          value: desugarLetE(this.exprs.get(rec.value)!),
+        };
     }
+  }
+}
+
+// Desugar letE to (λx:T, body) value.  Lean's `let` is definitionally
+// equal to this β-redex (with extra inlining hints), and our β-machinery
+// handles the conversion.  Applied to all expressions at decl-resolution
+// time so downstream code (synth, whnf, lfExpr) never sees letE.
+function desugarLetE(e: Expr): Expr {
+  switch (e.kind) {
+    case "letE":
+      return {
+        kind: "app",
+        fn: {
+          kind: "lam",
+          name: e.name,
+          type: desugarLetE(e.type),
+          body: desugarLetE(e.body),
+        },
+        arg: desugarLetE(e.value),
+      };
+    case "lam":
+    case "forallE":
+      return { ...e, type: desugarLetE(e.type), body: desugarLetE(e.body) };
+    case "app":
+      return { kind: "app", fn: desugarLetE(e.fn), arg: desugarLetE(e.arg) };
+    case "proj":
+      return { ...e, struct: desugarLetE(e.struct) };
+    case "bvar":
+    case "sort":
+    case "const":
+    case "natLit":
+    case "strLit":
+      return e;
   }
 }
 
@@ -762,21 +813,16 @@ function synth(e: Expr, scope: Scope): Synth {
       const B = fSynth.tyExpr.body;
       const aSynth = synth(e.arg, scope);
 
-      // Argument-type check: try syntactic equality first, then sort-level
-      // conversion if both are sorts.  TODO: full whnf-based conversion.
+      // Argument-type check: try syntactic equality first, then full
+      // bridgeTypes (which handles sort-level, forall congruence, and
+      // whnf-based reduction).
       let aProof = aSynth.proof;
       if (!exprEq(aSynth.tyExpr, A_expected)) {
-        if (aSynth.tyExpr.kind === "sort" && A_expected.kind === "sort") {
-          const lvlEqProof = solveLvlEq(aSynth.tyExpr.level, A_expected.level);
-          if (lvlEqProof === null) {
-            throw new Error(
-              `app: cannot bridge arg sort ${JSON.stringify(aSynth.tyExpr.level)} to ${JSON.stringify(A_expected.level)}`,
-            );
-          }
-          aProof = `(defeq/conv (defeq/sort-eq ${lvlEqProof}) ${aSynth.proof})`;
-        } else {
-          throw new Error(`app: argument type mismatch (non-sort conversion not yet implemented)`);
+        const conv = bridgeTypes(aSynth.tyExpr, A_expected, scope);
+        if (conv === null) {
+          throw new Error(`app: cannot bridge arg type to function domain`);
         }
+        aProof = `(defeq/conv ${conv} ${aSynth.proof})`;
       }
 
       return {
@@ -1065,11 +1111,28 @@ function emitBlank(): void {
   out.push("");
 }
 
-function emitDef(d: Decl & { kind: "def" }): void {
+// Three of the four kinds (def, thm, opq) share the same structure: a
+// type-WF proof, a value-typing proof, and a `declared` with the
+// appropriate dkind wrapping the value.  The fourth (axiom) has no
+// value.  Twelf's `dkind-ok/thm` rule enforces that the type is at
+// `(esort lzero)` (a Prop); we don't need to check that ourselves.
+type ValDeclKind = "def" | "thm" | "opaque";
+const VAL_KIND_INFO: Record<
+  ValDeclKind,
+  { dkindCtor: string; okCtor: string; tableKind: DeclEntry["kind"] }
+> = {
+  def: { dkindCtor: "defn", okCtor: "dkind-ok/defn", tableKind: "defn" },
+  thm: { dkindCtor: "thm", okCtor: "dkind-ok/thm", tableKind: "thm" },
+  opaque: { dkindCtor: "opq", okCtor: "dkind-ok/opq", tableKind: "opq" },
+};
+
+function emitValDecl(d: Decl & { kind: ValDeclKind }): void {
+  const info = VAL_KIND_INFO[d.kind];
+  const kindTag = d.kind;
   if (d.levelParams.length !== 0) {
-    skips.push(`def ${nameToString(d.name)}: universe polymorphism not yet supported`);
+    skips.push(`${kindTag} ${nameToString(d.name)}: universe polymorphism not yet supported`);
     emit(
-      `%% SKIP: def ${nameToString(d.name)} — universe-polymorphic (${d.levelParams.length} params)`,
+      `%% SKIP: ${kindTag} ${nameToString(d.name)} — universe-polymorphic (${d.levelParams.length} params)`,
     );
     emitBlank();
     return;
@@ -1080,43 +1143,36 @@ function emitDef(d: Decl & { kind: "def" }): void {
   const T_lf = (() => {
     try {
       return lfExpr(d.type, []);
-    } catch (e: any) {
+    } catch {
       return null;
     }
   })();
   const V_lf = (() => {
     try {
       return lfExpr(d.value, []);
-    } catch (e: any) {
+    } catch {
       return null;
     }
   })();
   if (T_lf === null || V_lf === null) {
-    skips.push(`def ${declName}: untranslatable expression`);
-    emit(`%% SKIP: def ${declName} — could not translate type/value to LF`);
+    skips.push(`${kindTag} ${declName}: untranslatable expression`);
+    emit(`%% SKIP: ${kindTag} ${declName} — could not translate type/value to LF`);
     emitBlank();
     return;
   }
 
-  let typeWf: Synth;
-  let valTy: Synth;
+  let typeWf: Synth, valTy: Synth;
   try {
     typeWf = synth(d.type, { vars: [], hyps: [], tys: [] });
     valTy = synth(d.value, { vars: [], hyps: [], tys: [] });
   } catch (e: any) {
-    skips.push(`def ${declName}: synth failed (${e.message})`);
-    emit(`%% SKIP: def ${declName} — synth failed: ${e.message}`);
+    skips.push(`${kindTag} ${declName}: synth failed (${e.message})`);
+    emit(`%% SKIP: ${kindTag} ${declName} — synth failed: ${e.message}`);
     emitBlank();
     return;
   }
 
-  // Render the synthesized type-of-type at the top-level scope (no
-  // outer LF bindings) for use in the type-wf annotation.
   const typeWfTyLF = lfExpr(typeWf.tyExpr, []);
-
-  // Value-typing conversion.  When the synthesized type doesn't match
-  // the declared type, ask bridgeTypes for a `defeq valTy.tyExpr d.type
-  // (esort _)` proof and wrap with defeq/conv.
   let valuePf: string = valTy.proof;
   if (!exprEq(valTy.tyExpr, d.type)) {
     const bridge = bridgeTypes(valTy.tyExpr, d.type, { vars: [], hyps: [], tys: [] });
@@ -1130,8 +1186,7 @@ function emitDef(d: Decl & { kind: "def" }): void {
     }
   }
 
-  // Emit.
-  emit(`%% def ${declName}`);
+  emit(`%% ${kindTag} ${declName}`);
   emit(`${mn}/type-wf :`);
   emit(`   defeq ${T_lf} ${T_lf} ${typeWfTyLF}`);
   emit(`   = ${typeWf.proof}.`);
@@ -1142,17 +1197,66 @@ function emitDef(d: Decl & { kind: "def" }): void {
   emitBlank();
   emit(`${mn}/decl : declared "${declName}" lnil`);
   emit(`   ${T_lf}`);
-  emit(`   (defn ${V_lf})`);
-  emit(`   (dkind-ok/defn ${mn}/type-wf ${mn}/value-typed).`);
+  emit(`   (${info.dkindCtor} ${V_lf})`);
+  emit(`   (${info.okCtor} ${mn}/type-wf ${mn}/value-typed).`);
   emitBlank();
 
-  // Record in decl table so later const references can look it up.
   declTable.set(declName, {
     mangle: mn,
     type: d.type,
-    kind: "defn",
+    kind: info.tableKind,
     value: d.value,
   });
+}
+
+function emitAxiom(d: Decl & { kind: "axiom" }): void {
+  if (d.levelParams.length !== 0) {
+    skips.push(`axiom ${nameToString(d.name)}: universe polymorphism not yet supported`);
+    emit(
+      `%% SKIP: axiom ${nameToString(d.name)} — universe-polymorphic (${d.levelParams.length} params)`,
+    );
+    emitBlank();
+    return;
+  }
+  const mn = mangle(d.name);
+  const declName = nameToString(d.name);
+  const T_lf = (() => {
+    try {
+      return lfExpr(d.type, []);
+    } catch {
+      return null;
+    }
+  })();
+  if (T_lf === null) {
+    skips.push(`axiom ${declName}: untranslatable type`);
+    emit(`%% SKIP: axiom ${declName} — could not translate type to LF`);
+    emitBlank();
+    return;
+  }
+
+  let typeWf: Synth;
+  try {
+    typeWf = synth(d.type, { vars: [], hyps: [], tys: [] });
+  } catch (e: any) {
+    skips.push(`axiom ${declName}: type synth failed (${e.message})`);
+    emit(`%% SKIP: axiom ${declName} — type synth failed: ${e.message}`);
+    emitBlank();
+    return;
+  }
+
+  const typeWfTyLF = lfExpr(typeWf.tyExpr, []);
+  emit(`%% axiom ${declName}`);
+  emit(`${mn}/type-wf :`);
+  emit(`   defeq ${T_lf} ${T_lf} ${typeWfTyLF}`);
+  emit(`   = ${typeWf.proof}.`);
+  emitBlank();
+  emit(`${mn}/decl : declared "${declName}" lnil`);
+  emit(`   ${T_lf}`);
+  emit(`   ax`);
+  emit(`   (dkind-ok/ax ${mn}/type-wf).`);
+  emitBlank();
+
+  declTable.set(declName, { mangle: mn, type: d.type, kind: "ax" });
 }
 
 // =====================================================================
@@ -1172,10 +1276,10 @@ async function main(): Promise<void> {
       continue;
     }
     env.ingest(rec);
-    if (rec.tag === "def") emitDef(env.resolveDecl(rec) as any);
-    else if (rec.tag === "thm") emit(`%% SKIP: thm not yet supported`);
-    else if (rec.tag === "axiom") emit(`%% SKIP: axiom not yet supported`);
-    else if (rec.tag === "opaque") emit(`%% SKIP: opaque not yet supported`);
+    if (rec.tag === "def") emitValDecl(env.resolveDecl(rec) as Decl & { kind: "def" });
+    else if (rec.tag === "thm") emitValDecl(env.resolveDecl(rec) as Decl & { kind: "thm" });
+    else if (rec.tag === "opaque") emitValDecl(env.resolveDecl(rec) as Decl & { kind: "opaque" });
+    else if (rec.tag === "axiom") emitAxiom(env.resolveDecl(rec) as Decl & { kind: "axiom" });
     else if (rec.tag === "quot") emit(`%% SKIP: quot not yet supported`);
     else if (rec.tag === "inductive") emit(`%% SKIP: inductive not yet supported`);
   }

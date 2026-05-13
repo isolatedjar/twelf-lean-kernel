@@ -1,11 +1,29 @@
 %%% Expected outcome: accept
 %%% Reducing a let
-%% SKIP: axiom not yet supported
-%% SKIP: def letRed — could not translate type/value to LF
+%% axiom aProp
+aProp/type-wf :
+   defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
+   = defeq/sort-refl.
+
+aProp/decl : declared "aProp" lnil
+   (esort lzero)
+   ax
+   (dkind-ok/ax aProp/type-wf).
+
+%% def letRed
+letRed/type-wf :
+   defeq (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (esort (lsucc lzero))
+   = (defeq/app (defeq/lam defeq/sort-refl ([x] [y] y)) defeq/sort-refl).
+
+letRed/value-typed :
+   defeq (econst "aProp" lnil) (econst "aProp" lnil) (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero))
+   = (defeq/conv (defeq/symm (defeq/beta ([x] [y] y) defeq/sort-refl)) (defeq/const aProp/decl)).
+
+letRed/decl : declared "letRed" lnil
+   (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero))
+   (defn (econst "aProp" lnil))
+   (dkind-ok/defn letRed/type-wf letRed/value-typed).
 
 %mode declared +N -LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N -1LS -1T -1DK *W.
-
-%% Translator summary:
-%%   - def letRed: untranslatable expression
