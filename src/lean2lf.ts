@@ -439,6 +439,19 @@ function nameToLfLevelVar(n: Name): string {
   return raw;
 }
 
+// Do ALL of `names` appear as words in at least one of `bodies`?  Used
+// to detect whether every polymorphic level binder has a strict
+// occurrence in a proof body.  Twelf rejects `c : {u} T = body` when
+// `u` has no strict occurrence, so we fall back to %abbrev in that case.
+function allMentioned(names: string[], ...bodies: string[]): boolean {
+  for (const n of names) {
+    const escaped = n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const re = new RegExp(`(?:^|[^A-Za-z0-9_])${escaped}(?:$|[^A-Za-z0-9_])`);
+    if (!bodies.some((b) => re.test(b))) return false;
+  }
+  return true;
+}
+
 function lfLvls(ls: Level[]): string {
   let acc = "lnil";
   for (let i = ls.length - 1; i >= 0; i--) acc = `(lcons ${lfLevel(ls[i])} ${acc})`;
@@ -693,8 +706,23 @@ function reduceLevel(l: Level): { result: Level; proof: string } | null {
   if (l.kind === "imax" && l.r.kind === "succ") {
     return { result: { kind: "max", l: l.l, r: l.r }, proof: "lvl-eq/imax-succ" };
   }
+  if (l.kind === "imax" && levelEq(l.l, l.r)) {
+    return { result: l.l, proof: "lvl-eq/imax-idem" };
+  }
   if (l.kind === "max" && levelEq(l.l, l.r)) {
     return { result: l.l, proof: "lvl-eq/max-idem" };
+  }
+  if (l.kind === "max" && l.l.kind === "zero") {
+    return { result: l.r, proof: "lvl-eq/max-zero-l" };
+  }
+  if (l.kind === "max" && l.r.kind === "zero") {
+    return { result: l.l, proof: "lvl-eq/max-zero-r" };
+  }
+  if (l.kind === "max" && l.l.kind === "succ" && l.r.kind === "succ") {
+    return {
+      result: { kind: "succ", arg: { kind: "max", l: l.l.arg, r: l.r.arg } },
+      proof: "lvl-eq/max-succ",
+    };
   }
   return null;
 }
@@ -1299,12 +1327,23 @@ function emitValDecl(d: Decl & { kind: ValDeclKind }): void {
         ? "lnil"
         : levelBinders.reduceRight((acc, n) => `(lcons ${n} ${acc})`, "lnil");
 
+    // Twelf rejects `c : {u} T = body` when `u` has no strict occurrence
+    // in the body.  This happens when a Lean decl is polymorphic over
+    // a level param that doesn't appear in its type or value.  Use
+    // %abbrev in that case — it accepts vacuous binders.
+    const tw_decl =
+      levelBinders.length > 0 && !allMentioned(levelBinders, T_lf, typeWf.proof, typeWfTyLF)
+        ? "%abbrev "
+        : "";
+    const vt_decl =
+      levelBinders.length > 0 && !allMentioned(levelBinders, V_lf, valuePf, T_lf) ? "%abbrev " : "";
+
     emit(`%% ${kindTag} ${declName}`);
-    emit(`${mn}/type-wf :`);
+    emit(`${tw_decl}${mn}/type-wf :`);
     emit(`   ${levelPrefix}defeq ${T_lf} ${T_lf} ${typeWfTyLF}`);
     emit(`   = ${bodyLambda}${typeWf.proof}.`);
     emitBlank();
-    emit(`${mn}/value-typed :`);
+    emit(`${vt_decl}${mn}/value-typed :`);
     emit(`   ${levelPrefix}defeq ${V_lf} ${V_lf} ${T_lf}`);
     emit(`   = ${bodyLambda}${valuePf}.`);
     emitBlank();
@@ -1379,8 +1418,13 @@ function emitAxiom(d: Decl & { kind: "axiom" }): void {
         ? "lnil"
         : levelBinders.reduceRight((acc, n) => `(lcons ${n} ${acc})`, "lnil");
 
+    const tw_decl =
+      levelBinders.length > 0 && !allMentioned(levelBinders, T_lf, typeWf.proof, typeWfTyLF)
+        ? "%abbrev "
+        : "";
+
     emit(`%% axiom ${declName}`);
-    emit(`${mn}/type-wf :`);
+    emit(`${tw_decl}${mn}/type-wf :`);
     emit(`   ${levelPrefix}defeq ${T_lf} ${T_lf} ${typeWfTyLF}`);
     emit(`   = ${bodyLambda}${typeWf.proof}.`);
     emitBlank();

@@ -3,17 +3,17 @@
 %% def defEqLambda
 defEqLambda/type-wf :
    defeq (eforall (eforall (eforall (esort lzero) ([x] (esort lzero))) ([x] (esort lzero))) ([x] (eforall (eforall (eforall (esort lzero) ([y] (esort lzero))) ([y] (eapp x y))) ([y] (eapp x (elam (esort lzero) ([z] (eforall z ([w] z))))))))) (eforall (eforall (eforall (esort lzero) ([x] (esort lzero))) ([x] (esort lzero))) ([x] (eforall (eforall (eforall (esort lzero) ([y] (esort lzero))) ([y] (eapp x y))) ([y] (eapp x (elam (esort lzero) ([z] (eforall z ([w] z))))))))) (esort (limax (limax (limax (lsucc lzero) (lsucc lzero)) (lsucc lzero)) (limax (limax (limax (lsucc lzero) (lsucc lzero)) lzero) lzero)))
-   = (defeq/forall (defeq/forall (defeq/forall defeq/sort-refl ([x] [y] defeq/sort-refl)) ([x] [y] defeq/sort-refl)) ([x] [y] (defeq/forall (defeq/forall (defeq/forall defeq/sort-refl ([z] [w] defeq/sort-refl)) ([z] [w] (defeq/app y w))) ([z] [w] (defeq/app y (defeq/conv (defeq/forall defeq/sort-refl ([x1] [y1] (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-zero lvl-eq/refl)))) (defeq/lam defeq/sort-refl ([x1] [y1] (defeq/forall y1 ([z1] [w1] y1)))))))))).
+   = (defeq/forall (defeq/forall (defeq/forall (defeq/sort-refl-at lzero) ([x] [y] (defeq/sort-refl-at lzero))) ([x] [y] (defeq/sort-refl-at lzero))) ([x] [y] (defeq/forall (defeq/forall (defeq/forall (defeq/sort-refl-at lzero) ([z] [w] (defeq/sort-refl-at lzero))) ([z] [w] (defeq/app y w))) ([z] [w] (defeq/app y (defeq/conv (defeq/forall defeq/sort-refl ([x1] [y1] (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-zero lvl-eq/refl)))) (defeq/lam (defeq/sort-refl-at lzero) ([x1] [y1] (defeq/forall y1 ([z1] [w1] y1)))))))))).
 
 defEqLambda/value-typed :
    defeq (elam (eforall (eforall (esort lzero) ([x] (esort lzero))) ([x] (esort lzero))) ([x] (elam (eforall (eforall (esort lzero) ([y] (esort lzero))) ([y] (eapp x y))) ([y] (eapp y (elam (esort lzero) ([z] (eforall z ([w] z))))))))) (elam (eforall (eforall (esort lzero) ([x] (esort lzero))) ([x] (esort lzero))) ([x] (elam (eforall (eforall (esort lzero) ([y] (esort lzero))) ([y] (eapp x y))) ([y] (eapp y (elam (esort lzero) ([z] (eforall z ([w] z))))))))) (eforall (eforall (eforall (esort lzero) ([x] (esort lzero))) ([x] (esort lzero))) ([x] (eforall (eforall (eforall (esort lzero) ([y] (esort lzero))) ([y] (eapp x y))) ([y] (eapp x (elam (esort lzero) ([z] (eforall z ([w] z)))))))))
-   = (defeq/lam (defeq/forall (defeq/forall defeq/sort-refl ([x] [y] defeq/sort-refl)) ([x] [y] defeq/sort-refl)) ([x] [y] (defeq/lam (defeq/forall (defeq/forall defeq/sort-refl ([z] [w] defeq/sort-refl)) ([z] [w] (defeq/app y w))) ([z] [w] (defeq/app w (defeq/conv (defeq/forall defeq/sort-refl ([x1] [y1] (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-zero lvl-eq/refl)))) (defeq/lam defeq/sort-refl ([x1] [y1] (defeq/forall y1 ([z1] [w1] y1)))))))))).
+   = (defeq/lam (defeq/forall (defeq/forall (defeq/sort-refl-at lzero) ([x] [y] (defeq/sort-refl-at lzero))) ([x] [y] (defeq/sort-refl-at lzero))) ([x] [y] (defeq/lam (defeq/forall (defeq/forall (defeq/sort-refl-at lzero) ([z] [w] (defeq/sort-refl-at lzero))) ([z] [w] (defeq/app y w))) ([z] [w] (defeq/app w (defeq/conv (defeq/forall defeq/sort-refl ([x1] [y1] (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-zero lvl-eq/refl)))) (defeq/lam (defeq/sort-refl-at lzero) ([x1] [y1] (defeq/forall y1 ([z1] [w1] y1)))))))))).
 
 defEqLambda/decl : declared "defEqLambda" lnil
    (eforall (eforall (eforall (esort lzero) ([x] (esort lzero))) ([x] (esort lzero))) ([x] (eforall (eforall (eforall (esort lzero) ([y] (esort lzero))) ([y] (eapp x y))) ([y] (eapp x (elam (esort lzero) ([z] (eforall z ([w] z)))))))))
    (defn (elam (eforall (eforall (esort lzero) ([x] (esort lzero))) ([x] (esort lzero))) ([x] (elam (eforall (eforall (esort lzero) ([y] (esort lzero))) ([y] (eapp x y))) ([y] (eapp y (elam (esort lzero) ([z] (eforall z ([w] z))))))))))
    (dkind-ok/defn defEqLambda/type-wf defEqLambda/value-typed).
 
-%mode declared +N -LS -T -DK -W.
+%mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
-%unique declared +N -1LS -1T -1DK *W.
+%unique declared +N +LS -1T -1DK *W.

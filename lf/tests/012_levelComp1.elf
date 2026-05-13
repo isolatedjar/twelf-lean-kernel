@@ -3,17 +3,17 @@
 %% def levelComp1
 levelComp1/type-wf :
    defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
-   = defeq/sort-refl.
+   = (defeq/sort-refl-at (lsucc lzero)).
 
 levelComp1/value-typed :
    defeq (esort (limax (lsucc lzero) lzero)) (esort (limax (lsucc lzero) lzero)) (esort (lsucc lzero))
-   = (defeq/conv (defeq/sort-eq (lvl-eq/lsucc-cong (lvl-eq/trans lvl-eq/imax-zero lvl-eq/refl))) defeq/sort-refl).
+   = (defeq/conv (defeq/sort-eq (lvl-eq/lsucc-cong (lvl-eq/trans lvl-eq/imax-zero lvl-eq/refl))) (defeq/sort-refl-at (limax (lsucc lzero) lzero))).
 
 levelComp1/decl : declared "levelComp1" lnil
    (esort (lsucc lzero))
    (defn (esort (limax (lsucc lzero) lzero)))
    (dkind-ok/defn levelComp1/type-wf levelComp1/value-typed).
 
-%mode declared +N -LS -T -DK -W.
+%mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
-%unique declared +N -1LS -1T -1DK *W.
+%unique declared +N +LS -1T -1DK *W.

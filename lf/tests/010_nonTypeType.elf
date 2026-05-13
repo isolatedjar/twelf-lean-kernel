@@ -3,11 +3,11 @@
 %% def constType
 constType/type-wf :
    defeq (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort (limax (lsucc (lsucc lzero)) (limax (lsucc (lsucc lzero)) (lsucc (lsucc lzero)))))
-   = (defeq/forall defeq/sort-refl ([x] [y] (defeq/forall defeq/sort-refl ([z] [w] defeq/sort-refl)))).
+   = (defeq/forall (defeq/sort-refl-at (lsucc lzero)) ([x] [y] (defeq/forall (defeq/sort-refl-at (lsucc lzero)) ([z] [w] (defeq/sort-refl-at (lsucc lzero)))))).
 
 constType/value-typed :
    defeq (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero))))))
-   = (defeq/lam defeq/sort-refl ([x] [y] (defeq/lam defeq/sort-refl ([z] [w] y)))).
+   = (defeq/lam (defeq/sort-refl-at (lsucc lzero)) ([x] [y] (defeq/lam (defeq/sort-refl-at (lsucc lzero)) ([z] [w] y)))).
 
 constType/decl : declared "constType" lnil
    (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero))))))
@@ -25,13 +25,13 @@ nonTypeType/type-wf :
 
 nonTypeType/value-typed :
    defeq (esort lzero) (esort lzero) (econst "constType" lnil)
-   = defeq/sort-refl.
+   = (defeq/sort-refl-at lzero).
 
 nonTypeType/decl : declared "nonTypeType" lnil
    (econst "constType" lnil)
    (defn (esort lzero))
    (dkind-ok/defn nonTypeType/type-wf nonTypeType/value-typed).
 
-%mode declared +N -LS -T -DK -W.
+%mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
-%unique declared +N -1LS -1T -1DK *W.
+%unique declared +N +LS -1T -1DK *W.

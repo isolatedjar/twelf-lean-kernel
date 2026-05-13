@@ -3,7 +3,7 @@
 %% axiom aProp
 aProp/type-wf :
    defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
-   = defeq/sort-refl.
+   = (defeq/sort-refl-at lzero).
 
 aProp/decl : declared "aProp" lnil
    (esort lzero)
@@ -13,17 +13,17 @@ aProp/decl : declared "aProp" lnil
 %% def letRed
 letRed/type-wf :
    defeq (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (esort (lsucc lzero))
-   = (defeq/app (defeq/lam defeq/sort-refl ([x] [y] y)) defeq/sort-refl).
+   = (defeq/app (defeq/lam (defeq/sort-refl-at (lsucc lzero)) ([x] [y] y)) (defeq/sort-refl-at lzero)).
 
 letRed/value-typed :
    defeq (econst "aProp" lnil) (econst "aProp" lnil) (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero))
-   = (defeq/conv (defeq/symm (defeq/beta ([x] [y] y) defeq/sort-refl)) (defeq/const aProp/decl)).
+   = (defeq/conv (defeq/symm (defeq/beta ([x] [y] y) (defeq/sort-refl-at lzero))) (defeq/const aProp/decl)).
 
 letRed/decl : declared "letRed" lnil
    (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero))
    (defn (econst "aProp" lnil))
    (dkind-ok/defn letRed/type-wf letRed/value-typed).
 
-%mode declared +N -LS -T -DK -W.
+%mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
-%unique declared +N -1LS -1T -1DK *W.
+%unique declared +N +LS -1T -1DK *W.

@@ -1,10 +1,19 @@
 %%% Expected outcome: accept
 %%% Some level computation
-%% SKIP: def levelComp4 — universe-polymorphic (1 params)
+%% def levelComp4
+%abbrev levelComp4/type-wf :
+   {u : lvl} defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
+   = [u] (defeq/sort-refl-at (lsucc lzero)).
 
-%mode declared +N -LS -T -DK -W.
+%abbrev levelComp4/value-typed :
+   {u : lvl} defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
+   = [u] (defeq/sort-refl-at lzero).
+
+levelComp4/decl : {u : lvl} declared "levelComp4" (lcons u lnil)
+   (esort (lsucc lzero))
+   (defn (esort lzero))
+   (dkind-ok/defn (levelComp4/type-wf u) (levelComp4/value-typed u)).
+
+%mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
-%unique declared +N -1LS -1T -1DK *W.
-
-%% Translator summary:
-%%   - def levelComp4: universe polymorphism not yet supported
+%unique declared +N +LS -1T -1DK *W.

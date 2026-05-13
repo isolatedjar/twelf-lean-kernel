@@ -3,11 +3,11 @@
 %% def dup_defs
 dup_defs/type-wf :
    defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
-   = defeq/sort-refl.
+   = (defeq/sort-refl-at (lsucc lzero)).
 
 dup_defs/value-typed :
    defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
-   = defeq/sort-refl.
+   = (defeq/sort-refl-at lzero).
 
 dup_defs/decl : declared "dup_defs" lnil
    (esort (lsucc lzero))
@@ -17,17 +17,17 @@ dup_defs/decl : declared "dup_defs" lnil
 %% def dup_defs
 dup_defs/type-wf :
    defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
-   = defeq/sort-refl.
+   = (defeq/sort-refl-at (lsucc lzero)).
 
 dup_defs/value-typed :
    defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
-   = defeq/sort-refl.
+   = (defeq/sort-refl-at lzero).
 
 dup_defs/decl : declared "dup_defs" lnil
    (esort (lsucc lzero))
    (defn (esort lzero))
    (dkind-ok/defn dup_defs/type-wf dup_defs/value-typed).
 
-%mode declared +N -LS -T -DK -W.
+%mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
-%unique declared +N -1LS -1T -1DK *W.
+%unique declared +N +LS -1T -1DK *W.

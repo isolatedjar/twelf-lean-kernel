@@ -5,15 +5,26 @@
 %% SKIP: inductive not yet supported
 %% SKIP: def N.add — synth failed: const "N" not in decl table
 
-%% SKIP: def id — universe-polymorphic (1 params)
+%% def id
+id/type-wf :
+   {u : lvl} defeq (eforall (esort u) ([x] (eforall x ([y] x)))) (eforall (esort u) ([x] (eforall x ([y] x)))) (esort (limax (lsucc u) (limax u u)))
+   = [u] (defeq/forall (defeq/sort-refl-at u) ([x] [y] (defeq/forall y ([z] [w] y)))).
+
+id/value-typed :
+   {u : lvl} defeq (elam (esort u) ([x] (elam x ([y] y)))) (elam (esort u) ([x] (elam x ([y] y)))) (eforall (esort u) ([x] (eforall x ([y] x))))
+   = [u] (defeq/lam (defeq/sort-refl-at u) ([x] [y] (defeq/lam y ([z] [w] w)))).
+
+id/decl : {u : lvl} declared "id" (lcons u lnil)
+   (eforall (esort u) ([x] (eforall x ([y] x))))
+   (defn (elam (esort u) ([x] (elam x ([y] y)))))
+   (dkind-ok/defn (id/type-wf u) (id/value-typed u)).
 
 %% SKIP: thm nRecReduction — synth failed: const "And" not in decl table
 
-%mode declared +N -LS -T -DK -W.
+%mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
-%unique declared +N -1LS -1T -1DK *W.
+%unique declared +N +LS -1T -1DK *W.
 
 %% Translator summary:
 %%   - def N.add: synth failed (const "N" not in decl table)
-%%   - def id: universe polymorphism not yet supported
 %%   - thm nRecReduction: synth failed (const "And" not in decl table)

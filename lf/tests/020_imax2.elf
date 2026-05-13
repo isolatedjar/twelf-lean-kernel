@@ -1,23 +1,19 @@
 %%% Expected outcome: accept
 %%% Type inference for forall using imax
-%% TRANSLATOR: could not bridge inferred type to declared type
-%%   inferred type kind: forallE
-%%   declared type kind: forallE
-%%   emitting valTy.proof; Twelf will likely reject.
 %% def imax2
 imax2/type-wf :
    defeq (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc lzero))))) (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc lzero))))) (esort (limax (lsucc (lsucc lzero)) (lsucc (lsucc (lsucc lzero)))))
-   = (defeq/forall defeq/sort-refl ([x] [y] defeq/sort-refl)).
+   = (defeq/forall (defeq/sort-refl-at (lsucc lzero)) ([x] [y] (defeq/sort-refl-at (lsucc (lsucc lzero))))).
 
 imax2/value-typed :
    defeq (elam (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] x)))) (elam (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] x)))) (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc lzero)))))
-   = (defeq/lam defeq/sort-refl ([x] [y] (defeq/forall defeq/sort-refl ([z] [w] y)))).
+   = (defeq/conv (defeq/forall defeq/sort-refl ([x] [y] (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-succ (lvl-eq/trans lvl-eq/max-succ (lvl-eq/lsucc-cong (lvl-eq/trans lvl-eq/max-zero-r lvl-eq/refl))))))) (defeq/lam (defeq/sort-refl-at (lsucc lzero)) ([x] [y] (defeq/forall (defeq/sort-refl-at (lsucc lzero)) ([z] [w] y))))).
 
 imax2/decl : declared "imax2" lnil
    (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc lzero)))))
    (defn (elam (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] x)))))
    (dkind-ok/defn imax2/type-wf imax2/value-typed).
 
-%mode declared +N -LS -T -DK -W.
+%mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
-%unique declared +N -1LS -1T -1DK *W.
+%unique declared +N +LS -1T -1DK *W.

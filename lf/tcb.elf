@@ -46,11 +46,22 @@ lvl-eq/trans : lvl-eq L1 L2 -> lvl-eq L2 L3 -> lvl-eq L1 L3.
 %%% lmax L L ≈ L
 lvl-eq/max-idem  : lvl-eq (lmax L L) L.
 
+%%% lmax 0 L ≈ L  and  lmax L 0 ≈ L
+lvl-eq/max-zero-l : lvl-eq (lmax lzero L) L.
+lvl-eq/max-zero-r : lvl-eq (lmax L lzero) L.
+
+%%% lmax (S L1) (S L2) ≈ S (lmax L1 L2)
+lvl-eq/max-succ : lvl-eq (lmax (lsucc L1) (lsucc L2)) (lsucc (lmax L1 L2)).
+
 %%% imax(L1, S L2) = max(L1, S L2)   (from thesis §2.2)
 lvl-eq/imax-succ : lvl-eq (limax L1 (lsucc L2)) (lmax L1 (lsucc L2)).
 
 %%% imax(L, 0) = 0   (from thesis §2.2)
 lvl-eq/imax-zero : lvl-eq (limax L lzero) lzero.
+
+%%% imax(L, L) = L  (Lean's semantic equality: for any L, imax L L = L
+%%% because if L = 0 then imax = 0 = L, else imax = max L L = L.)
+lvl-eq/imax-idem : lvl-eq (limax L L) L.
 
 %%% --- congruences (forced by reduction chains under sort-eq) ---
 %%% A sort-level reduction has type `(esort (lsucc L_from))`; chaining it
@@ -63,9 +74,6 @@ lvl-eq/imax-zero : lvl-eq (limax L lzero) lzero.
 lvl-eq/lsucc-cong : lvl-eq L1 L2 -> lvl-eq (lsucc L1) (lsucc L2).
 lvl-eq/lmax-cong  : lvl-eq L1 L1' -> lvl-eq L2 L2' -> lvl-eq (lmax L1 L2) (lmax L1' L2').
 lvl-eq/limax-cong : lvl-eq L1 L1' -> lvl-eq L2 L2' -> lvl-eq (limax L1 L2) (limax L1' L2').
-
-%%% imax(_, 0) = 0                  (from thesis §2.2)
-lvl-eq/imax-zero : lvl-eq (limax L lzero) lzero.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Universe-level instantiation lists

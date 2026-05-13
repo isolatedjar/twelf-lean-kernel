@@ -1,6 +1,19 @@
 %%% Expected outcome: reject
 %%% The type of a theorem has to be a proposition
-%% SKIP: thm not yet supported
-%mode declared +N -LS -T -DK -W.
+%% thm nonPropThm
+nonPropThm/type-wf :
+   defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
+   = (defeq/sort-refl-at lzero).
+
+nonPropThm/value-typed :
+   defeq (eforall (esort lzero) ([x] x)) (eforall (esort lzero) ([x] x)) (esort lzero)
+   = (defeq/conv (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-zero lvl-eq/refl)) (defeq/forall (defeq/sort-refl-at lzero) ([x] [y] y))).
+
+nonPropThm/decl : declared "nonPropThm" lnil
+   (esort lzero)
+   (thm (eforall (esort lzero) ([x] x)))
+   (dkind-ok/thm nonPropThm/type-wf nonPropThm/value-typed).
+
+%mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
-%unique declared +N -1LS -1T -1DK *W.
+%unique declared +N +LS -1T -1DK *W.
