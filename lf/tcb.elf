@@ -488,6 +488,189 @@ defeq/delta :
    -> defeq (econst N LS) V T.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Iota for enum recursors (stage 1: 1-3 ctors, no parameters)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Mario's `t-extra` from Figure 1 covers environment-provided
+%%% equalities — iota, structural eta, Quot's primitive rule.  We
+%%% encode the iota subset as closed TCB rules that pattern-match on
+%%% `declared` witnesses for the inductive's type former, ctors, and
+%%% recursor.  No new constants of `declared` are introduced; the rules
+%%% are derivations that consume declarations.
+%%%
+%%% Stage 1 scope: "enum" inductives — non-parameterized, ctors take
+%%% zero fields (so no recursive args, no field-passing).  Examples:
+%%% Unit, Bool, Empty/False, three-ctor enums like Direction.
+%%%
+%%% Adequacy claim: a derivation of `defeq-extra LHS RHS T` from these
+%%% rules (and `defeq/extra` lifting it to defeq) corresponds to Lean's
+%%% iota equation for the matching (recursor, ctor) pair, in the enum
+%%% fragment.  Soundness: each rule below is a textual transcription of
+%%% Lean's iota equation, the typing premises ensure the rule fires
+%%% only at well-typed instantiations, and the `enum-rec-type` premise
+%%% ensures the recursor's declared type has the expected enum schema.
+%%%
+%%% Stages we'll add later, each as additional closed rules:
+%%%   2.  First-order trees: ctors with recursive args (e.g., Nat.succ).
+%%%   3.  Ctors with non-recursive fields (e.g., List.cons takes a head).
+%%%   4.  Indexed inductives (e.g., Eq, Vec).
+%%%   5.  Mutual / nested.
+
+%%% Ordered list of ctor names, by cidx.  Distinct from `lvls` — these
+%%% are names, not levels.
+
+cnames : type.   %name cnames CN.
+
+cnil  : cnames.
+ccons : name -> cnames -> cnames.
+
+%%% --- `enum-rec-body M Body FooName FooLvls Ctors` :
+%%% Body is the body of an enum recursor's type, under the bound motive
+%%% M.  It must be a chain of (∀ m_i : M c_i) for each ctor in the list,
+%%% terminating in (∀ t : Foo, M t).  Walks the chain structurally.
+
+enum-rec-body : expr -> expr -> name -> lvls -> cnames -> type.
+
+%%% Major premise + result: ∀ t : Foo, M t — the chain's terminator.
+enum-rec-body/done :
+   enum-rec-body M
+     (eforall (econst FooName FooLvls) ([t] eapp M t))
+     FooName FooLvls cnil.
+
+%%% One minor premise: ∀ m_i : M c_i, <rest>.
+%%% The body Rest may not actually depend on m (an enum ctor has no
+%%% recursive args, so the IH-less rest typically doesn't mention m),
+%%% but the HOAS view treats it uniformly.
+enum-rec-body/minor :
+   ({m : expr} defeq m m (eapp M (econst CName FooLvls))
+     -> enum-rec-body M (Rest m) FooName FooLvls RestCtors)
+   -> enum-rec-body M
+        (eforall (eapp M (econst CName FooLvls)) ([m] Rest m))
+        FooName FooLvls
+        (ccons CName RestCtors).
+
+%%% --- `enum-rec-type T FooName FooLvls Ctors U` :
+%%% T is the type of a recursor for an enum FooName with ctors Ctors,
+%%% eliminating into Sort U.  Wraps the motive binder around enum-rec-body.
+
+enum-rec-type : expr -> name -> lvls -> cnames -> lvl -> type.
+
+enum-rec-type/intro :
+   ({M : expr} defeq M M (eforall (econst FooName FooLvls) ([_] esort U))
+     -> enum-rec-body M (Body M) FooName FooLvls Ctors)
+   -> enum-rec-type
+        (eforall (eforall (econst FooName FooLvls) ([_] esort U)) ([M] Body M))
+        FooName FooLvls Ctors U.
+
+%%% --- `defeq-extra E1 E2 A` : a kernel-derived equality E1 ≡ E2 : A
+%%% that comes from Mario's t-extra (iota, eta-for-structures, Quot).
+%%% CLOSED family — the only inhabitants come from the rules below
+%%% (and ones we'll add for later stages).  Open additions are not
+%%% permitted by convention; any new inhabitant must be a closed rule
+%%% added to this TCB.
+
+defeq-extra : expr -> expr -> expr -> type.   %name defeq-extra DE.
+
+%%% Lift defeq-extra into defeq.
+
+defeq/extra : defeq-extra E1 E2 A -> defeq E1 E2 A.
+
+%%% --- Iota for 1-ctor enums (e.g., Unit).
+%%% Foo.rec.{u} M m_1 Foo.c_1 ≡ m_1 : M Foo.c_1.
+
+defeq/iota-enum-1 :
+   declared RecName (lcons U lnil) RecType irec WRec
+   -> declared C1 lnil (econst FooName lnil) ctor WC1
+   -> enum-rec-type RecType FooName lnil (ccons C1 cnil) U
+   -> defeq M M (eforall (econst FooName lnil) ([_] esort U))
+   -> defeq Mp1 Mp1 (eapp M (econst C1 lnil))
+   -> defeq-extra
+        (eapp (eapp (eapp (econst RecName (lcons U lnil)) M) Mp1)
+              (econst C1 lnil))
+        Mp1
+        (eapp M (econst C1 lnil)).
+
+%%% --- Iota for 2-ctor enums (e.g., Bool).
+%%% Foo.rec.{u} M m_1 m_2 Foo.c_i ≡ m_i, for i ∈ {1, 2}.
+
+defeq/iota-enum-2-first :
+   declared RecName (lcons U lnil) RecType irec WRec
+   -> declared C1 lnil (econst FooName lnil) ctor WC1
+   -> declared C2 lnil (econst FooName lnil) ctor WC2
+   -> enum-rec-type RecType FooName lnil (ccons C1 (ccons C2 cnil)) U
+   -> defeq M M (eforall (econst FooName lnil) ([_] esort U))
+   -> defeq Mp1 Mp1 (eapp M (econst C1 lnil))
+   -> defeq Mp2 Mp2 (eapp M (econst C2 lnil))
+   -> defeq-extra
+        (eapp (eapp (eapp (eapp (econst RecName (lcons U lnil)) M) Mp1) Mp2)
+              (econst C1 lnil))
+        Mp1
+        (eapp M (econst C1 lnil)).
+
+defeq/iota-enum-2-second :
+   declared RecName (lcons U lnil) RecType irec WRec
+   -> declared C1 lnil (econst FooName lnil) ctor WC1
+   -> declared C2 lnil (econst FooName lnil) ctor WC2
+   -> enum-rec-type RecType FooName lnil (ccons C1 (ccons C2 cnil)) U
+   -> defeq M M (eforall (econst FooName lnil) ([_] esort U))
+   -> defeq Mp1 Mp1 (eapp M (econst C1 lnil))
+   -> defeq Mp2 Mp2 (eapp M (econst C2 lnil))
+   -> defeq-extra
+        (eapp (eapp (eapp (eapp (econst RecName (lcons U lnil)) M) Mp1) Mp2)
+              (econst C2 lnil))
+        Mp2
+        (eapp M (econst C2 lnil)).
+
+%%% --- Iota for 3-ctor enums.
+
+defeq/iota-enum-3-first :
+   declared RecName (lcons U lnil) RecType irec WRec
+   -> declared C1 lnil (econst FooName lnil) ctor WC1
+   -> declared C2 lnil (econst FooName lnil) ctor WC2
+   -> declared C3 lnil (econst FooName lnil) ctor WC3
+   -> enum-rec-type RecType FooName lnil (ccons C1 (ccons C2 (ccons C3 cnil))) U
+   -> defeq M M (eforall (econst FooName lnil) ([_] esort U))
+   -> defeq Mp1 Mp1 (eapp M (econst C1 lnil))
+   -> defeq Mp2 Mp2 (eapp M (econst C2 lnil))
+   -> defeq Mp3 Mp3 (eapp M (econst C3 lnil))
+   -> defeq-extra
+        (eapp (eapp (eapp (eapp (eapp (econst RecName (lcons U lnil)) M) Mp1) Mp2) Mp3)
+              (econst C1 lnil))
+        Mp1
+        (eapp M (econst C1 lnil)).
+
+defeq/iota-enum-3-second :
+   declared RecName (lcons U lnil) RecType irec WRec
+   -> declared C1 lnil (econst FooName lnil) ctor WC1
+   -> declared C2 lnil (econst FooName lnil) ctor WC2
+   -> declared C3 lnil (econst FooName lnil) ctor WC3
+   -> enum-rec-type RecType FooName lnil (ccons C1 (ccons C2 (ccons C3 cnil))) U
+   -> defeq M M (eforall (econst FooName lnil) ([_] esort U))
+   -> defeq Mp1 Mp1 (eapp M (econst C1 lnil))
+   -> defeq Mp2 Mp2 (eapp M (econst C2 lnil))
+   -> defeq Mp3 Mp3 (eapp M (econst C3 lnil))
+   -> defeq-extra
+        (eapp (eapp (eapp (eapp (eapp (econst RecName (lcons U lnil)) M) Mp1) Mp2) Mp3)
+              (econst C2 lnil))
+        Mp2
+        (eapp M (econst C2 lnil)).
+
+defeq/iota-enum-3-third :
+   declared RecName (lcons U lnil) RecType irec WRec
+   -> declared C1 lnil (econst FooName lnil) ctor WC1
+   -> declared C2 lnil (econst FooName lnil) ctor WC2
+   -> declared C3 lnil (econst FooName lnil) ctor WC3
+   -> enum-rec-type RecType FooName lnil (ccons C1 (ccons C2 (ccons C3 cnil))) U
+   -> defeq M M (eforall (econst FooName lnil) ([_] esort U))
+   -> defeq Mp1 Mp1 (eapp M (econst C1 lnil))
+   -> defeq Mp2 Mp2 (eapp M (econst C2 lnil))
+   -> defeq Mp3 Mp3 (eapp M (econst C3 lnil))
+   -> defeq-extra
+        (eapp (eapp (eapp (eapp (eapp (econst RecName (lcons U lnil)) M) Mp1) Mp2) Mp3)
+              (econst C3 lnil))
+        Mp3
+        (eapp M (econst C3 lnil)).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Translator-side rejection marker
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Uninhabited type used to deliberately fail Twelf type-checking
