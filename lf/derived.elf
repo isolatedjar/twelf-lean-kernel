@@ -4,3 +4,10 @@
 %%% Derived from `defeq/sort-eq lvl-eq/refl`.
 defeq/sort-refl : defeq (esort L) (esort L) (esort (lsucc L))
    = defeq/sort-eq lvl-eq/refl.
+
+%%% Explicit-level form, useful inside polymorphic declarations.
+%%% Under `{u : lvl}` ascriptions, Twelf otherwise creates a fresh
+%%% metavariable for the implicit `L` and can't unify it with the
+%%% bound `u`.  Forcing the level into the proof term solves this.
+defeq/sort-refl-at : {L : lvl} defeq (esort L) (esort L) (esort (lsucc L))
+   = [L] defeq/sort-refl.

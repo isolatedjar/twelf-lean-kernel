@@ -406,6 +406,12 @@ function mangle(n: Name): string {
 // 6. LF emission for levels and expressions
 // =====================================================================
 
+// Map from Lean level-param name to its LF binder name.  Populated by
+// emitValDecl/emitAxiom while emitting a polymorphic declaration; empty
+// otherwise.  Consulted by lfLevel for the `param` case and by freshVar
+// to avoid collisions.
+const levelParamBindings: Map<string, string> = new Map();
+
 function lfLevel(l: Level): string {
   switch (l.kind) {
     case "zero":
@@ -416,9 +422,21 @@ function lfLevel(l: Level): string {
       return `(lmax ${lfLevel(l.l)} ${lfLevel(l.r)})`;
     case "imax":
       return `(limax ${lfLevel(l.l)} ${lfLevel(l.r)})`;
-    case "param":
-      throw new Error(`level param not yet supported: ${nameToString(l.name)}`);
+    case "param": {
+      const v = levelParamBindings.get(nameToString(l.name));
+      if (v === undefined) throw new Error(`unbound level param: ${nameToString(l.name)}`);
+      return v;
+    }
   }
+}
+
+// Sanitize a Lean level-param name into an LF identifier that won't
+// collide with freshVar's letters (x/y/z/w).
+function nameToLfLevelVar(n: Name): string {
+  const raw = nameToString(n).replace(/[^A-Za-z0-9_]/g, "_");
+  if (raw === "") return "lv_anon";
+  if (/^[xyzw]/.test(raw)) return `lv_${raw}`;
+  return raw;
 }
 
 function lfLvls(ls: Level[]): string {
@@ -466,12 +484,15 @@ function lfExpr(e: Expr, boundVars: string[]): string {
 function freshVar(scope: string[]): string {
   // Predictable names: x, y, z, w, x1, y1, ...  Scope must include
   // *every* bound name (vars and hyps both) — they live in the same
-  // LF namespace and would shadow.
+  // LF namespace and would shadow.  We also avoid level-param binder
+  // names, which live in the same LF namespace.
+  const levelNames = Array.from(levelParamBindings.values());
+  const allScope = [...scope, ...levelNames];
   const letters = ["x", "y", "z", "w"];
   for (let suf = 0; suf < 1000; suf++) {
     for (const l of letters) {
       const v = suf === 0 ? l : `${l}${suf}`;
-      if (!scope.includes(v)) return v;
+      if (!allScope.includes(v)) return v;
     }
   }
   throw new Error("ran out of fresh variable names");
@@ -581,10 +602,58 @@ function exprEq(a: Expr, b: Expr): boolean {
   }
 }
 
+// --- Level substitution (for universe-polymorphic instantiation) ----
+
+function substLevelsInLevel(l: Level, m: Map<string, Level>): Level {
+  switch (l.kind) {
+    case "zero":
+      return l;
+    case "succ":
+      return { kind: "succ", arg: substLevelsInLevel(l.arg, m) };
+    case "max":
+      return { kind: "max", l: substLevelsInLevel(l.l, m), r: substLevelsInLevel(l.r, m) };
+    case "imax":
+      return { kind: "imax", l: substLevelsInLevel(l.l, m), r: substLevelsInLevel(l.r, m) };
+    case "param": {
+      const sub = m.get(nameToString(l.name));
+      return sub !== undefined ? sub : l;
+    }
+  }
+}
+
+function substLevels(e: Expr, m: Map<string, Level>): Expr {
+  if (m.size === 0) return e;
+  switch (e.kind) {
+    case "bvar":
+    case "natLit":
+    case "strLit":
+      return e;
+    case "sort":
+      return { kind: "sort", level: substLevelsInLevel(e.level, m) };
+    case "const":
+      return { kind: "const", name: e.name, us: e.us.map((u) => substLevelsInLevel(u, m)) };
+    case "app":
+      return { kind: "app", fn: substLevels(e.fn, m), arg: substLevels(e.arg, m) };
+    case "lam":
+    case "forallE":
+      return { ...e, type: substLevels(e.type, m), body: substLevels(e.body, m) };
+    case "letE":
+      return {
+        ...e,
+        type: substLevels(e.type, m),
+        value: substLevels(e.value, m),
+        body: substLevels(e.body, m),
+      };
+    case "proj":
+      return { ...e, struct: substLevels(e.struct, m) };
+  }
+}
+
 // --- Decl table (populated as we walk NDJSON) ------------------------
 
 interface DeclEntry {
   mangle: string;
+  levelParams: Name[]; // empty for monomorphic decls
   type: Expr;
   kind: "defn" | "thm" | "opq" | "ax";
   value?: Expr;
@@ -741,21 +810,34 @@ function synth(e: Expr, scope: Scope): Synth {
     case "sort":
       return {
         tyExpr: { kind: "sort", level: { kind: "succ", arg: e.level } },
-        proof: "defeq/sort-refl",
+        proof: `(defeq/sort-refl-at ${lfLevel(e.level)})`,
       };
     case "const": {
       const entry = declTable.get(nameToString(e.name));
       if (entry === undefined) {
         throw new Error(`const "${nameToString(e.name)}" not in decl table`);
       }
-      if (e.us.length !== 0) {
+      if (e.us.length !== entry.levelParams.length) {
         throw new Error(
-          `universe polymorphism not yet supported (const "${nameToString(e.name)}" has ${e.us.length} level args)`,
+          `const "${nameToString(e.name)}": got ${e.us.length} level args, expected ${entry.levelParams.length}`,
         );
       }
+      // Build the level-param → actual-level substitution and apply it
+      // to the looked-up type.
+      const m: Map<string, Level> = new Map();
+      for (let i = 0; i < entry.levelParams.length; i++) {
+        m.set(nameToString(entry.levelParams[i]), e.us[i]);
+      }
+      const tyExpr = substLevels(entry.type, m);
+      // For poly decls, `<mangle>/decl` is itself an LF function that
+      // takes the level args.  We apply it.
+      const declInst =
+        e.us.length === 0
+          ? `${entry.mangle}/decl`
+          : `(${entry.mangle}/decl ${e.us.map(lfLevel).join(" ")})`;
       return {
-        tyExpr: entry.type,
-        proof: `(defeq/const ${entry.mangle}/decl)`,
+        tyExpr,
+        proof: `(defeq/const ${declInst})`,
       };
     }
     case "forallE": {
@@ -878,11 +960,19 @@ function reduceOnce(e: Expr, scope: Scope): { result: Expr; proof: string } | nu
       entry !== undefined &&
       entry.kind === "defn" &&
       entry.value !== undefined &&
-      e.us.length === 0
+      e.us.length === entry.levelParams.length
     ) {
+      const m: Map<string, Level> = new Map();
+      for (let i = 0; i < entry.levelParams.length; i++) {
+        m.set(nameToString(entry.levelParams[i]), e.us[i]);
+      }
+      const declInst =
+        e.us.length === 0
+          ? `${entry.mangle}/decl`
+          : `(${entry.mangle}/decl ${e.us.map(lfLevel).join(" ")})`;
       return {
-        result: entry.value,
-        proof: `(defeq/delta ${entry.mangle}/decl)`,
+        result: substLevels(entry.value, m),
+        proof: `(defeq/delta ${declInst})`,
       };
     }
     return null;
@@ -1129,134 +1219,187 @@ const VAL_KIND_INFO: Record<
 function emitValDecl(d: Decl & { kind: ValDeclKind }): void {
   const info = VAL_KIND_INFO[d.kind];
   const kindTag = d.kind;
-  if (d.levelParams.length !== 0) {
-    skips.push(`${kindTag} ${nameToString(d.name)}: universe polymorphism not yet supported`);
-    emit(
-      `%% SKIP: ${kindTag} ${nameToString(d.name)} — universe-polymorphic (${d.levelParams.length} params)`,
-    );
-    emitBlank();
-    return;
-  }
-
   const mn = mangle(d.name);
   const declName = nameToString(d.name);
-  const T_lf = (() => {
-    try {
-      return lfExpr(d.type, []);
-    } catch {
-      return null;
-    }
-  })();
-  const V_lf = (() => {
-    try {
-      return lfExpr(d.value, []);
-    } catch {
-      return null;
-    }
-  })();
-  if (T_lf === null || V_lf === null) {
-    skips.push(`${kindTag} ${declName}: untranslatable expression`);
-    emit(`%% SKIP: ${kindTag} ${declName} — could not translate type/value to LF`);
-    emitBlank();
-    return;
+
+  // Set up level-param bindings so lfLevel can render `param` levels
+  // and freshVar avoids collisions.  Tear down at the end.
+  const levelBinders: string[] = [];
+  for (const p of d.levelParams) {
+    const lfName = nameToLfLevelVar(p);
+    levelParamBindings.set(nameToString(p), lfName);
+    levelBinders.push(lfName);
   }
 
-  let typeWf: Synth, valTy: Synth;
+  const cleanup = () => {
+    for (const p of d.levelParams) levelParamBindings.delete(nameToString(p));
+  };
+
   try {
-    typeWf = synth(d.type, { vars: [], hyps: [], tys: [] });
-    valTy = synth(d.value, { vars: [], hyps: [], tys: [] });
-  } catch (e: any) {
-    skips.push(`${kindTag} ${declName}: synth failed (${e.message})`);
-    emit(`%% SKIP: ${kindTag} ${declName} — synth failed: ${e.message}`);
-    emitBlank();
-    return;
-  }
-
-  const typeWfTyLF = lfExpr(typeWf.tyExpr, []);
-  let valuePf: string = valTy.proof;
-  if (!exprEq(valTy.tyExpr, d.type)) {
-    const bridge = bridgeTypes(valTy.tyExpr, d.type, { vars: [], hyps: [], tys: [] });
-    if (bridge !== null) {
-      valuePf = `(defeq/conv ${bridge} ${valTy.proof})`;
-    } else {
-      emit(`%% TRANSLATOR: could not bridge inferred type to declared type`);
-      emit(`%%   inferred type kind: ${valTy.tyExpr.kind}`);
-      emit(`%%   declared type kind: ${d.type.kind}`);
-      emit(`%%   emitting valTy.proof; Twelf will likely reject.`);
+    const T_lf = (() => {
+      try {
+        return lfExpr(d.type, []);
+      } catch {
+        return null;
+      }
+    })();
+    const V_lf = (() => {
+      try {
+        return lfExpr(d.value, []);
+      } catch {
+        return null;
+      }
+    })();
+    if (T_lf === null || V_lf === null) {
+      skips.push(`${kindTag} ${declName}: untranslatable expression`);
+      emit(`%% SKIP: ${kindTag} ${declName} — could not translate type/value to LF`);
+      emitBlank();
+      return;
     }
+
+    let typeWf: Synth, valTy: Synth;
+    try {
+      typeWf = synth(d.type, { vars: [], hyps: [], tys: [] });
+      valTy = synth(d.value, { vars: [], hyps: [], tys: [] });
+    } catch (e: any) {
+      skips.push(`${kindTag} ${declName}: synth failed (${e.message})`);
+      emit(`%% SKIP: ${kindTag} ${declName} — synth failed: ${e.message}`);
+      emitBlank();
+      return;
+    }
+
+    const typeWfTyLF = lfExpr(typeWf.tyExpr, []);
+    let valuePf: string = valTy.proof;
+    if (!exprEq(valTy.tyExpr, d.type)) {
+      const bridge = bridgeTypes(valTy.tyExpr, d.type, { vars: [], hyps: [], tys: [] });
+      if (bridge !== null) {
+        valuePf = `(defeq/conv ${bridge} ${valTy.proof})`;
+      } else {
+        emit(`%% TRANSLATOR: could not bridge inferred type to declared type`);
+        emit(`%%   inferred type kind: ${valTy.tyExpr.kind}`);
+        emit(`%%   declared type kind: ${d.type.kind}`);
+        emit(`%%   emitting valTy.proof; Twelf will likely reject.`);
+      }
+    }
+
+    // Polymorphic prefix: "{u_1 : lvl} ... {u_n : lvl}"  (empty if mono)
+    const levelPrefix =
+      levelBinders.length === 0 ? "" : levelBinders.map((n) => `{${n} : lvl}`).join(" ") + " ";
+    // Body-side LF lambda over the level binders.  Twelf needs explicit
+    // [u_1] ... [u_n] on the proof bodies to put the level binders in
+    // scope; otherwise occurrences of `u_i` in the body get parsed as
+    // free names and reconstruction fails.
+    const bodyLambda = levelBinders.length === 0 ? "" : levelBinders.map((n) => `[${n}] `).join("");
+    // Level argument list for use when referencing this decl from another
+    // sub-proof (e.g. when /decl applies /type-wf and /value-typed).
+    const levelArgList = levelBinders.length === 0 ? "" : " " + levelBinders.join(" ");
+    // lvls expression for the `declared` index: (lcons u_1 (lcons u_2 ... lnil))
+    const lvlsExpr =
+      levelBinders.length === 0
+        ? "lnil"
+        : levelBinders.reduceRight((acc, n) => `(lcons ${n} ${acc})`, "lnil");
+
+    emit(`%% ${kindTag} ${declName}`);
+    emit(`${mn}/type-wf :`);
+    emit(`   ${levelPrefix}defeq ${T_lf} ${T_lf} ${typeWfTyLF}`);
+    emit(`   = ${bodyLambda}${typeWf.proof}.`);
+    emitBlank();
+    emit(`${mn}/value-typed :`);
+    emit(`   ${levelPrefix}defeq ${V_lf} ${V_lf} ${T_lf}`);
+    emit(`   = ${bodyLambda}${valuePf}.`);
+    emitBlank();
+    const tw_inst = levelBinders.length === 0 ? `${mn}/type-wf` : `(${mn}/type-wf${levelArgList})`;
+    const vt_inst =
+      levelBinders.length === 0 ? `${mn}/value-typed` : `(${mn}/value-typed${levelArgList})`;
+    emit(`${mn}/decl : ${levelPrefix}declared "${declName}" ${lvlsExpr}`);
+    emit(`   ${T_lf}`);
+    emit(`   (${info.dkindCtor} ${V_lf})`);
+    emit(`   (${info.okCtor} ${tw_inst} ${vt_inst}).`);
+    emitBlank();
+
+    declTable.set(declName, {
+      mangle: mn,
+      levelParams: d.levelParams,
+      type: d.type,
+      kind: info.tableKind,
+      value: d.value,
+    });
+  } finally {
+    cleanup();
   }
-
-  emit(`%% ${kindTag} ${declName}`);
-  emit(`${mn}/type-wf :`);
-  emit(`   defeq ${T_lf} ${T_lf} ${typeWfTyLF}`);
-  emit(`   = ${typeWf.proof}.`);
-  emitBlank();
-  emit(`${mn}/value-typed :`);
-  emit(`   defeq ${V_lf} ${V_lf} ${T_lf}`);
-  emit(`   = ${valuePf}.`);
-  emitBlank();
-  emit(`${mn}/decl : declared "${declName}" lnil`);
-  emit(`   ${T_lf}`);
-  emit(`   (${info.dkindCtor} ${V_lf})`);
-  emit(`   (${info.okCtor} ${mn}/type-wf ${mn}/value-typed).`);
-  emitBlank();
-
-  declTable.set(declName, {
-    mangle: mn,
-    type: d.type,
-    kind: info.tableKind,
-    value: d.value,
-  });
 }
 
 function emitAxiom(d: Decl & { kind: "axiom" }): void {
-  if (d.levelParams.length !== 0) {
-    skips.push(`axiom ${nameToString(d.name)}: universe polymorphism not yet supported`);
-    emit(
-      `%% SKIP: axiom ${nameToString(d.name)} — universe-polymorphic (${d.levelParams.length} params)`,
-    );
-    emitBlank();
-    return;
-  }
   const mn = mangle(d.name);
   const declName = nameToString(d.name);
-  const T_lf = (() => {
-    try {
-      return lfExpr(d.type, []);
-    } catch {
-      return null;
-    }
-  })();
-  if (T_lf === null) {
-    skips.push(`axiom ${declName}: untranslatable type`);
-    emit(`%% SKIP: axiom ${declName} — could not translate type to LF`);
-    emitBlank();
-    return;
+
+  const levelBinders: string[] = [];
+  for (const p of d.levelParams) {
+    const lfName = nameToLfLevelVar(p);
+    levelParamBindings.set(nameToString(p), lfName);
+    levelBinders.push(lfName);
   }
 
-  let typeWf: Synth;
+  const cleanup = () => {
+    for (const p of d.levelParams) levelParamBindings.delete(nameToString(p));
+  };
+
   try {
-    typeWf = synth(d.type, { vars: [], hyps: [], tys: [] });
-  } catch (e: any) {
-    skips.push(`axiom ${declName}: type synth failed (${e.message})`);
-    emit(`%% SKIP: axiom ${declName} — type synth failed: ${e.message}`);
+    const T_lf = (() => {
+      try {
+        return lfExpr(d.type, []);
+      } catch {
+        return null;
+      }
+    })();
+    if (T_lf === null) {
+      skips.push(`axiom ${declName}: untranslatable type`);
+      emit(`%% SKIP: axiom ${declName} — could not translate type to LF`);
+      emitBlank();
+      return;
+    }
+
+    let typeWf: Synth;
+    try {
+      typeWf = synth(d.type, { vars: [], hyps: [], tys: [] });
+    } catch (e: any) {
+      skips.push(`axiom ${declName}: type synth failed (${e.message})`);
+      emit(`%% SKIP: axiom ${declName} — type synth failed: ${e.message}`);
+      emitBlank();
+      return;
+    }
+
+    const typeWfTyLF = lfExpr(typeWf.tyExpr, []);
+    const levelPrefix =
+      levelBinders.length === 0 ? "" : levelBinders.map((n) => `{${n} : lvl}`).join(" ") + " ";
+    const bodyLambda = levelBinders.length === 0 ? "" : levelBinders.map((n) => `[${n}] `).join("");
+    const levelArgList = levelBinders.length === 0 ? "" : " " + levelBinders.join(" ");
+    const lvlsExpr =
+      levelBinders.length === 0
+        ? "lnil"
+        : levelBinders.reduceRight((acc, n) => `(lcons ${n} ${acc})`, "lnil");
+
+    emit(`%% axiom ${declName}`);
+    emit(`${mn}/type-wf :`);
+    emit(`   ${levelPrefix}defeq ${T_lf} ${T_lf} ${typeWfTyLF}`);
+    emit(`   = ${bodyLambda}${typeWf.proof}.`);
     emitBlank();
-    return;
+    const tw_inst = levelBinders.length === 0 ? `${mn}/type-wf` : `(${mn}/type-wf${levelArgList})`;
+    emit(`${mn}/decl : ${levelPrefix}declared "${declName}" ${lvlsExpr}`);
+    emit(`   ${T_lf}`);
+    emit(`   ax`);
+    emit(`   (dkind-ok/ax ${tw_inst}).`);
+    emitBlank();
+
+    declTable.set(declName, {
+      mangle: mn,
+      levelParams: d.levelParams,
+      type: d.type,
+      kind: "ax",
+    });
+  } finally {
+    cleanup();
   }
-
-  const typeWfTyLF = lfExpr(typeWf.tyExpr, []);
-  emit(`%% axiom ${declName}`);
-  emit(`${mn}/type-wf :`);
-  emit(`   defeq ${T_lf} ${T_lf} ${typeWfTyLF}`);
-  emit(`   = ${typeWf.proof}.`);
-  emitBlank();
-  emit(`${mn}/decl : declared "${declName}" lnil`);
-  emit(`   ${T_lf}`);
-  emit(`   ax`);
-  emit(`   (dkind-ok/ax ${mn}/type-wf).`);
-  emitBlank();
-
-  declTable.set(declName, { mangle: mn, type: d.type, kind: "ax" });
 }
 
 // =====================================================================
@@ -1276,18 +1419,31 @@ async function main(): Promise<void> {
       continue;
     }
     env.ingest(rec);
-    if (rec.tag === "def") emitValDecl(env.resolveDecl(rec) as Decl & { kind: "def" });
-    else if (rec.tag === "thm") emitValDecl(env.resolveDecl(rec) as Decl & { kind: "thm" });
-    else if (rec.tag === "opaque") emitValDecl(env.resolveDecl(rec) as Decl & { kind: "opaque" });
-    else if (rec.tag === "axiom") emitAxiom(env.resolveDecl(rec) as Decl & { kind: "axiom" });
-    else if (rec.tag === "quot") emit(`%% SKIP: quot not yet supported`);
-    else if (rec.tag === "inductive") emit(`%% SKIP: inductive not yet supported`);
+    try {
+      if (rec.tag === "def") emitValDecl(env.resolveDecl(rec) as Decl & { kind: "def" });
+      else if (rec.tag === "thm") emitValDecl(env.resolveDecl(rec) as Decl & { kind: "thm" });
+      else if (rec.tag === "opaque") emitValDecl(env.resolveDecl(rec) as Decl & { kind: "opaque" });
+      else if (rec.tag === "axiom") emitAxiom(env.resolveDecl(rec) as Decl & { kind: "axiom" });
+      else if (rec.tag === "quot") emit(`%% SKIP: quot not yet supported`);
+      else if (rec.tag === "inductive") emit(`%% SKIP: inductive not yet supported`);
+    } catch (e: any) {
+      const tag = (rec as any).tag ?? "decl";
+      skips.push(`${tag}: untranslatable (${e.message})`);
+      emit(`%% SKIP: ${tag} — untranslatable: ${e.message}`);
+      emitBlank();
+    }
   }
 
   // Functional-dependency seal.
-  emit(`%mode declared +N -LS -T -DK -W.`);
+  //
+  // For monomorphic decls, this catches duplicate names (LS=lnil twice
+  // with different T or DK).  For polymorphic decls, LS varies per
+  // instantiation, so we make it an input position too: given (N, LS),
+  // T/DK are uniquely determined.  Duplicate poly declarations would
+  // collide on the LF identifier `<mangle>/decl` independently.
+  emit(`%mode declared +N +LS -T -DK -W.`);
   emit(`%worlds () (declared _ _ _ _ _).`);
-  emit(`%unique declared +N -1LS -1T -1DK *W.`);
+  emit(`%unique declared +N +LS -1T -1DK *W.`);
 
   if (skips.length > 0) {
     emit(``);
