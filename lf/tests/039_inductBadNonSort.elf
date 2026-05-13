@@ -14,7 +14,16 @@ constType/decl : declared "constType" lnil
    (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))
    (dkind-ok/defn constType/type-wf constType/value-typed).
 
-%% SKIP: inductive not yet supported
+%% inductive inductBadNonSort
+inductBadNonSort/type-wf :
+   defeq (econst "constType" lnil) (econst "constType" lnil) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero))))))
+   = (defeq/const constType/decl).
+
+inductBadNonSort/decl : declared "inductBadNonSort" lnil
+   (econst "constType" lnil)
+   indt
+   (dkind-ok/indt inductBadNonSort/type-wf).
+
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.

@@ -14,7 +14,26 @@ dup_ctor_def_mk/decl : declared "dup_ctor_def.mk" lnil
    (defn (esort lzero))
    (dkind-ok/defn dup_ctor_def_mk/type-wf dup_ctor_def_mk/value-typed).
 
-%% SKIP: inductive not yet supported
+%% inductive dup_ctor_def
+dup_ctor_def/type-wf :
+   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
+   = (defeq/sort-refl-at (lsucc lzero)).
+
+dup_ctor_def/decl : declared "dup_ctor_def" lnil
+   (esort (lsucc lzero))
+   indt
+   (dkind-ok/indt dup_ctor_def/type-wf).
+
+%% TRANSLATOR REJECT: duplicate declaration of "dup_ctor_def.mk"
+%%   previously declared as kind=defn, now seen as kind=inductive ctor
+%solve _violation_0 : tcb-violation.
+
+%% SKIP: inductive recursor dup_ctor_def.rec — type synth failed: app: cannot bridge arg type to function domain
+
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.
+
+%% Translator summary:
+%%   - duplicate declaration: dup_ctor_def.mk (was defn, now inductive ctor)
+%%   - inductive recursor dup_ctor_def.rec: type synth failed (app: cannot bridge arg type to function domain)

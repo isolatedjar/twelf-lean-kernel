@@ -1,6 +1,42 @@
 %%% Expected outcome: reject
 %%% An inductive with two constructors with the same name
-%% SKIP: inductive not yet supported
+%% inductive DupConCon
+DupConCon/type-wf :
+   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
+   = (defeq/sort-refl-at (lsucc lzero)).
+
+DupConCon/decl : declared "DupConCon" lnil
+   (esort (lsucc lzero))
+   indt
+   (dkind-ok/indt DupConCon/type-wf).
+
+%% inductive ctor dup_ind_con_con.mk
+dup_ind_con_con_mk/type-wf :
+   defeq (econst "DupConCon" lnil) (econst "DupConCon" lnil) (esort (lsucc lzero))
+   = (defeq/const DupConCon/decl).
+
+dup_ind_con_con_mk/decl : declared "dup_ind_con_con.mk" lnil
+   (econst "DupConCon" lnil)
+   ctor
+   (dkind-ok/ctor dup_ind_con_con_mk/type-wf).
+
+%% TRANSLATOR REJECT: duplicate declaration of "dup_ind_con_con.mk"
+%%   previously declared as kind=ctor, now seen as kind=inductive ctor
+%solve _violation_0 : tcb-violation.
+
+%% inductive recursor DupConCon.rec
+DupConCon_rec/type-wf :
+   {u : lvl} defeq (eforall (eforall (econst "DupConCon" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] (eforall (econst "DupConCon" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "DupConCon" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] (eforall (econst "DupConCon" lnil) ([w] (eapp x w))))))))) (esort (limax (limax (lsucc lzero) (lsucc u)) (limax u (limax u (limax (lsucc lzero) u)))))
+   = [u] (defeq/forall (defeq/forall (defeq/const DupConCon/decl) ([x] [y] (defeq/sort-refl-at u))) ([x] [y] (defeq/forall (defeq/app y (defeq/const dup_ind_con_con_mk/decl)) ([z] [w] (defeq/forall (defeq/app y (defeq/const dup_ind_con_con_mk/decl)) ([x1] [y1] (defeq/forall (defeq/const DupConCon/decl) ([z1] [w1] (defeq/app y w1))))))))).
+
+DupConCon_rec/decl : {u : lvl} declared "DupConCon.rec" (lcons u lnil)
+   (eforall (eforall (econst "DupConCon" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] (eforall (econst "DupConCon" lnil) ([w] (eapp x w)))))))))
+   irec
+   (dkind-ok/irec (DupConCon_rec/type-wf u)).
+
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.
+
+%% Translator summary:
+%%   - duplicate declaration: dup_ind_con_con.mk (was ctor, now inductive ctor)

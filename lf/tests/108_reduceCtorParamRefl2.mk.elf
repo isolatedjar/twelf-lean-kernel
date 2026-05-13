@@ -29,7 +29,24 @@ constType/decl : declared "constType" lnil
    (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))
    (dkind-ok/defn constType/type-wf constType/value-typed).
 
-%% SKIP: inductive not yet supported
+%% inductive reduceCtorParamRefl2
+reduceCtorParamRefl2/type-wf :
+   defeq (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (esort (limax (lsucc (lsucc lzero)) (lsucc (lsucc lzero))))
+   = (defeq/forall (defeq/sort-refl-at (lsucc lzero)) ([x] [y] (defeq/sort-refl-at (lsucc lzero)))).
+
+reduceCtorParamRefl2/decl : declared "reduceCtorParamRefl2" lnil
+   (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero))))
+   indt
+   (dkind-ok/indt reduceCtorParamRefl2/type-wf).
+
+%% SKIP: inductive ctor reduceCtorParamRefl2.mk — type synth failed: forallE: binder type does not have a sort type (got app)
+
+%% SKIP: inductive recursor reduceCtorParamRefl2.rec — type synth failed: const "reduceCtorParamRefl2.mk" not in decl table
+
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.
+
+%% Translator summary:
+%%   - inductive ctor reduceCtorParamRefl2.mk: type synth failed (forallE: binder type does not have a sort type (got app))
+%%   - inductive recursor reduceCtorParamRefl2.rec: type synth failed (const "reduceCtorParamRefl2.mk" not in decl table)

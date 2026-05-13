@@ -1,11 +1,49 @@
 %%% Expected outcome: accept
 %%% Asserting the type of the generated recursor
-%% SKIP: inductive not yet supported
-%% SKIP: def punitRec — synth failed: const "PUnit" not in decl table
+%% inductive PUnit
+PUnit/type-wf :
+   {u : lvl} defeq (esort u) (esort u) (esort (lsucc u))
+   = [u] (defeq/sort-refl-at u).
+
+PUnit/decl : {u : lvl} declared "PUnit" (lcons u lnil)
+   (esort u)
+   indt
+   (dkind-ok/indt (PUnit/type-wf u)).
+
+%% inductive ctor PUnit.unit
+PUnit_unit/type-wf :
+   {u : lvl} defeq (econst "PUnit" (lcons u lnil)) (econst "PUnit" (lcons u lnil)) (esort u)
+   = [u] (defeq/const (PUnit/decl u)).
+
+PUnit_unit/decl : {u : lvl} declared "PUnit.unit" (lcons u lnil)
+   (econst "PUnit" (lcons u lnil))
+   ctor
+   (dkind-ok/ctor (PUnit_unit/type-wf u)).
+
+%% inductive recursor PUnit.rec
+PUnit_rec/type-wf :
+   {u_1 : lvl} {u : lvl} defeq (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))) (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))) (esort (limax (limax u (lsucc u_1)) (limax u_1 (limax u u_1))))
+   = [u_1] [u] (defeq/forall (defeq/forall (defeq/const (PUnit/decl u)) ([x] [y] (defeq/sort-refl-at u_1))) ([x] [y] (defeq/forall (defeq/app y (defeq/const (PUnit_unit/decl u))) ([z] [w] (defeq/forall (defeq/const (PUnit/decl u)) ([x1] [y1] (defeq/app y y1))))))).
+
+PUnit_rec/decl : {u_1 : lvl} {u : lvl} declared "PUnit.rec" (lcons u_1 (lcons u lnil))
+   (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z)))))))
+   irec
+   (dkind-ok/irec (PUnit_rec/type-wf u_1 u)).
+
+%% def punitRec
+punitRec/type-wf :
+   {u : lvl} {lv_w : lvl} defeq (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort lv_w))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))) (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort lv_w))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))) (esort (limax (limax u (lsucc lv_w)) (limax lv_w (limax u lv_w))))
+   = [u] [lv_w] (defeq/forall (defeq/forall (defeq/const (PUnit/decl u)) ([x] [y] (defeq/sort-refl-at lv_w))) ([x] [y] (defeq/forall (defeq/app y (defeq/const (PUnit_unit/decl u))) ([z] [w] (defeq/forall (defeq/const (PUnit/decl u)) ([x1] [y1] (defeq/app y y1))))))).
+
+punitRec/value-typed :
+   {u : lvl} {lv_w : lvl} defeq (econst "PUnit.rec" (lcons lv_w (lcons u lnil))) (econst "PUnit.rec" (lcons lv_w (lcons u lnil))) (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort lv_w))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z)))))))
+   = [u] [lv_w] (defeq/const (PUnit_rec/decl lv_w u)).
+
+punitRec/decl : {u : lvl} {lv_w : lvl} declared "punitRec" (lcons u (lcons lv_w lnil))
+   (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort lv_w))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z)))))))
+   (defn (econst "PUnit.rec" (lcons lv_w (lcons u lnil))))
+   (dkind-ok/defn (punitRec/type-wf u lv_w) (punitRec/value-typed u lv_w)).
 
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.
-
-%% Translator summary:
-%%   - def punitRec: synth failed (const "PUnit" not in decl table)

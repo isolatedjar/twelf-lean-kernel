@@ -1,11 +1,49 @@
 %%% Expected outcome: accept
 %%% A parametrized product type (no level parameters)
-%% SKIP: inductive not yet supported
-%% SKIP: def andType — synth failed: const "And" not in decl table
+%% inductive And
+And/type-wf :
+   defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (esort (limax (lsucc lzero) (limax (lsucc lzero) (lsucc lzero))))
+   = (defeq/forall (defeq/sort-refl-at lzero) ([x] [y] (defeq/forall (defeq/sort-refl-at lzero) ([z] [w] (defeq/sort-refl-at lzero))))).
+
+And/decl : declared "And" lnil
+   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero)))))
+   indt
+   (dkind-ok/indt And/type-wf).
+
+%% inductive ctor And.intro
+And_intro/type-wf :
+   defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) (esort (limax (lsucc lzero) (limax (lsucc lzero) (limax lzero (limax lzero lzero)))))
+   = (defeq/forall (defeq/sort-refl-at lzero) ([x] [y] (defeq/forall (defeq/sort-refl-at lzero) ([z] [w] (defeq/forall y ([x1] [y1] (defeq/forall w ([z1] [w1] (defeq/app (defeq/app (defeq/const And/decl) y) w))))))))).
+
+And_intro/decl : declared "And.intro" lnil
+   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y)))))))))
+   ctor
+   (dkind-ok/ctor And_intro/type-wf).
+
+%% inductive recursor And.rec
+And_rec/type-wf :
+   {u : lvl} defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] (esort u))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "And.intro" lnil) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "And" lnil) x) y) ([x1] (eapp z x1))))))))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] (esort u))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "And.intro" lnil) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "And" lnil) x) y) ([x1] (eapp z x1))))))))))) (esort (limax (lsucc lzero) (limax (lsucc lzero) (limax (limax lzero (lsucc u)) (limax (limax lzero (limax lzero u)) (limax lzero u))))))
+   = [u] (defeq/forall (defeq/sort-refl-at lzero) ([x] [y] (defeq/forall (defeq/sort-refl-at lzero) ([z] [w] (defeq/forall (defeq/forall (defeq/app (defeq/app (defeq/const And/decl) y) w) ([x1] [y1] (defeq/sort-refl-at u))) ([x1] [y1] (defeq/forall (defeq/forall y ([z1] [w1] (defeq/forall w ([x2] [y2] (defeq/app y1 (defeq/app (defeq/app (defeq/app (defeq/app (defeq/const And_intro/decl) y) w) w1) y2)))))) ([z1] [w1] (defeq/forall (defeq/app (defeq/app (defeq/const And/decl) y) w) ([x2] [y2] (defeq/app y1 y2))))))))))).
+
+And_rec/decl : {u : lvl} declared "And.rec" (lcons u lnil)
+   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] (esort u))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "And.intro" lnil) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "And" lnil) x) y) ([x1] (eapp z x1)))))))))))
+   irec
+   (dkind-ok/irec (And_rec/type-wf u)).
+
+%% def andType
+andType/type-wf :
+   defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (esort (limax (lsucc lzero) (limax (lsucc lzero) (lsucc lzero))))
+   = (defeq/forall (defeq/sort-refl-at lzero) ([x] [y] (defeq/forall (defeq/sort-refl-at lzero) ([z] [w] (defeq/sort-refl-at lzero))))).
+
+andType/value-typed :
+   defeq (econst "And" lnil) (econst "And" lnil) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero)))))
+   = (defeq/const And/decl).
+
+andType/decl : declared "andType" lnil
+   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero)))))
+   (defn (econst "And" lnil))
+   (dkind-ok/defn andType/type-wf andType/value-typed).
 
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.
-
-%% Translator summary:
-%%   - def andType: synth failed (const "And" not in decl table)

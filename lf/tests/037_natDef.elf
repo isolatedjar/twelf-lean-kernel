@@ -1,11 +1,59 @@
 %%% Expected outcome: accept
 %%% A recursive inductive data type
-%% SKIP: inductive not yet supported
-%% SKIP: def natDef — synth failed: const "N" not in decl table
+%% inductive N
+N/type-wf :
+   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
+   = (defeq/sort-refl-at (lsucc lzero)).
+
+N/decl : declared "N" lnil
+   (esort (lsucc lzero))
+   indt
+   (dkind-ok/indt N/type-wf).
+
+%% inductive ctor N.zero
+N_zero/type-wf :
+   defeq (econst "N" lnil) (econst "N" lnil) (esort (lsucc lzero))
+   = (defeq/const N/decl).
+
+N_zero/decl : declared "N.zero" lnil
+   (econst "N" lnil)
+   ctor
+   (dkind-ok/ctor N_zero/type-wf).
+
+%% inductive ctor N.succ
+N_succ/type-wf :
+   defeq (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (esort (limax (lsucc lzero) (lsucc lzero)))
+   = (defeq/forall (defeq/const N/decl) ([x] [y] (defeq/const N/decl))).
+
+N_succ/decl : declared "N.succ" lnil
+   (eforall (econst "N" lnil) ([x] (econst "N" lnil)))
+   ctor
+   (dkind-ok/ctor N_succ/type-wf).
+
+%% inductive recursor N.rec
+N_rec/type-wf :
+   {u : lvl} defeq (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) (esort (limax (limax (lsucc lzero) (lsucc u)) (limax u (limax (limax (lsucc lzero) (limax u u)) (limax (lsucc lzero) u)))))
+   = [u] (defeq/forall (defeq/forall (defeq/const N/decl) ([x] [y] (defeq/sort-refl-at u))) ([x] [y] (defeq/forall (defeq/app y (defeq/const N_zero/decl)) ([z] [w] (defeq/forall (defeq/forall (defeq/const N/decl) ([x1] [y1] (defeq/forall (defeq/app y y1) ([z1] [w1] (defeq/app y (defeq/app (defeq/const N_succ/decl) y1)))))) ([x1] [y1] (defeq/forall (defeq/const N/decl) ([z1] [w1] (defeq/app y w1))))))))).
+
+N_rec/decl : {u : lvl} declared "N.rec" (lcons u lnil)
+   (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w)))))))))
+   irec
+   (dkind-ok/irec (N_rec/type-wf u)).
+
+%% def natDef
+natDef/type-wf :
+   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
+   = (defeq/sort-refl-at (lsucc lzero)).
+
+natDef/value-typed :
+   defeq (econst "N" lnil) (econst "N" lnil) (esort (lsucc lzero))
+   = (defeq/const N/decl).
+
+natDef/decl : declared "natDef" lnil
+   (esort (lsucc lzero))
+   (defn (econst "N" lnil))
+   (dkind-ok/defn natDef/type-wf natDef/value-typed).
 
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.
-
-%% Translator summary:
-%%   - def natDef: synth failed (const "N" not in decl table)

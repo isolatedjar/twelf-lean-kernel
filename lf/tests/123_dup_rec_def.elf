@@ -14,7 +14,33 @@ dup_rec_def_rec/decl : declared "dup_rec_def.rec" lnil
    (defn (esort lzero))
    (dkind-ok/defn dup_rec_def_rec/type-wf dup_rec_def_rec/value-typed).
 
-%% SKIP: inductive not yet supported
+%% inductive dup_rec_def
+dup_rec_def/type-wf :
+   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
+   = (defeq/sort-refl-at (lsucc lzero)).
+
+dup_rec_def/decl : declared "dup_rec_def" lnil
+   (esort (lsucc lzero))
+   indt
+   (dkind-ok/indt dup_rec_def/type-wf).
+
+%% inductive ctor dup_rec_def.mk
+dup_rec_def_mk/type-wf :
+   defeq (econst "dup_rec_def" lnil) (econst "dup_rec_def" lnil) (esort (lsucc lzero))
+   = (defeq/const dup_rec_def/decl).
+
+dup_rec_def_mk/decl : declared "dup_rec_def.mk" lnil
+   (econst "dup_rec_def" lnil)
+   ctor
+   (dkind-ok/ctor dup_rec_def_mk/type-wf).
+
+%% TRANSLATOR REJECT: duplicate declaration of "dup_rec_def.rec"
+%%   previously declared as kind=defn, now seen as kind=inductive recursor
+%solve _violation_0 : tcb-violation.
+
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.
+
+%% Translator summary:
+%%   - duplicate declaration: dup_rec_def.rec (was defn, now inductive recursor)

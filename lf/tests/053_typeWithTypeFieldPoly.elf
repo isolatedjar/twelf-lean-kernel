@@ -1,11 +1,49 @@
 %%% Expected outcome: accept
 %%% An inductive type can have fields of level up to that of the inductive (polymorphic variant).
-%% SKIP: inductive not yet supported
-%% SKIP: def typeWithTypeFieldPoly — synth failed: const "TypeWithTypeFieldPoly" not in decl table
+%% inductive TypeWithTypeFieldPoly
+TypeWithTypeFieldPoly/type-wf :
+   {u : lvl} defeq (esort (lsucc (lsucc u))) (esort (lsucc (lsucc u))) (esort (lsucc (lsucc (lsucc u))))
+   = [u] (defeq/sort-refl-at (lsucc (lsucc u))).
+
+TypeWithTypeFieldPoly/decl : {u : lvl} declared "TypeWithTypeFieldPoly" (lcons u lnil)
+   (esort (lsucc (lsucc u)))
+   indt
+   (dkind-ok/indt (TypeWithTypeFieldPoly/type-wf u)).
+
+%% inductive ctor TypeWithTypeFieldPoly.mk
+TypeWithTypeFieldPoly_mk/type-wf :
+   {u : lvl} defeq (eforall (esort (lsucc u)) ([x] (econst "TypeWithTypeFieldPoly" (lcons u lnil)))) (eforall (esort (lsucc u)) ([x] (econst "TypeWithTypeFieldPoly" (lcons u lnil)))) (esort (limax (lsucc (lsucc u)) (lsucc (lsucc u))))
+   = [u] (defeq/forall (defeq/sort-refl-at (lsucc u)) ([x] [y] (defeq/const (TypeWithTypeFieldPoly/decl u)))).
+
+TypeWithTypeFieldPoly_mk/decl : {u : lvl} declared "TypeWithTypeFieldPoly.mk" (lcons u lnil)
+   (eforall (esort (lsucc u)) ([x] (econst "TypeWithTypeFieldPoly" (lcons u lnil))))
+   ctor
+   (dkind-ok/ctor (TypeWithTypeFieldPoly_mk/type-wf u)).
+
+%% inductive recursor TypeWithTypeFieldPoly.rec
+TypeWithTypeFieldPoly_rec/type-wf :
+   {u_1 : lvl} {u : lvl} defeq (eforall (eforall (econst "TypeWithTypeFieldPoly" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eforall (esort (lsucc u)) ([y] (eapp x (eapp (econst "TypeWithTypeFieldPoly.mk" (lcons u lnil)) y)))) ([y] (eforall (econst "TypeWithTypeFieldPoly" (lcons u lnil)) ([z] (eapp x z))))))) (eforall (eforall (econst "TypeWithTypeFieldPoly" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eforall (esort (lsucc u)) ([y] (eapp x (eapp (econst "TypeWithTypeFieldPoly.mk" (lcons u lnil)) y)))) ([y] (eforall (econst "TypeWithTypeFieldPoly" (lcons u lnil)) ([z] (eapp x z))))))) (esort (limax (limax (lsucc (lsucc u)) (lsucc u_1)) (limax (limax (lsucc (lsucc u)) u_1) (limax (lsucc (lsucc u)) u_1))))
+   = [u_1] [u] (defeq/forall (defeq/forall (defeq/const (TypeWithTypeFieldPoly/decl u)) ([x] [y] (defeq/sort-refl-at u_1))) ([x] [y] (defeq/forall (defeq/forall (defeq/sort-refl-at (lsucc u)) ([z] [w] (defeq/app y (defeq/app (defeq/const (TypeWithTypeFieldPoly_mk/decl u)) w)))) ([z] [w] (defeq/forall (defeq/const (TypeWithTypeFieldPoly/decl u)) ([x1] [y1] (defeq/app y y1))))))).
+
+TypeWithTypeFieldPoly_rec/decl : {u_1 : lvl} {u : lvl} declared "TypeWithTypeFieldPoly.rec" (lcons u_1 (lcons u lnil))
+   (eforall (eforall (econst "TypeWithTypeFieldPoly" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eforall (esort (lsucc u)) ([y] (eapp x (eapp (econst "TypeWithTypeFieldPoly.mk" (lcons u lnil)) y)))) ([y] (eforall (econst "TypeWithTypeFieldPoly" (lcons u lnil)) ([z] (eapp x z)))))))
+   irec
+   (dkind-ok/irec (TypeWithTypeFieldPoly_rec/type-wf u_1 u)).
+
+%% def typeWithTypeFieldPoly
+typeWithTypeFieldPoly/type-wf :
+   {u : lvl} defeq (esort (lsucc (lsucc u))) (esort (lsucc (lsucc u))) (esort (lsucc (lsucc (lsucc u))))
+   = [u] (defeq/sort-refl-at (lsucc (lsucc u))).
+
+typeWithTypeFieldPoly/value-typed :
+   {u : lvl} defeq (econst "TypeWithTypeFieldPoly" (lcons u lnil)) (econst "TypeWithTypeFieldPoly" (lcons u lnil)) (esort (lsucc (lsucc u)))
+   = [u] (defeq/const (TypeWithTypeFieldPoly/decl u)).
+
+typeWithTypeFieldPoly/decl : {u : lvl} declared "typeWithTypeFieldPoly" (lcons u lnil)
+   (esort (lsucc (lsucc u)))
+   (defn (econst "TypeWithTypeFieldPoly" (lcons u lnil)))
+   (dkind-ok/defn (typeWithTypeFieldPoly/type-wf u) (typeWithTypeFieldPoly/value-typed u)).
 
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.
-
-%% Translator summary:
-%%   - def typeWithTypeFieldPoly: synth failed (const "TypeWithTypeFieldPoly" not in decl table)

@@ -1,6 +1,35 @@
 %%% Expected outcome: reject
 %%% An inductive with a constructor with wrong parameters in result (they are swapped)
-%% SKIP: inductive not yet supported
+%% inductive inductWrongCtorResParams
+inductWrongCtorResParams/type-wf :
+   defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) (esort (limax (lsucc lzero) (limax (lsucc lzero) (lsucc (lsucc lzero)))))
+   = (defeq/forall (defeq/sort-refl-at lzero) ([x] [y] (defeq/forall (defeq/sort-refl-at lzero) ([z] [w] (defeq/sort-refl-at (lsucc lzero)))))).
+
+inductWrongCtorResParams/decl : declared "inductWrongCtorResParams" lnil
+   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero))))))
+   indt
+   (dkind-ok/indt inductWrongCtorResParams/type-wf).
+
+%% inductive ctor inductWrongCtorResParams.mk
+inductWrongCtorResParams_mk/type-wf :
+   defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResParams" lnil) y) x))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResParams" lnil) y) x))))) (esort (limax (lsucc lzero) (limax (lsucc lzero) (lsucc lzero))))
+   = (defeq/forall (defeq/sort-refl-at lzero) ([x] [y] (defeq/forall (defeq/sort-refl-at lzero) ([z] [w] (defeq/app (defeq/app (defeq/const inductWrongCtorResParams/decl) w) y))))).
+
+inductWrongCtorResParams_mk/decl : declared "inductWrongCtorResParams.mk" lnil
+   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResParams" lnil) y) x)))))
+   ctor
+   (dkind-ok/ctor inductWrongCtorResParams_mk/type-wf).
+
+%% inductive recursor inductWrongCtorResParams.rec
+inductWrongCtorResParams_rec/type-wf :
+   defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
+   = (defeq/sort-refl-at lzero).
+
+inductWrongCtorResParams_rec/decl : declared "inductWrongCtorResParams.rec" lnil
+   (esort lzero)
+   irec
+   (dkind-ok/irec inductWrongCtorResParams_rec/type-wf).
+
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.

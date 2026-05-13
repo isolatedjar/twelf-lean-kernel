@@ -1,11 +1,49 @@
 %%% Expected outcome: accept
 %%% An inductive type can have fields of level up to that of the inductive.
-%% SKIP: inductive not yet supported
-%% SKIP: def typeWithTypeField — synth failed: const "TypeWithTypeField" not in decl table
+%% inductive TypeWithTypeField
+TypeWithTypeField/type-wf :
+   defeq (esort (lsucc (lsucc lzero))) (esort (lsucc (lsucc lzero))) (esort (lsucc (lsucc (lsucc lzero))))
+   = (defeq/sort-refl-at (lsucc (lsucc lzero))).
+
+TypeWithTypeField/decl : declared "TypeWithTypeField" lnil
+   (esort (lsucc (lsucc lzero)))
+   indt
+   (dkind-ok/indt TypeWithTypeField/type-wf).
+
+%% inductive ctor TypeWithTypeField.mk
+TypeWithTypeField_mk/type-wf :
+   defeq (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil))) (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil))) (esort (limax (lsucc (lsucc lzero)) (lsucc (lsucc lzero))))
+   = (defeq/forall (defeq/sort-refl-at (lsucc lzero)) ([x] [y] (defeq/const TypeWithTypeField/decl))).
+
+TypeWithTypeField_mk/decl : declared "TypeWithTypeField.mk" lnil
+   (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil)))
+   ctor
+   (dkind-ok/ctor TypeWithTypeField_mk/type-wf).
+
+%% inductive recursor TypeWithTypeField.rec
+TypeWithTypeField_rec/type-wf :
+   {u : lvl} defeq (eforall (eforall (econst "TypeWithTypeField" lnil) ([x] (esort u))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "TypeWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "TypeWithTypeField" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "TypeWithTypeField" lnil) ([x] (esort u))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "TypeWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "TypeWithTypeField" lnil) ([z] (eapp x z))))))) (esort (limax (limax (lsucc (lsucc lzero)) (lsucc u)) (limax (limax (lsucc (lsucc lzero)) u) (limax (lsucc (lsucc lzero)) u))))
+   = [u] (defeq/forall (defeq/forall (defeq/const TypeWithTypeField/decl) ([x] [y] (defeq/sort-refl-at u))) ([x] [y] (defeq/forall (defeq/forall (defeq/sort-refl-at (lsucc lzero)) ([z] [w] (defeq/app y (defeq/app (defeq/const TypeWithTypeField_mk/decl) w)))) ([z] [w] (defeq/forall (defeq/const TypeWithTypeField/decl) ([x1] [y1] (defeq/app y y1))))))).
+
+TypeWithTypeField_rec/decl : {u : lvl} declared "TypeWithTypeField.rec" (lcons u lnil)
+   (eforall (eforall (econst "TypeWithTypeField" lnil) ([x] (esort u))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "TypeWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "TypeWithTypeField" lnil) ([z] (eapp x z)))))))
+   irec
+   (dkind-ok/irec (TypeWithTypeField_rec/type-wf u)).
+
+%% def typeWithTypeField
+typeWithTypeField/type-wf :
+   defeq (esort (lsucc (lsucc lzero))) (esort (lsucc (lsucc lzero))) (esort (lsucc (lsucc (lsucc lzero))))
+   = (defeq/sort-refl-at (lsucc (lsucc lzero))).
+
+typeWithTypeField/value-typed :
+   defeq (econst "TypeWithTypeField" lnil) (econst "TypeWithTypeField" lnil) (esort (lsucc (lsucc lzero)))
+   = (defeq/const TypeWithTypeField/decl).
+
+typeWithTypeField/decl : declared "typeWithTypeField" lnil
+   (esort (lsucc (lsucc lzero)))
+   (defn (econst "TypeWithTypeField" lnil))
+   (dkind-ok/defn typeWithTypeField/type-wf typeWithTypeField/value-typed).
 
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.
-
-%% Translator summary:
-%%   - def typeWithTypeField: synth failed (const "TypeWithTypeField" not in decl table)

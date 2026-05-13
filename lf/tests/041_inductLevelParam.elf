@@ -1,6 +1,15 @@
 %%% Expected outcome: reject
 %%% An inductive with duplicate level params
-%% SKIP: inductive not yet supported
+%% inductive inductLevelParam
+%abbrev inductLevelParam/type-wf :
+   {u : lvl} {u : lvl} defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
+   = [u] [u] (defeq/sort-refl-at (lsucc lzero)).
+
+inductLevelParam/decl : {u : lvl} {u : lvl} declared "inductLevelParam" (lcons u (lcons u lnil))
+   (esort (lsucc lzero))
+   indt
+   (dkind-ok/indt (inductLevelParam/type-wf u u)).
+
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.

@@ -1,6 +1,15 @@
 %%% Expected outcome: reject
 %%% An inductive with too few parameters in the type
-%% SKIP: inductive not yet supported
+%% inductive inductTooFewParams
+inductTooFewParams/type-wf :
+   defeq (eforall (esort lzero) ([x] (esort lzero))) (eforall (esort lzero) ([x] (esort lzero))) (esort (limax (lsucc lzero) (lsucc lzero)))
+   = (defeq/forall (defeq/sort-refl-at lzero) ([x] [y] (defeq/sort-refl-at lzero))).
+
+inductTooFewParams/decl : declared "inductTooFewParams" lnil
+   (eforall (esort lzero) ([x] (esort lzero)))
+   indt
+   (dkind-ok/indt inductTooFewParams/type-wf).
+
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.

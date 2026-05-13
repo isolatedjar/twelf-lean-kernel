@@ -1,6 +1,35 @@
 %%% Expected outcome: reject
 %%% An inductive type can have fields of from higher universes.
-%% SKIP: inductive not yet supported
+%% inductive typeWithTooHighTypeField
+typeWithTooHighTypeField/type-wf :
+   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
+   = (defeq/sort-refl-at (lsucc lzero)).
+
+typeWithTooHighTypeField/decl : declared "typeWithTooHighTypeField" lnil
+   (esort (lsucc lzero))
+   indt
+   (dkind-ok/indt typeWithTooHighTypeField/type-wf).
+
+%% inductive ctor typeWithTooHighTypeField.mk
+typeWithTooHighTypeField_mk/type-wf :
+   defeq (eforall (esort (lsucc lzero)) ([x] (econst "typeWithTooHighTypeField" lnil))) (eforall (esort (lsucc lzero)) ([x] (econst "typeWithTooHighTypeField" lnil))) (esort (limax (lsucc (lsucc lzero)) (lsucc lzero)))
+   = (defeq/forall (defeq/sort-refl-at (lsucc lzero)) ([x] [y] (defeq/const typeWithTooHighTypeField/decl))).
+
+typeWithTooHighTypeField_mk/decl : declared "typeWithTooHighTypeField.mk" lnil
+   (eforall (esort (lsucc lzero)) ([x] (econst "typeWithTooHighTypeField" lnil)))
+   ctor
+   (dkind-ok/ctor typeWithTooHighTypeField_mk/type-wf).
+
+%% inductive recursor typeWithTooHighTypeField.rec
+typeWithTooHighTypeField_rec/type-wf :
+   defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
+   = (defeq/sort-refl-at lzero).
+
+typeWithTooHighTypeField_rec/decl : declared "typeWithTooHighTypeField.rec" lnil
+   (esort lzero)
+   irec
+   (dkind-ok/irec typeWithTooHighTypeField_rec/type-wf).
+
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.

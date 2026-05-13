@@ -189,6 +189,20 @@ defeq/eta :
 %%%   thm  V — theorem with proof V (type T must be a Prop)
 %%%   opq  V — opaque definition with value V (no δ-unfolding)
 %%%   ax     — axiom (no value)
+%%%   indt   — inductive type former (kernel-derived, NOT an axiom)
+%%%   ctor   — inductive constructor (kernel-derived)
+%%%   irec   — inductive recursor (kernel-derived; iota rules attach via
+%%%            a separate family in later stages)
+%%%   quot   — built-in `Quot` family member (Quot, Quot.mk, Quot.lift,
+%%%            Quot.ind); kernel-derived, NOT an axiom
+%%%
+%%% Note: the indt/ctor/irec/quot dkinds have no "body" payload — like
+%%% `ax`, they just stipulate a well-typed name.  They differ from `ax`
+%%% only in the *tag*, which preserves Lean's distinction between
+%%% genuine axioms (`#print axioms` reports them) and kernel-derived
+%%% declarations (it doesn't).  When we eventually add iota-reduction
+%%% rules for recursors, they will pattern-match on `irec` and on the
+%%% corresponding inductive's ctors.
 
 dkind : type.   %name dkind DK.
 
@@ -196,12 +210,20 @@ defn : expr -> dkind.
 thm  : expr -> dkind.
 opq  : expr -> dkind.
 ax   : dkind.
+indt : dkind.
+ctor : dkind.
+irec : dkind.
+quot : dkind.
 
 %%% `dkind-ok K T` is the per-kind well-formedness obligation:
 %%%   defn V at T: T is a well-formed type AND V has type T
 %%%   thm  V at T: T is specifically Prop AND V has type T
 %%%   opq  V at T: same as defn
 %%%   ax     at T: T is a well-formed type (no value to check)
+%%%   indt   at T: T is a well-formed type (the type-former's type)
+%%%   ctor   at T: T is a well-formed type (the constructor's type)
+%%%   irec   at T: T is a well-formed type (the recursor's type)
+%%%   quot   at T: T is a well-formed type (Quot/mk/lift/ind's type)
 %%% Closed family.
 
 dkind-ok : dkind -> expr -> type.
@@ -217,6 +239,18 @@ dkind-ok/opq  :
 
 dkind-ok/ax   :
    defeq T T (esort U) -> dkind-ok ax T.
+
+dkind-ok/indt :
+   defeq T T (esort U) -> dkind-ok indt T.
+
+dkind-ok/ctor :
+   defeq T T (esort U) -> dkind-ok ctor T.
+
+dkind-ok/irec :
+   defeq T T (esort U) -> dkind-ok irec T.
+
+dkind-ok/quot :
+   defeq T T (esort U) -> dkind-ok quot T.
 
 %%% `declared N LS T K W` is a well-formed declaration of name N at level
 %%% instantiation LS, type T, payload kind K, witnessed by W : dkind-ok K T.
@@ -238,3 +272,16 @@ defeq/const :
 defeq/delta :
    declared N LS T (defn V) W
    -> defeq (econst N LS) V T.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Translator-side rejection marker
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Uninhabited type used to deliberately fail Twelf type-checking
+%%% when the translator detects an input it considers invalid (e.g.
+%%% duplicate declarations).  The generated file emits
+%%%   %solve - : tcb-violation.
+%%% which Twelf reports as `No solution to %solve found` → ABORT.
+%%% Soundness note: this is the translator deciding to reject; the
+%%% TCB just provides a convenient mechanism.
+
+tcb-violation : type.

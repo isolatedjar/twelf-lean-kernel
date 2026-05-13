@@ -1,11 +1,59 @@
 %%% Expected outcome: accept
 %%% Asserting the type of the generated recursor
-%% SKIP: inductive not yet supported
-%% SKIP: def boolRec — synth failed: const "Bool" not in decl table
+%% inductive Bool
+Bool/type-wf :
+   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
+   = (defeq/sort-refl-at (lsucc lzero)).
+
+Bool/decl : declared "Bool" lnil
+   (esort (lsucc lzero))
+   indt
+   (dkind-ok/indt Bool/type-wf).
+
+%% inductive ctor Bool.false
+Bool_false/type-wf :
+   defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort (lsucc lzero))
+   = (defeq/const Bool/decl).
+
+Bool_false/decl : declared "Bool.false" lnil
+   (econst "Bool" lnil)
+   ctor
+   (dkind-ok/ctor Bool_false/type-wf).
+
+%% inductive ctor Bool.true
+Bool_true/type-wf :
+   defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort (lsucc lzero))
+   = (defeq/const Bool/decl).
+
+Bool_true/decl : declared "Bool.true" lnil
+   (econst "Bool" lnil)
+   ctor
+   (dkind-ok/ctor Bool_true/type-wf).
+
+%% inductive recursor Bool.rec
+Bool_rec/type-wf :
+   {u : lvl} defeq (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort (limax (limax (lsucc lzero) (lsucc u)) (limax u (limax u (limax (lsucc lzero) u)))))
+   = [u] (defeq/forall (defeq/forall (defeq/const Bool/decl) ([x] [y] (defeq/sort-refl-at u))) ([x] [y] (defeq/forall (defeq/app y (defeq/const Bool_false/decl)) ([z] [w] (defeq/forall (defeq/app y (defeq/const Bool_true/decl)) ([x1] [y1] (defeq/forall (defeq/const Bool/decl) ([z1] [w1] (defeq/app y w1))))))))).
+
+Bool_rec/decl : {u : lvl} declared "Bool.rec" (lcons u lnil)
+   (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w)))))))))
+   irec
+   (dkind-ok/irec (Bool_rec/type-wf u)).
+
+%% def boolRec
+boolRec/type-wf :
+   {u : lvl} defeq (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort (limax (limax (lsucc lzero) (lsucc u)) (limax u (limax u (limax (lsucc lzero) u)))))
+   = [u] (defeq/forall (defeq/forall (defeq/const Bool/decl) ([x] [y] (defeq/sort-refl-at u))) ([x] [y] (defeq/forall (defeq/app y (defeq/const Bool_false/decl)) ([z] [w] (defeq/forall (defeq/app y (defeq/const Bool_true/decl)) ([x1] [y1] (defeq/forall (defeq/const Bool/decl) ([z1] [w1] (defeq/app y w1))))))))).
+
+boolRec/value-typed :
+   {u : lvl} defeq (elam (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] (elam (econst "Bool" lnil) ([w] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons u lnil)) x) y) z) w))))))))) (elam (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] (elam (econst "Bool" lnil) ([w] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons u lnil)) x) y) z) w))))))))) (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w)))))))))
+   = [u] (defeq/lam (defeq/forall (defeq/const Bool/decl) ([x] [y] (defeq/sort-refl-at u))) ([x] [y] (defeq/lam (defeq/app y (defeq/const Bool_false/decl)) ([z] [w] (defeq/lam (defeq/app y (defeq/const Bool_true/decl)) ([x1] [y1] (defeq/lam (defeq/const Bool/decl) ([z1] [w1] (defeq/app (defeq/app (defeq/app (defeq/app (defeq/const (Bool_rec/decl u)) y) w) y1) w1))))))))).
+
+boolRec/decl : {u : lvl} declared "boolRec" (lcons u lnil)
+   (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w)))))))))
+   (defn (elam (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] (elam (econst "Bool" lnil) ([w] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons u lnil)) x) y) z) w))))))))))
+   (dkind-ok/defn (boolRec/type-wf u) (boolRec/value-typed u)).
 
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.
-
-%% Translator summary:
-%%   - def boolRec: synth failed (const "Bool" not in decl table)

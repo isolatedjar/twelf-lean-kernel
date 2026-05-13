@@ -1,11 +1,49 @@
 %%% Expected outcome: accept
 %%% Level-polymorphic unit type
-%% SKIP: inductive not yet supported
-%% SKIP: def pUnitType — synth failed: const "PUnit" not in decl table
+%% inductive PUnit
+PUnit/type-wf :
+   {u : lvl} defeq (esort u) (esort u) (esort (lsucc u))
+   = [u] (defeq/sort-refl-at u).
+
+PUnit/decl : {u : lvl} declared "PUnit" (lcons u lnil)
+   (esort u)
+   indt
+   (dkind-ok/indt (PUnit/type-wf u)).
+
+%% inductive ctor PUnit.unit
+PUnit_unit/type-wf :
+   {u : lvl} defeq (econst "PUnit" (lcons u lnil)) (econst "PUnit" (lcons u lnil)) (esort u)
+   = [u] (defeq/const (PUnit/decl u)).
+
+PUnit_unit/decl : {u : lvl} declared "PUnit.unit" (lcons u lnil)
+   (econst "PUnit" (lcons u lnil))
+   ctor
+   (dkind-ok/ctor (PUnit_unit/type-wf u)).
+
+%% inductive recursor PUnit.rec
+PUnit_rec/type-wf :
+   {u_1 : lvl} {u : lvl} defeq (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))) (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))) (esort (limax (limax u (lsucc u_1)) (limax u_1 (limax u u_1))))
+   = [u_1] [u] (defeq/forall (defeq/forall (defeq/const (PUnit/decl u)) ([x] [y] (defeq/sort-refl-at u_1))) ([x] [y] (defeq/forall (defeq/app y (defeq/const (PUnit_unit/decl u))) ([z] [w] (defeq/forall (defeq/const (PUnit/decl u)) ([x1] [y1] (defeq/app y y1))))))).
+
+PUnit_rec/decl : {u_1 : lvl} {u : lvl} declared "PUnit.rec" (lcons u_1 (lcons u lnil))
+   (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z)))))))
+   irec
+   (dkind-ok/irec (PUnit_rec/type-wf u_1 u)).
+
+%% def pUnitType
+pUnitType/type-wf :
+   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
+   = (defeq/sort-refl-at (lsucc lzero)).
+
+pUnitType/value-typed :
+   defeq (econst "PUnit" (lcons (lsucc lzero) lnil)) (econst "PUnit" (lcons (lsucc lzero) lnil)) (esort (lsucc lzero))
+   = (defeq/const (PUnit/decl (lsucc lzero))).
+
+pUnitType/decl : declared "pUnitType" lnil
+   (esort (lsucc lzero))
+   (defn (econst "PUnit" (lcons (lsucc lzero) lnil)))
+   (dkind-ok/defn pUnitType/type-wf pUnitType/value-typed).
 
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.
-
-%% Translator summary:
-%%   - def pUnitType: synth failed (const "PUnit" not in decl table)

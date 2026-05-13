@@ -3,8 +3,71 @@
 
 We build an indexed inductive `I : Type → Type` with a constructor argument
 `Nat → I (I α)`, so the recursive occurrence appears as an index argument.
-%% SKIP: inductive not yet supported
-%% SKIP: inductive not yet supported
+%% inductive Nat
+Nat/type-wf :
+   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
+   = (defeq/sort-refl-at (lsucc lzero)).
+
+Nat/decl : declared "Nat" lnil
+   (esort (lsucc lzero))
+   indt
+   (dkind-ok/indt Nat/type-wf).
+
+%% inductive ctor Nat.zero
+Nat_zero/type-wf :
+   defeq (econst "Nat" lnil) (econst "Nat" lnil) (esort (lsucc lzero))
+   = (defeq/const Nat/decl).
+
+Nat_zero/decl : declared "Nat.zero" lnil
+   (econst "Nat" lnil)
+   ctor
+   (dkind-ok/ctor Nat_zero/type-wf).
+
+%% inductive ctor Nat.succ
+Nat_succ/type-wf :
+   defeq (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (esort (limax (lsucc lzero) (lsucc lzero)))
+   = (defeq/forall (defeq/const Nat/decl) ([x] [y] (defeq/const Nat/decl))).
+
+Nat_succ/decl : declared "Nat.succ" lnil
+   (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil)))
+   ctor
+   (dkind-ok/ctor Nat_succ/type-wf).
+
+%% inductive recursor Nat.rec
+Nat_rec/type-wf :
+   {u : lvl} defeq (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (esort (limax (limax (lsucc lzero) (lsucc u)) (limax u (limax (limax (lsucc lzero) (limax u u)) (limax (lsucc lzero) u)))))
+   = [u] (defeq/forall (defeq/forall (defeq/const Nat/decl) ([x] [y] (defeq/sort-refl-at u))) ([x] [y] (defeq/forall (defeq/app y (defeq/const Nat_zero/decl)) ([z] [w] (defeq/forall (defeq/forall (defeq/const Nat/decl) ([x1] [y1] (defeq/forall (defeq/app y y1) ([z1] [w1] (defeq/app y (defeq/app (defeq/const Nat_succ/decl) y1)))))) ([x1] [y1] (defeq/forall (defeq/const Nat/decl) ([z1] [w1] (defeq/app y w1))))))))).
+
+Nat_rec/decl : {u : lvl} declared "Nat.rec" (lcons u lnil)
+   (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w)))))))))
+   irec
+   (dkind-ok/irec (Nat_rec/type-wf u)).
+
+%% inductive reflOccInIndex
+reflOccInIndex/type-wf :
+   defeq (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (esort (limax (lsucc (lsucc lzero)) (lsucc (lsucc lzero))))
+   = (defeq/forall (defeq/sort-refl-at (lsucc lzero)) ([x] [y] (defeq/sort-refl-at (lsucc lzero)))).
+
+reflOccInIndex/decl : declared "reflOccInIndex" lnil
+   (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero))))
+   indt
+   (dkind-ok/indt reflOccInIndex/type-wf).
+
+%% SKIP: inductive ctor reflOccInIndex.mk — type synth failed: app: cannot bridge arg type to function domain
+
+%% inductive recursor reflOccInIndex.rec
+reflOccInIndex_rec/type-wf :
+   defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
+   = (defeq/sort-refl-at lzero).
+
+reflOccInIndex_rec/decl : declared "reflOccInIndex.rec" lnil
+   (esort lzero)
+   irec
+   (dkind-ok/irec reflOccInIndex_rec/type-wf).
+
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.
+
+%% Translator summary:
+%%   - inductive ctor reflOccInIndex.mk: type synth failed (app: cannot bridge arg type to function domain)

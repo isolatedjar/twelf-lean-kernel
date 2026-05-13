@@ -66,7 +66,37 @@ type ThmRec = { tag: "thm"; name: number; levelParams: number[]; type: number; v
 type AxRec = { tag: "axiom"; name: number; levelParams: number[]; type: number };
 type OpqRec = { tag: "opaque"; name: number; levelParams: number[]; type: number; value: number };
 type QuotRec = { tag: "quot" };
-type IndRec = { tag: "inductive"; raw: any }; // not yet handled
+type IndTypeSpec = {
+  name: number;
+  type: number;
+  levelParams: number[];
+  ctors: number[];
+  numParams: number;
+  numIndices: number;
+  isRec: boolean;
+  isReflexive: boolean;
+};
+type IndCtorSpec = {
+  name: number;
+  type: number;
+  levelParams: number[];
+  cidx: number;
+  induct: number;
+  numFields: number;
+  numParams: number;
+};
+type IndRecRule = { ctor: number; nfields: number; rhs: number };
+type IndRecSpec = {
+  name: number;
+  type: number;
+  levelParams: number[];
+  numParams: number;
+  numIndices: number;
+  numMotives: number;
+  numMinors: number;
+  rules: IndRecRule[];
+};
+type IndRec = { tag: "inductive"; types: IndTypeSpec[]; ctors: IndCtorSpec[]; recs: IndRecSpec[] };
 type MetaRec = { tag: "meta" };
 type Item =
   | NameRec
@@ -183,7 +213,15 @@ function parseLine(line: string): Item | null {
   if ("axiom" in obj) return { tag: "axiom", ...obj.axiom };
   if ("opaque" in obj) return { tag: "opaque", ...obj.opaque };
   if ("quot" in obj) return { tag: "quot" };
-  if ("inductive" in obj) return { tag: "inductive", raw: obj.inductive };
+  if ("inductive" in obj) {
+    const i = obj.inductive;
+    return {
+      tag: "inductive",
+      types: i.types ?? [],
+      ctors: i.ctors ?? [],
+      recs: i.recs ?? [],
+    };
+  }
   if ("meta" in obj) return { tag: "meta" };
   return null;
 }
@@ -452,6 +490,20 @@ function allMentioned(names: string[], ...bodies: string[]): boolean {
   return true;
 }
 
+// Emit a deliberate Twelf-side rejection when the translator detects an
+// invalid input (duplicate name, etc.).  Uses %solve on the uninhabited
+// `tcb-violation` type, which Twelf reports as ABORT.  Twelf otherwise
+// silently allows shadowing constant declarations, so this is how we
+// surface duplicates to the test harness.
+let violationCounter = 0;
+function emitDuplicateRejection(declName: string, newKind: string, oldKind: string): void {
+  emit(`%% TRANSLATOR REJECT: duplicate declaration of "${declName}"`);
+  emit(`%%   previously declared as kind=${oldKind}, now seen as kind=${newKind}`);
+  emit(`%solve _violation_${violationCounter++} : tcb-violation.`);
+  emitBlank();
+  skips.push(`duplicate declaration: ${declName} (was ${oldKind}, now ${newKind})`);
+}
+
 function lfLvls(ls: Level[]): string {
   let acc = "lnil";
   for (let i = ls.length - 1; i >= 0; i--) acc = `(lcons ${lfLevel(ls[i])} ${acc})`;
@@ -668,7 +720,10 @@ interface DeclEntry {
   mangle: string;
   levelParams: Name[]; // empty for monomorphic decls
   type: Expr;
-  kind: "defn" | "thm" | "opq" | "ax";
+  // defn/thm/opq/ax are value-level decls; indt/ctor/irec/quot are
+  // kernel-derived structural decls (no value, but distinguishable
+  // from `ax` for dependency-graph honesty and ι-rule attachment).
+  kind: "defn" | "thm" | "opq" | "ax" | "indt" | "ctor" | "irec" | "quot";
   value?: Expr;
 }
 const declTable: Map<string, DeclEntry> = new Map();
@@ -1250,6 +1305,11 @@ function emitValDecl(d: Decl & { kind: ValDeclKind }): void {
   const mn = mangle(d.name);
   const declName = nameToString(d.name);
 
+  if (declTable.has(declName)) {
+    emitDuplicateRejection(declName, kindTag, declTable.get(declName)!.kind);
+    return;
+  }
+
   // Set up level-param bindings so lfLevel can render `param` levels
   // and freshVar avoids collisions.  Tear down at the end.
   const levelBinders: string[] = [];
@@ -1368,42 +1428,65 @@ function emitValDecl(d: Decl & { kind: ValDeclKind }): void {
   }
 }
 
-function emitAxiom(d: Decl & { kind: "axiom" }): void {
-  const mn = mangle(d.name);
-  const declName = nameToString(d.name);
+// Emit a "structural" declaration — i.e. one with no body, just a typed
+// name.  Covers `axiom`, `inductive` type formers, constructors,
+// recursors, and the four `Quot` builtins.  These all share the shape
+//   <mn>/type-wf : {us..} defeq T T (esort L) = [us..] <typeWf>.
+//   <mn>/decl    : {us..} declared "name" (lcons us..) T <dkindCtor>
+//                  (<okCtor> (<mn>/type-wf us..)).
+//
+// `dkindCtor` is the dkind constant ("ax" / "indt" / "ctor" / "irec" /
+// "quot").  `okCtor` is the corresponding `dkind-ok/...`.  `tableKind`
+// is what goes into declTable for downstream consumers.
+function emitStructuralDecl(
+  declName: Name,
+  levelParams: Name[],
+  type: Expr,
+  dkindCtor: string,
+  okCtor: string,
+  tableKind: DeclEntry["kind"],
+  banner: string,
+): void {
+  const mn = mangle(declName);
+  const nameStr = nameToString(declName);
+
+  if (declTable.has(nameStr)) {
+    emitDuplicateRejection(nameStr, banner, declTable.get(nameStr)!.kind);
+    return;
+  }
 
   const levelBinders: string[] = [];
-  for (const p of d.levelParams) {
+  for (const p of levelParams) {
     const lfName = nameToLfLevelVar(p);
     levelParamBindings.set(nameToString(p), lfName);
     levelBinders.push(lfName);
   }
 
   const cleanup = () => {
-    for (const p of d.levelParams) levelParamBindings.delete(nameToString(p));
+    for (const p of levelParams) levelParamBindings.delete(nameToString(p));
   };
 
   try {
     const T_lf = (() => {
       try {
-        return lfExpr(d.type, []);
+        return lfExpr(type, []);
       } catch {
         return null;
       }
     })();
     if (T_lf === null) {
-      skips.push(`axiom ${declName}: untranslatable type`);
-      emit(`%% SKIP: axiom ${declName} — could not translate type to LF`);
+      skips.push(`${banner} ${nameStr}: untranslatable type`);
+      emit(`%% SKIP: ${banner} ${nameStr} — could not translate type to LF`);
       emitBlank();
       return;
     }
 
     let typeWf: Synth;
     try {
-      typeWf = synth(d.type, { vars: [], hyps: [], tys: [] });
+      typeWf = synth(type, { vars: [], hyps: [], tys: [] });
     } catch (e: any) {
-      skips.push(`axiom ${declName}: type synth failed (${e.message})`);
-      emit(`%% SKIP: axiom ${declName} — type synth failed: ${e.message}`);
+      skips.push(`${banner} ${nameStr}: type synth failed (${e.message})`);
+      emit(`%% SKIP: ${banner} ${nameStr} — type synth failed: ${e.message}`);
       emitBlank();
       return;
     }
@@ -1423,26 +1506,72 @@ function emitAxiom(d: Decl & { kind: "axiom" }): void {
         ? "%abbrev "
         : "";
 
-    emit(`%% axiom ${declName}`);
+    emit(`%% ${banner} ${nameStr}`);
     emit(`${tw_decl}${mn}/type-wf :`);
     emit(`   ${levelPrefix}defeq ${T_lf} ${T_lf} ${typeWfTyLF}`);
     emit(`   = ${bodyLambda}${typeWf.proof}.`);
     emitBlank();
     const tw_inst = levelBinders.length === 0 ? `${mn}/type-wf` : `(${mn}/type-wf${levelArgList})`;
-    emit(`${mn}/decl : ${levelPrefix}declared "${declName}" ${lvlsExpr}`);
+    emit(`${mn}/decl : ${levelPrefix}declared "${nameStr}" ${lvlsExpr}`);
     emit(`   ${T_lf}`);
-    emit(`   ax`);
-    emit(`   (dkind-ok/ax ${tw_inst}).`);
+    emit(`   ${dkindCtor}`);
+    emit(`   (${okCtor} ${tw_inst}).`);
     emitBlank();
 
-    declTable.set(declName, {
+    declTable.set(nameStr, {
       mangle: mn,
-      levelParams: d.levelParams,
-      type: d.type,
-      kind: "ax",
+      levelParams,
+      type,
+      kind: tableKind,
     });
   } finally {
     cleanup();
+  }
+}
+
+function emitAxiom(d: Decl & { kind: "axiom" }): void {
+  emitStructuralDecl(d.name, d.levelParams, d.type, "ax", "dkind-ok/ax", "ax", "axiom");
+}
+
+function emitInductive(ir: IndRec, env: Env): void {
+  // Helper: look up a name/expr from Env by index.
+  const N = (i: number): Name => env.names.get(i)!;
+  const E = (i: number): Expr => desugarLetE(env.exprs.get(i)!);
+  // 1. Type formers.
+  for (const t of ir.types) {
+    emitStructuralDecl(
+      N(t.name),
+      t.levelParams.map(N),
+      E(t.type),
+      "indt",
+      "dkind-ok/indt",
+      "indt",
+      "inductive",
+    );
+  }
+  // 2. Constructors.
+  for (const c of ir.ctors) {
+    emitStructuralDecl(
+      N(c.name),
+      c.levelParams.map(N),
+      E(c.type),
+      "ctor",
+      "dkind-ok/ctor",
+      "ctor",
+      "inductive ctor",
+    );
+  }
+  // 3. Recursors.
+  for (const r of ir.recs) {
+    emitStructuralDecl(
+      N(r.name),
+      r.levelParams.map(N),
+      E(r.type),
+      "irec",
+      "dkind-ok/irec",
+      "irec",
+      "inductive recursor",
+    );
   }
 }
 
@@ -1469,7 +1598,7 @@ async function main(): Promise<void> {
       else if (rec.tag === "opaque") emitValDecl(env.resolveDecl(rec) as Decl & { kind: "opaque" });
       else if (rec.tag === "axiom") emitAxiom(env.resolveDecl(rec) as Decl & { kind: "axiom" });
       else if (rec.tag === "quot") emit(`%% SKIP: quot not yet supported`);
-      else if (rec.tag === "inductive") emit(`%% SKIP: inductive not yet supported`);
+      else if (rec.tag === "inductive") emitInductive(rec, env);
     } catch (e: any) {
       const tag = (rec as any).tag ?? "decl";
       skips.push(`${tag}: untranslatable (${e.message})`);

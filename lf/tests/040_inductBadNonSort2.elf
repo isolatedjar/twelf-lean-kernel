@@ -10,7 +10,16 @@ aType/decl : declared "aType" lnil
    ax
    (dkind-ok/ax aType/type-wf).
 
-%% SKIP: inductive not yet supported
+%% inductive inductBadNonSort2
+inductBadNonSort2/type-wf :
+   defeq (econst "aType" lnil) (econst "aType" lnil) (esort (lsucc lzero))
+   = (defeq/const aType/decl).
+
+inductBadNonSort2/decl : declared "inductBadNonSort2" lnil
+   (econst "aType" lnil)
+   indt
+   (dkind-ok/indt inductBadNonSort2/type-wf).
+
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.

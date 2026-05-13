@@ -1,6 +1,32 @@
 %%% Expected outcome: reject
 %%% A constructor and a recursor with the same name
-%% SKIP: inductive not yet supported
+%% inductive dup_ctor_rec
+dup_ctor_rec/type-wf :
+   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
+   = (defeq/sort-refl-at (lsucc lzero)).
+
+dup_ctor_rec/decl : declared "dup_ctor_rec" lnil
+   (esort (lsucc lzero))
+   indt
+   (dkind-ok/indt dup_ctor_rec/type-wf).
+
+%% inductive ctor dup_ctor_rec.rec
+dup_ctor_rec_rec/type-wf :
+   defeq (econst "dup_ctor_rec" lnil) (econst "dup_ctor_rec" lnil) (esort (lsucc lzero))
+   = (defeq/const dup_ctor_rec/decl).
+
+dup_ctor_rec_rec/decl : declared "dup_ctor_rec.rec" lnil
+   (econst "dup_ctor_rec" lnil)
+   ctor
+   (dkind-ok/ctor dup_ctor_rec_rec/type-wf).
+
+%% TRANSLATOR REJECT: duplicate declaration of "dup_ctor_rec.rec"
+%%   previously declared as kind=ctor, now seen as kind=inductive recursor
+%solve _violation_0 : tcb-violation.
+
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.
+
+%% Translator summary:
+%%   - duplicate declaration: dup_ctor_rec.rec (was ctor, now inductive recursor)

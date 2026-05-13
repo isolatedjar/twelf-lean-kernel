@@ -14,7 +14,33 @@ dup_ind_def/decl : declared "dup_ind_def" lnil
    (defn (esort lzero))
    (dkind-ok/defn dup_ind_def/type-wf dup_ind_def/value-typed).
 
-%% SKIP: inductive not yet supported
+%% TRANSLATOR REJECT: duplicate declaration of "dup_ind_def"
+%%   previously declared as kind=defn, now seen as kind=inductive
+%solve _violation_0 : tcb-violation.
+
+%% inductive ctor dup_ind_def.mk
+dup_ind_def_mk/type-wf :
+   defeq (econst "dup_ind_def" lnil) (econst "dup_ind_def" lnil) (esort (lsucc lzero))
+   = (defeq/const dup_ind_def/decl).
+
+dup_ind_def_mk/decl : declared "dup_ind_def.mk" lnil
+   (econst "dup_ind_def" lnil)
+   ctor
+   (dkind-ok/ctor dup_ind_def_mk/type-wf).
+
+%% inductive recursor dup_ind_def.rec
+dup_ind_def_rec/type-wf :
+   {u : lvl} defeq (eforall (eforall (econst "dup_ind_def" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ind_def.mk" lnil)) ([y] (eforall (econst "dup_ind_def" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "dup_ind_def" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ind_def.mk" lnil)) ([y] (eforall (econst "dup_ind_def" lnil) ([z] (eapp x z))))))) (esort (limax (limax (lsucc lzero) (lsucc u)) (limax u (limax (lsucc lzero) u))))
+   = [u] (defeq/forall (defeq/forall (defeq/const dup_ind_def/decl) ([x] [y] (defeq/sort-refl-at u))) ([x] [y] (defeq/forall (defeq/app y (defeq/const dup_ind_def_mk/decl)) ([z] [w] (defeq/forall (defeq/const dup_ind_def/decl) ([x1] [y1] (defeq/app y y1))))))).
+
+dup_ind_def_rec/decl : {u : lvl} declared "dup_ind_def.rec" (lcons u lnil)
+   (eforall (eforall (econst "dup_ind_def" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ind_def.mk" lnil)) ([y] (eforall (econst "dup_ind_def" lnil) ([z] (eapp x z)))))))
+   irec
+   (dkind-ok/irec (dup_ind_def_rec/type-wf u)).
+
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.
+
+%% Translator summary:
+%%   - duplicate declaration: dup_ind_def (was defn, now inductive)

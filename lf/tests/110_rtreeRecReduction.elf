@@ -1,19 +1,161 @@
 %%% Expected outcome: accept
 %%% Reduction behavior of `RTree.rec` on `RTree.mk`.
-%% SKIP: inductive not yet supported
-%% SKIP: inductive not yet supported
-%% SKIP: inductive not yet supported
-%% SKIP: def RTree.left — synth failed: const "RTree" not in decl table
+%% inductive Bool
+Bool/type-wf :
+   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
+   = (defeq/sort-refl-at (lsucc lzero)).
 
-%% SKIP: def rfl — synth failed: const "Eq" not in decl table
+Bool/decl : declared "Bool" lnil
+   (esort (lsucc lzero))
+   indt
+   (dkind-ok/indt Bool/type-wf).
 
-%% SKIP: thm rtreeRecReduction — synth failed: const "RTree" not in decl table
+%% inductive ctor Bool.false
+Bool_false/type-wf :
+   defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort (lsucc lzero))
+   = (defeq/const Bool/decl).
+
+Bool_false/decl : declared "Bool.false" lnil
+   (econst "Bool" lnil)
+   ctor
+   (dkind-ok/ctor Bool_false/type-wf).
+
+%% inductive ctor Bool.true
+Bool_true/type-wf :
+   defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort (lsucc lzero))
+   = (defeq/const Bool/decl).
+
+Bool_true/decl : declared "Bool.true" lnil
+   (econst "Bool" lnil)
+   ctor
+   (dkind-ok/ctor Bool_true/type-wf).
+
+%% inductive recursor Bool.rec
+Bool_rec/type-wf :
+   {u : lvl} defeq (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort (limax (limax (lsucc lzero) (lsucc u)) (limax u (limax u (limax (lsucc lzero) u)))))
+   = [u] (defeq/forall (defeq/forall (defeq/const Bool/decl) ([x] [y] (defeq/sort-refl-at u))) ([x] [y] (defeq/forall (defeq/app y (defeq/const Bool_false/decl)) ([z] [w] (defeq/forall (defeq/app y (defeq/const Bool_true/decl)) ([x1] [y1] (defeq/forall (defeq/const Bool/decl) ([z1] [w1] (defeq/app y w1))))))))).
+
+Bool_rec/decl : {u : lvl} declared "Bool.rec" (lcons u lnil)
+   (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w)))))))))
+   irec
+   (dkind-ok/irec (Bool_rec/type-wf u)).
+
+%% inductive RTree
+RTree/type-wf :
+   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
+   = (defeq/sort-refl-at (lsucc lzero)).
+
+RTree/decl : declared "RTree" lnil
+   (esort (lsucc lzero))
+   indt
+   (dkind-ok/indt RTree/type-wf).
+
+%% inductive ctor RTree.leaf
+RTree_leaf/type-wf :
+   defeq (econst "RTree" lnil) (econst "RTree" lnil) (esort (lsucc lzero))
+   = (defeq/const RTree/decl).
+
+RTree_leaf/decl : declared "RTree.leaf" lnil
+   (econst "RTree" lnil)
+   ctor
+   (dkind-ok/ctor RTree_leaf/type-wf).
+
+%% inductive ctor RTree.node
+RTree_node/type-wf :
+   defeq (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil))) (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil))) (esort (limax (limax (lsucc lzero) (lsucc lzero)) (lsucc lzero)))
+   = (defeq/forall (defeq/forall (defeq/const Bool/decl) ([x] [y] (defeq/const RTree/decl))) ([x] [y] (defeq/const RTree/decl))).
+
+RTree_node/decl : declared "RTree.node" lnil
+   (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil)))
+   ctor
+   (dkind-ok/ctor RTree_node/type-wf).
+
+%% inductive recursor RTree.rec
+RTree_rec/type-wf :
+   {u : lvl} defeq (eforall (eforall (econst "RTree" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "RTree.leaf" lnil)) ([y] (eforall (eforall (eforall (econst "Bool" lnil) ([z] (econst "RTree" lnil))) ([z] (eforall (eforall (econst "Bool" lnil) ([w] (eapp x (eapp z w)))) ([w] (eapp x (eapp (econst "RTree.node" lnil) z)))))) ([z] (eforall (econst "RTree" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "RTree" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "RTree.leaf" lnil)) ([y] (eforall (eforall (eforall (econst "Bool" lnil) ([z] (econst "RTree" lnil))) ([z] (eforall (eforall (econst "Bool" lnil) ([w] (eapp x (eapp z w)))) ([w] (eapp x (eapp (econst "RTree.node" lnil) z)))))) ([z] (eforall (econst "RTree" lnil) ([w] (eapp x w))))))))) (esort (limax (limax (lsucc lzero) (lsucc u)) (limax u (limax (limax (limax (lsucc lzero) (lsucc lzero)) (limax (limax (lsucc lzero) u) u)) (limax (lsucc lzero) u)))))
+   = [u] (defeq/forall (defeq/forall (defeq/const RTree/decl) ([x] [y] (defeq/sort-refl-at u))) ([x] [y] (defeq/forall (defeq/app y (defeq/const RTree_leaf/decl)) ([z] [w] (defeq/forall (defeq/forall (defeq/forall (defeq/const Bool/decl) ([x1] [y1] (defeq/const RTree/decl))) ([x1] [y1] (defeq/forall (defeq/forall (defeq/const Bool/decl) ([z1] [w1] (defeq/app y (defeq/app y1 w1)))) ([z1] [w1] (defeq/app y (defeq/app (defeq/const RTree_node/decl) y1)))))) ([x1] [y1] (defeq/forall (defeq/const RTree/decl) ([z1] [w1] (defeq/app y w1))))))))).
+
+RTree_rec/decl : {u : lvl} declared "RTree.rec" (lcons u lnil)
+   (eforall (eforall (econst "RTree" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "RTree.leaf" lnil)) ([y] (eforall (eforall (eforall (econst "Bool" lnil) ([z] (econst "RTree" lnil))) ([z] (eforall (eforall (econst "Bool" lnil) ([w] (eapp x (eapp z w)))) ([w] (eapp x (eapp (econst "RTree.node" lnil) z)))))) ([z] (eforall (econst "RTree" lnil) ([w] (eapp x w)))))))))
+   irec
+   (dkind-ok/irec (RTree_rec/type-wf u)).
+
+%% inductive Eq
+Eq/type-wf :
+   {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (esort (limax (lsucc u_1) (limax u_1 (limax u_1 (lsucc lzero)))))
+   = [u_1] (defeq/forall (defeq/sort-refl-at u_1) ([x] [y] (defeq/forall y ([z] [w] (defeq/forall y ([x1] [y1] (defeq/sort-refl-at lzero))))))).
+
+Eq/decl : {u_1 : lvl} declared "Eq" (lcons u_1 lnil)
+   (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero)))))))
+   indt
+   (dkind-ok/indt (Eq/type-wf u_1)).
+
+%% inductive ctor Eq.refl
+Eq_refl/type-wf :
+   {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))) (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))) (esort (limax (lsucc u_1) (limax u_1 lzero)))
+   = [u_1] (defeq/forall (defeq/sort-refl-at u_1) ([x] [y] (defeq/forall y ([z] [w] (defeq/app (defeq/app (defeq/app (defeq/const (Eq/decl u_1)) y) w) w))))).
+
+Eq_refl/decl : {u_1 : lvl} declared "Eq.refl" (lcons u_1 lnil)
+   (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y)))))
+   ctor
+   (dkind-ok/ctor (Eq_refl/type-wf u_1)).
+
+%% inductive recursor Eq.rec
+Eq_rec/type-wf :
+   {u : lvl} {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort (limax (lsucc u_1) (limax u_1 (limax (limax u_1 (limax lzero (lsucc u))) (limax u (limax u_1 (limax lzero u)))))))
+   = [u] [u_1] (defeq/forall (defeq/sort-refl-at u_1) ([x] [y] (defeq/forall y ([z] [w] (defeq/forall (defeq/forall y ([x1] [y1] (defeq/forall (defeq/app (defeq/app (defeq/app (defeq/const (Eq/decl u_1)) y) w) y1) ([z1] [w1] (defeq/sort-refl-at u))))) ([x1] [y1] (defeq/forall (defeq/app (defeq/app y1 w) (defeq/app (defeq/app (defeq/const (Eq_refl/decl u_1)) y) w)) ([z1] [w1] (defeq/forall y ([x2] [y2] (defeq/forall (defeq/app (defeq/app (defeq/app (defeq/const (Eq/decl u_1)) y) w) y2) ([z2] [w2] (defeq/app (defeq/app y1 y2) w2))))))))))))).
+
+Eq_rec/decl : {u : lvl} {u_1 : lvl} declared "Eq.rec" (lcons u (lcons u_1 lnil))
+   (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1)))))))))))))
+   irec
+   (dkind-ok/irec (Eq_rec/type-wf u u_1)).
+
+%% def RTree.left
+RTree_left/type-wf :
+   defeq (eforall (econst "RTree" lnil) ([x] (econst "RTree" lnil))) (eforall (econst "RTree" lnil) ([x] (econst "RTree" lnil))) (esort (limax (lsucc lzero) (lsucc lzero)))
+   = (defeq/forall (defeq/const RTree/decl) ([x] [y] (defeq/const RTree/decl))).
+
+RTree_left/value-typed :
+   defeq (elam (econst "RTree" lnil) ([x] (eapp (eapp (eapp (eapp (econst "RTree.rec" (lcons (lsucc lzero) lnil)) (elam (econst "RTree" lnil) ([y] (econst "RTree" lnil)))) (econst "RTree.leaf" lnil)) (elam (eforall (econst "Bool" lnil) ([y] (econst "RTree" lnil))) ([y] (elam (eforall (econst "Bool" lnil) ([z] (eapp (elam (econst "RTree" lnil) ([w] (econst "RTree" lnil))) (eapp y z)))) ([z] (eapp y (econst "Bool.true" lnil))))))) x))) (elam (econst "RTree" lnil) ([x] (eapp (eapp (eapp (eapp (econst "RTree.rec" (lcons (lsucc lzero) lnil)) (elam (econst "RTree" lnil) ([y] (econst "RTree" lnil)))) (econst "RTree.leaf" lnil)) (elam (eforall (econst "Bool" lnil) ([y] (econst "RTree" lnil))) ([y] (elam (eforall (econst "Bool" lnil) ([z] (eapp (elam (econst "RTree" lnil) ([w] (econst "RTree" lnil))) (eapp y z)))) ([z] (eapp y (econst "Bool.true" lnil))))))) x))) (eforall (econst "RTree" lnil) ([x] (econst "RTree" lnil)))
+   = (defeq/conv (defeq/forall (defeq/const RTree/decl) ([x] [y] (defeq/beta ([z] [w] (defeq/const RTree/decl)) y))) (defeq/lam (defeq/const RTree/decl) ([x] [y] (defeq/app (defeq/app (defeq/app (defeq/app (defeq/const (RTree_rec/decl (lsucc lzero))) (defeq/lam (defeq/const RTree/decl) ([z] [w] (defeq/const RTree/decl)))) (defeq/conv (defeq/symm (defeq/beta ([z] [w] (defeq/const RTree/decl)) (defeq/const RTree_leaf/decl))) (defeq/const RTree_leaf/decl))) (defeq/conv (defeq/forall (defeq/forall (defeq/const Bool/decl) ([z] [w] (defeq/const RTree/decl))) ([z] [w] (defeq/forall (defeq/forall (defeq/const Bool/decl) ([x1] [y1] (defeq/app (defeq/lam (defeq/const RTree/decl) ([z1] [w1] (defeq/const RTree/decl))) (defeq/app w y1)))) ([x1] [y1] (defeq/symm (defeq/beta ([z1] [w1] (defeq/const RTree/decl)) (defeq/app (defeq/const RTree_node/decl) w))))))) (defeq/lam (defeq/forall (defeq/const Bool/decl) ([z] [w] (defeq/const RTree/decl))) ([z] [w] (defeq/lam (defeq/forall (defeq/const Bool/decl) ([x1] [y1] (defeq/app (defeq/lam (defeq/const RTree/decl) ([z1] [w1] (defeq/const RTree/decl))) (defeq/app w y1)))) ([x1] [y1] (defeq/app w (defeq/const Bool_true/decl)))))))) y)))).
+
+RTree_left/decl : declared "RTree.left" lnil
+   (eforall (econst "RTree" lnil) ([x] (econst "RTree" lnil)))
+   (defn (elam (econst "RTree" lnil) ([x] (eapp (eapp (eapp (eapp (econst "RTree.rec" (lcons (lsucc lzero) lnil)) (elam (econst "RTree" lnil) ([y] (econst "RTree" lnil)))) (econst "RTree.leaf" lnil)) (elam (eforall (econst "Bool" lnil) ([y] (econst "RTree" lnil))) ([y] (elam (eforall (econst "Bool" lnil) ([z] (eapp (elam (econst "RTree" lnil) ([w] (econst "RTree" lnil))) (eapp y z)))) ([z] (eapp y (econst "Bool.true" lnil))))))) x))))
+   (dkind-ok/defn RTree_left/type-wf RTree_left/value-typed).
+
+%% def rfl
+rfl/type-wf :
+   {u : lvl} defeq (eforall (esort u) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u lnil)) x) y) y))))) (eforall (esort u) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u lnil)) x) y) y))))) (esort (limax (lsucc u) (limax u lzero)))
+   = [u] (defeq/forall (defeq/sort-refl-at u) ([x] [y] (defeq/forall y ([z] [w] (defeq/app (defeq/app (defeq/app (defeq/const (Eq/decl u)) y) w) w))))).
+
+rfl/value-typed :
+   {u : lvl} defeq (elam (esort u) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons u lnil)) x) y))))) (elam (esort u) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons u lnil)) x) y))))) (eforall (esort u) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u lnil)) x) y) y)))))
+   = [u] (defeq/lam (defeq/sort-refl-at u) ([x] [y] (defeq/lam y ([z] [w] (defeq/app (defeq/app (defeq/const (Eq_refl/decl u)) y) w))))).
+
+rfl/decl : {u : lvl} declared "rfl" (lcons u lnil)
+   (eforall (esort u) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u lnil)) x) y) y)))))
+   (defn (elam (esort u) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons u lnil)) x) y))))))
+   (dkind-ok/defn (rfl/type-wf u) (rfl/value-typed u)).
+
+%% TRANSLATOR: could not bridge inferred type to declared type
+%%   inferred type kind: forallE
+%%   declared type kind: forallE
+%%   emitting valTy.proof; Twelf will likely reject.
+%% thm rtreeRecReduction
+rtreeRecReduction/type-wf :
+   defeq (eforall (econst "RTree" lnil) ([x] (eforall (econst "RTree" lnil) ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "RTree" lnil)) (eapp (econst "RTree.left" lnil) (eapp (econst "RTree.node" lnil) (elam (econst "Bool" lnil) ([z] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([w] (econst "RTree" lnil)))) y) x) z)))))) x))))) (eforall (econst "RTree" lnil) ([x] (eforall (econst "RTree" lnil) ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "RTree" lnil)) (eapp (econst "RTree.left" lnil) (eapp (econst "RTree.node" lnil) (elam (econst "Bool" lnil) ([z] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([w] (econst "RTree" lnil)))) y) x) z)))))) x))))) (esort (limax (lsucc lzero) (limax (lsucc lzero) lzero)))
+   = (defeq/forall (defeq/const RTree/decl) ([x] [y] (defeq/forall (defeq/const RTree/decl) ([z] [w] (defeq/app (defeq/app (defeq/app (defeq/const (Eq/decl (lsucc lzero))) (defeq/const RTree/decl)) (defeq/app (defeq/const RTree_left/decl) (defeq/app (defeq/const RTree_node/decl) (defeq/conv (defeq/forall (defeq/const Bool/decl) ([x1] [y1] (defeq/beta ([z1] [w1] (defeq/const RTree/decl)) y1))) (defeq/lam (defeq/const Bool/decl) ([x1] [y1] (defeq/app (defeq/app (defeq/app (defeq/app (defeq/const (Bool_rec/decl (lsucc lzero))) (defeq/lam (defeq/const Bool/decl) ([z1] [w1] (defeq/const RTree/decl)))) (defeq/conv (defeq/symm (defeq/beta ([z1] [w1] (defeq/const RTree/decl)) (defeq/const Bool_false/decl))) w)) (defeq/conv (defeq/symm (defeq/beta ([z1] [w1] (defeq/const RTree/decl)) (defeq/const Bool_true/decl))) y)) y1))))))) y))))).
+
+rtreeRecReduction/value-typed :
+   defeq (elam (econst "RTree" lnil) ([x] (elam (econst "RTree" lnil) ([y] (eapp (eapp (econst "rfl" (lcons (lsucc lzero) lnil)) (econst "RTree" lnil)) (eapp (econst "RTree.left" lnil) (eapp (econst "RTree.node" lnil) (elam (econst "Bool" lnil) ([z] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([w] (econst "RTree" lnil)))) y) x) z)))))))))) (elam (econst "RTree" lnil) ([x] (elam (econst "RTree" lnil) ([y] (eapp (eapp (econst "rfl" (lcons (lsucc lzero) lnil)) (econst "RTree" lnil)) (eapp (econst "RTree.left" lnil) (eapp (econst "RTree.node" lnil) (elam (econst "Bool" lnil) ([z] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([w] (econst "RTree" lnil)))) y) x) z)))))))))) (eforall (econst "RTree" lnil) ([x] (eforall (econst "RTree" lnil) ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "RTree" lnil)) (eapp (econst "RTree.left" lnil) (eapp (econst "RTree.node" lnil) (elam (econst "Bool" lnil) ([z] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([w] (econst "RTree" lnil)))) y) x) z)))))) x)))))
+   = (defeq/lam (defeq/const RTree/decl) ([x] [y] (defeq/lam (defeq/const RTree/decl) ([z] [w] (defeq/app (defeq/app (defeq/const (rfl/decl (lsucc lzero))) (defeq/const RTree/decl)) (defeq/app (defeq/const RTree_left/decl) (defeq/app (defeq/const RTree_node/decl) (defeq/conv (defeq/forall (defeq/const Bool/decl) ([x1] [y1] (defeq/beta ([z1] [w1] (defeq/const RTree/decl)) y1))) (defeq/lam (defeq/const Bool/decl) ([x1] [y1] (defeq/app (defeq/app (defeq/app (defeq/app (defeq/const (Bool_rec/decl (lsucc lzero))) (defeq/lam (defeq/const Bool/decl) ([z1] [w1] (defeq/const RTree/decl)))) (defeq/conv (defeq/symm (defeq/beta ([z1] [w1] (defeq/const RTree/decl)) (defeq/const Bool_false/decl))) w)) (defeq/conv (defeq/symm (defeq/beta ([z1] [w1] (defeq/const RTree/decl)) (defeq/const Bool_true/decl))) y)) y1))))))))))).
+
+rtreeRecReduction/decl : declared "rtreeRecReduction" lnil
+   (eforall (econst "RTree" lnil) ([x] (eforall (econst "RTree" lnil) ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "RTree" lnil)) (eapp (econst "RTree.left" lnil) (eapp (econst "RTree.node" lnil) (elam (econst "Bool" lnil) ([z] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([w] (econst "RTree" lnil)))) y) x) z)))))) x)))))
+   (thm (elam (econst "RTree" lnil) ([x] (elam (econst "RTree" lnil) ([y] (eapp (eapp (econst "rfl" (lcons (lsucc lzero) lnil)) (econst "RTree" lnil)) (eapp (econst "RTree.left" lnil) (eapp (econst "RTree.node" lnil) (elam (econst "Bool" lnil) ([z] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([w] (econst "RTree" lnil)))) y) x) z)))))))))))
+   (dkind-ok/thm rtreeRecReduction/type-wf rtreeRecReduction/value-typed).
 
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.
-
-%% Translator summary:
-%%   - def RTree.left: synth failed (const "RTree" not in decl table)
-%%   - def rfl: synth failed (const "Eq" not in decl table)
-%%   - thm rtreeRecReduction: synth failed (const "RTree" not in decl table)
