@@ -5,20 +5,28 @@ And/type-wf :
    defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (esort (limax (lsucc lzero) (limax (lsucc lzero) (lsucc lzero))))
    = (defeq/forall (defeq/sort-refl-at lzero) ([x] [y] (defeq/forall (defeq/sort-refl-at lzero) ([z] [w] (defeq/sort-refl-at lzero))))).
 
+And/ends-in-sort :
+   ends-in-sort (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero)))))
+   = (ends-in-sort/forall ([x] (ends-in-sort/forall ([y] ends-in-sort/sort)))).
+
 And/decl : declared "And" lnil
    (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero)))))
    indt
-   (dkind-ok/indt And/type-wf).
+   (dkind-ok/indt And/type-wf And/ends-in-sort).
 
 %% inductive ctor And.intro
 And_intro/type-wf :
    defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) (esort (limax (lsucc lzero) (limax (lsucc lzero) (limax lzero (limax lzero lzero)))))
    = (defeq/forall (defeq/sort-refl-at lzero) ([x] [y] (defeq/forall (defeq/sort-refl-at lzero) ([z] [w] (defeq/forall y ([x1] [y1] (defeq/forall w ([z1] [w1] (defeq/app (defeq/app (defeq/const And/decl) y) w))))))))).
 
+And_intro/positivity :
+   ctor-positive "And" lnil (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y)))))))))
+   = (ctor-positive/intro ([S] (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp S x) y)))))))))) ([S] (ctor-spine/arg (strict-pos/absent absent/sort) ([_y0] [_h0] (ctor-spine/arg (strict-pos/absent absent/sort) ([_y1] [_h1] (ctor-spine/arg (strict-pos/absent _h0) ([_y2] [_h2] (ctor-spine/arg (strict-pos/absent _h1) ([_y3] [_h3] (ctor-spine/result (applies-self/app (applies-self/app applies-self/refl))))))))))))).
+
 And_intro/decl : declared "And.intro" lnil
    (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y)))))))))
    ctor
-   (dkind-ok/ctor And_intro/type-wf).
+   (dkind-ok/ctor And_intro/type-wf And_intro/positivity).
 
 %% inductive recursor And.rec
 And_rec/type-wf :

@@ -5,20 +5,28 @@ PUnit/type-wf :
    {u : lvl} defeq (esort u) (esort u) (esort (lsucc u))
    = [u] (defeq/sort-refl-at u).
 
+PUnit/ends-in-sort :
+   {u : lvl} ends-in-sort (esort u)
+   = [u] ends-in-sort/sort.
+
 PUnit/decl : {u : lvl} declared "PUnit" (lcons u lnil)
    (esort u)
    indt
-   (dkind-ok/indt (PUnit/type-wf u)).
+   (dkind-ok/indt (PUnit/type-wf u) (PUnit/ends-in-sort u)).
 
 %% inductive ctor PUnit.unit
 PUnit_unit/type-wf :
    {u : lvl} defeq (econst "PUnit" (lcons u lnil)) (econst "PUnit" (lcons u lnil)) (esort u)
    = [u] (defeq/const (PUnit/decl u)).
 
+PUnit_unit/positivity :
+   {u : lvl} ctor-positive "PUnit" (lcons u lnil) (econst "PUnit" (lcons u lnil))
+   = [u] (ctor-positive/intro ([S] S) ([S] (ctor-spine/result applies-self/refl))).
+
 PUnit_unit/decl : {u : lvl} declared "PUnit.unit" (lcons u lnil)
    (econst "PUnit" (lcons u lnil))
    ctor
-   (dkind-ok/ctor (PUnit_unit/type-wf u)).
+   (dkind-ok/ctor (PUnit_unit/type-wf u) (PUnit_unit/positivity u)).
 
 %% inductive recursor PUnit.rec
 PUnit_rec/type-wf :

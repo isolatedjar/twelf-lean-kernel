@@ -19,10 +19,14 @@ dup_ctor_def/type-wf :
    defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = (defeq/sort-refl-at (lsucc lzero)).
 
+dup_ctor_def/ends-in-sort :
+   ends-in-sort (esort (lsucc lzero))
+   = ends-in-sort/sort.
+
 dup_ctor_def/decl : declared "dup_ctor_def" lnil
    (esort (lsucc lzero))
    indt
-   (dkind-ok/indt dup_ctor_def/type-wf).
+   (dkind-ok/indt dup_ctor_def/type-wf dup_ctor_def/ends-in-sort).
 
 %% TRANSLATOR REJECT: duplicate declaration of "dup_ctor_def.mk"
 %%   previously declared as kind=defn, now seen as kind=inductive ctor

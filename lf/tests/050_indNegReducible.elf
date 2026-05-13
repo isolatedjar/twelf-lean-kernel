@@ -31,20 +31,22 @@ indNegReducible/type-wf :
    defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = (defeq/sort-refl-at (lsucc lzero)).
 
+indNegReducible/ends-in-sort :
+   ends-in-sort (esort (lsucc lzero))
+   = ends-in-sort/sort.
+
 indNegReducible/decl : declared "indNegReducible" lnil
    (esort (lsucc lzero))
    indt
-   (dkind-ok/indt indNegReducible/type-wf).
+   (dkind-ok/indt indNegReducible/type-wf indNegReducible/ends-in-sort).
 
 %% inductive ctor indNegReducible.mk
 indNegReducible_mk/type-wf :
    defeq (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil))) (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil))) (esort (limax (limax (lsucc lzero) (lsucc lzero)) (lsucc lzero)))
    = (defeq/forall (defeq/forall (defeq/app (defeq/app (defeq/const constType/decl) (defeq/const aType/decl)) (defeq/const indNegReducible/decl)) ([x] [y] (defeq/const indNegReducible/decl))) ([x] [y] (defeq/const indNegReducible/decl))).
 
-indNegReducible_mk/decl : declared "indNegReducible.mk" lnil
-   (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil)))
-   ctor
-   (dkind-ok/ctor indNegReducible_mk/type-wf).
+%% TRANSLATOR REJECT: ctor indNegReducible.mk — type is not strictly positive in indNegReducible (or uses unsupported expr form)
+%solve _violation_0 : tcb-violation.
 
 %% inductive recursor indNegReducible.rec
 indNegReducible_rec/type-wf :
@@ -59,3 +61,6 @@ indNegReducible_rec/decl : declared "indNegReducible.rec" lnil
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.
+
+%% Translator summary:
+%%   - ctor indNegReducible.mk: strict positivity not witnessable

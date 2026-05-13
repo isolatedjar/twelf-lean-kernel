@@ -226,6 +226,205 @@ quot : dkind.
 %%%   quot   at T: T is a well-formed type (Quot/mk/lift/ind's type)
 %%% Closed family.
 
+%%% `ends-in-sort T` holds when T's structural shape is a (possibly
+%%% empty) chain of forall-binders ending in a sort literal.  Used to
+%%% require inductive type signatures to be Π-chains ending in `Sort _`,
+%%% not arbitrary well-typed terms — Lean's kernel demands this so it
+%%% can compute the universe of the inductive (and thereby the motive
+%%% type, large-elimination rules, etc.) without depending on opaque
+%%% bodies.
+%%%
+%%% Closed family: only sorts and foralls qualify.  An axiom or other
+%%% opaque term whose type happens to be a sort doesn't.
+
+ends-in-sort : expr -> type.
+
+ends-in-sort/sort :
+   ends-in-sort (esort L).
+
+ends-in-sort/forall :
+   ({x : expr} ends-in-sort (B x))
+   -> ends-in-sort (eforall A B).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Strict positivity for inductive constructors
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%
+%%% Lean's kernel requires that for every constructor `c` of an
+%%% inductive type `Foo`, with declared type
+%%%   c : Π (a_1 : A_1) ... (a_n : A_n), Foo p_1 ... p_k
+%%% each argument type A_j is *strictly positive in Foo*:
+%%%   (a) Foo doesn't occur in A_j at all, OR
+%%%   (b) A_j = Foo applied to anything (a recursive use), OR
+%%%   (c) A_j = Π (y : B) → C  with Foo absent from B and Foo
+%%%       strictly positive in C.
+%%%
+%%% In particular, Foo cannot appear in the *domain* of any
+%%% Π-binder inside A_j — neither positively nor negatively.  Without
+%%% this restriction one can construct (Foo → Empty) → Foo and derive
+%%% inhabitants of Empty.  Strict positivity is *the* soundness gate
+%%% on inductive declarations.
+%%%
+%%% Lean's check is defined by structural recursion on the argument
+%%% type, with the leaf case being "Foo does not occur in this
+%%% expression".  Naively encoding the leaf in LF requires deciding
+%%% name-disequality on constants, which is awkward (LF is a positive
+%%% type theory — it derives existence, not absence).
+%%%
+%%% The encoding below sidesteps the leaf-disequality issue by HOAS-
+%%% binding the inductive's self-reference.  The bound LF variable `S`
+%%% represents Foo for the purpose of the check; the translator
+%%% replaces every Lean-side occurrence of (econst "Foo" LS) in a
+%%% ctor's type with `S` before constructing the witness.  Then:
+%%%
+%%%   * `S` is an LF parameter introduced by `{S : expr}`, distinct
+%%%     from every `econst` literal (different syntactic class).
+%%%   * `S` is also distinct from every other HOAS-bound expression
+%%%     variable introduced by `{y : expr}` inside a ctor's Π-chain
+%%%     (different LF parameters).
+%%%   * "S absent from E" is then a purely structural traversal of E:
+%%%     at every constructor node we recurse; nothing in the closed
+%%%     rule set produces `absent S S`.
+%%%
+%%% This is the standard HOAS adequacy trick (cf. Twelf's wiki page on
+%%% adequacy: the equality on syntactic objects is LF α-equivalence,
+%%% and bound names are unique parameters).
+%%%
+%%% Adequacy claim: a closed term in this LF signature of type
+%%%   {S : expr} ctor-spine S T
+%%% exists if and only if T, viewed as a Lean expression with `S` in
+%%% place of Foo, satisfies Lean's strict-positivity condition for
+%%% constructors of Foo (in the non-nested-inductive fragment).
+%%%
+%%% Limits (documented for honesty):
+%%%
+%%%   (i) Nested inductives.  Lean permits
+%%%         inductive RTree | node : List RTree → RTree
+%%%       where `RTree` appears as an argument to another inductive
+%%%       (`List`) that's known to be well-behaved.  This is the
+%%%       "extended strict positivity" rule.  We do NOT encode it;
+%%%       `absent S (eapp (econst "List" _) S)` is unprovable here
+%%%       (the inner `absent S S` premise fails).  Lean's permissive
+%%%       rule for nested inductives requires propagating positivity
+%%%       through type formers, which in turn requires a per-inductive
+%%%       "is-well-behaved" predicate.  Tractable but out of scope.
+%%%
+%%%  (ii) Mutual inductives.  Each member of a mutual block can refer
+%%%       to the others; the present encoding HOAS-binds one self.
+%%%       A mutual block needs `{S_1 : expr} ... {S_n : expr}` with
+%%%       ctors of each member checked against all the bound self-
+%%%       references.  The judgments below extend straightforwardly
+%%%       (an absent/strict-pos predicate parameterized by a list of
+%%%       self-vars rather than just one) but we keep the single-self
+%%%       version for clarity.
+%%%
+%%% (iii) Parameters vs indices.  Lean distinguishes uniform parameters
+%%%       (constant across ctor result types) from indices (free to
+%%%       vary).  We don't enforce uniformity here; that's an arity/
+%%%       shape check on the ctor's result, orthogonal to positivity.
+%%%
+%%%  (iv) Recursive-argument elimination universe.  For inductives in
+%%%       Type (not Prop), each ctor's recursive arguments may need
+%%%       universe constraints (e.g. `A_j`'s sort ≤ Foo's sort) for
+%%%       the recursor to be soundly large-eliminating.  Strict
+%%%       positivity is a separate concern from universe consistency.
+%%%
+%%% The TCB below precisely captures (i)-naive strict positivity.
+
+%%% --- `applies-self S E` : E is a (possibly applied) instance of S.
+%%% Captures the "Foo p_1 ... p_k" form a constructor's result must
+%%% take, and the "Foo args" form a recursive argument may take.
+
+applies-self : expr -> expr -> type.   %name applies-self AS.
+
+applies-self/refl : applies-self S S.
+applies-self/app  : applies-self S F -> applies-self S (eapp F A).
+
+%%% --- `absent S E` : the LF variable S does not occur in E.
+%%% Note: there is no constructor producing `absent S S`.  When S is
+%%% a fresh HOAS-bound parameter at the LF level, the closure of this
+%%% family witnesses true syntactic absence.
+
+absent : expr -> expr -> type.   %name absent AB.
+
+absent/sort   : absent S (esort L).
+absent/const  : absent S (econst N LS).
+absent/app    : absent S F -> absent S A -> absent S (eapp F A).
+absent/forall :
+   absent S A
+   -> ({y : expr} absent S y -> absent S (B y))
+   -> absent S (eforall A B).
+absent/lam    :
+   absent S A
+   -> ({y : expr} absent S y -> absent S (B y))
+   -> absent S (elam A B).
+
+%%% Note the `{y : expr} absent S y -> ...` pattern: when we enter
+%%% a binder, we extend the LF context with both the parameter y and
+%%% the hypothesis `absent S y`.  This hypothesis is needed to discharge
+%%% subsequent recursive `absent S y` goals — y is fresh, so it is
+%%% distinct from S, but LF doesn't auto-derive disequalities; we
+%%% explicitly carry the disequality as a hypothesis.  Adequacy:
+%%% inside `{y : expr}`, y stands for an arbitrary Lean expression,
+%%% and Lean's strict-positivity check explicitly treats the bound
+%%% variable as "different from Foo".
+
+%%% --- `strict-pos S E` : S occurs only strictly positively in E.
+
+strict-pos : expr -> expr -> type.   %name strict-pos SP.
+
+strict-pos/absent : absent S E -> strict-pos S E.
+strict-pos/head   : applies-self S E -> strict-pos S E.
+strict-pos/forall :
+   absent S A
+   -> ({y : expr} absent S y -> strict-pos S (B y))
+   -> strict-pos S (eforall A B).
+
+%%% Note the asymmetry: in `strict-pos/forall`, the *domain* A must
+%%% be S-absent (per Lean's strict positivity), but the *codomain*
+%%% (B y) is recursively strictly positive (S may appear strictly-
+%%% positively in the codomain, just not in the domain).  This is
+%%% the soundness-critical clause.
+
+%%% --- `ctor-spine S E` : E is a Π-chain whose result is S-applied,
+%%% with every argument type strictly positive in S.  This is the
+%%% shape Lean requires of every constructor of the inductive whose
+%%% self-reference is S.
+
+ctor-spine : expr -> expr -> type.   %name ctor-spine CS.
+
+ctor-spine/result : applies-self S E -> ctor-spine S E.
+ctor-spine/arg    :
+   strict-pos S A
+   -> ({y : expr} absent S y -> ctor-spine S (B y))
+   -> ctor-spine S (eforall A B).
+
+%%% --- `ctor-positive N0 LS0 T` : T (a ctor's type) is positive
+%%% with respect to the type former named N0 at level instantiation
+%%% LS0.  The HOAS-bound `T_HOAS` is an LF-level function turning
+%%% occurrences of (econst N0 LS0) into the bound `S`; the translator
+%%% supplies T_HOAS explicitly as `[S] <T with N0 substituted>`.
+%%%
+%%% T_HOAS is taken as an *explicit* argument because Twelf's higher-
+%%% order pattern unification cannot reconstruct it when the same
+%%% bound variable appears more than once in the ctor's result
+%%% (e.g. `Eq.refl : ... → Eq α a a`).  Making it explicit reduces
+%%% the check to β-reduction + syntactic equality, which is total.
+
+ctor-positive : name -> lvls -> expr -> type.   %name ctor-positive CP.
+
+ctor-positive/intro :
+   {T_HOAS : expr -> expr}
+   ({S : expr} ctor-spine S (T_HOAS S))
+   -> ctor-positive N0 LS0 (T_HOAS (econst N0 LS0)).
+
+%%% Adequacy of `ctor-positive/intro`'s premise
+%%%   {S : expr} ctor-spine S (T_HOAS S)
+%%% is the standard HOAS adequacy: closed inhabitants are in
+%%% bijection with Lean's strict-positivity derivations on
+%%% `T_HOAS (econst N0 LS0)` (viewed as the ctor's type), in the
+%%% non-nested-inductive fragment.
+
 dkind-ok : dkind -> expr -> type.
 
 dkind-ok/defn :
@@ -241,10 +440,20 @@ dkind-ok/ax   :
    defeq T T (esort U) -> dkind-ok ax T.
 
 dkind-ok/indt :
-   defeq T T (esort U) -> dkind-ok indt T.
+   defeq T T (esort U) -> ends-in-sort T -> dkind-ok indt T.
 
 dkind-ok/ctor :
-   defeq T T (esort U) -> dkind-ok ctor T.
+   defeq T T (esort U)
+   -> ctor-positive N0 LS0 T
+   -> dkind-ok ctor T.
+
+%%% The N0 and LS0 are the inductive type former's name and level
+%%% instantiation; the translator supplies them when building this
+%%% witness.  Soundness intent: every ctor that we add to `declared`
+%%% comes packaged with a proof that its type is strictly positive
+%%% in its inductive's self-reference.  When iota rules are added
+%%% later, they will pattern-match on `dkind-ok/ctor` derivations
+%%% and thus may rely on this positivity having been checked.
 
 dkind-ok/irec :
    defeq T T (esort U) -> dkind-ok irec T.

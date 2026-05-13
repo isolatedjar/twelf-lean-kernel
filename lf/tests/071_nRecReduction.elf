@@ -5,20 +5,28 @@ And/type-wf :
    defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (esort (limax (lsucc lzero) (limax (lsucc lzero) (lsucc lzero))))
    = (defeq/forall (defeq/sort-refl-at lzero) ([x] [y] (defeq/forall (defeq/sort-refl-at lzero) ([z] [w] (defeq/sort-refl-at lzero))))).
 
+And/ends-in-sort :
+   ends-in-sort (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero)))))
+   = (ends-in-sort/forall ([x] (ends-in-sort/forall ([y] ends-in-sort/sort)))).
+
 And/decl : declared "And" lnil
    (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero)))))
    indt
-   (dkind-ok/indt And/type-wf).
+   (dkind-ok/indt And/type-wf And/ends-in-sort).
 
 %% inductive ctor And.intro
 And_intro/type-wf :
    defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) (esort (limax (lsucc lzero) (limax (lsucc lzero) (limax lzero (limax lzero lzero)))))
    = (defeq/forall (defeq/sort-refl-at lzero) ([x] [y] (defeq/forall (defeq/sort-refl-at lzero) ([z] [w] (defeq/forall y ([x1] [y1] (defeq/forall w ([z1] [w1] (defeq/app (defeq/app (defeq/const And/decl) y) w))))))))).
 
+And_intro/positivity :
+   ctor-positive "And" lnil (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y)))))))))
+   = (ctor-positive/intro ([S] (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp S x) y)))))))))) ([S] (ctor-spine/arg (strict-pos/absent absent/sort) ([_y0] [_h0] (ctor-spine/arg (strict-pos/absent absent/sort) ([_y1] [_h1] (ctor-spine/arg (strict-pos/absent _h0) ([_y2] [_h2] (ctor-spine/arg (strict-pos/absent _h1) ([_y3] [_h3] (ctor-spine/result (applies-self/app (applies-self/app applies-self/refl))))))))))))).
+
 And_intro/decl : declared "And.intro" lnil
    (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y)))))))))
    ctor
-   (dkind-ok/ctor And_intro/type-wf).
+   (dkind-ok/ctor And_intro/type-wf And_intro/positivity).
 
 %% inductive recursor And.rec
 And_rec/type-wf :
@@ -35,30 +43,42 @@ N/type-wf :
    defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = (defeq/sort-refl-at (lsucc lzero)).
 
+N/ends-in-sort :
+   ends-in-sort (esort (lsucc lzero))
+   = ends-in-sort/sort.
+
 N/decl : declared "N" lnil
    (esort (lsucc lzero))
    indt
-   (dkind-ok/indt N/type-wf).
+   (dkind-ok/indt N/type-wf N/ends-in-sort).
 
 %% inductive ctor N.zero
 N_zero/type-wf :
    defeq (econst "N" lnil) (econst "N" lnil) (esort (lsucc lzero))
    = (defeq/const N/decl).
 
+N_zero/positivity :
+   ctor-positive "N" lnil (econst "N" lnil)
+   = (ctor-positive/intro ([S] S) ([S] (ctor-spine/result applies-self/refl))).
+
 N_zero/decl : declared "N.zero" lnil
    (econst "N" lnil)
    ctor
-   (dkind-ok/ctor N_zero/type-wf).
+   (dkind-ok/ctor N_zero/type-wf N_zero/positivity).
 
 %% inductive ctor N.succ
 N_succ/type-wf :
    defeq (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (esort (limax (lsucc lzero) (lsucc lzero)))
    = (defeq/forall (defeq/const N/decl) ([x] [y] (defeq/const N/decl))).
 
+N_succ/positivity :
+   ctor-positive "N" lnil (eforall (econst "N" lnil) ([x] (econst "N" lnil)))
+   = (ctor-positive/intro ([S] (eforall S ([x] S))) ([S] (ctor-spine/arg (strict-pos/head applies-self/refl) ([_y0] [_h0] (ctor-spine/result applies-self/refl))))).
+
 N_succ/decl : declared "N.succ" lnil
    (eforall (econst "N" lnil) ([x] (econst "N" lnil)))
    ctor
-   (dkind-ok/ctor N_succ/type-wf).
+   (dkind-ok/ctor N_succ/type-wf N_succ/positivity).
 
 %% inductive recursor N.rec
 N_rec/type-wf :
@@ -75,20 +95,28 @@ Eq/type-wf :
    {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (esort (limax (lsucc u_1) (limax u_1 (limax u_1 (lsucc lzero)))))
    = [u_1] (defeq/forall (defeq/sort-refl-at u_1) ([x] [y] (defeq/forall y ([z] [w] (defeq/forall y ([x1] [y1] (defeq/sort-refl-at lzero))))))).
 
+Eq/ends-in-sort :
+   {u_1 : lvl} ends-in-sort (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero)))))))
+   = [u_1] (ends-in-sort/forall ([x] (ends-in-sort/forall ([y] (ends-in-sort/forall ([z] ends-in-sort/sort)))))).
+
 Eq/decl : {u_1 : lvl} declared "Eq" (lcons u_1 lnil)
    (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero)))))))
    indt
-   (dkind-ok/indt (Eq/type-wf u_1)).
+   (dkind-ok/indt (Eq/type-wf u_1) (Eq/ends-in-sort u_1)).
 
 %% inductive ctor Eq.refl
 Eq_refl/type-wf :
    {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))) (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))) (esort (limax (lsucc u_1) (limax u_1 lzero)))
    = [u_1] (defeq/forall (defeq/sort-refl-at u_1) ([x] [y] (defeq/forall y ([z] [w] (defeq/app (defeq/app (defeq/app (defeq/const (Eq/decl u_1)) y) w) w))))).
 
+Eq_refl/positivity :
+   {u_1 : lvl} ctor-positive "Eq" (lcons u_1 lnil) (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y)))))
+   = [u_1] (ctor-positive/intro ([S] (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp S x) y) y)))))) ([S] (ctor-spine/arg (strict-pos/absent absent/sort) ([_y0] [_h0] (ctor-spine/arg (strict-pos/absent _h0) ([_y1] [_h1] (ctor-spine/result (applies-self/app (applies-self/app (applies-self/app applies-self/refl)))))))))).
+
 Eq_refl/decl : {u_1 : lvl} declared "Eq.refl" (lcons u_1 lnil)
    (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y)))))
    ctor
-   (dkind-ok/ctor (Eq_refl/type-wf u_1)).
+   (dkind-ok/ctor (Eq_refl/type-wf u_1) (Eq_refl/positivity u_1)).
 
 %% inductive recursor Eq.rec
 Eq_rec/type-wf :

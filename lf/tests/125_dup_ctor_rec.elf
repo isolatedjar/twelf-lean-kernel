@@ -5,20 +5,28 @@ dup_ctor_rec/type-wf :
    defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = (defeq/sort-refl-at (lsucc lzero)).
 
+dup_ctor_rec/ends-in-sort :
+   ends-in-sort (esort (lsucc lzero))
+   = ends-in-sort/sort.
+
 dup_ctor_rec/decl : declared "dup_ctor_rec" lnil
    (esort (lsucc lzero))
    indt
-   (dkind-ok/indt dup_ctor_rec/type-wf).
+   (dkind-ok/indt dup_ctor_rec/type-wf dup_ctor_rec/ends-in-sort).
 
 %% inductive ctor dup_ctor_rec.rec
 dup_ctor_rec_rec/type-wf :
    defeq (econst "dup_ctor_rec" lnil) (econst "dup_ctor_rec" lnil) (esort (lsucc lzero))
    = (defeq/const dup_ctor_rec/decl).
 
+dup_ctor_rec_rec/positivity :
+   ctor-positive "dup_ctor_rec" lnil (econst "dup_ctor_rec" lnil)
+   = (ctor-positive/intro ([S] S) ([S] (ctor-spine/result applies-self/refl))).
+
 dup_ctor_rec_rec/decl : declared "dup_ctor_rec.rec" lnil
    (econst "dup_ctor_rec" lnil)
    ctor
-   (dkind-ok/ctor dup_ctor_rec_rec/type-wf).
+   (dkind-ok/ctor dup_ctor_rec_rec/type-wf dup_ctor_rec_rec/positivity).
 
 %% TRANSLATOR REJECT: duplicate declaration of "dup_ctor_rec.rec"
 %%   previously declared as kind=ctor, now seen as kind=inductive recursor

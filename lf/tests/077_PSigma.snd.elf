@@ -5,20 +5,28 @@ PSigma/type-wf :
    {u : lvl} {v : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (esort (lmax (lmax (lsucc lzero) u) v)))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (esort (lmax (lmax (lsucc lzero) u) v)))))) (esort (limax (lsucc u) (limax (limax u (lsucc v)) (lsucc (lmax (lmax (lsucc lzero) u) v)))))
    = [u] [v] (defeq/forall (defeq/sort-refl-at u) ([x] [y] (defeq/forall (defeq/forall y ([z] [w] (defeq/sort-refl-at v))) ([z] [w] (defeq/sort-refl-at (lmax (lmax (lsucc lzero) u) v)))))).
 
+PSigma/ends-in-sort :
+   {u : lvl} {v : lvl} ends-in-sort (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (esort (lmax (lmax (lsucc lzero) u) v))))))
+   = [u] [v] (ends-in-sort/forall ([x] (ends-in-sort/forall ([y] ends-in-sort/sort)))).
+
 PSigma/decl : {u : lvl} {v : lvl} declared "PSigma" (lcons u (lcons v lnil))
    (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (esort (lmax (lmax (lsucc lzero) u) v))))))
    indt
-   (dkind-ok/indt (PSigma/type-wf u v)).
+   (dkind-ok/indt (PSigma/type-wf u v) (PSigma/ends-in-sort u v)).
 
 %% inductive ctor PSigma.mk
 PSigma_mk/type-wf :
    {u : lvl} {v : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y))))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y))))))))) (esort (limax (lsucc u) (limax (limax u (lsucc v)) (limax u (limax v (lmax (lmax (lsucc lzero) u) v))))))
    = [u] [v] (defeq/forall (defeq/sort-refl-at u) ([x] [y] (defeq/forall (defeq/forall y ([z] [w] (defeq/sort-refl-at v))) ([z] [w] (defeq/forall y ([x1] [y1] (defeq/forall (defeq/app w y1) ([z1] [w1] (defeq/app (defeq/app (defeq/const (PSigma/decl u v)) y) w))))))))).
 
+PSigma_mk/positivity :
+   {u : lvl} {v : lvl} ctor-positive "PSigma" (lcons u (lcons v lnil)) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y)))))))))
+   = [u] [v] (ctor-positive/intro ([S] (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp S x) y)))))))))) ([S] (ctor-spine/arg (strict-pos/absent absent/sort) ([_y0] [_h0] (ctor-spine/arg (strict-pos/absent (absent/forall _h0 ([_y1] [_h1] absent/sort))) ([_y1] [_h1] (ctor-spine/arg (strict-pos/absent _h0) ([_y2] [_h2] (ctor-spine/arg (strict-pos/absent (absent/app _h1 _h2)) ([_y3] [_h3] (ctor-spine/result (applies-self/app (applies-self/app applies-self/refl))))))))))))).
+
 PSigma_mk/decl : {u : lvl} {v : lvl} declared "PSigma.mk" (lcons u (lcons v lnil))
    (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y)))))))))
    ctor
-   (dkind-ok/ctor (PSigma_mk/type-wf u v)).
+   (dkind-ok/ctor (PSigma_mk/type-wf u v) (PSigma_mk/positivity u v)).
 
 %% inductive recursor PSigma.rec
 PSigma_rec/type-wf :

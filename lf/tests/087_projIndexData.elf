@@ -6,30 +6,42 @@ N/type-wf :
    defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = (defeq/sort-refl-at (lsucc lzero)).
 
+N/ends-in-sort :
+   ends-in-sort (esort (lsucc lzero))
+   = ends-in-sort/sort.
+
 N/decl : declared "N" lnil
    (esort (lsucc lzero))
    indt
-   (dkind-ok/indt N/type-wf).
+   (dkind-ok/indt N/type-wf N/ends-in-sort).
 
 %% inductive ctor N.zero
 N_zero/type-wf :
    defeq (econst "N" lnil) (econst "N" lnil) (esort (lsucc lzero))
    = (defeq/const N/decl).
 
+N_zero/positivity :
+   ctor-positive "N" lnil (econst "N" lnil)
+   = (ctor-positive/intro ([S] S) ([S] (ctor-spine/result applies-self/refl))).
+
 N_zero/decl : declared "N.zero" lnil
    (econst "N" lnil)
    ctor
-   (dkind-ok/ctor N_zero/type-wf).
+   (dkind-ok/ctor N_zero/type-wf N_zero/positivity).
 
 %% inductive ctor N.succ
 N_succ/type-wf :
    defeq (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (esort (limax (lsucc lzero) (lsucc lzero)))
    = (defeq/forall (defeq/const N/decl) ([x] [y] (defeq/const N/decl))).
 
+N_succ/positivity :
+   ctor-positive "N" lnil (eforall (econst "N" lnil) ([x] (econst "N" lnil)))
+   = (ctor-positive/intro ([S] (eforall S ([x] S))) ([S] (ctor-spine/arg (strict-pos/head applies-self/refl) ([_y0] [_h0] (ctor-spine/result applies-self/refl))))).
+
 N_succ/decl : declared "N.succ" lnil
    (eforall (econst "N" lnil) ([x] (econst "N" lnil)))
    ctor
-   (dkind-ok/ctor N_succ/type-wf).
+   (dkind-ok/ctor N_succ/type-wf N_succ/positivity).
 
 %% inductive recursor N.rec
 N_rec/type-wf :
@@ -46,20 +58,28 @@ True/type-wf :
    defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
    = (defeq/sort-refl-at lzero).
 
+True/ends-in-sort :
+   ends-in-sort (esort lzero)
+   = ends-in-sort/sort.
+
 True/decl : declared "True" lnil
    (esort lzero)
    indt
-   (dkind-ok/indt True/type-wf).
+   (dkind-ok/indt True/type-wf True/ends-in-sort).
 
 %% inductive ctor True.intro
 True_intro/type-wf :
    defeq (econst "True" lnil) (econst "True" lnil) (esort lzero)
    = (defeq/const True/decl).
 
+True_intro/positivity :
+   ctor-positive "True" lnil (econst "True" lnil)
+   = (ctor-positive/intro ([S] S) ([S] (ctor-spine/result applies-self/refl))).
+
 True_intro/decl : declared "True.intro" lnil
    (econst "True" lnil)
    ctor
-   (dkind-ok/ctor True_intro/type-wf).
+   (dkind-ok/ctor True_intro/type-wf True_intro/positivity).
 
 %% inductive recursor True.rec
 True_rec/type-wf :
@@ -76,20 +96,28 @@ ProjDataIndex/type-wf :
    defeq (eforall (econst "N" lnil) ([x] (esort lzero))) (eforall (econst "N" lnil) ([x] (esort lzero))) (esort (limax (lsucc lzero) (lsucc lzero)))
    = (defeq/forall (defeq/const N/decl) ([x] [y] (defeq/sort-refl-at lzero))).
 
+ProjDataIndex/ends-in-sort :
+   ends-in-sort (eforall (econst "N" lnil) ([x] (esort lzero)))
+   = (ends-in-sort/forall ([x] ends-in-sort/sort)).
+
 ProjDataIndex/decl : declared "ProjDataIndex" lnil
    (eforall (econst "N" lnil) ([x] (esort lzero)))
    indt
-   (dkind-ok/indt ProjDataIndex/type-wf).
+   (dkind-ok/indt ProjDataIndex/type-wf ProjDataIndex/ends-in-sort).
 
 %% inductive ctor ProjDataIndex.mk
 ProjDataIndex_mk/type-wf :
    defeq (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp (econst "ProjDataIndex" lnil) x))))) (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp (econst "ProjDataIndex" lnil) x))))) (esort (limax (lsucc lzero) (limax lzero lzero)))
    = (defeq/forall (defeq/const N/decl) ([x] [y] (defeq/forall (defeq/const True/decl) ([z] [w] (defeq/app (defeq/const ProjDataIndex/decl) y))))).
 
+ProjDataIndex_mk/positivity :
+   ctor-positive "ProjDataIndex" lnil (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp (econst "ProjDataIndex" lnil) x)))))
+   = (ctor-positive/intro ([S] (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp S x)))))) ([S] (ctor-spine/arg (strict-pos/absent absent/const) ([_y0] [_h0] (ctor-spine/arg (strict-pos/absent absent/const) ([_y1] [_h1] (ctor-spine/result (applies-self/app applies-self/refl)))))))).
+
 ProjDataIndex_mk/decl : declared "ProjDataIndex.mk" lnil
    (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp (econst "ProjDataIndex" lnil) x)))))
    ctor
-   (dkind-ok/ctor ProjDataIndex_mk/type-wf).
+   (dkind-ok/ctor ProjDataIndex_mk/type-wf ProjDataIndex_mk/positivity).
 
 %% inductive recursor ProjDataIndex.rec
 ProjDataIndex_rec/type-wf :

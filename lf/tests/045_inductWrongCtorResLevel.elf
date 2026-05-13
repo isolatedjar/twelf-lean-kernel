@@ -5,20 +5,22 @@
    {u1 : lvl} {u2 : lvl} defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) (esort (limax (lsucc lzero) (limax (lsucc lzero) (lsucc (lsucc lzero)))))
    = [u1] [u2] (defeq/forall (defeq/sort-refl-at lzero) ([x] [y] (defeq/forall (defeq/sort-refl-at lzero) ([z] [w] (defeq/sort-refl-at (lsucc lzero)))))).
 
+%abbrev inductWrongCtorResLevel/ends-in-sort :
+   {u1 : lvl} {u2 : lvl} ends-in-sort (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero))))))
+   = [u1] [u2] (ends-in-sort/forall ([x] (ends-in-sort/forall ([y] ends-in-sort/sort)))).
+
 inductWrongCtorResLevel/decl : {u1 : lvl} {u2 : lvl} declared "inductWrongCtorResLevel" (lcons u1 (lcons u2 lnil))
    (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero))))))
    indt
-   (dkind-ok/indt (inductWrongCtorResLevel/type-wf u1 u2)).
+   (dkind-ok/indt (inductWrongCtorResLevel/type-wf u1 u2) (inductWrongCtorResLevel/ends-in-sort u1 u2)).
 
 %% inductive ctor inductWrongCtorResLevel.mk
 inductWrongCtorResLevel_mk/type-wf :
    {u1 : lvl} {u2 : lvl} defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResLevel" (lcons u2 (lcons u1 lnil))) x) y))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResLevel" (lcons u2 (lcons u1 lnil))) x) y))))) (esort (limax (lsucc lzero) (limax (lsucc lzero) (lsucc lzero))))
    = [u1] [u2] (defeq/forall (defeq/sort-refl-at lzero) ([x] [y] (defeq/forall (defeq/sort-refl-at lzero) ([z] [w] (defeq/app (defeq/app (defeq/const (inductWrongCtorResLevel/decl u2 u1)) y) w))))).
 
-inductWrongCtorResLevel_mk/decl : {u1 : lvl} {u2 : lvl} declared "inductWrongCtorResLevel.mk" (lcons u1 (lcons u2 lnil))
-   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResLevel" (lcons u2 (lcons u1 lnil))) x) y)))))
-   ctor
-   (dkind-ok/ctor (inductWrongCtorResLevel_mk/type-wf u1 u2)).
+%% TRANSLATOR REJECT: ctor inductWrongCtorResLevel.mk — type is not strictly positive in inductWrongCtorResLevel (or uses unsupported expr form)
+%solve _violation_0 : tcb-violation.
 
 %% inductive recursor inductWrongCtorResLevel.rec
 inductWrongCtorResLevel_rec/type-wf :
@@ -33,3 +35,6 @@ inductWrongCtorResLevel_rec/decl : declared "inductWrongCtorResLevel.rec" lnil
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.
+
+%% Translator summary:
+%%   - ctor inductWrongCtorResLevel.mk: strict positivity not witnessable

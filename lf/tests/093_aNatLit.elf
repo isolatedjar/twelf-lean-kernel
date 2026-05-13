@@ -5,30 +5,42 @@ Nat/type-wf :
    defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = (defeq/sort-refl-at (lsucc lzero)).
 
+Nat/ends-in-sort :
+   ends-in-sort (esort (lsucc lzero))
+   = ends-in-sort/sort.
+
 Nat/decl : declared "Nat" lnil
    (esort (lsucc lzero))
    indt
-   (dkind-ok/indt Nat/type-wf).
+   (dkind-ok/indt Nat/type-wf Nat/ends-in-sort).
 
 %% inductive ctor Nat.zero
 Nat_zero/type-wf :
    defeq (econst "Nat" lnil) (econst "Nat" lnil) (esort (lsucc lzero))
    = (defeq/const Nat/decl).
 
+Nat_zero/positivity :
+   ctor-positive "Nat" lnil (econst "Nat" lnil)
+   = (ctor-positive/intro ([S] S) ([S] (ctor-spine/result applies-self/refl))).
+
 Nat_zero/decl : declared "Nat.zero" lnil
    (econst "Nat" lnil)
    ctor
-   (dkind-ok/ctor Nat_zero/type-wf).
+   (dkind-ok/ctor Nat_zero/type-wf Nat_zero/positivity).
 
 %% inductive ctor Nat.succ
 Nat_succ/type-wf :
    defeq (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (esort (limax (lsucc lzero) (lsucc lzero)))
    = (defeq/forall (defeq/const Nat/decl) ([x] [y] (defeq/const Nat/decl))).
 
+Nat_succ/positivity :
+   ctor-positive "Nat" lnil (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil)))
+   = (ctor-positive/intro ([S] (eforall S ([x] S))) ([S] (ctor-spine/arg (strict-pos/head applies-self/refl) ([_y0] [_h0] (ctor-spine/result applies-self/refl))))).
+
 Nat_succ/decl : declared "Nat.succ" lnil
    (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil)))
    ctor
-   (dkind-ok/ctor Nat_succ/type-wf).
+   (dkind-ok/ctor Nat_succ/type-wf Nat_succ/positivity).
 
 %% inductive recursor Nat.rec
 Nat_rec/type-wf :

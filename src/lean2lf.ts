@@ -477,6 +477,202 @@ function nameToLfLevelVar(n: Name): string {
   return raw;
 }
 
+// Build a Twelf proof of `ends-in-sort <lfExpr t>` if `t` is structurally
+// a (possibly empty) chain of forall-binders ending in a sort literal.
+// Used by the inductive type-former path to satisfy the tightened
+// `dkind-ok/indt` rule.  Returns null if t doesn't structurally qualify
+// (e.g. a const reference, an app, a bvar) — the caller treats this as
+// a translator-side rejection.
+//
+// We don't recurse through `t.body` with substitution; the proof
+// just structurally walks `forall A B → forall A' B' → ... → sort`.
+// Twelf checks each inner proof under the binder introduced by the
+// corresponding ends-in-sort/forall, so the bound variable doesn't
+// need to flow into our textual proof at all.
+function endsInSortProof(t: Expr, lfScope: string[]): string | null {
+  if (t.kind === "sort") return "ends-in-sort/sort";
+  if (t.kind === "forallE") {
+    const v = freshVar(lfScope);
+    const inner = endsInSortProof(t.body, [...lfScope, v]);
+    if (inner === null) return null;
+    return `(ends-in-sort/forall ([${v}] ${inner}))`;
+  }
+  return null;
+}
+
+// Constructors for ctor-positive witnesses.  Soundness gate on
+// inductive definitions: every ctor of inductive Foo must have a
+// type that is strictly positive in Foo (Lean's standard restriction
+// that prevents the (Foo → Empty) → Foo paradox).
+//
+// `selfName` and `selfLevels` identify the inductive Foo whose
+// ctors we're checking.  Each builder returns the Twelf-term string
+// of the witness, or null if the ctor's type doesn't satisfy the
+// non-nested strict-positivity condition (in which case the
+// translator emits a rejection).
+//
+// `scope` tracks LF-bound expression variables introduced by walking
+// under forall/lambda binders.  Each entry carries the LF name `y`
+// of the expression variable AND the LF name `hy` of its `absent S y`
+// hypothesis.  De-Bruijn lookup uses this scope; the innermost binder
+// is at the END.
+
+type AbsentScope = { y: string; hy: string }[];
+
+function isSelfRef(t: Expr, selfName: string, selfLevels: Level[]): boolean {
+  if (t.kind !== "const") return false;
+  if (nameToString(t.name) !== selfName) return false;
+  if (t.us.length !== selfLevels.length) return false;
+  for (let i = 0; i < t.us.length; i++) {
+    if (!levelEq(t.us[i], selfLevels[i])) return false;
+  }
+  return true;
+}
+
+// Build a witness of `absent S t` where S represents the inductive.
+// Returns null if t mentions the inductive's self-reference anywhere.
+function buildAbsent(
+  t: Expr,
+  selfName: string,
+  selfLevels: Level[],
+  scope: AbsentScope,
+): string | null {
+  if (isSelfRef(t, selfName, selfLevels)) return null;
+  switch (t.kind) {
+    case "sort":
+      return "absent/sort";
+    case "const":
+      return "absent/const";
+    case "bvar": {
+      const idx = t.deBruijn;
+      if (idx >= scope.length) return null;
+      return scope[scope.length - 1 - idx].hy;
+    }
+    case "app": {
+      const pF = buildAbsent(t.fn, selfName, selfLevels, scope);
+      const pA = buildAbsent(t.arg, selfName, selfLevels, scope);
+      if (pF === null || pA === null) return null;
+      return `(absent/app ${pF} ${pA})`;
+    }
+    case "forallE":
+    case "lam": {
+      const pA = buildAbsent(t.type, selfName, selfLevels, scope);
+      if (pA === null) return null;
+      const y = `_y${scope.length}`;
+      const hy = `_h${scope.length}`;
+      const pB = buildAbsent(t.body, selfName, selfLevels, [...scope, { y, hy }]);
+      if (pB === null) return null;
+      const ctor = t.kind === "forallE" ? "absent/forall" : "absent/lam";
+      return `(${ctor} ${pA} ([${y}] [${hy}] ${pB}))`;
+    }
+    case "letE":
+    case "proj":
+    case "natLit":
+    case "strLit":
+      return null; // not yet supported in positivity proofs
+  }
+}
+
+// Build a witness of `applies-self S t` — i.e., t = S applied to
+// arbitrary args.  Returns null if t's head isn't S.
+function buildAppliesSelf(t: Expr, selfName: string, selfLevels: Level[]): string | null {
+  if (isSelfRef(t, selfName, selfLevels)) return "applies-self/refl";
+  if (t.kind === "app") {
+    const inner = buildAppliesSelf(t.fn, selfName, selfLevels);
+    if (inner === null) return null;
+    return `(applies-self/app ${inner})`;
+  }
+  return null;
+}
+
+// Build a witness of `strict-pos S t`.  Tries head, absent, then
+// Pi-codomain in turn.
+function buildStrictPos(
+  t: Expr,
+  selfName: string,
+  selfLevels: Level[],
+  scope: AbsentScope,
+): string | null {
+  // Head case: t = S applied to args.
+  const head = buildAppliesSelf(t, selfName, selfLevels);
+  if (head !== null) return `(strict-pos/head ${head})`;
+  // Absent case: S doesn't occur in t.
+  const abs = buildAbsent(t, selfName, selfLevels, scope);
+  if (abs !== null) return `(strict-pos/absent ${abs})`;
+  // Pi case: t = forall A B, A absent of S, B strict-pos in S.
+  if (t.kind === "forallE") {
+    const pA = buildAbsent(t.type, selfName, selfLevels, scope);
+    if (pA === null) return null;
+    const y = `_y${scope.length}`;
+    const hy = `_h${scope.length}`;
+    const pB = buildStrictPos(t.body, selfName, selfLevels, [...scope, { y, hy }]);
+    if (pB === null) return null;
+    return `(strict-pos/forall ${pA} ([${y}] [${hy}] ${pB}))`;
+  }
+  return null;
+}
+
+// Build a witness of `ctor-spine S t`.  Walks t's foralls, requires
+// each arg type strict-pos and the final result to be S-applied.
+function buildCtorSpine(
+  t: Expr,
+  selfName: string,
+  selfLevels: Level[],
+  scope: AbsentScope,
+): string | null {
+  if (t.kind === "forallE") {
+    const argSP = buildStrictPos(t.type, selfName, selfLevels, scope);
+    if (argSP === null) return null;
+    const y = `_y${scope.length}`;
+    const hy = `_h${scope.length}`;
+    const bodyCS = buildCtorSpine(t.body, selfName, selfLevels, [...scope, { y, hy }]);
+    if (bodyCS === null) return null;
+    return `(ctor-spine/arg ${argSP} ([${y}] [${hy}] ${bodyCS}))`;
+  }
+  // Result type: must apply self.
+  const result = buildAppliesSelf(t, selfName, selfLevels);
+  if (result === null) return null;
+  return `(ctor-spine/result ${result})`;
+}
+
+// Render an Expr to LF using `S` as the literal for occurrences of
+// the inductive's self-reference (econst selfName selfLevels).  This
+// is the body of the explicit T_HOAS argument to ctor-positive/intro.
+function lfExprHoasSelf(
+  t: Expr,
+  selfName: string,
+  selfLevels: Level[],
+  boundVars: string[],
+  selfLfName: string,
+): string {
+  if (isSelfRef(t, selfName, selfLevels)) return selfLfName;
+  switch (t.kind) {
+    case "bvar": {
+      const name = boundVars[t.deBruijn];
+      if (name === undefined) throw new Error(`bvar ${t.deBruijn} out of scope`);
+      return name;
+    }
+    case "sort":
+      return `(esort ${lfLevel(t.level)})`;
+    case "const":
+      return `(econst "${nameToString(t.name)}" ${lfLvls(t.us)})`;
+    case "app":
+      return `(eapp ${lfExprHoasSelf(t.fn, selfName, selfLevels, boundVars, selfLfName)} ${lfExprHoasSelf(t.arg, selfName, selfLevels, boundVars, selfLfName)})`;
+    case "forallE":
+    case "lam": {
+      const v = freshVar(boundVars);
+      const inner = lfExprHoasSelf(t.body, selfName, selfLevels, [v, ...boundVars], selfLfName);
+      const head = t.kind === "forallE" ? "eforall" : "elam";
+      return `(${head} ${lfExprHoasSelf(t.type, selfName, selfLevels, boundVars, selfLfName)} ([${v}] ${inner}))`;
+    }
+    case "letE":
+    case "proj":
+    case "natLit":
+    case "strLit":
+      throw new Error(`lfExprHoasSelf: ${t.kind} not supported`);
+  }
+}
+
 // Do ALL of `names` appear as words in at least one of `bodies`?  Used
 // to detect whether every polymorphic level binder has a strict
 // occurrence in a proof body.  Twelf rejects `c : {u} T = body` when
@@ -1446,6 +1642,7 @@ function emitStructuralDecl(
   okCtor: string,
   tableKind: DeclEntry["kind"],
   banner: string,
+  positivityInfo?: { selfName: string; selfLevels: Level[] },
 ): void {
   const mn = mangle(declName);
   const nameStr = nameToString(declName);
@@ -1512,10 +1709,89 @@ function emitStructuralDecl(
     emit(`   = ${bodyLambda}${typeWf.proof}.`);
     emitBlank();
     const tw_inst = levelBinders.length === 0 ? `${mn}/type-wf` : `(${mn}/type-wf${levelArgList})`;
+
+    // Inductive type formers also need a structural `ends-in-sort` proof:
+    // the kernel demands the signature to be `Π ... → Sort _`, not an
+    // arbitrary well-typed term.  If we can't build the proof, the type
+    // isn't a forall-chain-to-sort and the translator rejects.
+    let okArgs = tw_inst;
+    if (tableKind === "indt") {
+      const eis = endsInSortProof(type, []);
+      if (eis === null) {
+        emit(
+          `%% TRANSLATOR REJECT: inductive ${nameStr} — type signature is not a forall-chain ending in a sort literal`,
+        );
+        emit(`%solve _violation_${violationCounter++} : tcb-violation.`);
+        emitBlank();
+        skips.push(`inductive ${nameStr}: type signature is not Π…→Sort_`);
+        return;
+      }
+      // The ends-in-sort proof is monomorphic in the level binders too —
+      // it just structurally walks foralls and ends at sorts.  Wrap with
+      // [u..] body lambdas if needed for poly inductives.
+      const eisWithLambda = levelBinders.length === 0 ? eis : `${bodyLambda}${eis}`;
+      // Same strict-occurrence concern as /type-wf: if no level binder
+      // appears in the body, Twelf rejects the universal quantifier and
+      // we need %abbrev.
+      const eis_decl =
+        levelBinders.length > 0 && !allMentioned(levelBinders, T_lf, eis) ? "%abbrev " : "";
+      // Emit it as a separate constant so the /decl line stays readable.
+      emit(`${eis_decl}${mn}/ends-in-sort :`);
+      emit(`   ${levelPrefix}ends-in-sort ${T_lf}`);
+      emit(`   = ${eisWithLambda}.`);
+      emitBlank();
+      const eis_inst =
+        levelBinders.length === 0 ? `${mn}/ends-in-sort` : `(${mn}/ends-in-sort${levelArgList})`;
+      okArgs = `${tw_inst} ${eis_inst}`;
+    }
+
+    // Constructor strict-positivity witness.  See tcb.elf for the
+    // adequacy story: we HOAS-bind the inductive's self-reference,
+    // structurally check absence/strict-positivity/ctor-spine, and
+    // emit a ctor-positive/intro with explicit T_HOAS (Twelf's
+    // higher-order pattern unification can't reconstruct T_HOAS
+    // when ctors duplicate bound variables, e.g. Eq.refl).
+    if (tableKind === "ctor" && positivityInfo) {
+      const cs = buildCtorSpine(type, positivityInfo.selfName, positivityInfo.selfLevels, []);
+      if (cs === null) {
+        emit(
+          `%% TRANSLATOR REJECT: ctor ${nameStr} — type is not strictly positive in ${positivityInfo.selfName} (or uses unsupported expr form)`,
+        );
+        emit(`%solve _violation_${violationCounter++} : tcb-violation.`);
+        emitBlank();
+        skips.push(`ctor ${nameStr}: strict positivity not witnessable`);
+        return;
+      }
+      const hoasBody = lfExprHoasSelf(
+        type,
+        positivityInfo.selfName,
+        positivityInfo.selfLevels,
+        [],
+        "S",
+      );
+      const indLvlsLF = lfLvls(positivityInfo.selfLevels);
+      const positivityProof = `(ctor-positive/intro ([S] ${hoasBody}) ([S] ${cs}))`;
+      // Same strict-occurrence concern as /type-wf and /ends-in-sort:
+      // if no level binder appears in T_lf or the proof, %abbrev.
+      const cp_decl =
+        levelBinders.length > 0 && !allMentioned(levelBinders, T_lf, hoasBody, cs)
+          ? "%abbrev "
+          : "";
+      emit(`${cp_decl}${mn}/positivity :`);
+      emit(`   ${levelPrefix}ctor-positive "${positivityInfo.selfName}" ${indLvlsLF} ${T_lf}`);
+      emit(
+        `   = ${levelBinders.length === 0 ? positivityProof : `${bodyLambda}${positivityProof}`}.`,
+      );
+      emitBlank();
+      const cp_inst =
+        levelBinders.length === 0 ? `${mn}/positivity` : `(${mn}/positivity${levelArgList})`;
+      okArgs = `${tw_inst} ${cp_inst}`;
+    }
+
     emit(`${mn}/decl : ${levelPrefix}declared "${nameStr}" ${lvlsExpr}`);
     emit(`   ${T_lf}`);
     emit(`   ${dkindCtor}`);
-    emit(`   (${okCtor} ${tw_inst}).`);
+    emit(`   (${okCtor} ${okArgs}).`);
     emitBlank();
 
     declTable.set(nameStr, {
@@ -1549,8 +1825,29 @@ function emitInductive(ir: IndRec, env: Env): void {
       "inductive",
     );
   }
-  // 2. Constructors.
+  // 2. Constructors.  Each ctor's positivity check needs to know
+  //    its parent inductive's name and level instantiation.
+  //    `c.induct` is the name-index of the inductive; we cross-
+  //    reference ir.types to find the corresponding level params,
+  //    then build a Level[] (each as a param-Level) for the LF
+  //    `lcons u1 (... lnil)` rendering.
   for (const c of ir.ctors) {
+    const indTypeSpec = ir.types.find((t) => t.name === c.induct);
+    if (!indTypeSpec) {
+      // Should not happen for well-formed lean4export output.
+      emit(
+        `%% TRANSLATOR REJECT: ctor ${nameToString(N(c.name))} — induct field doesn't match any type in this inductive block`,
+      );
+      emit(`%solve _violation_${violationCounter++} : tcb-violation.`);
+      emitBlank();
+      skips.push(`ctor ${nameToString(N(c.name))}: induct pointer invalid`);
+      continue;
+    }
+    const selfName = nameToString(N(c.induct));
+    const selfLevels: Level[] = c.levelParams.map((idx) => ({
+      kind: "param" as const,
+      name: N(idx),
+    }));
     emitStructuralDecl(
       N(c.name),
       c.levelParams.map(N),
@@ -1559,6 +1856,7 @@ function emitInductive(ir: IndRec, env: Env): void {
       "dkind-ok/ctor",
       "ctor",
       "inductive ctor",
+      { selfName, selfLevels },
     );
   }
   // 3. Recursors.

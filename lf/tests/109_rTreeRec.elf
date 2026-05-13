@@ -5,30 +5,42 @@ Bool/type-wf :
    defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = (defeq/sort-refl-at (lsucc lzero)).
 
+Bool/ends-in-sort :
+   ends-in-sort (esort (lsucc lzero))
+   = ends-in-sort/sort.
+
 Bool/decl : declared "Bool" lnil
    (esort (lsucc lzero))
    indt
-   (dkind-ok/indt Bool/type-wf).
+   (dkind-ok/indt Bool/type-wf Bool/ends-in-sort).
 
 %% inductive ctor Bool.false
 Bool_false/type-wf :
    defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort (lsucc lzero))
    = (defeq/const Bool/decl).
 
+Bool_false/positivity :
+   ctor-positive "Bool" lnil (econst "Bool" lnil)
+   = (ctor-positive/intro ([S] S) ([S] (ctor-spine/result applies-self/refl))).
+
 Bool_false/decl : declared "Bool.false" lnil
    (econst "Bool" lnil)
    ctor
-   (dkind-ok/ctor Bool_false/type-wf).
+   (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity).
 
 %% inductive ctor Bool.true
 Bool_true/type-wf :
    defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort (lsucc lzero))
    = (defeq/const Bool/decl).
 
+Bool_true/positivity :
+   ctor-positive "Bool" lnil (econst "Bool" lnil)
+   = (ctor-positive/intro ([S] S) ([S] (ctor-spine/result applies-self/refl))).
+
 Bool_true/decl : declared "Bool.true" lnil
    (econst "Bool" lnil)
    ctor
-   (dkind-ok/ctor Bool_true/type-wf).
+   (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity).
 
 %% inductive recursor Bool.rec
 Bool_rec/type-wf :
@@ -45,30 +57,42 @@ RTree/type-wf :
    defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = (defeq/sort-refl-at (lsucc lzero)).
 
+RTree/ends-in-sort :
+   ends-in-sort (esort (lsucc lzero))
+   = ends-in-sort/sort.
+
 RTree/decl : declared "RTree" lnil
    (esort (lsucc lzero))
    indt
-   (dkind-ok/indt RTree/type-wf).
+   (dkind-ok/indt RTree/type-wf RTree/ends-in-sort).
 
 %% inductive ctor RTree.leaf
 RTree_leaf/type-wf :
    defeq (econst "RTree" lnil) (econst "RTree" lnil) (esort (lsucc lzero))
    = (defeq/const RTree/decl).
 
+RTree_leaf/positivity :
+   ctor-positive "RTree" lnil (econst "RTree" lnil)
+   = (ctor-positive/intro ([S] S) ([S] (ctor-spine/result applies-self/refl))).
+
 RTree_leaf/decl : declared "RTree.leaf" lnil
    (econst "RTree" lnil)
    ctor
-   (dkind-ok/ctor RTree_leaf/type-wf).
+   (dkind-ok/ctor RTree_leaf/type-wf RTree_leaf/positivity).
 
 %% inductive ctor RTree.node
 RTree_node/type-wf :
    defeq (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil))) (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil))) (esort (limax (limax (lsucc lzero) (lsucc lzero)) (lsucc lzero)))
    = (defeq/forall (defeq/forall (defeq/const Bool/decl) ([x] [y] (defeq/const RTree/decl))) ([x] [y] (defeq/const RTree/decl))).
 
+RTree_node/positivity :
+   ctor-positive "RTree" lnil (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil)))
+   = (ctor-positive/intro ([S] (eforall (eforall (econst "Bool" lnil) ([x] S)) ([x] S))) ([S] (ctor-spine/arg (strict-pos/forall absent/const ([_y0] [_h0] (strict-pos/head applies-self/refl))) ([_y0] [_h0] (ctor-spine/result applies-self/refl))))).
+
 RTree_node/decl : declared "RTree.node" lnil
    (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil)))
    ctor
-   (dkind-ok/ctor RTree_node/type-wf).
+   (dkind-ok/ctor RTree_node/type-wf RTree_node/positivity).
 
 %% inductive recursor RTree.rec
 RTree_rec/type-wf :

@@ -5,30 +5,42 @@ Bool/type-wf :
    defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = (defeq/sort-refl-at (lsucc lzero)).
 
+Bool/ends-in-sort :
+   ends-in-sort (esort (lsucc lzero))
+   = ends-in-sort/sort.
+
 Bool/decl : declared "Bool" lnil
    (esort (lsucc lzero))
    indt
-   (dkind-ok/indt Bool/type-wf).
+   (dkind-ok/indt Bool/type-wf Bool/ends-in-sort).
 
 %% inductive ctor Bool.false
 Bool_false/type-wf :
    defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort (lsucc lzero))
    = (defeq/const Bool/decl).
 
+Bool_false/positivity :
+   ctor-positive "Bool" lnil (econst "Bool" lnil)
+   = (ctor-positive/intro ([S] S) ([S] (ctor-spine/result applies-self/refl))).
+
 Bool_false/decl : declared "Bool.false" lnil
    (econst "Bool" lnil)
    ctor
-   (dkind-ok/ctor Bool_false/type-wf).
+   (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity).
 
 %% inductive ctor Bool.true
 Bool_true/type-wf :
    defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort (lsucc lzero))
    = (defeq/const Bool/decl).
 
+Bool_true/positivity :
+   ctor-positive "Bool" lnil (econst "Bool" lnil)
+   = (ctor-positive/intro ([S] S) ([S] (ctor-spine/result applies-self/refl))).
+
 Bool_true/decl : declared "Bool.true" lnil
    (econst "Bool" lnil)
    ctor
-   (dkind-ok/ctor Bool_true/type-wf).
+   (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity).
 
 %% inductive recursor Bool.rec
 Bool_rec/type-wf :
@@ -45,20 +57,28 @@ TwoBool/type-wf :
    defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = (defeq/sort-refl-at (lsucc lzero)).
 
+TwoBool/ends-in-sort :
+   ends-in-sort (esort (lsucc lzero))
+   = ends-in-sort/sort.
+
 TwoBool/decl : declared "TwoBool" lnil
    (esort (lsucc lzero))
    indt
-   (dkind-ok/indt TwoBool/type-wf).
+   (dkind-ok/indt TwoBool/type-wf TwoBool/ends-in-sort).
 
 %% inductive ctor TwoBool.mk
 TwoBool_mk/type-wf :
    defeq (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (econst "TwoBool" lnil))))) (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (econst "TwoBool" lnil))))) (esort (limax (lsucc lzero) (limax (lsucc lzero) (lsucc lzero))))
    = (defeq/forall (defeq/const Bool/decl) ([x] [y] (defeq/forall (defeq/const Bool/decl) ([z] [w] (defeq/const TwoBool/decl))))).
 
+TwoBool_mk/positivity :
+   ctor-positive "TwoBool" lnil (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (econst "TwoBool" lnil)))))
+   = (ctor-positive/intro ([S] (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] S))))) ([S] (ctor-spine/arg (strict-pos/absent absent/const) ([_y0] [_h0] (ctor-spine/arg (strict-pos/absent absent/const) ([_y1] [_h1] (ctor-spine/result applies-self/refl))))))).
+
 TwoBool_mk/decl : declared "TwoBool.mk" lnil
    (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (econst "TwoBool" lnil)))))
    ctor
-   (dkind-ok/ctor TwoBool_mk/type-wf).
+   (dkind-ok/ctor TwoBool_mk/type-wf TwoBool_mk/positivity).
 
 %% inductive recursor TwoBool.rec
 TwoBool_rec/type-wf :

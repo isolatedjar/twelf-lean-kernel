@@ -5,20 +5,28 @@ inductWrongCtorResParams/type-wf :
    defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) (esort (limax (lsucc lzero) (limax (lsucc lzero) (lsucc (lsucc lzero)))))
    = (defeq/forall (defeq/sort-refl-at lzero) ([x] [y] (defeq/forall (defeq/sort-refl-at lzero) ([z] [w] (defeq/sort-refl-at (lsucc lzero)))))).
 
+inductWrongCtorResParams/ends-in-sort :
+   ends-in-sort (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero))))))
+   = (ends-in-sort/forall ([x] (ends-in-sort/forall ([y] ends-in-sort/sort)))).
+
 inductWrongCtorResParams/decl : declared "inductWrongCtorResParams" lnil
    (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero))))))
    indt
-   (dkind-ok/indt inductWrongCtorResParams/type-wf).
+   (dkind-ok/indt inductWrongCtorResParams/type-wf inductWrongCtorResParams/ends-in-sort).
 
 %% inductive ctor inductWrongCtorResParams.mk
 inductWrongCtorResParams_mk/type-wf :
    defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResParams" lnil) y) x))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResParams" lnil) y) x))))) (esort (limax (lsucc lzero) (limax (lsucc lzero) (lsucc lzero))))
    = (defeq/forall (defeq/sort-refl-at lzero) ([x] [y] (defeq/forall (defeq/sort-refl-at lzero) ([z] [w] (defeq/app (defeq/app (defeq/const inductWrongCtorResParams/decl) w) y))))).
 
+inductWrongCtorResParams_mk/positivity :
+   ctor-positive "inductWrongCtorResParams" lnil (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResParams" lnil) y) x)))))
+   = (ctor-positive/intro ([S] (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp S y) x)))))) ([S] (ctor-spine/arg (strict-pos/absent absent/sort) ([_y0] [_h0] (ctor-spine/arg (strict-pos/absent absent/sort) ([_y1] [_h1] (ctor-spine/result (applies-self/app (applies-self/app applies-self/refl))))))))).
+
 inductWrongCtorResParams_mk/decl : declared "inductWrongCtorResParams.mk" lnil
    (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResParams" lnil) y) x)))))
    ctor
-   (dkind-ok/ctor inductWrongCtorResParams_mk/type-wf).
+   (dkind-ok/ctor inductWrongCtorResParams_mk/type-wf inductWrongCtorResParams_mk/positivity).
 
 %% inductive recursor inductWrongCtorResParams.rec
 inductWrongCtorResParams_rec/type-wf :

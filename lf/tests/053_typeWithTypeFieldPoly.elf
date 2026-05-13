@@ -5,20 +5,28 @@ TypeWithTypeFieldPoly/type-wf :
    {u : lvl} defeq (esort (lsucc (lsucc u))) (esort (lsucc (lsucc u))) (esort (lsucc (lsucc (lsucc u))))
    = [u] (defeq/sort-refl-at (lsucc (lsucc u))).
 
+TypeWithTypeFieldPoly/ends-in-sort :
+   {u : lvl} ends-in-sort (esort (lsucc (lsucc u)))
+   = [u] ends-in-sort/sort.
+
 TypeWithTypeFieldPoly/decl : {u : lvl} declared "TypeWithTypeFieldPoly" (lcons u lnil)
    (esort (lsucc (lsucc u)))
    indt
-   (dkind-ok/indt (TypeWithTypeFieldPoly/type-wf u)).
+   (dkind-ok/indt (TypeWithTypeFieldPoly/type-wf u) (TypeWithTypeFieldPoly/ends-in-sort u)).
 
 %% inductive ctor TypeWithTypeFieldPoly.mk
 TypeWithTypeFieldPoly_mk/type-wf :
    {u : lvl} defeq (eforall (esort (lsucc u)) ([x] (econst "TypeWithTypeFieldPoly" (lcons u lnil)))) (eforall (esort (lsucc u)) ([x] (econst "TypeWithTypeFieldPoly" (lcons u lnil)))) (esort (limax (lsucc (lsucc u)) (lsucc (lsucc u))))
    = [u] (defeq/forall (defeq/sort-refl-at (lsucc u)) ([x] [y] (defeq/const (TypeWithTypeFieldPoly/decl u)))).
 
+TypeWithTypeFieldPoly_mk/positivity :
+   {u : lvl} ctor-positive "TypeWithTypeFieldPoly" (lcons u lnil) (eforall (esort (lsucc u)) ([x] (econst "TypeWithTypeFieldPoly" (lcons u lnil))))
+   = [u] (ctor-positive/intro ([S] (eforall (esort (lsucc u)) ([x] S))) ([S] (ctor-spine/arg (strict-pos/absent absent/sort) ([_y0] [_h0] (ctor-spine/result applies-self/refl))))).
+
 TypeWithTypeFieldPoly_mk/decl : {u : lvl} declared "TypeWithTypeFieldPoly.mk" (lcons u lnil)
    (eforall (esort (lsucc u)) ([x] (econst "TypeWithTypeFieldPoly" (lcons u lnil))))
    ctor
-   (dkind-ok/ctor (TypeWithTypeFieldPoly_mk/type-wf u)).
+   (dkind-ok/ctor (TypeWithTypeFieldPoly_mk/type-wf u) (TypeWithTypeFieldPoly_mk/positivity u)).
 
 %% inductive recursor TypeWithTypeFieldPoly.rec
 TypeWithTypeFieldPoly_rec/type-wf :

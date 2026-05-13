@@ -19,11 +19,12 @@ inductBadNonSort/type-wf :
    defeq (econst "constType" lnil) (econst "constType" lnil) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero))))))
    = (defeq/const constType/decl).
 
-inductBadNonSort/decl : declared "inductBadNonSort" lnil
-   (econst "constType" lnil)
-   indt
-   (dkind-ok/indt inductBadNonSort/type-wf).
+%% TRANSLATOR REJECT: inductive inductBadNonSort — type signature is not a forall-chain ending in a sort literal
+%solve _violation_0 : tcb-violation.
 
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.
+
+%% Translator summary:
+%%   - inductive inductBadNonSort: type signature is not Π…→Sort_

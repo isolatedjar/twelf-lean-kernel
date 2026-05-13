@@ -23,10 +23,14 @@ dup_ind_def_mk/type-wf :
    defeq (econst "dup_ind_def" lnil) (econst "dup_ind_def" lnil) (esort (lsucc lzero))
    = (defeq/const dup_ind_def/decl).
 
+dup_ind_def_mk/positivity :
+   ctor-positive "dup_ind_def" lnil (econst "dup_ind_def" lnil)
+   = (ctor-positive/intro ([S] S) ([S] (ctor-spine/result applies-self/refl))).
+
 dup_ind_def_mk/decl : declared "dup_ind_def.mk" lnil
    (econst "dup_ind_def" lnil)
    ctor
-   (dkind-ok/ctor dup_ind_def_mk/type-wf).
+   (dkind-ok/ctor dup_ind_def_mk/type-wf dup_ind_def_mk/positivity).
 
 %% inductive recursor dup_ind_def.rec
 dup_ind_def_rec/type-wf :

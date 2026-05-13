@@ -5,20 +5,28 @@ TypeWithTypeField/type-wf :
    defeq (esort (lsucc (lsucc lzero))) (esort (lsucc (lsucc lzero))) (esort (lsucc (lsucc (lsucc lzero))))
    = (defeq/sort-refl-at (lsucc (lsucc lzero))).
 
+TypeWithTypeField/ends-in-sort :
+   ends-in-sort (esort (lsucc (lsucc lzero)))
+   = ends-in-sort/sort.
+
 TypeWithTypeField/decl : declared "TypeWithTypeField" lnil
    (esort (lsucc (lsucc lzero)))
    indt
-   (dkind-ok/indt TypeWithTypeField/type-wf).
+   (dkind-ok/indt TypeWithTypeField/type-wf TypeWithTypeField/ends-in-sort).
 
 %% inductive ctor TypeWithTypeField.mk
 TypeWithTypeField_mk/type-wf :
    defeq (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil))) (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil))) (esort (limax (lsucc (lsucc lzero)) (lsucc (lsucc lzero))))
    = (defeq/forall (defeq/sort-refl-at (lsucc lzero)) ([x] [y] (defeq/const TypeWithTypeField/decl))).
 
+TypeWithTypeField_mk/positivity :
+   ctor-positive "TypeWithTypeField" lnil (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil)))
+   = (ctor-positive/intro ([S] (eforall (esort (lsucc lzero)) ([x] S))) ([S] (ctor-spine/arg (strict-pos/absent absent/sort) ([_y0] [_h0] (ctor-spine/result applies-self/refl))))).
+
 TypeWithTypeField_mk/decl : declared "TypeWithTypeField.mk" lnil
    (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil)))
    ctor
-   (dkind-ok/ctor TypeWithTypeField_mk/type-wf).
+   (dkind-ok/ctor TypeWithTypeField_mk/type-wf TypeWithTypeField_mk/positivity).
 
 %% inductive recursor TypeWithTypeField.rec
 TypeWithTypeField_rec/type-wf :

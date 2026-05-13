@@ -5,10 +5,14 @@
    {u : lvl} {u : lvl} defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = [u] [u] (defeq/sort-refl-at (lsucc lzero)).
 
+%abbrev inductLevelParam/ends-in-sort :
+   {u : lvl} {u : lvl} ends-in-sort (esort (lsucc lzero))
+   = [u] [u] ends-in-sort/sort.
+
 inductLevelParam/decl : {u : lvl} {u : lvl} declared "inductLevelParam" (lcons u (lcons u lnil))
    (esort (lsucc lzero))
    indt
-   (dkind-ok/indt (inductLevelParam/type-wf u u)).
+   (dkind-ok/indt (inductLevelParam/type-wf u u) (inductLevelParam/ends-in-sort u u)).
 
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).

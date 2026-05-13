@@ -5,20 +5,28 @@ Acc/type-wf :
    {u : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (esort lzero))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (esort lzero))))))) (esort (limax (lsucc u) (limax (limax u (limax u (lsucc lzero))) (limax u (lsucc lzero)))))
    = [u] (defeq/forall (defeq/sort-refl-at u) ([x] [y] (defeq/forall (defeq/forall y ([z] [w] (defeq/forall y ([x1] [y1] (defeq/sort-refl-at lzero))))) ([z] [w] (defeq/forall y ([x1] [y1] (defeq/sort-refl-at lzero))))))).
 
+Acc/ends-in-sort :
+   {u : lvl} ends-in-sort (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (esort lzero)))))))
+   = [u] (ends-in-sort/forall ([x] (ends-in-sort/forall ([y] (ends-in-sort/forall ([z] ends-in-sort/sort)))))).
+
 Acc/decl : {u : lvl} declared "Acc" (lcons u lnil)
    (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (esort lzero)))))))
    indt
-   (dkind-ok/indt (Acc/type-wf u)).
+   (dkind-ok/indt (Acc/type-wf u) (Acc/ends-in-sort u)).
 
 %% inductive ctor Acc.intro
 Acc_intro/type-wf :
    {u : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eforall (eforall x ([w] (eforall (eapp (eapp y w) z) ([x1] (eapp (eapp (eapp (econst "Acc" (lcons u lnil)) x) y) w))))) ([w] (eapp (eapp (eapp (econst "Acc" (lcons u lnil)) x) y) z))))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eforall (eforall x ([w] (eforall (eapp (eapp y w) z) ([x1] (eapp (eapp (eapp (econst "Acc" (lcons u lnil)) x) y) w))))) ([w] (eapp (eapp (eapp (econst "Acc" (lcons u lnil)) x) y) z))))))))) (esort (limax (lsucc u) (limax (limax u (limax u (lsucc lzero))) (limax u (limax (limax u (limax lzero lzero)) lzero)))))
    = [u] (defeq/forall (defeq/sort-refl-at u) ([x] [y] (defeq/forall (defeq/forall y ([z] [w] (defeq/forall y ([x1] [y1] (defeq/sort-refl-at lzero))))) ([z] [w] (defeq/forall y ([x1] [y1] (defeq/forall (defeq/forall y ([z1] [w1] (defeq/forall (defeq/app (defeq/app w w1) y1) ([x2] [y2] (defeq/app (defeq/app (defeq/app (defeq/const (Acc/decl u)) y) w) w1))))) ([z1] [w1] (defeq/app (defeq/app (defeq/app (defeq/const (Acc/decl u)) y) w) y1))))))))).
 
+Acc_intro/positivity :
+   {u : lvl} ctor-positive "Acc" (lcons u lnil) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eforall (eforall x ([w] (eforall (eapp (eapp y w) z) ([x1] (eapp (eapp (eapp (econst "Acc" (lcons u lnil)) x) y) w))))) ([w] (eapp (eapp (eapp (econst "Acc" (lcons u lnil)) x) y) z)))))))))
+   = [u] (ctor-positive/intro ([S] (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eforall (eforall x ([w] (eforall (eapp (eapp y w) z) ([x1] (eapp (eapp (eapp S x) y) w))))) ([w] (eapp (eapp (eapp S x) y) z)))))))))) ([S] (ctor-spine/arg (strict-pos/absent absent/sort) ([_y0] [_h0] (ctor-spine/arg (strict-pos/absent (absent/forall _h0 ([_y1] [_h1] (absent/forall _h0 ([_y2] [_h2] absent/sort))))) ([_y1] [_h1] (ctor-spine/arg (strict-pos/absent _h0) ([_y2] [_h2] (ctor-spine/arg (strict-pos/forall _h0 ([_y3] [_h3] (strict-pos/forall (absent/app (absent/app _h1 _h3) _h2) ([_y4] [_h4] (strict-pos/head (applies-self/app (applies-self/app (applies-self/app applies-self/refl)))))))) ([_y3] [_h3] (ctor-spine/result (applies-self/app (applies-self/app (applies-self/app applies-self/refl)))))))))))))).
+
 Acc_intro/decl : {u : lvl} declared "Acc.intro" (lcons u lnil)
    (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eforall (eforall x ([w] (eforall (eapp (eapp y w) z) ([x1] (eapp (eapp (eapp (econst "Acc" (lcons u lnil)) x) y) w))))) ([w] (eapp (eapp (eapp (econst "Acc" (lcons u lnil)) x) y) z)))))))))
    ctor
-   (dkind-ok/ctor (Acc_intro/type-wf u)).
+   (dkind-ok/ctor (Acc_intro/type-wf u) (Acc_intro/positivity u)).
 
 %% inductive recursor Acc.rec
 Acc_rec/type-wf :

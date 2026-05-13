@@ -5,20 +5,28 @@ DupConCon/type-wf :
    defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = (defeq/sort-refl-at (lsucc lzero)).
 
+DupConCon/ends-in-sort :
+   ends-in-sort (esort (lsucc lzero))
+   = ends-in-sort/sort.
+
 DupConCon/decl : declared "DupConCon" lnil
    (esort (lsucc lzero))
    indt
-   (dkind-ok/indt DupConCon/type-wf).
+   (dkind-ok/indt DupConCon/type-wf DupConCon/ends-in-sort).
 
 %% inductive ctor dup_ind_con_con.mk
 dup_ind_con_con_mk/type-wf :
    defeq (econst "DupConCon" lnil) (econst "DupConCon" lnil) (esort (lsucc lzero))
    = (defeq/const DupConCon/decl).
 
+dup_ind_con_con_mk/positivity :
+   ctor-positive "DupConCon" lnil (econst "DupConCon" lnil)
+   = (ctor-positive/intro ([S] S) ([S] (ctor-spine/result applies-self/refl))).
+
 dup_ind_con_con_mk/decl : declared "dup_ind_con_con.mk" lnil
    (econst "DupConCon" lnil)
    ctor
-   (dkind-ok/ctor dup_ind_con_con_mk/type-wf).
+   (dkind-ok/ctor dup_ind_con_con_mk/type-wf dup_ind_con_con_mk/positivity).
 
 %% TRANSLATOR REJECT: duplicate declaration of "dup_ind_con_con.mk"
 %%   previously declared as kind=ctor, now seen as kind=inductive ctor
