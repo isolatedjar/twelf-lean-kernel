@@ -42,6 +42,29 @@ DupConCon_rec/decl : {u : lvl} declared "DupConCon.rec" (lcons u lnil)
    irec
    (dkind-ok/irec (DupConCon_rec/type-wf u)).
 
+%% stage-1 enum iota helpers: DupConCon
+DupConCon/as-enum : {u : lvl}
+   enum-rec-type
+      (eforall (eforall (econst "DupConCon" lnil) ([x] (esort u))) ([M] (eforall (eapp M (econst "dup_ind_con_con.mk" lnil)) ([x] (eforall (eapp M (econst "dup_ind_con_con.mk" lnil)) ([x] (eforall (econst "DupConCon" lnil) ([t] (eapp M t)))))))))
+      "DupConCon" lnil (ccons "dup_ind_con_con.mk" (ccons "dup_ind_con_con.mk" cnil)) u
+   = [u] enum-rec-type/intro ([M] [hM] (enum-rec-body/minor ([m1] [hm1] (enum-rec-body/minor ([m2] [hm2] enum-rec-body/done))))).
+
+dup_ind_con_con_mk/iota : {u : lvl}
+   defeq M M (eforall (econst "DupConCon" lnil) ([x] (esort u)))
+   -> defeq Mp1 Mp1 (eapp M (econst "dup_ind_con_con.mk" lnil))
+   -> defeq Mp2 Mp2 (eapp M (econst "dup_ind_con_con.mk" lnil))
+   -> defeq (eapp (eapp (eapp (eapp (econst "DupConCon.rec" (lcons u lnil)) M) Mp1) Mp2) (econst "dup_ind_con_con.mk" lnil)) Mp1 (eapp M (econst "dup_ind_con_con.mk" lnil))
+   = [u] [hM] [hMp1] [hMp2]
+     defeq/extra (defeq/iota-enum-2-first (DupConCon_rec/decl u) dup_ind_con_con_mk/decl dup_ind_con_con_mk/decl (DupConCon/as-enum u) hM hMp1 hMp2).
+
+dup_ind_con_con_mk/iota : {u : lvl}
+   defeq M M (eforall (econst "DupConCon" lnil) ([x] (esort u)))
+   -> defeq Mp1 Mp1 (eapp M (econst "dup_ind_con_con.mk" lnil))
+   -> defeq Mp2 Mp2 (eapp M (econst "dup_ind_con_con.mk" lnil))
+   -> defeq (eapp (eapp (eapp (eapp (econst "DupConCon.rec" (lcons u lnil)) M) Mp1) Mp2) (econst "dup_ind_con_con.mk" lnil)) Mp2 (eapp M (econst "dup_ind_con_con.mk" lnil))
+   = [u] [hM] [hMp1] [hMp2]
+     defeq/extra (defeq/iota-enum-2-second (DupConCon_rec/decl u) dup_ind_con_con_mk/decl dup_ind_con_con_mk/decl (DupConCon/as-enum u) hM hMp1 hMp2).
+
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.

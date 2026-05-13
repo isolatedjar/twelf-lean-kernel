@@ -32,6 +32,20 @@ dup_ctor_rec_rec/decl : declared "dup_ctor_rec.rec" lnil
 %%   previously declared as kind=ctor, now seen as kind=inductive recursor
 %solve _violation_0 : tcb-violation.
 
+%% stage-1 enum iota helpers: dup_ctor_rec
+dup_ctor_rec/as-enum : {u : lvl}
+   enum-rec-type
+      (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort u))) ([M] (eforall (eapp M (econst "dup_ctor_rec.rec" lnil)) ([x] (eforall (econst "dup_ctor_rec" lnil) ([t] (eapp M t)))))))
+      "dup_ctor_rec" lnil (ccons "dup_ctor_rec.rec" cnil) u
+   = [u] enum-rec-type/intro ([M] [hM] (enum-rec-body/minor ([m1] [hm1] enum-rec-body/done))).
+
+dup_ctor_rec_rec/iota : {u : lvl}
+   defeq M M (eforall (econst "dup_ctor_rec" lnil) ([x] (esort u)))
+   -> defeq Mp1 Mp1 (eapp M (econst "dup_ctor_rec.rec" lnil))
+   -> defeq (eapp (eapp (eapp (econst "dup_ctor_rec.rec" (lcons u lnil)) M) Mp1) (econst "dup_ctor_rec.rec" lnil)) Mp1 (eapp M (econst "dup_ctor_rec.rec" lnil))
+   = [u] [hM] [hMp1]
+     defeq/extra (defeq/iota-enum-1 (dup_ctor_rec_rec/decl u) dup_ctor_rec_rec/decl (dup_ctor_rec/as-enum u) hM hMp1).
+
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.

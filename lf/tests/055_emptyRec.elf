@@ -24,6 +24,13 @@ Empty_rec/decl : {u : lvl} declared "Empty.rec" (lcons u lnil)
    irec
    (dkind-ok/irec (Empty_rec/type-wf u)).
 
+%% stage-1 enum iota helpers: Empty
+Empty/as-enum : {u : lvl}
+   enum-rec-type
+      (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([M] (eforall (econst "Empty" lnil) ([t] (eapp M t)))))
+      "Empty" lnil cnil u
+   = [u] enum-rec-type/intro ([M] [hM] enum-rec-body/done).
+
 %% def emptyRec
 emptyRec/type-wf :
    {u : lvl} defeq (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (esort (limax (limax (lsucc lzero) (lsucc u)) (limax (lsucc lzero) u)))

@@ -91,6 +91,20 @@ True_rec/decl : {u : lvl} declared "True.rec" (lcons u lnil)
    irec
    (dkind-ok/irec (True_rec/type-wf u)).
 
+%% stage-1 enum iota helpers: True
+True/as-enum : {u : lvl}
+   enum-rec-type
+      (eforall (eforall (econst "True" lnil) ([x] (esort u))) ([M] (eforall (eapp M (econst "True.intro" lnil)) ([x] (eforall (econst "True" lnil) ([t] (eapp M t)))))))
+      "True" lnil (ccons "True.intro" cnil) u
+   = [u] enum-rec-type/intro ([M] [hM] (enum-rec-body/minor ([m1] [hm1] enum-rec-body/done))).
+
+True_intro/iota : {u : lvl}
+   defeq M M (eforall (econst "True" lnil) ([x] (esort u)))
+   -> defeq Mp1 Mp1 (eapp M (econst "True.intro" lnil))
+   -> defeq (eapp (eapp (eapp (econst "True.rec" (lcons u lnil)) M) Mp1) (econst "True.intro" lnil)) Mp1 (eapp M (econst "True.intro" lnil))
+   = [u] [hM] [hMp1]
+     defeq/extra (defeq/iota-enum-1 (True_rec/decl u) True_intro/decl (True/as-enum u) hM hMp1).
+
 %% inductive ProjDataIndex
 ProjDataIndex/type-wf :
    defeq (eforall (econst "N" lnil) ([x] (esort lzero))) (eforall (econst "N" lnil) ([x] (esort lzero))) (esort (limax (lsucc lzero) (lsucc lzero)))

@@ -52,6 +52,29 @@ Color_rec/decl : {u : lvl} declared "Color.rec" (lcons u lnil)
    irec
    (dkind-ok/irec (Color_rec/type-wf u)).
 
+%% stage-1 enum iota helpers: Color
+Color/as-enum : {u : lvl}
+   enum-rec-type
+      (eforall (eforall (econst "Color" lnil) ([x] (esort u))) ([M] (eforall (eapp M (econst "Color.r" lnil)) ([x] (eforall (eapp M (econst "Color.b" lnil)) ([x] (eforall (econst "Color" lnil) ([t] (eapp M t)))))))))
+      "Color" lnil (ccons "Color.r" (ccons "Color.b" cnil)) u
+   = [u] enum-rec-type/intro ([M] [hM] (enum-rec-body/minor ([m1] [hm1] (enum-rec-body/minor ([m2] [hm2] enum-rec-body/done))))).
+
+Color_r/iota : {u : lvl}
+   defeq M M (eforall (econst "Color" lnil) ([x] (esort u)))
+   -> defeq Mp1 Mp1 (eapp M (econst "Color.r" lnil))
+   -> defeq Mp2 Mp2 (eapp M (econst "Color.b" lnil))
+   -> defeq (eapp (eapp (eapp (eapp (econst "Color.rec" (lcons u lnil)) M) Mp1) Mp2) (econst "Color.r" lnil)) Mp1 (eapp M (econst "Color.r" lnil))
+   = [u] [hM] [hMp1] [hMp2]
+     defeq/extra (defeq/iota-enum-2-first (Color_rec/decl u) Color_r/decl Color_b/decl (Color/as-enum u) hM hMp1 hMp2).
+
+Color_b/iota : {u : lvl}
+   defeq M M (eforall (econst "Color" lnil) ([x] (esort u)))
+   -> defeq Mp1 Mp1 (eapp M (econst "Color.r" lnil))
+   -> defeq Mp2 Mp2 (eapp M (econst "Color.b" lnil))
+   -> defeq (eapp (eapp (eapp (eapp (econst "Color.rec" (lcons u lnil)) M) Mp1) Mp2) (econst "Color.b" lnil)) Mp2 (eapp M (econst "Color.b" lnil))
+   = [u] [hM] [hMp1] [hMp2]
+     defeq/extra (defeq/iota-enum-2-second (Color_rec/decl u) Color_r/decl Color_b/decl (Color/as-enum u) hM hMp1 hMp2).
+
 %% inductive N
 N/type-wf :
    defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))

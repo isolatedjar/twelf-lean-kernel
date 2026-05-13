@@ -34,6 +34,20 @@ dup_ctor_def/decl : declared "dup_ctor_def" lnil
 
 %% SKIP: inductive recursor dup_ctor_def.rec — type synth failed: app: cannot bridge arg type to function domain
 
+%% stage-1 enum iota helpers: dup_ctor_def
+dup_ctor_def/as-enum : {u : lvl}
+   enum-rec-type
+      (eforall (eforall (econst "dup_ctor_def" lnil) ([x] (esort u))) ([M] (eforall (eapp M (econst "dup_ctor_def.mk" lnil)) ([x] (eforall (econst "dup_ctor_def" lnil) ([t] (eapp M t)))))))
+      "dup_ctor_def" lnil (ccons "dup_ctor_def.mk" cnil) u
+   = [u] enum-rec-type/intro ([M] [hM] (enum-rec-body/minor ([m1] [hm1] enum-rec-body/done))).
+
+dup_ctor_def_mk/iota : {u : lvl}
+   defeq M M (eforall (econst "dup_ctor_def" lnil) ([x] (esort u)))
+   -> defeq Mp1 Mp1 (eapp M (econst "dup_ctor_def.mk" lnil))
+   -> defeq (eapp (eapp (eapp (econst "dup_ctor_def.rec" (lcons u lnil)) M) Mp1) (econst "dup_ctor_def.mk" lnil)) Mp1 (eapp M (econst "dup_ctor_def.mk" lnil))
+   = [u] [hM] [hMp1]
+     defeq/extra (defeq/iota-enum-1 (dup_ctor_def_rec/decl u) dup_ctor_def_mk/decl (dup_ctor_def/as-enum u) hM hMp1).
+
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.

@@ -922,6 +922,19 @@ interface DeclEntry {
 }
 const declTable: Map<string, DeclEntry> = new Map();
 
+// Stage-1 enum iota lookup: maps a ctor's name (e.g. "Bool.false") to the
+// metadata `reduceOnce` needs to invoke the corresponding `<ctor>/iota`
+// helper.  Populated by emitStage1EnumIotaHelpers.
+interface IotaInfo {
+  recName: string; // e.g. "Bool.rec"
+  indName: Name; // the inductive's Name (for constructing expected motive types)
+  indNameStr: string; // e.g. "Bool"
+  ctorMangle: string; // e.g. "Bool_false"
+  position: number; // 0-indexed cidx
+  allCtors: { name: string; nameStruct: Name }[]; // in cidx order
+}
+const iotaTable: Map<string, IotaInfo> = new Map();
+
 // --- Level-equality solver (unchanged) -------------------------------
 
 function levelEq(a: Level, b: Level): boolean {
@@ -1072,6 +1085,32 @@ interface Scope {
   hyps: string[];
   tys: Expr[];
 }
+function exprToShortStr(e: Expr, depth: number = 4): string {
+  if (depth <= 0) return "...";
+  switch (e.kind) {
+    case "bvar":
+      return `#${e.deBruijn}`;
+    case "sort":
+      return `Sort(${e.level.kind})`;
+    case "const":
+      return nameToString(e.name) + (e.us.length === 0 ? "" : `.{${e.us.length}}`);
+    case "app":
+      return `(${exprToShortStr(e.fn, depth - 1)} ${exprToShortStr(e.arg, depth - 1)})`;
+    case "lam":
+      return `λ_:${exprToShortStr(e.type, depth - 1)}. ${exprToShortStr(e.body, depth - 1)}`;
+    case "forallE":
+      return `Π_:${exprToShortStr(e.type, depth - 1)}. ${exprToShortStr(e.body, depth - 1)}`;
+    case "letE":
+      return "let ...";
+    case "proj":
+      return `proj.${e.idx}`;
+    case "natLit":
+      return `#${e.value}`;
+    case "strLit":
+      return `"${e.value}"`;
+  }
+}
+
 type Synth = { tyExpr: Expr; proof: string };
 
 function synth(e: Expr, scope: Scope): Synth {
@@ -1196,6 +1235,100 @@ function synth(e: Expr, scope: Scope): Synth {
 
 // --- One-step head reduction (with proof) ----------------------------
 //
+// tryIotaEnum: detect an iota redex for a stage-1 enum recursor.
+//
+// Pattern: e = (eapp ... (eapp (eapp (econst RecName [u]) Motive) Mp_1) ...) (econst CtorName lnil))
+// where CtorName is registered in iotaTable as a stage-1 enum ctor.
+//
+// On match, produces a defeq proof using the <CtorMangle>/iota helper
+// (which lifts defeq/extra (defeq/iota-enum-K-pos ...)) and returns the
+// reduced expression (the appropriate minor premise).
+function tryIotaEnum(e: Expr, scope: Scope): { result: Expr; proof: string } | null {
+  if (e.kind !== "app") return null;
+  // Walk the spine: collect args, find the head.
+  const args: Expr[] = [];
+  let head: Expr = e;
+  while (head.kind === "app") {
+    args.unshift(head.arg);
+    head = head.fn;
+  }
+  // Head must be a const (the recursor).
+  if (head.kind !== "const") return null;
+  // The last arg (major premise) must be a const with no level args
+  // and no further application: a 0-field ctor invocation.
+  if (args.length === 0) return null;
+  const major = args[args.length - 1];
+  if (major.kind !== "const") return null;
+  if (major.us.length !== 0) return null;
+  // Look up iota info for this ctor.
+  const ctorName = nameToString(major.name);
+  const info = iotaTable.get(ctorName);
+  if (!info) return null;
+  // Sanity: rec name and arg count.
+  if (nameToString(head.name) !== info.recName) return null;
+  if (head.us.length !== 1) return null;
+  const k = info.allCtors.length;
+  if (args.length !== k + 2) return null; // motive + k cases + major
+  const u: Level = head.us[0];
+
+  const motive = args[0];
+  const cases = args.slice(1, k + 1);
+
+  // Build the expected motive type: eforall (econst indName lnil) ([_] esort u)
+  const indConst: Expr = { kind: "const", name: info.indName, us: [] };
+  const expectedMotiveTy: Expr = {
+    kind: "forallE",
+    name: { kind: "anon" },
+    type: indConst,
+    body: { kind: "sort", level: u },
+  };
+  // Synth motive; bridge its type to expectedMotiveTy if needed.
+  let motiveS: Synth;
+  try {
+    motiveS = synth(motive, scope);
+  } catch {
+    return null;
+  }
+  let motiveProof = motiveS.proof;
+  if (!exprEq(motiveS.tyExpr, expectedMotiveTy)) {
+    const conv = bridgeTypes(motiveS.tyExpr, expectedMotiveTy, scope, 0);
+    if (conv === null) return null;
+    motiveProof = `(defeq/conv ${conv} ${motiveS.proof})`;
+  }
+
+  // For each case, build expected type (eapp motive (econst ctor_i lnil))
+  // and bridge as needed.
+  const caseProofs: string[] = [];
+  for (let i = 0; i < k; i++) {
+    const ci = info.allCtors[i];
+    const expectedCaseTy: Expr = {
+      kind: "app",
+      fn: motive,
+      arg: { kind: "const", name: ci.nameStruct, us: [] },
+    };
+    let caseS: Synth;
+    try {
+      caseS = synth(cases[i], scope);
+    } catch {
+      return null;
+    }
+    let cp = caseS.proof;
+    if (!exprEq(caseS.tyExpr, expectedCaseTy)) {
+      const conv = bridgeTypes(caseS.tyExpr, expectedCaseTy, scope, 0);
+      if (conv === null) return null;
+      cp = `(defeq/conv ${conv} ${caseS.proof})`;
+    }
+    caseProofs.push(cp);
+  }
+
+  // Assemble: (<ctorMangle>/iota u motiveProof caseProofs...)
+  const helperCall = `(${info.ctorMangle}/iota ${lfLevel(u)} ${motiveProof} ${caseProofs.join(" ")})`;
+  return {
+    result: cases[info.position],
+    proof: helperCall,
+  };
+}
+
 // reduceOnce(e, scope) attempts a single head-reduction step and returns
 // (e', proof : defeq e e' T) where T is the expression's type.  Returns
 // null if e is in whnf.  Sort-level rewrites (imax-zero, imax-succ,
@@ -1255,8 +1388,11 @@ function reduceOnce(e: Expr, scope: Scope): { result: Expr; proof: string } | nu
     return null;
   }
 
-  // app: β if f is a lam; otherwise lift a reduction step from f.
+  // app: try iota first (stage-1 enum recursors), then β, then lift from f.
   if (e.kind === "app") {
+    const iotaStep = tryIotaEnum(e, scope);
+    if (iotaStep !== null) return iotaStep;
+
     if (e.fn.kind === "lam") {
       const A = e.fn.type;
       const Body = e.fn.body;
@@ -1868,6 +2004,143 @@ function emitInductive(ir: IndRec, env: Env): void {
       "irec",
       "inductive recursor",
     );
+  }
+  // 4. Stage-1 iota helpers (if this inductive qualifies as a stage-1 enum).
+  emitStage1EnumIotaHelpers(ir, env);
+}
+
+// Emit `<Foo>/as-enum` and per-ctor `<Foo_ctor>/iota` definitions if this
+// inductive qualifies as a stage-1 enum (no level params, 0-3 ctors all
+// with zero fields, single non-mutual recursor).  These are *definitions*
+// (= proof terms) inhabiting closed-family judgments (`enum-rec-type`,
+// `defeq`); they don't extend any open family, so the soundness story is
+// unchanged.  Downstream consumers (translator-emitted defeq proofs that
+// want to compute iota, or hand-written witnesses) can invoke them.
+function emitStage1EnumIotaHelpers(ir: IndRec, env: Env): void {
+  // Single-type, single-recursor blocks only (no mutual/nested for stage 1).
+  if (ir.types.length !== 1) return;
+  if (ir.recs.length !== 1) return;
+  const indSpec = ir.types[0];
+  const recSpec = ir.recs[0];
+  // No level params on the inductive itself.
+  if (indSpec.levelParams.length !== 0) return;
+  // Ctors for this inductive, sorted by cidx.
+  const ctorList = ir.ctors
+    .filter((c) => c.induct === indSpec.name)
+    .sort((a, b) => a.cidx - b.cidx);
+  // Stage 1: 0-3 ctors.
+  if (ctorList.length > 3) return;
+  // All ctors must have zero fields (so no recursive args, no field-passing).
+  for (const c of ctorList) {
+    if (c.numFields !== 0) return;
+  }
+  // Recursor must have exactly one level parameter (the motive's level),
+  // no inductive params or indices, one motive, and one minor per ctor.
+  if (recSpec.levelParams.length !== 1) return;
+  if (recSpec.numParams !== 0) return;
+  if (recSpec.numIndices !== 0) return;
+  if (recSpec.numMotives !== 1) return;
+  if (recSpec.numMinors !== ctorList.length) return;
+
+  const N = (i: number): Name => env.names.get(i)!;
+  const indName = nameToString(N(indSpec.name));
+  const indMangle = mangle(N(indSpec.name));
+  const recName = nameToString(N(recSpec.name));
+  const recMangle = mangle(N(recSpec.name));
+  const ctorInfo = ctorList.map((c) => ({
+    name: nameToString(N(c.name)),
+    nameStruct: N(c.name),
+    mangle: mangle(N(c.name)),
+  }));
+  const k = ctorInfo.length;
+  const u = "u";
+
+  // Register each ctor in iotaTable so reduceOnce can invoke the helper.
+  const allCtors = ctorInfo.map((c) => ({ name: c.name, nameStruct: c.nameStruct }));
+  for (let i = 0; i < k; i++) {
+    iotaTable.set(ctorInfo[i].name, {
+      recName,
+      indName: N(indSpec.name),
+      indNameStr: indName,
+      ctorMangle: ctorInfo[i].mangle,
+      position: i,
+      allCtors,
+    });
+  }
+
+  // Build the full recursor-type expression to assert via enum-rec-type.
+  const indConst = `(econst "${indName}" lnil)`;
+  const motiveType = `(eforall ${indConst} ([x] (esort ${u})))`;
+  const resultPart = `(eforall ${indConst} ([t] (eapp M t)))`;
+  let bodyM = resultPart;
+  for (let i = k - 1; i >= 0; i--) {
+    bodyM = `(eforall (eapp M (econst "${ctorInfo[i].name}" lnil)) ([x] ${bodyM}))`;
+  }
+  const fullRecType = `(eforall ${motiveType} ([M] ${bodyM}))`;
+
+  let cnamesExpr = "cnil";
+  for (let i = k - 1; i >= 0; i--) {
+    cnamesExpr = `(ccons "${ctorInfo[i].name}" ${cnamesExpr})`;
+  }
+
+  let asEnumBody = "enum-rec-body/done";
+  for (let i = k - 1; i >= 0; i--) {
+    asEnumBody = `(enum-rec-body/minor ([m${i + 1}] [hm${i + 1}] ${asEnumBody}))`;
+  }
+
+  emit(`%% stage-1 enum iota helpers: ${indName}`);
+  emit(`${indMangle}/as-enum : {${u} : lvl}`);
+  emit(`   enum-rec-type`);
+  emit(`      ${fullRecType}`);
+  emit(`      "${indName}" lnil ${cnamesExpr} ${u}`);
+  emit(`   = [${u}] enum-rec-type/intro ([M] [hM] ${asEnumBody}).`);
+  emitBlank();
+
+  if (k === 0) return; // no iota helpers — no ctor to reduce on.
+
+  // Per-ctor iota helpers.
+  const positions = ["first", "second", "third"];
+  for (let i = 0; i < k; i++) {
+    const c = ctorInfo[i];
+    const ruleName = k === 1 ? "defeq/iota-enum-1" : `defeq/iota-enum-${k}-${positions[i]}`;
+
+    // LHS = recursor applied to motive, k cases, then the i-th ctor.
+    let lhs = `(econst "${recName}" (lcons ${u} lnil))`;
+    lhs = `(eapp ${lhs} M)`;
+    for (let j = 0; j < k; j++) {
+      lhs = `(eapp ${lhs} Mp${j + 1})`;
+    }
+    lhs = `(eapp ${lhs} (econst "${c.name}" lnil))`;
+
+    const rhs = `Mp${i + 1}`;
+    const retType = `(eapp M (econst "${c.name}" lnil))`;
+
+    // Build premise lines and body lambda bindings.
+    const premiseLines: string[] = [];
+    premiseLines.push(`   defeq M M ${motiveType}`);
+    for (let j = 0; j < k; j++) {
+      premiseLines.push(
+        `   -> defeq Mp${j + 1} Mp${j + 1} (eapp M (econst "${ctorInfo[j].name}" lnil))`,
+      );
+    }
+
+    // Build the body: defeq/extra applied to the iota rule applied to all premises.
+    const ruleArgs: string[] = [];
+    ruleArgs.push(`(${recMangle}/decl ${u})`);
+    for (const ci of ctorInfo) ruleArgs.push(`${ci.mangle}/decl`);
+    ruleArgs.push(`(${indMangle}/as-enum ${u})`);
+    ruleArgs.push("hM");
+    for (let j = 0; j < k; j++) ruleArgs.push(`hMp${j + 1}`);
+    const lambdaBindings = ["hM", ...Array.from({ length: k }, (_, j) => `hMp${j + 1}`)]
+      .map((name) => `[${name}]`)
+      .join(" ");
+
+    emit(`${c.mangle}/iota : {${u} : lvl}`);
+    for (const p of premiseLines) emit(p);
+    emit(`   -> defeq ${lhs} ${rhs} ${retType}`);
+    emit(`   = [${u}] ${lambdaBindings}`);
+    emit(`     defeq/extra (${ruleName} ${ruleArgs.join(" ")}).`);
+    emitBlank();
   }
 }
 
