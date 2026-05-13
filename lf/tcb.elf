@@ -74,6 +74,10 @@ lvl-eq/imax-zero : lvl-eq (limax L lzero) lzero.
 lvl-eq/imax-idem : lvl-eq (limax L L) L.
 
 %%% --- structural congruence rules ---
+%%% Needed because sort-level reductions chain through `defeq/trans`,
+%%% which requires its level indices to be syntactically identical;
+%%% Twelf doesn't see through `lvl-eq`.  These let us re-index a
+%%% derivation when the levels are equivalent but not syntactic.
 lvl-eq/lsucc-cong : lvl-eq L1 L2 -> lvl-eq (lsucc L1) (lsucc L2).
 lvl-eq/lmax-cong  : lvl-eq L1 L1' -> lvl-eq L2 L2' -> lvl-eq (lmax L1 L2) (lmax L1' L2').
 lvl-eq/limax-cong : lvl-eq L1 L1' -> lvl-eq L2 L2' -> lvl-eq (limax L1 L2) (limax L1' L2').
@@ -169,9 +173,15 @@ defeq/eta :
    defeq F F (eforall A B)
    -> defeq (elam A ([x] eapp F x)) F (eforall A B).
 
-%%% --- proof irrelevance (defer until we hit Prop-typed proofs) ---
-%%% defeq/proofIrrel : defeq P P (esort lzero) -> defeq H H P -> defeq H' H' P
-%%%                    -> defeq H H' P.
+%%% --- proof irrelevance (t-proof-irrel) ---
+%%% Any two proofs of the same proposition are definitionally equal.
+%%% This is what makes `Prop` proof-irrelevant in Lean's theory.
+
+defeq/proof-irrel :
+   defeq P P (esort lzero)
+   -> defeq H H P
+   -> defeq H' H' P
+   -> defeq H H' P.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Declarations
