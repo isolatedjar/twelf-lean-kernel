@@ -38,10 +38,6 @@ PProd_rec/decl : {u_1 : lvl} {u : lvl} {v : lvl} declared "PProd.rec" (lcons u_1
    irec
    (dkind-ok/irec (PProd_rec/type-wf u_1 u v)).
 
-%% TRANSLATOR: could not bridge inferred type to declared type
-%%   inferred type kind: forallE
-%%   declared type kind: forallE
-%%   emitting valTy.proof; Twelf will likely reject.
 %% def pprodType
 pprodType/type-wf :
    defeq (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort (limax (lsucc (lsucc lzero)) (limax (lsucc (lsucc lzero)) (lsucc (lsucc lzero)))))
@@ -49,7 +45,7 @@ pprodType/type-wf :
 
 pprodType/value-typed :
    defeq (econst "PProd" (lcons (lsucc lzero) (lcons (lsucc lzero) lnil))) (econst "PProd" (lcons (lsucc lzero) (lcons (lsucc lzero) lnil))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero))))))
-   = (defeq/const (PProd/decl (lsucc lzero) (lsucc lzero))).
+   = (defeq/conv (defeq/forall defeq/sort-refl ([x] [y] (defeq/forall defeq/sort-refl ([z] [w] (defeq/sort-eq (lvl-eq/trans (lvl-eq/lmax-cong lvl-eq/max-idem lvl-eq/refl) (lvl-eq/trans lvl-eq/max-idem lvl-eq/refl))))))) (defeq/const (PProd/decl (lsucc lzero) (lsucc lzero)))).
 
 pprodType/decl : declared "pprodType" lnil
    (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero))))))

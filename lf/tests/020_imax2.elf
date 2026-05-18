@@ -7,7 +7,7 @@ imax2/type-wf :
 
 imax2/value-typed :
    defeq (elam (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] x)))) (elam (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] x)))) (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc lzero)))))
-   = (defeq/conv (defeq/forall defeq/sort-refl ([x] [y] (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-succ (lvl-eq/trans lvl-eq/max-succ (lvl-eq/lsucc-cong (lvl-eq/trans lvl-eq/max-zero-r lvl-eq/refl))))))) (defeq/lam (defeq/sort-refl-at (lsucc lzero)) ([x] [y] (defeq/forall (defeq/sort-refl-at (lsucc lzero)) ([z] [w] y))))).
+   = (defeq/conv (defeq/forall defeq/sort-refl ([x] [y] (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-succ (lvl-eq/trans lvl-eq/max-succ (lvl-eq/trans (lvl-eq/lsucc-cong lvl-eq/max-zero-r) lvl-eq/refl)))))) (defeq/lam (defeq/sort-refl-at (lsucc lzero)) ([x] [y] (defeq/forall (defeq/sort-refl-at (lsucc lzero)) ([z] [w] y))))).
 
 imax2/decl : declared "imax2" lnil
    (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc lzero)))))

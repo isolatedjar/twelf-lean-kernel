@@ -989,26 +989,80 @@ function reduceLevel(l: Level): { result: Level; proof: string } | null {
   return null;
 }
 
+// One-step reduction at any position (top-level or under a constructor).
+// Wraps a sub-position reduction in the appropriate congruence rule.
+// Returns null only if `l` is in normal form (no reductions anywhere).
+function stepLevel(l: Level): { result: Level; proof: string } | null {
+  const top = reduceLevel(l);
+  if (top !== null) return top;
+  switch (l.kind) {
+    case "zero":
+    case "param":
+      return null;
+    case "succ": {
+      const inner = stepLevel(l.arg);
+      if (inner === null) return null;
+      return {
+        result: { kind: "succ", arg: inner.result },
+        proof: `(lvl-eq/lsucc-cong ${inner.proof})`,
+      };
+    }
+    case "max": {
+      const lstep = stepLevel(l.l);
+      if (lstep !== null) {
+        return {
+          result: { kind: "max", l: lstep.result, r: l.r },
+          proof: `(lvl-eq/lmax-cong ${lstep.proof} lvl-eq/refl)`,
+        };
+      }
+      const rstep = stepLevel(l.r);
+      if (rstep !== null) {
+        return {
+          result: { kind: "max", l: l.l, r: rstep.result },
+          proof: `(lvl-eq/lmax-cong lvl-eq/refl ${rstep.proof})`,
+        };
+      }
+      return null;
+    }
+    case "imax": {
+      const lstep = stepLevel(l.l);
+      if (lstep !== null) {
+        return {
+          result: { kind: "imax", l: lstep.result, r: l.r },
+          proof: `(lvl-eq/limax-cong ${lstep.proof} lvl-eq/refl)`,
+        };
+      }
+      const rstep = stepLevel(l.r);
+      if (rstep !== null) {
+        return {
+          result: { kind: "imax", l: l.l, r: rstep.result },
+          proof: `(lvl-eq/limax-cong lvl-eq/refl ${rstep.proof})`,
+        };
+      }
+      return null;
+    }
+  }
+}
+
 // Try to find a proof of (lvl-eq from to).  Strategy:
 //   1. If syntactically equal, lvl-eq/refl.
-//   2. Try a top-level reduction of `from` and recurse.
-//   3. Try a top-level reduction of `to` and recurse (with symm).
-//   4. If `from` and `to` share an outer constructor, try the congruence
-//      rules on the sub-levels.
+//   2. Try a step (top-level OR internal congruence-wrapped) in `from`.
+//   3. Try a step in `to` (used with symm).
+//   4. If `from` and `to` share an outer constructor, try congruence.
 //
 // `depth` guards against pathological recursion.
 function solveLvlEq(from: Level, to: Level, depth: number = 0): string | null {
-  if (depth > 8) return null;
+  if (depth > 12) return null;
   if (levelEq(from, to)) return "lvl-eq/refl";
 
-  // (2) reduce `from`.
-  const r = reduceLevel(from);
+  // (2) step `from`.
+  const r = stepLevel(from);
   if (r !== null) {
     const rest = solveLvlEq(r.result, to, depth + 1);
     if (rest !== null) return `(lvl-eq/trans ${r.proof} ${rest})`;
   }
-  // (3) reduce `to`.
-  const r2 = reduceLevel(to);
+  // (3) step `to`.
+  const r2 = stepLevel(to);
   if (r2 !== null) {
     const rest = solveLvlEq(from, r2.result, depth + 1);
     if (rest !== null) return `(lvl-eq/trans ${rest} (lvl-eq/symm ${r2.proof}))`;
@@ -1085,32 +1139,6 @@ interface Scope {
   hyps: string[];
   tys: Expr[];
 }
-function exprToShortStr(e: Expr, depth: number = 4): string {
-  if (depth <= 0) return "...";
-  switch (e.kind) {
-    case "bvar":
-      return `#${e.deBruijn}`;
-    case "sort":
-      return `Sort(${e.level.kind})`;
-    case "const":
-      return nameToString(e.name) + (e.us.length === 0 ? "" : `.{${e.us.length}}`);
-    case "app":
-      return `(${exprToShortStr(e.fn, depth - 1)} ${exprToShortStr(e.arg, depth - 1)})`;
-    case "lam":
-      return `λ_:${exprToShortStr(e.type, depth - 1)}. ${exprToShortStr(e.body, depth - 1)}`;
-    case "forallE":
-      return `Π_:${exprToShortStr(e.type, depth - 1)}. ${exprToShortStr(e.body, depth - 1)}`;
-    case "letE":
-      return "let ...";
-    case "proj":
-      return `proj.${e.idx}`;
-    case "natLit":
-      return `#${e.value}`;
-    case "strLit":
-      return `"${e.value}"`;
-  }
-}
-
 type Synth = { tyExpr: Expr; proof: string };
 
 function synth(e: Expr, scope: Scope): Synth {
@@ -1322,7 +1350,37 @@ function tryIotaEnum(e: Expr, scope: Scope): { result: Expr; proof: string } | n
   }
 
   // Assemble: (<ctorMangle>/iota u motiveProof caseProofs...)
-  const helperCall = `(${info.ctorMangle}/iota ${lfLevel(u)} ${motiveProof} ${caseProofs.join(" ")})`;
+  let helperCall = `(${info.ctorMangle}/iota ${lfLevel(u)} ${motiveProof} ${caseProofs.join(" ")})`;
+
+  // The helper produces a proof at type `(eapp M (econst ctor lnil))`.  If M
+  // is a lam, that's a β-redex; the outer context typically expects the
+  // β-reduced form `(M.body[ctor])`.  Wrap with defeq/conv via β-reduction
+  // of the type index so the proof's index matches what callers expect.
+  if (motive.kind === "lam") {
+    const ctorExpr: Expr = { kind: "const", name: info.allCtors[info.position].nameStruct, us: [] };
+    const allBound = [...scope.vars, ...scope.hyps];
+    const v = freshVar(allBound);
+    const h = freshVar([...allBound, v]);
+    const innerScope: Scope = {
+      vars: [v, ...scope.vars],
+      hyps: [h, ...scope.hyps],
+      tys: [motive.type, ...scope.tys],
+    };
+    let bodyS: Synth, ctorS: Synth;
+    try {
+      bodyS = synth(motive.body, innerScope);
+    } catch {
+      return null;
+    }
+    try {
+      ctorS = synth(ctorExpr, scope);
+    } catch {
+      return null;
+    }
+    const betaProof = `(defeq/beta ([${v}] [${h}] ${bodyS.proof}) ${ctorS.proof})`;
+    helperCall = `(defeq/conv ${betaProof} ${helperCall})`;
+  }
+
   return {
     result: cases[info.position],
     proof: helperCall,
@@ -1430,32 +1488,54 @@ function reduceOnce(e: Expr, scope: Scope): { result: Expr; proof: string } | nu
 
     // f is not a lam — try to reduce f one step and lift via defeq/app.
     const fReduced = reduceOnce(e.fn, scope);
-    if (fReduced === null) return null;
+    if (fReduced !== null) {
+      // Need defeq arg arg A.  Get A from synth(e.fn).
+      let fS: Synth, argS: Synth;
+      try {
+        fS = synth(e.fn, scope);
+      } catch {
+        return null;
+      }
+      try {
+        argS = synth(e.arg, scope);
+      } catch {
+        return null;
+      }
+      if (fS.tyExpr.kind !== "forallE") return null;
+      const A_expected = fS.tyExpr.type;
+      let argProof = argS.proof;
+      if (!exprEq(argS.tyExpr, A_expected)) {
+        const conv = bridgeTypes(argS.tyExpr, A_expected, scope, 0);
+        if (conv === null) return null;
+        argProof = `(defeq/conv ${conv} ${argS.proof})`;
+      }
+      return {
+        result: { kind: "app", fn: fReduced.result, arg: e.arg },
+        proof: `(defeq/app ${fReduced.proof} ${argProof})`,
+      };
+    }
 
-    // Need defeq arg arg A.  Get A from synth(e.fn).
-    let fS: Synth, argS: Synth;
-    try {
-      fS = synth(e.fn, scope);
-    } catch {
-      return null;
+    // Neither β nor fn-reduce fired — try arg-side reduction.  This
+    // departs from strict head-reduction but is needed when an iota
+    // redex (or any other redex) lives inside a syntactically-stable
+    // application like `Eq A B (rec ... ctor)`.  Lifting an arg
+    // reduction `arg ≡ arg'` via defeq/app with a refl proof for the
+    // fn gives `defeq (eapp fn arg) (eapp fn arg') (B arg)`.
+    const argReduced = reduceOnce(e.arg, scope);
+    if (argReduced !== null) {
+      let fS: Synth;
+      try {
+        fS = synth(e.fn, scope);
+      } catch {
+        return null;
+      }
+      if (fS.tyExpr.kind !== "forallE") return null;
+      return {
+        result: { kind: "app", fn: e.fn, arg: argReduced.result },
+        proof: `(defeq/app ${fS.proof} ${argReduced.proof})`,
+      };
     }
-    try {
-      argS = synth(e.arg, scope);
-    } catch {
-      return null;
-    }
-    if (fS.tyExpr.kind !== "forallE") return null;
-    const A_expected = fS.tyExpr.type;
-    let argProof = argS.proof;
-    if (!exprEq(argS.tyExpr, A_expected)) {
-      const conv = bridgeTypes(argS.tyExpr, A_expected, scope, 0);
-      if (conv === null) return null;
-      argProof = `(defeq/conv ${conv} ${argS.proof})`;
-    }
-    return {
-      result: { kind: "app", fn: fReduced.result, arg: e.arg },
-      proof: `(defeq/app ${fReduced.proof} ${argProof})`,
-    };
+    return null;
   }
 
   return null;
