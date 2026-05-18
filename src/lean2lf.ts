@@ -2023,10 +2023,181 @@ function emitAxiom(d: Decl & { kind: "axiom" }): void {
   emitStructuralDecl(d.name, d.levelParams, d.type, "ax", "dkind-ok/ax", "ax", "axiom");
 }
 
+// --- Pre-flight checks for inductive wellformedness invariants ----------
+//
+// The LF encoding's ctor-positive judgment verifies strict positivity and
+// that the result-type head is the inductive, but doesn't verify several
+// further kernel-level invariants that Lean checks:
+//   (a) numParams ≤ #leading Π binders in the inductive's type signature
+//   (b) the ctor's result type applies the inductive to its bound param
+//       binders in canonical order (i.e., its first numParams args are
+//       bvars referring to the corresponding param binders).
+//   (c) the ctor's result-type *index* args don't mention the inductive
+//       (would put the inductive in a non-strictly-positive position).
+//   (d) when the inductive's universe is a concrete `Sort n` (n > 0) and
+//       a ctor field's type is a concrete `Sort k`, then k+1 ≤ n.  We
+//       only check the easy concrete case; polymorphic inductives and
+//       Prop-ctors (n = 0) are passed through unchecked.
+//
+// (a) catches 042_inductTooFewParams.
+// (b) catches 043 / 044 (wrong / swapped param args).
+// (c) catches 046_inductInIndex.
+// (d) catches 054_typeWithTooHighTypeField.
+//
+// All are translator-side rejections: on violation, emit `tcb-violation`
+// so Twelf aborts the file, mirroring how Lean rejects the declaration
+// before it ever reaches kernel typechecking.
+
+function countLeadingForalls(e: Expr): number {
+  let n = 0;
+  while (e.kind === "forallE") {
+    e = e.body;
+    n++;
+  }
+  return n;
+}
+
+// Strip leading Π binders and return the result-type expression.
+function stripForalls(e: Expr, n: number): Expr | null {
+  for (let i = 0; i < n; i++) {
+    if (e.kind !== "forallE") return null;
+    e = e.body;
+  }
+  return e;
+}
+
+// If the level is a chain of lsucc applied to lzero, return its numeric
+// value; otherwise null (we don't reason about max/imax/param levels).
+function levelToNumber(l: Level): number | null {
+  let n = 0;
+  while (l.kind === "succ") {
+    l = l.arg;
+    n++;
+  }
+  return l.kind === "zero" ? n : null;
+}
+
+// Inductive's universe, if its type signature ends in a concrete Sort.
+function inductiveResultUniverse(t: Expr): Level | null {
+  while (t.kind === "forallE") t = t.body;
+  return t.kind === "sort" ? t.level : null;
+}
+
+// Returns null if the ctor's structure passes all checks (b), (c), (d);
+// otherwise a human-readable mismatch.
+function checkCtorStructure(
+  ctorType: Expr,
+  indName: string,
+  indLevels: Level[],
+  indUniverse: Level | null,
+  numParams: number,
+  numFields: number,
+): string | null {
+  // Walk param binders + check (d) on field binders.
+  let e = ctorType;
+  for (let i = 0; i < numParams; i++) {
+    if (e.kind !== "forallE") {
+      return `expected ≥ ${numParams + numFields} leading Π binders, found ${i}`;
+    }
+    e = e.body;
+  }
+  const indUnivN = indUniverse !== null ? levelToNumber(indUniverse) : null;
+  for (let f = 0; f < numFields; f++) {
+    if (e.kind !== "forallE") {
+      return `expected ≥ ${numParams + numFields} leading Π binders, found ${numParams + f}`;
+    }
+    // (d) concrete-case field universe check.  Only fires for non-Prop
+    // inductives with concrete universe, and for fields whose type is a
+    // concrete `Sort k`.
+    if (indUnivN !== null && indUnivN > 0 && e.type.kind === "sort") {
+      const fieldLvlN = levelToNumber(e.type.level);
+      if (fieldLvlN !== null && fieldLvlN + 1 > indUnivN) {
+        return `field #${f + 1} has type Sort ${fieldLvlN} (which lives at Sort ${fieldLvlN + 1}); inductive is at Sort ${indUnivN}, so the field's universe must be ≤ ${indUnivN - 1}`;
+      }
+    }
+    e = e.body;
+  }
+  // e is now the result type.  Decompose.
+  const args: Expr[] = [];
+  while (e.kind === "app") {
+    args.unshift(e.arg);
+    e = e.fn;
+  }
+  if (e.kind !== "const") {
+    return `result-type head is not a constant (got ${e.kind})`;
+  }
+  if (nameToString(e.name) !== indName) {
+    return `result-type head is "${nameToString(e.name)}", expected "${indName}"`;
+  }
+  if (args.length < numParams) {
+    return `result-type has ${args.length} args, expected ≥ ${numParams} (one per param)`;
+  }
+  // (b) param args must be bvars referring to the param binders in order.
+  for (let i = 0; i < numParams; i++) {
+    const expected = numFields + numParams - 1 - i;
+    const a = args[i];
+    if (a.kind !== "bvar" || a.deBruijn !== expected) {
+      const got = a.kind === "bvar" ? `bvar(${a.deBruijn})` : a.kind;
+      return `result-type param arg #${i + 1} should be bvar(${expected}) (the param binder), got ${got}`;
+    }
+  }
+  // (c) index args must not mention the inductive.
+  for (let i = numParams; i < args.length; i++) {
+    if (exprMentions(args[i], indName, indLevels)) {
+      return `result-type index arg #${i - numParams + 1} mentions the inductive "${indName}" (not allowed in index position)`;
+    }
+  }
+  return null;
+}
+
 function emitInductive(ir: IndRec, env: Env): void {
   // Helper: look up a name/expr from Env by index.
   const N = (i: number): Name => env.names.get(i)!;
   const E = (i: number): Expr => desugarLetE(env.exprs.get(i)!);
+
+  // Pre-flight: reject inductives that violate kernel invariants the LF
+  // encoding doesn't catch (see comments above checkCtorStructure).
+  for (const t of ir.types) {
+    const indType = E(t.type);
+    const nb = countLeadingForalls(indType);
+    if (t.numParams > nb) {
+      const ns = nameToString(N(t.name));
+      emit(
+        `%% TRANSLATOR REJECT: inductive ${ns} declares numParams=${t.numParams} but its type has only ${nb} leading Π binder${nb === 1 ? "" : "s"}`,
+      );
+      emit(`%solve _violation_${violationCounter++} : tcb-violation.`);
+      emitBlank();
+      skips.push(`inductive ${ns}: numParams=${t.numParams} > #binders=${nb}`);
+      return;
+    }
+  }
+  for (const c of ir.ctors) {
+    const indSpec = ir.types.find((t) => t.name === c.induct);
+    if (!indSpec) continue;
+    const indName = nameToString(N(c.induct));
+    const indLevels: Level[] = indSpec.levelParams.map((idx) => ({
+      kind: "param" as const,
+      name: N(idx),
+    }));
+    const indUniverse = inductiveResultUniverse(E(indSpec.type));
+    const why = checkCtorStructure(
+      E(c.type),
+      indName,
+      indLevels,
+      indUniverse,
+      c.numParams,
+      c.numFields,
+    );
+    if (why !== null) {
+      const cs = nameToString(N(c.name));
+      emit(`%% TRANSLATOR REJECT: ctor ${cs} — ${why}`);
+      emit(`%solve _violation_${violationCounter++} : tcb-violation.`);
+      emitBlank();
+      skips.push(`ctor ${cs}: ${why}`);
+      return;
+    }
+  }
+
   // 1. Type formers.
   for (const t of ir.types) {
     emitStructuralDecl(
