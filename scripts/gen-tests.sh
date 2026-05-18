@@ -54,7 +54,7 @@ gen_one() {
 
     {
         echo "%%% Expected outcome: $outcome"
-        [[ -n "$description" ]] && echo "%%% $description"
+        [[ -n "$description" ]] && printf '%s\n' "$description" | sed 's/^/%%% /'
         "$TRANSLATOR" < "$ndjson"
     } > "$out"
 
