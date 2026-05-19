@@ -62,6 +62,7 @@ check_one() {
         echo "Config.read sources.cfg
 Config.load
 loadFile $abs_file
+loadFile final-checks.elf
 OS.exit" | "$TWELF" 2>&1
     )
 

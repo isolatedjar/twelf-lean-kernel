@@ -94,6 +94,3 @@ prodRecEqns/decl : {u : lvl} declared "prodRecEqns" (lcons u lnil)
    (thm (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] (elam (eforall (eapp (eapp (econst "Prod" (lcons lzero (lcons lzero lnil))) x) y) ([z] (esort u))) ([z] (elam (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) x) y) w) x1)))))) ([w] (elam x ([x1] (elam y ([y1] (eapp (eapp (econst "Eq.refl" (lcons u lnil)) (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) x) y) x1) y1))) (eapp (eapp (eapp (eapp (eapp (econst "Prod.rec" (lcons u (lcons lzero (lcons lzero lnil)))) x) y) (elam (eapp (eapp (econst "Prod" (lcons lzero (lcons lzero lnil))) x) y) ([z1] (eapp z z1)))) w) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) x) y) x1) y1))))))))))))))))
    (dkind-ok/thm (prodRecEqns/type-wf u) (prodRecEqns/value-typed u)).
 
-%mode declared +N +LS -T -DK -W.
-%worlds () (declared _ _ _ _ _).
-%unique declared +N +LS -1T -1DK *W.

@@ -15,7 +15,8 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TRANSLATOR="$REPO_ROOT/src/lean2lf.ts"
+PARSE_NDJSON="$REPO_ROOT/src/parse.ts"
+LEAN_TO_LF="$REPO_ROOT/src/lean2lf.ts"
 OUT_DIR="$REPO_ROOT/lf/tests"
 GOOD_DIR="$REPO_ROOT/tests/tutorial/good"
 BAD_DIR="$REPO_ROOT/tests/tutorial/bad"
@@ -55,7 +56,7 @@ gen_one() {
     {
         echo "%%% Expected outcome: $outcome"
         [[ -n "$description" ]] && printf '%s\n' "$description" | sed 's/^/%%% /'
-        "$TRANSLATOR" < "$ndjson"
+        "$PARSE_NDJSON" < "$ndjson" | "$LEAN_TO_LF"
     } > "$out"
 
     printf "  %-45s  -> %s\n" "$base" "$(basename "$out")"

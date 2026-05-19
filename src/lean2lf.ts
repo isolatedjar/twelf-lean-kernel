@@ -1,439 +1,35 @@
 #!/usr/bin/env -S node --experimental-strip-types
-// lean2lf.ts — translate lean4export NDJSON on stdin to Twelf LF on stdout.
+// lean2lf.ts — read a ParsedEnv JSON on stdin (from parse.ts), emit Twelf LF on stdout.
 //
-// MVP scope: covers patterns used by tutorial/good examples 001-005.
-//   - def declarations, no universe polymorphism
-//   - Sort, ForallE, Lam expressions; bvar→HOAS conversion
-//   - Type synthesis with lvl-eq–driven defeq/conv for sort-level mismatches
+// Precondition: stdin is the JSON produced by parse.ts.  We don't
+// re-validate the shape — the type ascription via `as ParsedEnv`
+// trusts that contract.  If you want runtime validation, replace the
+// JSON.parse call below with a Zod parse over the shared types.
 //
-// Not yet handled (translator skips with a comment, file remains valid):
-//   - Const references and δ/β reduction chains (needed by 006+)
-//   - Universe polymorphism (needed by 008+)
-//   - Theorems, opaques, axioms, inductives
-//
-// Per the discipline: if the translator can't construct a proof, it
-// emits a Twelf comment recording the skip rather than an axiom.
-// "Trusted-but-not-verified" is exactly the off-the-rails-ness we
-// rejected.
-//
-// TODO: when zod is available, replace the ad-hoc `parse*` functions
-// with z.discriminatedUnion / z.parse calls. The shape we validate is
-// faithful to lean4export's wire format.
+// Discipline: if the translator can't construct a proof, it emits a
+// Twelf comment recording the skip rather than an axiom.  This is
+// what the harness reports as 🤷.  Translator-side rejections that
+// previously used `tcb-violation` are gone — see translator notes on
+// each %% SKIP path for the principled (Twelf-side) replacement.
 
-import * as readline from "node:readline";
-
-// =====================================================================
-// 1. NDJSON wire format types
-// =====================================================================
-
-// --- Names. Index 0 = anonymous (implicit).
-type NameRec =
-  | { tag: "str"; idx: number; pre: number; str: string }
-  | { tag: "num"; idx: number; pre: number; i: number };
-
-// --- Levels. Index 0 = zero (implicit).
-type LevelRec =
-  | { tag: "succ"; idx: number; arg: number }
-  | { tag: "max"; idx: number; l: number; r: number }
-  | { tag: "imax"; idx: number; l: number; r: number }
-  | { tag: "param"; idx: number; name: number };
-
-// --- Expressions.
-type BinderInfo = "default" | "implicit" | "strictImplicit" | "instImplicit";
-type ExprRec =
-  | { tag: "bvar"; idx: number; deBruijn: number }
-  | { tag: "sort"; idx: number; level: number }
-  | { tag: "const"; idx: number; name: number; us: number[] }
-  | { tag: "app"; idx: number; fn: number; arg: number }
-  | { tag: "lam"; idx: number; bi: BinderInfo; name: number; type: number; body: number }
-  | { tag: "forallE"; idx: number; bi: BinderInfo; name: number; type: number; body: number }
-  | { tag: "letE"; idx: number; name: number; type: number; value: number; body: number }
-  | { tag: "proj"; idx: number; typeName: number; pidx: number; struct: number }
-  | { tag: "natLit"; idx: number; value: string }
-  | { tag: "strLit"; idx: number; value: string };
-
-// --- Top-level items (declarations).
-type DefRec = {
-  tag: "def";
-  name: number;
-  levelParams: number[];
-  type: number;
-  value: number;
-  hints: any;
-  safety: string;
-};
-type ThmRec = { tag: "thm"; name: number; levelParams: number[]; type: number; value: number };
-type AxRec = { tag: "axiom"; name: number; levelParams: number[]; type: number };
-type OpqRec = { tag: "opaque"; name: number; levelParams: number[]; type: number; value: number };
-type QuotRec = { tag: "quot" };
-type IndTypeSpec = {
-  name: number;
-  type: number;
-  levelParams: number[];
-  ctors: number[];
-  numParams: number;
-  numIndices: number;
-  isRec: boolean;
-  isReflexive: boolean;
-};
-type IndCtorSpec = {
-  name: number;
-  type: number;
-  levelParams: number[];
-  cidx: number;
-  induct: number;
-  numFields: number;
-  numParams: number;
-};
-type IndRecRule = { ctor: number; nfields: number; rhs: number };
-type IndRecSpec = {
-  name: number;
-  type: number;
-  levelParams: number[];
-  numParams: number;
-  numIndices: number;
-  numMotives: number;
-  numMinors: number;
-  rules: IndRecRule[];
-};
-type IndRec = { tag: "inductive"; types: IndTypeSpec[]; ctors: IndCtorSpec[]; recs: IndRecSpec[] };
-type MetaRec = { tag: "meta" };
-type Item =
-  | NameRec
-  | LevelRec
-  | ExprRec
-  | DefRec
-  | ThmRec
-  | AxRec
-  | OpqRec
-  | QuotRec
-  | IndRec
-  | MetaRec;
+import type {
+  Name,
+  Level,
+  Expr,
+  BinderInfo,
+  IndType,
+  IndCtor,
+  IndRecursor,
+  IndRecRule,
+  Inductive,
+  Decl,
+  ParsedEnv,
+} from "./shared.ts";
+import { nameToString, transformNamesFromJSON } from "./shared.ts";
 
 // =====================================================================
-// 2. NDJSON parsing (hand-rolled; would be one z.discriminatedUnion)
+// Name mangling
 // =====================================================================
-
-function asInt(x: unknown): number | null {
-  return typeof x === "number" && Number.isInteger(x) ? x : null;
-}
-function asStr(x: unknown): string | null {
-  return typeof x === "string" ? x : null;
-}
-function asArrayOfInts(x: unknown): number[] | null {
-  if (!Array.isArray(x)) return null;
-  const out: number[] = [];
-  for (const e of x) {
-    const n = asInt(e);
-    if (n === null) return null;
-    out.push(n);
-  }
-  return out;
-}
-
-function parseLine(line: string): Item | null {
-  let obj: any;
-  try {
-    obj = JSON.parse(line);
-  } catch {
-    return null;
-  }
-  if (typeof obj !== "object" || obj === null) return null;
-
-  // Names
-  if ("in" in obj && "str" in obj) {
-    const idx = asInt(obj.in)!;
-    const pre = asInt(obj.str.pre)!;
-    const str = asStr(obj.str.str)!;
-    return { tag: "str", idx, pre, str };
-  }
-  if ("in" in obj && "num" in obj) {
-    return { tag: "num", idx: asInt(obj.in)!, pre: asInt(obj.num.pre)!, i: asInt(obj.num.i)! };
-  }
-
-  // Levels
-  if ("il" in obj && "succ" in obj)
-    return { tag: "succ", idx: asInt(obj.il)!, arg: asInt(obj.succ)! };
-  if ("il" in obj && "max" in obj)
-    return { tag: "max", idx: asInt(obj.il)!, l: obj.max[0], r: obj.max[1] };
-  if ("il" in obj && "imax" in obj)
-    return { tag: "imax", idx: asInt(obj.il)!, l: obj.imax[0], r: obj.imax[1] };
-  if ("il" in obj && "param" in obj)
-    return { tag: "param", idx: asInt(obj.il)!, name: asInt(obj.param)! };
-
-  // Expressions
-  if ("ie" in obj) {
-    const idx = asInt(obj.ie)!;
-    if ("bvar" in obj) return { tag: "bvar", idx, deBruijn: asInt(obj.bvar)! };
-    if ("sort" in obj) return { tag: "sort", idx, level: asInt(obj.sort)! };
-    if ("const" in obj)
-      return { tag: "const", idx, name: asInt(obj.const.name)!, us: asArrayOfInts(obj.const.us)! };
-    if ("app" in obj) return { tag: "app", idx, fn: asInt(obj.app.fn)!, arg: asInt(obj.app.arg)! };
-    if ("lam" in obj)
-      return {
-        tag: "lam",
-        idx,
-        bi: obj.lam.binderInfo,
-        name: asInt(obj.lam.name)!,
-        type: asInt(obj.lam.type)!,
-        body: asInt(obj.lam.body)!,
-      };
-    if ("forallE" in obj)
-      return {
-        tag: "forallE",
-        idx,
-        bi: obj.forallE.binderInfo,
-        name: asInt(obj.forallE.name)!,
-        type: asInt(obj.forallE.type)!,
-        body: asInt(obj.forallE.body)!,
-      };
-    if ("letE" in obj)
-      return {
-        tag: "letE",
-        idx,
-        name: asInt(obj.letE.name)!,
-        type: asInt(obj.letE.type)!,
-        value: asInt(obj.letE.value)!,
-        body: asInt(obj.letE.body)!,
-      };
-    if ("proj" in obj)
-      return {
-        tag: "proj",
-        idx,
-        typeName: asInt(obj.proj.typeName)!,
-        pidx: asInt(obj.proj.idx)!,
-        struct: asInt(obj.proj.struct)!,
-      };
-    return null;
-  }
-
-  // Top-level items
-  if ("def" in obj) return { tag: "def", ...obj.def };
-  if ("thm" in obj) return { tag: "thm", ...obj.thm };
-  if ("axiom" in obj) return { tag: "axiom", ...obj.axiom };
-  if ("opaque" in obj) return { tag: "opaque", ...obj.opaque };
-  if ("quot" in obj) return { tag: "quot" };
-  if ("inductive" in obj) {
-    const i = obj.inductive;
-    return {
-      tag: "inductive",
-      types: i.types ?? [],
-      ctors: i.ctors ?? [],
-      recs: i.recs ?? [],
-    };
-  }
-  if ("meta" in obj) return { tag: "meta" };
-  return null;
-}
-
-// =====================================================================
-// 3. In-memory IR
-// =====================================================================
-
-type Name =
-  | { kind: "anon" }
-  | { kind: "str"; pre: Name; str: string }
-  | { kind: "num"; pre: Name; i: number };
-type Level =
-  | { kind: "zero" }
-  | { kind: "succ"; arg: Level }
-  | { kind: "max"; l: Level; r: Level }
-  | { kind: "imax"; l: Level; r: Level }
-  | { kind: "param"; name: Name };
-type Expr =
-  | { kind: "bvar"; deBruijn: number }
-  | { kind: "sort"; level: Level }
-  | { kind: "const"; name: Name; us: Level[] }
-  | { kind: "app"; fn: Expr; arg: Expr }
-  | { kind: "lam"; name: Name; type: Expr; body: Expr }
-  | { kind: "forallE"; name: Name; type: Expr; body: Expr }
-  | { kind: "letE"; name: Name; type: Expr; value: Expr; body: Expr }
-  | { kind: "proj"; typeName: Name; idx: number; struct: Expr }
-  | { kind: "natLit"; value: string }
-  | { kind: "strLit"; value: string };
-
-type Decl =
-  | { kind: "def"; name: Name; levelParams: Name[]; type: Expr; value: Expr }
-  | { kind: "thm"; name: Name; levelParams: Name[]; type: Expr; value: Expr }
-  | { kind: "axiom"; name: Name; levelParams: Name[]; type: Expr }
-  | { kind: "opaque"; name: Name; levelParams: Name[]; type: Expr; value: Expr };
-
-// =====================================================================
-// 4. Index resolution: NDJSON refs -> IR objects
-// =====================================================================
-
-class Env {
-  names: Map<number, Name> = new Map();
-  levels: Map<number, Level> = new Map();
-  exprs: Map<number, Expr> = new Map();
-
-  constructor() {
-    this.names.set(0, { kind: "anon" });
-    this.levels.set(0, { kind: "zero" });
-  }
-
-  ingest(rec: Item): void {
-    switch (rec.tag) {
-      case "str":
-        this.names.set(rec.idx, { kind: "str", pre: this.names.get(rec.pre)!, str: rec.str });
-        break;
-      case "num":
-        this.names.set(rec.idx, { kind: "num", pre: this.names.get(rec.pre)!, i: rec.i });
-        break;
-      case "succ":
-        this.levels.set(rec.idx, { kind: "succ", arg: this.levels.get(rec.arg)! });
-        break;
-      case "max":
-        this.levels.set(rec.idx, {
-          kind: "max",
-          l: this.levels.get(rec.l)!,
-          r: this.levels.get(rec.r)!,
-        });
-        break;
-      case "imax":
-        this.levels.set(rec.idx, {
-          kind: "imax",
-          l: this.levels.get(rec.l)!,
-          r: this.levels.get(rec.r)!,
-        });
-        break;
-      case "param":
-        this.levels.set(rec.idx, { kind: "param", name: this.names.get(rec.name)! });
-        break;
-      case "bvar":
-        this.exprs.set(rec.idx, { kind: "bvar", deBruijn: rec.deBruijn });
-        break;
-      case "sort":
-        this.exprs.set(rec.idx, { kind: "sort", level: this.levels.get(rec.level)! });
-        break;
-      case "const":
-        this.exprs.set(rec.idx, {
-          kind: "const",
-          name: this.names.get(rec.name)!,
-          us: rec.us.map((i) => this.levels.get(i)!),
-        });
-        break;
-      case "app":
-        this.exprs.set(rec.idx, {
-          kind: "app",
-          fn: this.exprs.get(rec.fn)!,
-          arg: this.exprs.get(rec.arg)!,
-        });
-        break;
-      case "lam":
-        this.exprs.set(rec.idx, {
-          kind: "lam",
-          name: this.names.get(rec.name)!,
-          type: this.exprs.get(rec.type)!,
-          body: this.exprs.get(rec.body)!,
-        });
-        break;
-      case "forallE":
-        this.exprs.set(rec.idx, {
-          kind: "forallE",
-          name: this.names.get(rec.name)!,
-          type: this.exprs.get(rec.type)!,
-          body: this.exprs.get(rec.body)!,
-        });
-        break;
-      case "letE":
-        this.exprs.set(rec.idx, {
-          kind: "letE",
-          name: this.names.get(rec.name)!,
-          type: this.exprs.get(rec.type)!,
-          value: this.exprs.get(rec.value)!,
-          body: this.exprs.get(rec.body)!,
-        });
-        break;
-      case "proj":
-        this.exprs.set(rec.idx, {
-          kind: "proj",
-          typeName: this.names.get(rec.typeName)!,
-          idx: rec.pidx,
-          struct: this.exprs.get(rec.struct)!,
-        });
-        break;
-    }
-  }
-
-  resolveDecl(rec: DefRec | ThmRec | AxRec | OpqRec): Decl {
-    const name = this.names.get(rec.name)!;
-    const levelParams = rec.levelParams.map((i) => this.names.get(i)!);
-    const type = desugarLetE(this.exprs.get(rec.type)!);
-    switch (rec.tag) {
-      case "def":
-        return {
-          kind: "def",
-          name,
-          levelParams,
-          type,
-          value: desugarLetE(this.exprs.get(rec.value)!),
-        };
-      case "thm":
-        return {
-          kind: "thm",
-          name,
-          levelParams,
-          type,
-          value: desugarLetE(this.exprs.get(rec.value)!),
-        };
-      case "axiom":
-        return { kind: "axiom", name, levelParams, type };
-      case "opaque":
-        return {
-          kind: "opaque",
-          name,
-          levelParams,
-          type,
-          value: desugarLetE(this.exprs.get(rec.value)!),
-        };
-    }
-  }
-}
-
-// Desugar letE to (λx:T, body) value.  Lean's `let` is definitionally
-// equal to this β-redex (with extra inlining hints), and our β-machinery
-// handles the conversion.  Applied to all expressions at decl-resolution
-// time so downstream code (synth, whnf, lfExpr) never sees letE.
-function desugarLetE(e: Expr): Expr {
-  switch (e.kind) {
-    case "letE":
-      return {
-        kind: "app",
-        fn: {
-          kind: "lam",
-          name: e.name,
-          type: desugarLetE(e.type),
-          body: desugarLetE(e.body),
-        },
-        arg: desugarLetE(e.value),
-      };
-    case "lam":
-    case "forallE":
-      return { ...e, type: desugarLetE(e.type), body: desugarLetE(e.body) };
-    case "app":
-      return { kind: "app", fn: desugarLetE(e.fn), arg: desugarLetE(e.arg) };
-    case "proj":
-      return { ...e, struct: desugarLetE(e.struct) };
-    case "bvar":
-    case "sort":
-    case "const":
-    case "natLit":
-    case "strLit":
-      return e;
-  }
-}
-
-// =====================================================================
-// 5. Name mangling
-// =====================================================================
-
-function nameToString(n: Name): string {
-  if (n.kind === "anon") return "";
-  const prefix = nameToString(n.pre);
-  const piece = n.kind === "str" ? n.str : String(n.i);
-  return prefix === "" ? piece : `${prefix}.${piece}`;
-}
 
 function mangle(n: Name): string {
   // Replace dots and disallowed chars for use as Twelf identifiers.
@@ -2357,18 +1953,15 @@ function checkCtorStructure(
   return null;
 }
 
-function emitInductive(ir: IndRec, env: Env): void {
-  // Helper: look up a name/expr from Env by index.
-  const N = (i: number): Name => env.names.get(i)!;
-  const E = (i: number): Expr => desugarLetE(env.exprs.get(i)!);
+// Name equality is provided by the existing structural `nameEq` above.
 
+function emitInductive(ind: Inductive): void {
   // Pre-flight: reject inductives that violate kernel invariants the LF
   // encoding doesn't catch (see comments above checkCtorStructure).
-  for (const t of ir.types) {
-    const indType = E(t.type);
-    const nb = countLeadingForalls(indType);
+  for (const t of ind.types) {
+    const nb = countLeadingForalls(t.type);
     if (t.numParams > nb) {
-      const ns = nameToString(N(t.name));
+      const ns = nameToString(t.name);
       emit(
         `%% SKIP: inductive ${ns} declares numParams=${t.numParams} but its type has only ${nb} leading Π binder${nb === 1 ? "" : "s"}`,
       );
@@ -2377,17 +1970,17 @@ function emitInductive(ir: IndRec, env: Env): void {
       return;
     }
   }
-  for (const c of ir.ctors) {
-    const indSpec = ir.types.find((t) => t.name === c.induct);
+  for (const c of ind.ctors) {
+    const indSpec = ind.types.find((t) => nameEq(t.name, c.induct));
     if (!indSpec) continue;
-    const indName = nameToString(N(c.induct));
-    const indLevels: Level[] = indSpec.levelParams.map((idx) => ({
+    const indName = nameToString(c.induct);
+    const indLevels: Level[] = indSpec.levelParams.map((name) => ({
       kind: "param" as const,
-      name: N(idx),
+      name,
     }));
-    const indUniverse = inductiveResultUniverse(E(indSpec.type));
+    const indUniverse = inductiveResultUniverse(indSpec.type);
     const why = checkCtorStructure(
-      E(c.type),
+      c.type,
       indName,
       indLevels,
       indUniverse,
@@ -2395,7 +1988,7 @@ function emitInductive(ir: IndRec, env: Env): void {
       c.numFields,
     );
     if (why !== null) {
-      const cs = nameToString(N(c.name));
+      const cs = nameToString(c.name);
       emit(`%% SKIP: ctor ${cs} — ${why}`);
       emitBlank();
       skips.push(`ctor ${cs}: ${why}`);
@@ -2404,43 +1997,28 @@ function emitInductive(ir: IndRec, env: Env): void {
   }
 
   // 1. Type formers.
-  for (const t of ir.types) {
-    emitStructuralDecl(
-      N(t.name),
-      t.levelParams.map(N),
-      E(t.type),
-      "indt",
-      "dkind-ok/indt",
-      "indt",
-      "inductive",
-    );
+  for (const t of ind.types) {
+    emitStructuralDecl(t.name, t.levelParams, t.type, "indt", "dkind-ok/indt", "indt", "inductive");
   }
   // 2. Constructors.  Each ctor's positivity check needs to know
   //    its parent inductive's name and level instantiation.
-  //    `c.induct` is the name-index of the inductive; we cross-
-  //    reference ir.types to find the corresponding level params,
-  //    then build a Level[] (each as a param-Level) for the LF
-  //    `lcons u1 (... lnil)` rendering.
-  for (const c of ir.ctors) {
-    const indTypeSpec = ir.types.find((t) => t.name === c.induct);
+  for (const c of ind.ctors) {
+    const indTypeSpec = ind.types.find((t) => nameEq(t.name, c.induct));
     if (!indTypeSpec) {
       // Should not happen for well-formed lean4export output.
       emit(
-        `%% SKIP: ctor ${nameToString(N(c.name))} — induct field doesn't match any type in this inductive block`,
+        `%% SKIP: ctor ${nameToString(c.name)} — induct field doesn't match any type in this inductive block`,
       );
       emitBlank();
-      skips.push(`ctor ${nameToString(N(c.name))}: induct pointer invalid`);
+      skips.push(`ctor ${nameToString(c.name)}: induct pointer invalid`);
       continue;
     }
-    const selfName = nameToString(N(c.induct));
-    const selfLevels: Level[] = c.levelParams.map((idx) => ({
-      kind: "param" as const,
-      name: N(idx),
-    }));
+    const selfName = nameToString(c.induct);
+    const selfLevels: Level[] = c.levelParams.map((name) => ({ kind: "param" as const, name }));
     emitStructuralDecl(
-      N(c.name),
-      c.levelParams.map(N),
-      E(c.type),
+      c.name,
+      c.levelParams,
+      c.type,
       "ctor",
       "dkind-ok/ctor",
       "ctor",
@@ -2449,11 +2027,11 @@ function emitInductive(ir: IndRec, env: Env): void {
     );
   }
   // 3. Recursors.
-  for (const r of ir.recs) {
+  for (const r of ind.recursors) {
     emitStructuralDecl(
-      N(r.name),
-      r.levelParams.map(N),
-      E(r.type),
+      r.name,
+      r.levelParams,
+      r.type,
       "irec",
       "dkind-ok/irec",
       "irec",
@@ -2461,7 +2039,7 @@ function emitInductive(ir: IndRec, env: Env): void {
     );
   }
   // 4. Stage-1 iota helpers (if this inductive qualifies as a stage-1 enum).
-  emitStage1EnumIotaHelpers(ir, env);
+  emitStage1EnumIotaHelpers(ind);
 }
 
 // Emit `<Foo>/as-enum` and per-ctor `<Foo_ctor>/iota` definitions if this
@@ -2471,18 +2049,16 @@ function emitInductive(ir: IndRec, env: Env): void {
 // `defeq`); they don't extend any open family, so the soundness story is
 // unchanged.  Downstream consumers (translator-emitted defeq proofs that
 // want to compute iota, or hand-written witnesses) can invoke them.
-function emitStage1EnumIotaHelpers(ir: IndRec, env: Env): void {
+function emitStage1EnumIotaHelpers(ind: Inductive): void {
   // Single-type, single-recursor blocks only (no mutual/nested for stage 1).
-  if (ir.types.length !== 1) return;
-  if (ir.recs.length !== 1) return;
-  const indSpec = ir.types[0];
-  const recSpec = ir.recs[0];
+  if (ind.types.length !== 1) return;
+  if (ind.recursors.length !== 1) return;
+  const indSpec = ind.types[0];
+  const recSpec = ind.recursors[0];
   // No level params on the inductive itself.
   if (indSpec.levelParams.length !== 0) return;
-  // Ctors for this inductive, sorted by cidx.
-  const ctorList = ir.ctors
-    .filter((c) => c.induct === indSpec.name)
-    .sort((a, b) => a.cidx - b.cidx);
+  // Ctors for this inductive (already sorted by cidx in parse.ts).
+  const ctorList = ind.ctors.filter((c) => nameEq(c.induct, indSpec.name));
   // Stage 1: 0-3 ctors.
   if (ctorList.length > 3) return;
   // All ctors must have zero fields (so no recursive args, no field-passing).
@@ -2497,15 +2073,14 @@ function emitStage1EnumIotaHelpers(ir: IndRec, env: Env): void {
   if (recSpec.numMotives !== 1) return;
   if (recSpec.numMinors !== ctorList.length) return;
 
-  const N = (i: number): Name => env.names.get(i)!;
-  const indName = nameToString(N(indSpec.name));
-  const indMangle = mangle(N(indSpec.name));
-  const recName = nameToString(N(recSpec.name));
-  const recMangle = mangle(N(recSpec.name));
+  const indName = nameToString(indSpec.name);
+  const indMangle = mangle(indSpec.name);
+  const recName = nameToString(recSpec.name);
+  const recMangle = mangle(recSpec.name);
   const ctorInfo = ctorList.map((c) => ({
-    name: nameToString(N(c.name)),
-    nameStruct: N(c.name),
-    mangle: mangle(N(c.name)),
+    name: nameToString(c.name),
+    nameStruct: c.name,
+    mangle: mangle(c.name),
   }));
   const k = ctorInfo.length;
   const u = "u";
@@ -2515,7 +2090,7 @@ function emitStage1EnumIotaHelpers(ir: IndRec, env: Env): void {
   for (let i = 0; i < k; i++) {
     iotaTable.set(ctorInfo[i].name, {
       recName,
-      indName: N(indSpec.name),
+      indName: indSpec.name,
       indNameStr: indName,
       ctorMangle: ctorInfo[i].mangle,
       position: i,
@@ -2600,47 +2175,51 @@ function emitStage1EnumIotaHelpers(ir: IndRec, env: Env): void {
 }
 
 // =====================================================================
-// 9. Main
+// Main: read ParsedEnv JSON on stdin, dispatch by decl kind.
 // =====================================================================
 
-async function main(): Promise<void> {
-  const env = new Env();
-  const rl = readline.createInterface({ input: process.stdin });
+async function readAllStdin(): Promise<string> {
+  const chunks: Buffer[] = [];
+  for await (const chunk of process.stdin) {
+    chunks.push(chunk as Buffer);
+  }
+  return Buffer.concat(chunks).toString("utf8");
+}
 
-  for await (const raw of rl) {
-    const line = raw.trim();
-    if (line === "") continue;
-    const rec = parseLine(line);
-    if (rec === null) {
-      emit(`%% UNPARSED: ${line.slice(0, 80)}`);
-      continue;
-    }
-    env.ingest(rec);
+async function main(): Promise<void> {
+  const raw = await readAllStdin();
+  const parsed = transformNamesFromJSON(JSON.parse(raw)) as ParsedEnv;
+
+  for (const decl of parsed.decls) {
     try {
-      if (rec.tag === "def") emitValDecl(env.resolveDecl(rec) as Decl & { kind: "def" });
-      else if (rec.tag === "thm") emitValDecl(env.resolveDecl(rec) as Decl & { kind: "thm" });
-      else if (rec.tag === "opaque") emitValDecl(env.resolveDecl(rec) as Decl & { kind: "opaque" });
-      else if (rec.tag === "axiom") emitAxiom(env.resolveDecl(rec) as Decl & { kind: "axiom" });
-      else if (rec.tag === "quot") emit(`%% SKIP: quot not yet supported`);
-      else if (rec.tag === "inductive") emitInductive(rec, env);
+      switch (decl.kind) {
+        case "def":
+        case "thm":
+        case "opaque":
+          emitValDecl(decl);
+          break;
+        case "axiom":
+          emitAxiom(decl);
+          break;
+        case "quot":
+          emit(`%% SKIP: quot not yet supported`);
+          break;
+        case "inductive":
+          emitInductive(decl);
+          break;
+      }
     } catch (e: any) {
-      const tag = (rec as any).tag ?? "decl";
+      const tag = decl.kind ?? "decl";
       skips.push(`${tag}: untranslatable (${e.message})`);
       emit(`%% SKIP: ${tag} — untranslatable: ${e.message}`);
       emitBlank();
     }
   }
 
-  // Functional-dependency seal.
-  //
-  // For monomorphic decls, this catches duplicate names (LS=lnil twice
-  // with different T or DK).  For polymorphic decls, LS varies per
-  // instantiation, so we make it an input position too: given (N, LS),
-  // T/DK are uniquely determined.  Duplicate poly declarations would
-  // collide on the LF identifier `<mangle>/decl` independently.
-  emit(`%mode declared +N +LS -T -DK -W.`);
-  emit(`%worlds () (declared _ _ _ _ _).`);
-  emit(`%unique declared +N +LS -1T -1DK *W.`);
+  // (The global %mode / %worlds / %unique checks on the `declared`
+  // relation live in final-checks.elf, loaded after every environment
+  // file.  Keeping the per-environment file free of those directives
+  // means changes to the closure check apply uniformly.)
 
   if (skips.length > 0) {
     emit(``);

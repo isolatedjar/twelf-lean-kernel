@@ -169,6 +169,3 @@ accRecReduction/decl : declared "accRecReduction" lnil
    (thm (elam (esort (lsucc lzero)) ([x] (elam (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (elam x ([z] (elam (eforall x ([w] (eforall (eapp (eapp y w) z) ([x1] (eapp (eapp (eapp (econst "Acc" (lcons (lsucc lzero) lnil)) x) y) w))))) ([w] (elam (econst "Bool" lnil) ([x1] (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (eapp (eapp (eapp (econst "Acc.rec" (lcons (lsucc lzero) (lcons (lsucc lzero) lnil))) x) y) (elam x ([y1] (elam (eapp (eapp (eapp (econst "Acc" (lcons (lsucc lzero) lnil)) x) y) y1) ([z1] (econst "Bool" lnil)))))) (elam x ([y1] (elam (eforall x ([z1] (eforall (eapp (eapp y z1) y1) ([w1] (eapp (eapp (eapp (econst "Acc" (lcons (lsucc lzero) lnil)) x) y) z1))))) ([z1] (elam (eforall x ([w1] (eforall (eapp (eapp y w1) y1) ([x2] (eapp (eapp (elam x ([y2] (elam (eapp (eapp (eapp (econst "Acc" (lcons (lsucc lzero) lnil)) x) y) y2) ([z2] (econst "Bool" lnil))))) w1) (eapp (eapp z1 w1) x2)))))) ([w1] x1))))))) z) (eapp (eapp (eapp (eapp (econst "Acc.intro" (lcons (lsucc lzero) lnil)) x) y) z) w))))))))))))))
    (dkind-ok/thm accRecReduction/type-wf accRecReduction/value-typed).
 
-%mode declared +N +LS -T -DK -W.
-%worlds () (declared _ _ _ _ _).
-%unique declared +N +LS -1T -1DK *W.

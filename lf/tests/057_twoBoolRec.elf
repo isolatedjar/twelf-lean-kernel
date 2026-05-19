@@ -127,6 +127,3 @@ twoBoolRec/decl : {u : lvl} declared "twoBoolRec" (lcons u lnil)
    (defn (elam (eforall (econst "TwoBool" lnil) ([x] (esort u))) ([x] (elam (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp x (eapp (eapp (econst "TwoBool.mk" lnil) y) z)))))) ([y] (elam (econst "TwoBool" lnil) ([z] (eapp (eapp (eapp (econst "TwoBool.rec" (lcons u lnil)) x) y) z))))))))
    (dkind-ok/defn (twoBoolRec/type-wf u) (twoBoolRec/value-typed u)).
 
-%mode declared +N +LS -T -DK -W.
-%worlds () (declared _ _ _ _ _).
-%unique declared +N +LS -1T -1DK *W.

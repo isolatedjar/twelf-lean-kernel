@@ -89,6 +89,3 @@ boolRec/decl : {u : lvl} declared "boolRec" (lcons u lnil)
    (defn (elam (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] (elam (econst "Bool" lnil) ([w] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons u lnil)) x) y) z) w))))))))))
    (dkind-ok/defn (boolRec/type-wf u) (boolRec/value-typed u)).
 
-%mode declared +N +LS -T -DK -W.
-%worlds () (declared _ _ _ _ _).
-%unique declared +N +LS -1T -1DK *W.
