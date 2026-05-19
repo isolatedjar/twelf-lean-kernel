@@ -1,0 +1,435 @@
+{
+  "decls": [
+    {
+      "kind": "inductive",
+      "types": [
+        {
+          "name": { "_n": ["Bool"] },
+          "levelParams": [],
+          "type": {
+            "kind": "sort",
+            "level": {
+              "kind": "succ",
+              "arg": {
+                "kind": "zero"
+              }
+            }
+          },
+          "numParams": 0,
+          "numIndices": 0
+        }
+      ],
+      "ctors": [
+        {
+          "name": { "_n": ["Bool", "false"] },
+          "levelParams": [],
+          "type": {
+            "kind": "const",
+            "name": { "_n": ["Bool"] },
+            "us": []
+          },
+          "numParams": 0,
+          "numFields": 0,
+          "induct": { "_n": ["Bool"] }
+        },
+        {
+          "name": { "_n": ["Bool", "true"] },
+          "levelParams": [],
+          "type": {
+            "kind": "const",
+            "name": { "_n": ["Bool"] },
+            "us": []
+          },
+          "numParams": 0,
+          "numFields": 0,
+          "induct": { "_n": ["Bool"] }
+        }
+      ],
+      "recursors": [
+        {
+          "name": { "_n": ["Bool", "rec"] },
+          "levelParams": [
+            { "_n": ["u"] }
+          ],
+          "type": {
+            "kind": "forallE",
+            "name": { "_n": ["motive"] },
+            "type": {
+              "kind": "forallE",
+              "name": { "_n": ["t"] },
+              "type": {
+                "kind": "const",
+                "name": { "_n": ["Bool"] },
+                "us": []
+              },
+              "body": {
+                "kind": "sort",
+                "level": {
+                  "kind": "param",
+                  "name": { "_n": ["u"] }
+                }
+              }
+            },
+            "body": {
+              "kind": "forallE",
+              "name": { "_n": ["false"] },
+              "type": {
+                "kind": "app",
+                "fn": {
+                  "kind": "bvar",
+                  "deBruijn": 0
+                },
+                "arg": {
+                  "kind": "const",
+                  "name": { "_n": ["Bool", "false"] },
+                  "us": []
+                }
+              },
+              "body": {
+                "kind": "forallE",
+                "name": { "_n": ["true"] },
+                "type": {
+                  "kind": "app",
+                  "fn": {
+                    "kind": "bvar",
+                    "deBruijn": 1
+                  },
+                  "arg": {
+                    "kind": "const",
+                    "name": { "_n": ["Bool", "true"] },
+                    "us": []
+                  }
+                },
+                "body": {
+                  "kind": "forallE",
+                  "name": { "_n": ["t"] },
+                  "type": {
+                    "kind": "const",
+                    "name": { "_n": ["Bool"] },
+                    "us": []
+                  },
+                  "body": {
+                    "kind": "app",
+                    "fn": {
+                      "kind": "bvar",
+                      "deBruijn": 3
+                    },
+                    "arg": {
+                      "kind": "bvar",
+                      "deBruijn": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "numParams": 0,
+          "numIndices": 0,
+          "numMotives": 1,
+          "numMinors": 2,
+          "rules": [
+            {
+              "ctor": { "_n": ["Bool", "false"] },
+              "nfields": 0,
+              "rhs": {
+                "kind": "lam",
+                "name": { "_n": ["motive"] },
+                "type": {
+                  "kind": "forallE",
+                  "name": { "_n": ["t"] },
+                  "type": {
+                    "kind": "const",
+                    "name": { "_n": ["Bool"] },
+                    "us": []
+                  },
+                  "body": {
+                    "kind": "sort",
+                    "level": {
+                      "kind": "param",
+                      "name": { "_n": ["u"] }
+                    }
+                  }
+                },
+                "body": {
+                  "kind": "lam",
+                  "name": { "_n": ["false"] },
+                  "type": {
+                    "kind": "app",
+                    "fn": {
+                      "kind": "bvar",
+                      "deBruijn": 0
+                    },
+                    "arg": {
+                      "kind": "const",
+                      "name": { "_n": ["Bool", "false"] },
+                      "us": []
+                    }
+                  },
+                  "body": {
+                    "kind": "lam",
+                    "name": { "_n": ["true"] },
+                    "type": {
+                      "kind": "app",
+                      "fn": {
+                        "kind": "bvar",
+                        "deBruijn": 1
+                      },
+                      "arg": {
+                        "kind": "const",
+                        "name": { "_n": ["Bool", "true"] },
+                        "us": []
+                      }
+                    },
+                    "body": {
+                      "kind": "bvar",
+                      "deBruijn": 1
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "ctor": { "_n": ["Bool", "true"] },
+              "nfields": 0,
+              "rhs": {
+                "kind": "lam",
+                "name": { "_n": ["motive"] },
+                "type": {
+                  "kind": "forallE",
+                  "name": { "_n": ["t"] },
+                  "type": {
+                    "kind": "const",
+                    "name": { "_n": ["Bool"] },
+                    "us": []
+                  },
+                  "body": {
+                    "kind": "sort",
+                    "level": {
+                      "kind": "param",
+                      "name": { "_n": ["u"] }
+                    }
+                  }
+                },
+                "body": {
+                  "kind": "lam",
+                  "name": { "_n": ["false"] },
+                  "type": {
+                    "kind": "app",
+                    "fn": {
+                      "kind": "bvar",
+                      "deBruijn": 0
+                    },
+                    "arg": {
+                      "kind": "const",
+                      "name": { "_n": ["Bool", "false"] },
+                      "us": []
+                    }
+                  },
+                  "body": {
+                    "kind": "lam",
+                    "name": { "_n": ["true"] },
+                    "type": {
+                      "kind": "app",
+                      "fn": {
+                        "kind": "bvar",
+                        "deBruijn": 1
+                      },
+                      "arg": {
+                        "kind": "const",
+                        "name": { "_n": ["Bool", "true"] },
+                        "us": []
+                      }
+                    },
+                    "body": {
+                      "kind": "bvar",
+                      "deBruijn": 0
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "k": false
+        }
+      ]
+    },
+    {
+      "kind": "def",
+      "name": { "_n": ["boolRec"] },
+      "levelParams": [
+        { "_n": ["u"] }
+      ],
+      "type": {
+        "kind": "forallE",
+        "name": { "_n": ["motive"] },
+        "type": {
+          "kind": "forallE",
+          "name": { "_n": ["t"] },
+          "type": {
+            "kind": "const",
+            "name": { "_n": ["Bool"] },
+            "us": []
+          },
+          "body": {
+            "kind": "sort",
+            "level": {
+              "kind": "param",
+              "name": { "_n": ["u"] }
+            }
+          }
+        },
+        "body": {
+          "kind": "forallE",
+          "name": { "_n": ["false"] },
+          "type": {
+            "kind": "app",
+            "fn": {
+              "kind": "bvar",
+              "deBruijn": 0
+            },
+            "arg": {
+              "kind": "const",
+              "name": { "_n": ["Bool", "false"] },
+              "us": []
+            }
+          },
+          "body": {
+            "kind": "forallE",
+            "name": { "_n": ["true"] },
+            "type": {
+              "kind": "app",
+              "fn": {
+                "kind": "bvar",
+                "deBruijn": 1
+              },
+              "arg": {
+                "kind": "const",
+                "name": { "_n": ["Bool", "true"] },
+                "us": []
+              }
+            },
+            "body": {
+              "kind": "forallE",
+              "name": { "_n": ["t"] },
+              "type": {
+                "kind": "const",
+                "name": { "_n": ["Bool"] },
+                "us": []
+              },
+              "body": {
+                "kind": "app",
+                "fn": {
+                  "kind": "bvar",
+                  "deBruijn": 3
+                },
+                "arg": {
+                  "kind": "bvar",
+                  "deBruijn": 0
+                }
+              }
+            }
+          }
+        }
+      },
+      "value": {
+        "kind": "lam",
+        "name": { "_n": ["motive", "_@", "Tutorial", 3772245136, "_hygCtx", "_hyg", 16] },
+        "type": {
+          "kind": "forallE",
+          "name": { "_n": ["t"] },
+          "type": {
+            "kind": "const",
+            "name": { "_n": ["Bool"] },
+            "us": []
+          },
+          "body": {
+            "kind": "sort",
+            "level": {
+              "kind": "param",
+              "name": { "_n": ["u"] }
+            }
+          }
+        },
+        "body": {
+          "kind": "lam",
+          "name": { "_n": ["false"] },
+          "type": {
+            "kind": "app",
+            "fn": {
+              "kind": "bvar",
+              "deBruijn": 0
+            },
+            "arg": {
+              "kind": "const",
+              "name": { "_n": ["Bool", "false"] },
+              "us": []
+            }
+          },
+          "body": {
+            "kind": "lam",
+            "name": { "_n": ["true"] },
+            "type": {
+              "kind": "app",
+              "fn": {
+                "kind": "bvar",
+                "deBruijn": 1
+              },
+              "arg": {
+                "kind": "const",
+                "name": { "_n": ["Bool", "true"] },
+                "us": []
+              }
+            },
+            "body": {
+              "kind": "lam",
+              "name": { "_n": ["t"] },
+              "type": {
+                "kind": "const",
+                "name": { "_n": ["Bool"] },
+                "us": []
+              },
+              "body": {
+                "kind": "app",
+                "fn": {
+                  "kind": "app",
+                  "fn": {
+                    "kind": "app",
+                    "fn": {
+                      "kind": "app",
+                      "fn": {
+                        "kind": "const",
+                        "name": { "_n": ["Bool", "rec"] },
+                        "us": [
+                          {
+                            "kind": "param",
+                            "name": { "_n": ["u"] }
+                          }
+                        ]
+                      },
+                      "arg": {
+                        "kind": "bvar",
+                        "deBruijn": 3
+                      }
+                    },
+                    "arg": {
+                      "kind": "bvar",
+                      "deBruijn": 2
+                    }
+                  },
+                  "arg": {
+                    "kind": "bvar",
+                    "deBruijn": 1
+                  }
+                },
+                "arg": {
+                  "kind": "bvar",
+                  "deBruijn": 0
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

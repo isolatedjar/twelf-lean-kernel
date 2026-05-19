@@ -51,15 +51,20 @@ gen_one() {
         description="$(node -e "process.stdout.write(JSON.parse(require('fs').readFileSync('$info','utf8')).description)")"
     fi
 
-    local out="$OUT_DIR/${base}.elf"
+    local out1="$OUT_DIR/${base}.json"
+    local out2="$OUT_DIR/${base}.elf"
+
+    {
+        "$PARSE_NDJSON" < "$ndjson"
+    } > "$out1"
 
     {
         echo "%%% Expected outcome: $outcome"
         [[ -n "$description" ]] && printf '%s\n' "$description" | sed 's/^/%%% /'
-        "$PARSE_NDJSON" < "$ndjson" | "$LEAN_TO_LF"
-    } > "$out"
+        "$LEAN_TO_LF" < "$out1" 
+    } > "$out2"
 
-    printf "  %-45s  -> %s\n" "$base" "$(basename "$out")"
+    printf "  %-45s  -> %s\n" "$base" "$(basename "$out2")"
 }
 
 echo "Generating good tests..."

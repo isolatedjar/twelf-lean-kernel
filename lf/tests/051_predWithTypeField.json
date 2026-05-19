@@ -1,0 +1,235 @@
+{
+  "decls": [
+    {
+      "kind": "inductive",
+      "types": [
+        {
+          "name": { "_n": ["PredWithTypeField"] },
+          "levelParams": [],
+          "type": {
+            "kind": "sort",
+            "level": {
+              "kind": "zero"
+            }
+          },
+          "numParams": 0,
+          "numIndices": 0
+        }
+      ],
+      "ctors": [
+        {
+          "name": { "_n": ["PredWithTypeField", "mk"] },
+          "levelParams": [],
+          "type": {
+            "kind": "forallE",
+            "name": { "_n": ["α"] },
+            "type": {
+              "kind": "sort",
+              "level": {
+                "kind": "succ",
+                "arg": {
+                  "kind": "zero"
+                }
+              }
+            },
+            "body": {
+              "kind": "const",
+              "name": { "_n": ["PredWithTypeField"] },
+              "us": []
+            }
+          },
+          "numParams": 0,
+          "numFields": 1,
+          "induct": { "_n": ["PredWithTypeField"] }
+        }
+      ],
+      "recursors": [
+        {
+          "name": { "_n": ["PredWithTypeField", "rec"] },
+          "levelParams": [],
+          "type": {
+            "kind": "forallE",
+            "name": { "_n": ["motive"] },
+            "type": {
+              "kind": "forallE",
+              "name": { "_n": ["t"] },
+              "type": {
+                "kind": "const",
+                "name": { "_n": ["PredWithTypeField"] },
+                "us": []
+              },
+              "body": {
+                "kind": "sort",
+                "level": {
+                  "kind": "zero"
+                }
+              }
+            },
+            "body": {
+              "kind": "forallE",
+              "name": { "_n": ["mk"] },
+              "type": {
+                "kind": "forallE",
+                "name": { "_n": ["α"] },
+                "type": {
+                  "kind": "sort",
+                  "level": {
+                    "kind": "succ",
+                    "arg": {
+                      "kind": "zero"
+                    }
+                  }
+                },
+                "body": {
+                  "kind": "app",
+                  "fn": {
+                    "kind": "bvar",
+                    "deBruijn": 1
+                  },
+                  "arg": {
+                    "kind": "app",
+                    "fn": {
+                      "kind": "const",
+                      "name": { "_n": ["PredWithTypeField", "mk"] },
+                      "us": []
+                    },
+                    "arg": {
+                      "kind": "bvar",
+                      "deBruijn": 0
+                    }
+                  }
+                }
+              },
+              "body": {
+                "kind": "forallE",
+                "name": { "_n": ["t"] },
+                "type": {
+                  "kind": "const",
+                  "name": { "_n": ["PredWithTypeField"] },
+                  "us": []
+                },
+                "body": {
+                  "kind": "app",
+                  "fn": {
+                    "kind": "bvar",
+                    "deBruijn": 2
+                  },
+                  "arg": {
+                    "kind": "bvar",
+                    "deBruijn": 0
+                  }
+                }
+              }
+            }
+          },
+          "numParams": 0,
+          "numIndices": 0,
+          "numMotives": 1,
+          "numMinors": 1,
+          "rules": [
+            {
+              "ctor": { "_n": ["PredWithTypeField", "mk"] },
+              "nfields": 1,
+              "rhs": {
+                "kind": "lam",
+                "name": { "_n": ["motive"] },
+                "type": {
+                  "kind": "forallE",
+                  "name": { "_n": ["t"] },
+                  "type": {
+                    "kind": "const",
+                    "name": { "_n": ["PredWithTypeField"] },
+                    "us": []
+                  },
+                  "body": {
+                    "kind": "sort",
+                    "level": {
+                      "kind": "zero"
+                    }
+                  }
+                },
+                "body": {
+                  "kind": "lam",
+                  "name": { "_n": ["mk"] },
+                  "type": {
+                    "kind": "forallE",
+                    "name": { "_n": ["α"] },
+                    "type": {
+                      "kind": "sort",
+                      "level": {
+                        "kind": "succ",
+                        "arg": {
+                          "kind": "zero"
+                        }
+                      }
+                    },
+                    "body": {
+                      "kind": "app",
+                      "fn": {
+                        "kind": "bvar",
+                        "deBruijn": 1
+                      },
+                      "arg": {
+                        "kind": "app",
+                        "fn": {
+                          "kind": "const",
+                          "name": { "_n": ["PredWithTypeField", "mk"] },
+                          "us": []
+                        },
+                        "arg": {
+                          "kind": "bvar",
+                          "deBruijn": 0
+                        }
+                      }
+                    }
+                  },
+                  "body": {
+                    "kind": "lam",
+                    "name": { "_n": ["α"] },
+                    "type": {
+                      "kind": "sort",
+                      "level": {
+                        "kind": "succ",
+                        "arg": {
+                          "kind": "zero"
+                        }
+                      }
+                    },
+                    "body": {
+                      "kind": "app",
+                      "fn": {
+                        "kind": "bvar",
+                        "deBruijn": 1
+                      },
+                      "arg": {
+                        "kind": "bvar",
+                        "deBruijn": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "k": false
+        }
+      ]
+    },
+    {
+      "kind": "def",
+      "name": { "_n": ["predWithTypeField"] },
+      "levelParams": [],
+      "type": {
+        "kind": "sort",
+        "level": {
+          "kind": "zero"
+        }
+      },
+      "value": {
+        "kind": "const",
+        "name": { "_n": ["PredWithTypeField"] },
+        "us": []
+      }
+    }
+  ]
+}

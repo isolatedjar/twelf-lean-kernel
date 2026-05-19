@@ -1,0 +1,279 @@
+{
+  "decls": [
+    {
+      "kind": "inductive",
+      "types": [
+        {
+          "name": { "_n": ["PUnit"] },
+          "levelParams": [
+            { "_n": ["u"] }
+          ],
+          "type": {
+            "kind": "sort",
+            "level": {
+              "kind": "param",
+              "name": { "_n": ["u"] }
+            }
+          },
+          "numParams": 0,
+          "numIndices": 0
+        }
+      ],
+      "ctors": [
+        {
+          "name": { "_n": ["PUnit", "unit"] },
+          "levelParams": [
+            { "_n": ["u"] }
+          ],
+          "type": {
+            "kind": "const",
+            "name": { "_n": ["PUnit"] },
+            "us": [
+              {
+                "kind": "param",
+                "name": { "_n": ["u"] }
+              }
+            ]
+          },
+          "numParams": 0,
+          "numFields": 0,
+          "induct": { "_n": ["PUnit"] }
+        }
+      ],
+      "recursors": [
+        {
+          "name": { "_n": ["PUnit", "rec"] },
+          "levelParams": [
+            { "_n": ["u_1"] },
+            { "_n": ["u"] }
+          ],
+          "type": {
+            "kind": "forallE",
+            "name": { "_n": ["motive"] },
+            "type": {
+              "kind": "forallE",
+              "name": { "_n": ["t"] },
+              "type": {
+                "kind": "const",
+                "name": { "_n": ["PUnit"] },
+                "us": [
+                  {
+                    "kind": "param",
+                    "name": { "_n": ["u"] }
+                  }
+                ]
+              },
+              "body": {
+                "kind": "sort",
+                "level": {
+                  "kind": "param",
+                  "name": { "_n": ["u_1"] }
+                }
+              }
+            },
+            "body": {
+              "kind": "forallE",
+              "name": { "_n": ["unit"] },
+              "type": {
+                "kind": "app",
+                "fn": {
+                  "kind": "bvar",
+                  "deBruijn": 0
+                },
+                "arg": {
+                  "kind": "const",
+                  "name": { "_n": ["PUnit", "unit"] },
+                  "us": [
+                    {
+                      "kind": "param",
+                      "name": { "_n": ["u"] }
+                    }
+                  ]
+                }
+              },
+              "body": {
+                "kind": "forallE",
+                "name": { "_n": ["t"] },
+                "type": {
+                  "kind": "const",
+                  "name": { "_n": ["PUnit"] },
+                  "us": [
+                    {
+                      "kind": "param",
+                      "name": { "_n": ["u"] }
+                    }
+                  ]
+                },
+                "body": {
+                  "kind": "app",
+                  "fn": {
+                    "kind": "bvar",
+                    "deBruijn": 2
+                  },
+                  "arg": {
+                    "kind": "bvar",
+                    "deBruijn": 0
+                  }
+                }
+              }
+            }
+          },
+          "numParams": 0,
+          "numIndices": 0,
+          "numMotives": 1,
+          "numMinors": 1,
+          "rules": [
+            {
+              "ctor": { "_n": ["PUnit", "unit"] },
+              "nfields": 0,
+              "rhs": {
+                "kind": "lam",
+                "name": { "_n": ["motive"] },
+                "type": {
+                  "kind": "forallE",
+                  "name": { "_n": ["t"] },
+                  "type": {
+                    "kind": "const",
+                    "name": { "_n": ["PUnit"] },
+                    "us": [
+                      {
+                        "kind": "param",
+                        "name": { "_n": ["u"] }
+                      }
+                    ]
+                  },
+                  "body": {
+                    "kind": "sort",
+                    "level": {
+                      "kind": "param",
+                      "name": { "_n": ["u_1"] }
+                    }
+                  }
+                },
+                "body": {
+                  "kind": "lam",
+                  "name": { "_n": ["unit"] },
+                  "type": {
+                    "kind": "app",
+                    "fn": {
+                      "kind": "bvar",
+                      "deBruijn": 0
+                    },
+                    "arg": {
+                      "kind": "const",
+                      "name": { "_n": ["PUnit", "unit"] },
+                      "us": [
+                        {
+                          "kind": "param",
+                          "name": { "_n": ["u"] }
+                        }
+                      ]
+                    }
+                  },
+                  "body": {
+                    "kind": "bvar",
+                    "deBruijn": 0
+                  }
+                }
+              }
+            }
+          ],
+          "k": false
+        }
+      ]
+    },
+    {
+      "kind": "def",
+      "name": { "_n": ["punitRec"] },
+      "levelParams": [
+        { "_n": ["u"] },
+        { "_n": ["w"] }
+      ],
+      "type": {
+        "kind": "forallE",
+        "name": { "_n": ["motive"] },
+        "type": {
+          "kind": "forallE",
+          "name": { "_n": ["a", "_@", "_internal", "_hyg", 0] },
+          "type": {
+            "kind": "const",
+            "name": { "_n": ["PUnit"] },
+            "us": [
+              {
+                "kind": "param",
+                "name": { "_n": ["u"] }
+              }
+            ]
+          },
+          "body": {
+            "kind": "sort",
+            "level": {
+              "kind": "param",
+              "name": { "_n": ["w"] }
+            }
+          }
+        },
+        "body": {
+          "kind": "forallE",
+          "name": { "_n": ["unit"] },
+          "type": {
+            "kind": "app",
+            "fn": {
+              "kind": "bvar",
+              "deBruijn": 0
+            },
+            "arg": {
+              "kind": "const",
+              "name": { "_n": ["PUnit", "unit"] },
+              "us": [
+                {
+                  "kind": "param",
+                  "name": { "_n": ["u"] }
+                }
+              ]
+            }
+          },
+          "body": {
+            "kind": "forallE",
+            "name": { "_n": ["t"] },
+            "type": {
+              "kind": "const",
+              "name": { "_n": ["PUnit"] },
+              "us": [
+                {
+                  "kind": "param",
+                  "name": { "_n": ["u"] }
+                }
+              ]
+            },
+            "body": {
+              "kind": "app",
+              "fn": {
+                "kind": "bvar",
+                "deBruijn": 2
+              },
+              "arg": {
+                "kind": "bvar",
+                "deBruijn": 0
+              }
+            }
+          }
+        }
+      },
+      "value": {
+        "kind": "const",
+        "name": { "_n": ["PUnit", "rec"] },
+        "us": [
+          {
+            "kind": "param",
+            "name": { "_n": ["w"] }
+          },
+          {
+            "kind": "param",
+            "name": { "_n": ["u"] }
+          }
+        ]
+      }
+    }
+  ]
+}

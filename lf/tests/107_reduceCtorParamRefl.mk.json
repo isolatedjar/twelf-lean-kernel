@@ -1,0 +1,731 @@
+{
+  "decls": [
+    {
+      "kind": "def",
+      "name": { "_n": ["id"] },
+      "levelParams": [
+        { "_n": ["u"] }
+      ],
+      "type": {
+        "kind": "forallE",
+        "name": { "_n": ["α"] },
+        "type": {
+          "kind": "sort",
+          "level": {
+            "kind": "param",
+            "name": { "_n": ["u"] }
+          }
+        },
+        "body": {
+          "kind": "forallE",
+          "name": { "_n": ["a"] },
+          "type": {
+            "kind": "bvar",
+            "deBruijn": 0
+          },
+          "body": {
+            "kind": "bvar",
+            "deBruijn": 1
+          }
+        }
+      },
+      "value": {
+        "kind": "lam",
+        "name": { "_n": ["α"] },
+        "type": {
+          "kind": "sort",
+          "level": {
+            "kind": "param",
+            "name": { "_n": ["u"] }
+          }
+        },
+        "body": {
+          "kind": "lam",
+          "name": { "_n": ["a"] },
+          "type": {
+            "kind": "bvar",
+            "deBruijn": 0
+          },
+          "body": {
+            "kind": "bvar",
+            "deBruijn": 0
+          }
+        }
+      }
+    },
+    {
+      "kind": "def",
+      "name": { "_n": ["constType"] },
+      "levelParams": [],
+      "type": {
+        "kind": "forallE",
+        "name": { "_n": ["a", "_@", "_internal", "_hyg", 0] },
+        "type": {
+          "kind": "sort",
+          "level": {
+            "kind": "succ",
+            "arg": {
+              "kind": "zero"
+            }
+          }
+        },
+        "body": {
+          "kind": "forallE",
+          "name": { "_n": ["a", "_@", "_internal", "_hyg", 0] },
+          "type": {
+            "kind": "sort",
+            "level": {
+              "kind": "succ",
+              "arg": {
+                "kind": "zero"
+              }
+            }
+          },
+          "body": {
+            "kind": "sort",
+            "level": {
+              "kind": "succ",
+              "arg": {
+                "kind": "zero"
+              }
+            }
+          }
+        }
+      },
+      "value": {
+        "kind": "lam",
+        "name": { "_n": ["x"] },
+        "type": {
+          "kind": "sort",
+          "level": {
+            "kind": "succ",
+            "arg": {
+              "kind": "zero"
+            }
+          }
+        },
+        "body": {
+          "kind": "lam",
+          "name": { "_n": ["y"] },
+          "type": {
+            "kind": "sort",
+            "level": {
+              "kind": "succ",
+              "arg": {
+                "kind": "zero"
+              }
+            }
+          },
+          "body": {
+            "kind": "bvar",
+            "deBruijn": 1
+          }
+        }
+      }
+    },
+    {
+      "kind": "inductive",
+      "types": [
+        {
+          "name": { "_n": ["reduceCtorParamRefl"] },
+          "levelParams": [],
+          "type": {
+            "kind": "forallE",
+            "name": { "_n": ["a", "_@", "_internal", "_hyg", 0] },
+            "type": {
+              "kind": "sort",
+              "level": {
+                "kind": "succ",
+                "arg": {
+                  "kind": "zero"
+                }
+              }
+            },
+            "body": {
+              "kind": "sort",
+              "level": {
+                "kind": "succ",
+                "arg": {
+                  "kind": "zero"
+                }
+              }
+            }
+          },
+          "numParams": 1,
+          "numIndices": 0
+        }
+      ],
+      "ctors": [
+        {
+          "name": { "_n": ["reduceCtorParamRefl", "mk"] },
+          "levelParams": [],
+          "type": {
+            "kind": "forallE",
+            "name": { "_n": ["α"] },
+            "type": {
+              "kind": "app",
+              "fn": {
+                "kind": "app",
+                "fn": {
+                  "kind": "const",
+                  "name": { "_n": ["id"] },
+                  "us": [
+                    {
+                      "kind": "succ",
+                      "arg": {
+                        "kind": "succ",
+                        "arg": {
+                          "kind": "succ",
+                          "arg": {
+                            "kind": "zero"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "arg": {
+                  "kind": "sort",
+                  "level": {
+                    "kind": "succ",
+                    "arg": {
+                      "kind": "succ",
+                      "arg": {
+                        "kind": "zero"
+                      }
+                    }
+                  }
+                }
+              },
+              "arg": {
+                "kind": "sort",
+                "level": {
+                  "kind": "succ",
+                  "arg": {
+                    "kind": "zero"
+                  }
+                }
+              }
+            },
+            "body": {
+              "kind": "forallE",
+              "name": { "_n": ["x"] },
+              "type": {
+                "kind": "forallE",
+                "name": { "_n": ["x"] },
+                "type": {
+                  "kind": "bvar",
+                  "deBruijn": 0
+                },
+                "body": {
+                  "kind": "app",
+                  "fn": {
+                    "kind": "app",
+                    "fn": {
+                      "kind": "const",
+                      "name": { "_n": ["constType"] },
+                      "us": []
+                    },
+                    "arg": {
+                      "kind": "app",
+                      "fn": {
+                        "kind": "const",
+                        "name": { "_n": ["reduceCtorParamRefl"] },
+                        "us": []
+                      },
+                      "arg": {
+                        "kind": "bvar",
+                        "deBruijn": 1
+                      }
+                    }
+                  },
+                  "arg": {
+                    "kind": "app",
+                    "fn": {
+                      "kind": "const",
+                      "name": { "_n": ["reduceCtorParamRefl"] },
+                      "us": []
+                    },
+                    "arg": {
+                      "kind": "bvar",
+                      "deBruijn": 1
+                    }
+                  }
+                }
+              },
+              "body": {
+                "kind": "app",
+                "fn": {
+                  "kind": "const",
+                  "name": { "_n": ["reduceCtorParamRefl"] },
+                  "us": []
+                },
+                "arg": {
+                  "kind": "bvar",
+                  "deBruijn": 1
+                }
+              }
+            }
+          },
+          "numParams": 1,
+          "numFields": 1,
+          "induct": { "_n": ["reduceCtorParamRefl"] }
+        }
+      ],
+      "recursors": [
+        {
+          "name": { "_n": ["reduceCtorParamRefl", "rec"] },
+          "levelParams": [
+            { "_n": ["u"] }
+          ],
+          "type": {
+            "kind": "forallE",
+            "name": { "_n": ["x"] },
+            "type": {
+              "kind": "sort",
+              "level": {
+                "kind": "succ",
+                "arg": {
+                  "kind": "zero"
+                }
+              }
+            },
+            "body": {
+              "kind": "forallE",
+              "name": { "_n": ["motive"] },
+              "type": {
+                "kind": "forallE",
+                "name": { "_n": ["t"] },
+                "type": {
+                  "kind": "app",
+                  "fn": {
+                    "kind": "const",
+                    "name": { "_n": ["reduceCtorParamRefl"] },
+                    "us": []
+                  },
+                  "arg": {
+                    "kind": "bvar",
+                    "deBruijn": 0
+                  }
+                },
+                "body": {
+                  "kind": "sort",
+                  "level": {
+                    "kind": "param",
+                    "name": { "_n": ["u"] }
+                  }
+                }
+              },
+              "body": {
+                "kind": "forallE",
+                "name": { "_n": ["mk"] },
+                "type": {
+                  "kind": "forallE",
+                  "name": { "_n": ["x"] },
+                  "type": {
+                    "kind": "forallE",
+                    "name": { "_n": ["x"] },
+                    "type": {
+                      "kind": "bvar",
+                      "deBruijn": 1
+                    },
+                    "body": {
+                      "kind": "app",
+                      "fn": {
+                        "kind": "app",
+                        "fn": {
+                          "kind": "const",
+                          "name": { "_n": ["constType"] },
+                          "us": []
+                        },
+                        "arg": {
+                          "kind": "app",
+                          "fn": {
+                            "kind": "const",
+                            "name": { "_n": ["reduceCtorParamRefl"] },
+                            "us": []
+                          },
+                          "arg": {
+                            "kind": "bvar",
+                            "deBruijn": 2
+                          }
+                        }
+                      },
+                      "arg": {
+                        "kind": "app",
+                        "fn": {
+                          "kind": "const",
+                          "name": { "_n": ["reduceCtorParamRefl"] },
+                          "us": []
+                        },
+                        "arg": {
+                          "kind": "bvar",
+                          "deBruijn": 2
+                        }
+                      }
+                    }
+                  },
+                  "body": {
+                    "kind": "forallE",
+                    "name": { "_n": ["x_ih"] },
+                    "type": {
+                      "kind": "forallE",
+                      "name": { "_n": ["x"] },
+                      "type": {
+                        "kind": "bvar",
+                        "deBruijn": 2
+                      },
+                      "body": {
+                        "kind": "app",
+                        "fn": {
+                          "kind": "bvar",
+                          "deBruijn": 2
+                        },
+                        "arg": {
+                          "kind": "app",
+                          "fn": {
+                            "kind": "bvar",
+                            "deBruijn": 1
+                          },
+                          "arg": {
+                            "kind": "bvar",
+                            "deBruijn": 0
+                          }
+                        }
+                      }
+                    },
+                    "body": {
+                      "kind": "app",
+                      "fn": {
+                        "kind": "bvar",
+                        "deBruijn": 2
+                      },
+                      "arg": {
+                        "kind": "app",
+                        "fn": {
+                          "kind": "app",
+                          "fn": {
+                            "kind": "const",
+                            "name": { "_n": ["reduceCtorParamRefl", "mk"] },
+                            "us": []
+                          },
+                          "arg": {
+                            "kind": "bvar",
+                            "deBruijn": 3
+                          }
+                        },
+                        "arg": {
+                          "kind": "bvar",
+                          "deBruijn": 1
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "kind": "forallE",
+                  "name": { "_n": ["t"] },
+                  "type": {
+                    "kind": "app",
+                    "fn": {
+                      "kind": "const",
+                      "name": { "_n": ["reduceCtorParamRefl"] },
+                      "us": []
+                    },
+                    "arg": {
+                      "kind": "bvar",
+                      "deBruijn": 2
+                    }
+                  },
+                  "body": {
+                    "kind": "app",
+                    "fn": {
+                      "kind": "bvar",
+                      "deBruijn": 2
+                    },
+                    "arg": {
+                      "kind": "bvar",
+                      "deBruijn": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "numParams": 1,
+          "numIndices": 0,
+          "numMotives": 1,
+          "numMinors": 1,
+          "rules": [
+            {
+              "ctor": { "_n": ["reduceCtorParamRefl", "mk"] },
+              "nfields": 1,
+              "rhs": {
+                "kind": "lam",
+                "name": { "_n": ["x"] },
+                "type": {
+                  "kind": "sort",
+                  "level": {
+                    "kind": "succ",
+                    "arg": {
+                      "kind": "zero"
+                    }
+                  }
+                },
+                "body": {
+                  "kind": "lam",
+                  "name": { "_n": ["motive"] },
+                  "type": {
+                    "kind": "forallE",
+                    "name": { "_n": ["t"] },
+                    "type": {
+                      "kind": "app",
+                      "fn": {
+                        "kind": "const",
+                        "name": { "_n": ["reduceCtorParamRefl"] },
+                        "us": []
+                      },
+                      "arg": {
+                        "kind": "bvar",
+                        "deBruijn": 0
+                      }
+                    },
+                    "body": {
+                      "kind": "sort",
+                      "level": {
+                        "kind": "param",
+                        "name": { "_n": ["u"] }
+                      }
+                    }
+                  },
+                  "body": {
+                    "kind": "lam",
+                    "name": { "_n": ["mk"] },
+                    "type": {
+                      "kind": "forallE",
+                      "name": { "_n": ["x"] },
+                      "type": {
+                        "kind": "forallE",
+                        "name": { "_n": ["x"] },
+                        "type": {
+                          "kind": "bvar",
+                          "deBruijn": 1
+                        },
+                        "body": {
+                          "kind": "app",
+                          "fn": {
+                            "kind": "app",
+                            "fn": {
+                              "kind": "const",
+                              "name": { "_n": ["constType"] },
+                              "us": []
+                            },
+                            "arg": {
+                              "kind": "app",
+                              "fn": {
+                                "kind": "const",
+                                "name": { "_n": ["reduceCtorParamRefl"] },
+                                "us": []
+                              },
+                              "arg": {
+                                "kind": "bvar",
+                                "deBruijn": 2
+                              }
+                            }
+                          },
+                          "arg": {
+                            "kind": "app",
+                            "fn": {
+                              "kind": "const",
+                              "name": { "_n": ["reduceCtorParamRefl"] },
+                              "us": []
+                            },
+                            "arg": {
+                              "kind": "bvar",
+                              "deBruijn": 2
+                            }
+                          }
+                        }
+                      },
+                      "body": {
+                        "kind": "forallE",
+                        "name": { "_n": ["x_ih"] },
+                        "type": {
+                          "kind": "forallE",
+                          "name": { "_n": ["x"] },
+                          "type": {
+                            "kind": "bvar",
+                            "deBruijn": 2
+                          },
+                          "body": {
+                            "kind": "app",
+                            "fn": {
+                              "kind": "bvar",
+                              "deBruijn": 2
+                            },
+                            "arg": {
+                              "kind": "app",
+                              "fn": {
+                                "kind": "bvar",
+                                "deBruijn": 1
+                              },
+                              "arg": {
+                                "kind": "bvar",
+                                "deBruijn": 0
+                              }
+                            }
+                          }
+                        },
+                        "body": {
+                          "kind": "app",
+                          "fn": {
+                            "kind": "bvar",
+                            "deBruijn": 2
+                          },
+                          "arg": {
+                            "kind": "app",
+                            "fn": {
+                              "kind": "app",
+                              "fn": {
+                                "kind": "const",
+                                "name": { "_n": ["reduceCtorParamRefl", "mk"] },
+                                "us": []
+                              },
+                              "arg": {
+                                "kind": "bvar",
+                                "deBruijn": 3
+                              }
+                            },
+                            "arg": {
+                              "kind": "bvar",
+                              "deBruijn": 1
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "body": {
+                      "kind": "lam",
+                      "name": { "_n": ["x"] },
+                      "type": {
+                        "kind": "forallE",
+                        "name": { "_n": ["x"] },
+                        "type": {
+                          "kind": "bvar",
+                          "deBruijn": 2
+                        },
+                        "body": {
+                          "kind": "app",
+                          "fn": {
+                            "kind": "app",
+                            "fn": {
+                              "kind": "const",
+                              "name": { "_n": ["constType"] },
+                              "us": []
+                            },
+                            "arg": {
+                              "kind": "app",
+                              "fn": {
+                                "kind": "const",
+                                "name": { "_n": ["reduceCtorParamRefl"] },
+                                "us": []
+                              },
+                              "arg": {
+                                "kind": "bvar",
+                                "deBruijn": 3
+                              }
+                            }
+                          },
+                          "arg": {
+                            "kind": "app",
+                            "fn": {
+                              "kind": "const",
+                              "name": { "_n": ["reduceCtorParamRefl"] },
+                              "us": []
+                            },
+                            "arg": {
+                              "kind": "bvar",
+                              "deBruijn": 3
+                            }
+                          }
+                        }
+                      },
+                      "body": {
+                        "kind": "app",
+                        "fn": {
+                          "kind": "app",
+                          "fn": {
+                            "kind": "bvar",
+                            "deBruijn": 1
+                          },
+                          "arg": {
+                            "kind": "bvar",
+                            "deBruijn": 0
+                          }
+                        },
+                        "arg": {
+                          "kind": "lam",
+                          "name": { "_n": ["x"] },
+                          "type": {
+                            "kind": "bvar",
+                            "deBruijn": 3
+                          },
+                          "body": {
+                            "kind": "app",
+                            "fn": {
+                              "kind": "app",
+                              "fn": {
+                                "kind": "app",
+                                "fn": {
+                                  "kind": "app",
+                                  "fn": {
+                                    "kind": "const",
+                                    "name": { "_n": ["reduceCtorParamRefl", "rec"] },
+                                    "us": [
+                                      {
+                                        "kind": "param",
+                                        "name": { "_n": ["u"] }
+                                      }
+                                    ]
+                                  },
+                                  "arg": {
+                                    "kind": "bvar",
+                                    "deBruijn": 4
+                                  }
+                                },
+                                "arg": {
+                                  "kind": "bvar",
+                                  "deBruijn": 3
+                                }
+                              },
+                              "arg": {
+                                "kind": "bvar",
+                                "deBruijn": 2
+                              }
+                            },
+                            "arg": {
+                              "kind": "app",
+                              "fn": {
+                                "kind": "bvar",
+                                "deBruijn": 1
+                              },
+                              "arg": {
+                                "kind": "bvar",
+                                "deBruijn": 0
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "k": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,565 @@
+{
+  "decls": [
+    {
+      "kind": "inductive",
+      "types": [
+        {
+          "name": { "_n": ["PProd"] },
+          "levelParams": [
+            { "_n": ["u"] },
+            { "_n": ["v"] }
+          ],
+          "type": {
+            "kind": "forallE",
+            "name": { "_n": ["α"] },
+            "type": {
+              "kind": "sort",
+              "level": {
+                "kind": "param",
+                "name": { "_n": ["u"] }
+              }
+            },
+            "body": {
+              "kind": "forallE",
+              "name": { "_n": ["β"] },
+              "type": {
+                "kind": "sort",
+                "level": {
+                  "kind": "param",
+                  "name": { "_n": ["v"] }
+                }
+              },
+              "body": {
+                "kind": "sort",
+                "level": {
+                  "kind": "max",
+                  "l": {
+                    "kind": "max",
+                    "l": {
+                      "kind": "succ",
+                      "arg": {
+                        "kind": "zero"
+                      }
+                    },
+                    "r": {
+                      "kind": "param",
+                      "name": { "_n": ["u"] }
+                    }
+                  },
+                  "r": {
+                    "kind": "param",
+                    "name": { "_n": ["v"] }
+                  }
+                }
+              }
+            }
+          },
+          "numParams": 2,
+          "numIndices": 0
+        }
+      ],
+      "ctors": [
+        {
+          "name": { "_n": ["PProd", "mk"] },
+          "levelParams": [
+            { "_n": ["u"] },
+            { "_n": ["v"] }
+          ],
+          "type": {
+            "kind": "forallE",
+            "name": { "_n": ["α"] },
+            "type": {
+              "kind": "sort",
+              "level": {
+                "kind": "param",
+                "name": { "_n": ["u"] }
+              }
+            },
+            "body": {
+              "kind": "forallE",
+              "name": { "_n": ["β"] },
+              "type": {
+                "kind": "sort",
+                "level": {
+                  "kind": "param",
+                  "name": { "_n": ["v"] }
+                }
+              },
+              "body": {
+                "kind": "forallE",
+                "name": { "_n": ["fst"] },
+                "type": {
+                  "kind": "bvar",
+                  "deBruijn": 1
+                },
+                "body": {
+                  "kind": "forallE",
+                  "name": { "_n": ["snd"] },
+                  "type": {
+                    "kind": "bvar",
+                    "deBruijn": 1
+                  },
+                  "body": {
+                    "kind": "app",
+                    "fn": {
+                      "kind": "app",
+                      "fn": {
+                        "kind": "const",
+                        "name": { "_n": ["PProd"] },
+                        "us": [
+                          {
+                            "kind": "param",
+                            "name": { "_n": ["u"] }
+                          },
+                          {
+                            "kind": "param",
+                            "name": { "_n": ["v"] }
+                          }
+                        ]
+                      },
+                      "arg": {
+                        "kind": "bvar",
+                        "deBruijn": 3
+                      }
+                    },
+                    "arg": {
+                      "kind": "bvar",
+                      "deBruijn": 2
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "numParams": 2,
+          "numFields": 2,
+          "induct": { "_n": ["PProd"] }
+        }
+      ],
+      "recursors": [
+        {
+          "name": { "_n": ["PProd", "rec"] },
+          "levelParams": [
+            { "_n": ["u_1"] },
+            { "_n": ["u"] },
+            { "_n": ["v"] }
+          ],
+          "type": {
+            "kind": "forallE",
+            "name": { "_n": ["α"] },
+            "type": {
+              "kind": "sort",
+              "level": {
+                "kind": "param",
+                "name": { "_n": ["u"] }
+              }
+            },
+            "body": {
+              "kind": "forallE",
+              "name": { "_n": ["β"] },
+              "type": {
+                "kind": "sort",
+                "level": {
+                  "kind": "param",
+                  "name": { "_n": ["v"] }
+                }
+              },
+              "body": {
+                "kind": "forallE",
+                "name": { "_n": ["motive"] },
+                "type": {
+                  "kind": "forallE",
+                  "name": { "_n": ["t"] },
+                  "type": {
+                    "kind": "app",
+                    "fn": {
+                      "kind": "app",
+                      "fn": {
+                        "kind": "const",
+                        "name": { "_n": ["PProd"] },
+                        "us": [
+                          {
+                            "kind": "param",
+                            "name": { "_n": ["u"] }
+                          },
+                          {
+                            "kind": "param",
+                            "name": { "_n": ["v"] }
+                          }
+                        ]
+                      },
+                      "arg": {
+                        "kind": "bvar",
+                        "deBruijn": 1
+                      }
+                    },
+                    "arg": {
+                      "kind": "bvar",
+                      "deBruijn": 0
+                    }
+                  },
+                  "body": {
+                    "kind": "sort",
+                    "level": {
+                      "kind": "param",
+                      "name": { "_n": ["u_1"] }
+                    }
+                  }
+                },
+                "body": {
+                  "kind": "forallE",
+                  "name": { "_n": ["mk"] },
+                  "type": {
+                    "kind": "forallE",
+                    "name": { "_n": ["fst"] },
+                    "type": {
+                      "kind": "bvar",
+                      "deBruijn": 2
+                    },
+                    "body": {
+                      "kind": "forallE",
+                      "name": { "_n": ["snd"] },
+                      "type": {
+                        "kind": "bvar",
+                        "deBruijn": 2
+                      },
+                      "body": {
+                        "kind": "app",
+                        "fn": {
+                          "kind": "bvar",
+                          "deBruijn": 2
+                        },
+                        "arg": {
+                          "kind": "app",
+                          "fn": {
+                            "kind": "app",
+                            "fn": {
+                              "kind": "app",
+                              "fn": {
+                                "kind": "app",
+                                "fn": {
+                                  "kind": "const",
+                                  "name": { "_n": ["PProd", "mk"] },
+                                  "us": [
+                                    {
+                                      "kind": "param",
+                                      "name": { "_n": ["u"] }
+                                    },
+                                    {
+                                      "kind": "param",
+                                      "name": { "_n": ["v"] }
+                                    }
+                                  ]
+                                },
+                                "arg": {
+                                  "kind": "bvar",
+                                  "deBruijn": 4
+                                }
+                              },
+                              "arg": {
+                                "kind": "bvar",
+                                "deBruijn": 3
+                              }
+                            },
+                            "arg": {
+                              "kind": "bvar",
+                              "deBruijn": 1
+                            }
+                          },
+                          "arg": {
+                            "kind": "bvar",
+                            "deBruijn": 0
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "body": {
+                    "kind": "forallE",
+                    "name": { "_n": ["t"] },
+                    "type": {
+                      "kind": "app",
+                      "fn": {
+                        "kind": "app",
+                        "fn": {
+                          "kind": "const",
+                          "name": { "_n": ["PProd"] },
+                          "us": [
+                            {
+                              "kind": "param",
+                              "name": { "_n": ["u"] }
+                            },
+                            {
+                              "kind": "param",
+                              "name": { "_n": ["v"] }
+                            }
+                          ]
+                        },
+                        "arg": {
+                          "kind": "bvar",
+                          "deBruijn": 3
+                        }
+                      },
+                      "arg": {
+                        "kind": "bvar",
+                        "deBruijn": 2
+                      }
+                    },
+                    "body": {
+                      "kind": "app",
+                      "fn": {
+                        "kind": "bvar",
+                        "deBruijn": 2
+                      },
+                      "arg": {
+                        "kind": "bvar",
+                        "deBruijn": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "numParams": 2,
+          "numIndices": 0,
+          "numMotives": 1,
+          "numMinors": 1,
+          "rules": [
+            {
+              "ctor": { "_n": ["PProd", "mk"] },
+              "nfields": 2,
+              "rhs": {
+                "kind": "lam",
+                "name": { "_n": ["α"] },
+                "type": {
+                  "kind": "sort",
+                  "level": {
+                    "kind": "param",
+                    "name": { "_n": ["u"] }
+                  }
+                },
+                "body": {
+                  "kind": "lam",
+                  "name": { "_n": ["β"] },
+                  "type": {
+                    "kind": "sort",
+                    "level": {
+                      "kind": "param",
+                      "name": { "_n": ["v"] }
+                    }
+                  },
+                  "body": {
+                    "kind": "lam",
+                    "name": { "_n": ["motive"] },
+                    "type": {
+                      "kind": "forallE",
+                      "name": { "_n": ["t"] },
+                      "type": {
+                        "kind": "app",
+                        "fn": {
+                          "kind": "app",
+                          "fn": {
+                            "kind": "const",
+                            "name": { "_n": ["PProd"] },
+                            "us": [
+                              {
+                                "kind": "param",
+                                "name": { "_n": ["u"] }
+                              },
+                              {
+                                "kind": "param",
+                                "name": { "_n": ["v"] }
+                              }
+                            ]
+                          },
+                          "arg": {
+                            "kind": "bvar",
+                            "deBruijn": 1
+                          }
+                        },
+                        "arg": {
+                          "kind": "bvar",
+                          "deBruijn": 0
+                        }
+                      },
+                      "body": {
+                        "kind": "sort",
+                        "level": {
+                          "kind": "param",
+                          "name": { "_n": ["u_1"] }
+                        }
+                      }
+                    },
+                    "body": {
+                      "kind": "lam",
+                      "name": { "_n": ["mk"] },
+                      "type": {
+                        "kind": "forallE",
+                        "name": { "_n": ["fst"] },
+                        "type": {
+                          "kind": "bvar",
+                          "deBruijn": 2
+                        },
+                        "body": {
+                          "kind": "forallE",
+                          "name": { "_n": ["snd"] },
+                          "type": {
+                            "kind": "bvar",
+                            "deBruijn": 2
+                          },
+                          "body": {
+                            "kind": "app",
+                            "fn": {
+                              "kind": "bvar",
+                              "deBruijn": 2
+                            },
+                            "arg": {
+                              "kind": "app",
+                              "fn": {
+                                "kind": "app",
+                                "fn": {
+                                  "kind": "app",
+                                  "fn": {
+                                    "kind": "app",
+                                    "fn": {
+                                      "kind": "const",
+                                      "name": { "_n": ["PProd", "mk"] },
+                                      "us": [
+                                        {
+                                          "kind": "param",
+                                          "name": { "_n": ["u"] }
+                                        },
+                                        {
+                                          "kind": "param",
+                                          "name": { "_n": ["v"] }
+                                        }
+                                      ]
+                                    },
+                                    "arg": {
+                                      "kind": "bvar",
+                                      "deBruijn": 4
+                                    }
+                                  },
+                                  "arg": {
+                                    "kind": "bvar",
+                                    "deBruijn": 3
+                                  }
+                                },
+                                "arg": {
+                                  "kind": "bvar",
+                                  "deBruijn": 1
+                                }
+                              },
+                              "arg": {
+                                "kind": "bvar",
+                                "deBruijn": 0
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "body": {
+                        "kind": "lam",
+                        "name": { "_n": ["fst"] },
+                        "type": {
+                          "kind": "bvar",
+                          "deBruijn": 3
+                        },
+                        "body": {
+                          "kind": "lam",
+                          "name": { "_n": ["snd"] },
+                          "type": {
+                            "kind": "bvar",
+                            "deBruijn": 3
+                          },
+                          "body": {
+                            "kind": "app",
+                            "fn": {
+                              "kind": "app",
+                              "fn": {
+                                "kind": "bvar",
+                                "deBruijn": 2
+                              },
+                              "arg": {
+                                "kind": "bvar",
+                                "deBruijn": 1
+                              }
+                            },
+                            "arg": {
+                              "kind": "bvar",
+                              "deBruijn": 0
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "k": false
+        }
+      ]
+    },
+    {
+      "kind": "def",
+      "name": { "_n": ["pprodType"] },
+      "levelParams": [],
+      "type": {
+        "kind": "forallE",
+        "name": { "_n": ["a", "_@", "_internal", "_hyg", 0] },
+        "type": {
+          "kind": "sort",
+          "level": {
+            "kind": "succ",
+            "arg": {
+              "kind": "zero"
+            }
+          }
+        },
+        "body": {
+          "kind": "forallE",
+          "name": { "_n": ["a", "_@", "_internal", "_hyg", 0] },
+          "type": {
+            "kind": "sort",
+            "level": {
+              "kind": "succ",
+              "arg": {
+                "kind": "zero"
+              }
+            }
+          },
+          "body": {
+            "kind": "sort",
+            "level": {
+              "kind": "succ",
+              "arg": {
+                "kind": "zero"
+              }
+            }
+          }
+        }
+      },
+      "value": {
+        "kind": "const",
+        "name": { "_n": ["PProd"] },
+        "us": [
+          {
+            "kind": "succ",
+            "arg": {
+              "kind": "zero"
+            }
+          },
+          {
+            "kind": "succ",
+            "arg": {
+              "kind": "zero"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

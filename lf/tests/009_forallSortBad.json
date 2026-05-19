@@ -1,0 +1,128 @@
+{
+  "decls": [
+    {
+      "kind": "def",
+      "name": { "_n": ["id"] },
+      "levelParams": [
+        { "_n": ["u"] }
+      ],
+      "type": {
+        "kind": "forallE",
+        "name": { "_n": ["α"] },
+        "type": {
+          "kind": "sort",
+          "level": {
+            "kind": "param",
+            "name": { "_n": ["u"] }
+          }
+        },
+        "body": {
+          "kind": "forallE",
+          "name": { "_n": ["a"] },
+          "type": {
+            "kind": "bvar",
+            "deBruijn": 0
+          },
+          "body": {
+            "kind": "bvar",
+            "deBruijn": 1
+          }
+        }
+      },
+      "value": {
+        "kind": "lam",
+        "name": { "_n": ["α"] },
+        "type": {
+          "kind": "sort",
+          "level": {
+            "kind": "param",
+            "name": { "_n": ["u"] }
+          }
+        },
+        "body": {
+          "kind": "lam",
+          "name": { "_n": ["a"] },
+          "type": {
+            "kind": "bvar",
+            "deBruijn": 0
+          },
+          "body": {
+            "kind": "bvar",
+            "deBruijn": 0
+          }
+        }
+      }
+    },
+    {
+      "kind": "def",
+      "name": { "_n": ["forallSortBad"] },
+      "levelParams": [],
+      "type": {
+        "kind": "sort",
+        "level": {
+          "kind": "zero"
+        }
+      },
+      "value": {
+        "kind": "forallE",
+        "name": { "_n": ["x"] },
+        "type": {
+          "kind": "app",
+          "fn": {
+            "kind": "app",
+            "fn": {
+              "kind": "const",
+              "name": { "_n": ["id"] },
+              "us": [
+                {
+                  "kind": "succ",
+                  "arg": {
+                    "kind": "succ",
+                    "arg": {
+                      "kind": "zero"
+                    }
+                  }
+                }
+              ]
+            },
+            "arg": {
+              "kind": "sort",
+              "level": {
+                "kind": "succ",
+                "arg": {
+                  "kind": "zero"
+                }
+              }
+            }
+          },
+          "arg": {
+            "kind": "sort",
+            "level": {
+              "kind": "zero"
+            }
+          }
+        },
+        "body": {
+          "kind": "forallE",
+          "name": { "_n": ["x"] },
+          "type": {
+            "kind": "bvar",
+            "deBruijn": 0
+          },
+          "body": {
+            "kind": "forallE",
+            "name": { "_n": ["a"] },
+            "type": {
+              "kind": "bvar",
+              "deBruijn": 0
+            },
+            "body": {
+              "kind": "bvar",
+              "deBruijn": 1
+            }
+          }
+        }
+      }
+    }
+  ]
+}
