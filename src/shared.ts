@@ -21,7 +21,7 @@ export type Name =
 export type Level =
   | { kind: "zero" }
   | { kind: "succ"; arg: Level }
-  | { kind: "max";  l: Level; r: Level }
+  | { kind: "max"; l: Level; r: Level }
   | { kind: "imax"; l: Level; r: Level }
   | { kind: "param"; name: Name };
 
@@ -32,10 +32,10 @@ export type Expr =
   | { kind: "sort"; level: Level }
   | { kind: "const"; name: Name; us: Level[] }
   | { kind: "app"; fn: Expr; arg: Expr }
-  | { kind: "lam";     name: Name; type: Expr; body: Expr }
+  | { kind: "lam"; name: Name; type: Expr; body: Expr }
   | { kind: "forallE"; name: Name; type: Expr; body: Expr }
-  | { kind: "letE";    name: Name; type: Expr; value: Expr; body: Expr }
-  | { kind: "proj";    typeName: Name; idx: number; struct: Expr }
+  | { kind: "letE"; name: Name; type: Expr; value: Expr; body: Expr }
+  | { kind: "proj"; typeName: Name; idx: number; struct: Expr }
   | { kind: "natLit"; value: string }
   | { kind: "strLit"; value: string };
 
@@ -59,7 +59,7 @@ export type IndCtor = {
   type: Expr;
   numParams: number;
   numFields: number;
-  induct: Name;  // which IndType in the block this ctor belongs to
+  induct: Name; // which IndType in the block this ctor belongs to
 };
 
 export type IndRecRule = {
@@ -90,10 +90,10 @@ export type Inductive = {
 // --- Top-level declarations ---------------------------------------------
 
 export type Decl =
-  | { kind: "def";     name: Name; levelParams: Name[]; type: Expr; value: Expr }
-  | { kind: "thm";     name: Name; levelParams: Name[]; type: Expr; value: Expr }
-  | { kind: "axiom";   name: Name; levelParams: Name[]; type: Expr }
-  | { kind: "opaque";  name: Name; levelParams: Name[]; type: Expr; value: Expr }
+  | { kind: "def"; name: Name; levelParams: Name[]; type: Expr; value: Expr }
+  | { kind: "thm"; name: Name; levelParams: Name[]; type: Expr; value: Expr }
+  | { kind: "axiom"; name: Name; levelParams: Name[]; type: Expr }
+  | { kind: "opaque"; name: Name; levelParams: Name[]; type: Expr; value: Expr }
   | { kind: "quot" }
   | Inductive;
 
@@ -108,7 +108,8 @@ export type ParsedEnv = {
 
 export function nameToString(n: Name): string {
   switch (n.kind) {
-    case "anon": return "";
+    case "anon":
+      return "";
     case "str": {
       const p = nameToString(n.pre);
       return p === "" ? n.str : `${p}.${n.str}`;
@@ -145,9 +146,7 @@ export function nameToJSON(n: Name): NameJSON {
 export function nameFromJSON(j: NameJSON): Name {
   let n: Name = { kind: "anon" };
   for (const p of j._n) {
-    n = typeof p === "string"
-      ? { kind: "str", pre: n, str: p }
-      : { kind: "num", pre: n, i: p };
+    n = typeof p === "string" ? { kind: "str", pre: n, str: p } : { kind: "num", pre: n, i: p };
   }
   return n;
 }

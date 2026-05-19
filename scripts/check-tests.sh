@@ -39,36 +39,80 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LF_DIR="$REPO_ROOT/lf"
 TESTS_DIR="$LF_DIR/tests"
 
+# Loud startup checks.  The previous version silently mis-reported
+# tests as "accept" when `cd "$LF_DIR"` failed inside the subshell:
+# `set -e` exited the inner shell, output came back empty, and
+# `grep -q ABORT` found nothing — making genuine rejections look
+# like soundness failures.  We now refuse to run if the layout
+# isn't right.
+if [[ ! -d "$LF_DIR" ]]; then
+    echo "Error: LF_DIR=$LF_DIR does not exist." >&2
+    echo "  This script expects <repo-root>/lf/{sources.cfg,final-checks.elf,tests/...}." >&2
+    exit 1
+fi
+if [[ ! -f "$LF_DIR/sources.cfg" ]]; then
+    echo "Error: $LF_DIR/sources.cfg is missing." >&2
+    exit 1
+fi
+if [[ ! -f "$LF_DIR/final-checks.elf" ]]; then
+    echo "Error: $LF_DIR/final-checks.elf is missing." >&2
+    echo "  Note: if you grabbed it from /mnt/user-data/outputs it may be" >&2
+    echo "  named final-checks.elf.txt — rename to final-checks.elf." >&2
+    exit 1
+fi
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
 # Run one .elf file through Twelf.  Prints: accept | reject | incomplete
+# Loud-fail on infrastructure errors (Twelf binary missing, no output, etc.)
+# rather than silently returning a wrong verdict.
 check_one() {
     local file="$1"
 
     # Incomplete if translator marked any skipped declarations.
     if grep -q "^%% SKIP:" "$file" 2>/dev/null; then
         echo "incomplete"
-        return
+        return 0
     fi
 
     local abs_file
     abs_file="$(cd "$(dirname "$file")" && pwd)/$(basename "$file")"
 
-    local output
-    output=$(
-        cd "$LF_DIR"
+    # Capture Twelf output via tempfile.  Disable `set -e` for the
+    # block so we can detect failures explicitly rather than silently
+    # aborting the subshell.
+    local tmpfile
+    tmpfile=$(mktemp)
+    set +e
+    (
+        cd "$LF_DIR" || exit 64
         echo "Config.read sources.cfg
 Config.load
 loadFile $abs_file
 loadFile final-checks.elf
-OS.exit" | "$TWELF" 2>&1
-    )
+OS.exit" | "$TWELF"
+    ) > "$tmpfile" 2>&1
+    local rc=$?
+    set -e
 
-    if echo "$output" | grep -q "ABORT"; then
+    if [[ $rc -eq 64 ]]; then
+        echo "ERROR: cd to LF_DIR=$LF_DIR failed" >&2
+        rm -f "$tmpfile"
+        exit 1
+    fi
+    if [[ ! -s "$tmpfile" ]]; then
+        echo "ERROR: Twelf produced no output for $file (exit=$rc)" >&2
+        rm -f "$tmpfile"
+        exit 1
+    fi
+
+    if grep -q "ABORT" "$tmpfile"; then
+        rm -f "$tmpfile"
         echo "reject"
     else
+        rm -f "$tmpfile"
         echo "accept"
     fi
 }
