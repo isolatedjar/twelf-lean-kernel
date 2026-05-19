@@ -684,16 +684,23 @@ function allMentioned(names: string[], ...bodies: string[]): boolean {
   return true;
 }
 
-// Emit a deliberate Twelf-side rejection when the translator detects an
-// invalid input (duplicate name, etc.).  Uses %solve on the uninhabited
-// `tcb-violation` type, which Twelf reports as ABORT.  Twelf otherwise
-// silently allows shadowing constant declarations, so this is how we
-// surface duplicates to the test harness.
+// Translator-side rejection: emit `%% SKIP:` and decline to emit the
+// problematic declaration.  Twelf doesn't see the broken content, and
+// the harness marks the file as INCOMPLETE (🤷) on the SKIP marker.
+//
+// Note: this is NOT a Twelf-side rejection.  When the translator emits
+// SKIP it's giving up — Twelf isn't checking the soundness condition
+// for the declined declaration.  Per-test outcomes that hinge on a
+// SKIP marker are intentionally tracked as INCOMPLETE, not as PASS,
+// even when the underlying NDJSON was supposed to be rejected: a SKIP
+// shows we couldn't pose the question to Twelf, not that Twelf
+// verified it as bad.  The principled fix for each SKIP path is to
+// encode the missing check inside the LF signature so Twelf rejects
+// the witness directly.
 let violationCounter = 0;
 function emitDuplicateRejection(declName: string, newKind: string, oldKind: string): void {
-  emit(`%% TRANSLATOR REJECT: duplicate declaration of "${declName}"`);
+  emit(`%% SKIP: duplicate declaration of "${declName}"`);
   emit(`%%   previously declared as kind=${oldKind}, now seen as kind=${newKind}`);
-  emit(`%solve _violation_${violationCounter++} : tcb-violation.`);
   emitBlank();
   skips.push(`duplicate declaration: ${declName} (was ${oldKind}, now ${newKind})`);
 }
@@ -1933,9 +1940,8 @@ function emitStructuralDecl(
       const eis = endsInSortProof(type, []);
       if (eis === null) {
         emit(
-          `%% TRANSLATOR REJECT: inductive ${nameStr} — type signature is not a forall-chain ending in a sort literal`,
+          `%% SKIP: inductive ${nameStr} — type signature is not a forall-chain ending in a sort literal`,
         );
-        emit(`%solve _violation_${violationCounter++} : tcb-violation.`);
         emitBlank();
         skips.push(`inductive ${nameStr}: type signature is not Π…→Sort_`);
         return;
@@ -1969,9 +1975,8 @@ function emitStructuralDecl(
       const cs = buildCtorSpine(type, positivityInfo.selfName, positivityInfo.selfLevels, []);
       if (cs === null) {
         emit(
-          `%% TRANSLATOR REJECT: ctor ${nameStr} — type is not strictly positive in ${positivityInfo.selfName} (or uses unsupported expr form)`,
+          `%% SKIP: ctor ${nameStr} — type is not strictly positive in ${positivityInfo.selfName} (or uses unsupported expr form)`,
         );
-        emit(`%solve _violation_${violationCounter++} : tcb-violation.`);
         emitBlank();
         skips.push(`ctor ${nameStr}: strict positivity not witnessable`);
         return;
@@ -2044,9 +2049,14 @@ function emitAxiom(d: Decl & { kind: "axiom" }): void {
 // (c) catches 046_inductInIndex.
 // (d) catches 054_typeWithTooHighTypeField.
 //
-// All are translator-side rejections: on violation, emit `tcb-violation`
-// so Twelf aborts the file, mirroring how Lean rejects the declaration
-// before it ever reaches kernel typechecking.
+// All are translator-side rejections: on violation, emit `%% SKIP:` and
+// decline to emit the offending declaration.  The harness sees the SKIP
+// and marks the file as INCOMPLETE.  This is intentionally a 🤷, not a
+// ❌/💥: Twelf isn't checking these conditions.  The principled path
+// forward is to encode each check inside the LF signature so Twelf
+// rejects the witness directly; until then, these tests don't count
+// as success stories even when the OUTCOME happens to align with the
+// .ndjson's expected verdict.
 
 function countLeadingForalls(e: Expr): number {
   let n = 0;
@@ -2163,9 +2173,8 @@ function emitInductive(ir: IndRec, env: Env): void {
     if (t.numParams > nb) {
       const ns = nameToString(N(t.name));
       emit(
-        `%% TRANSLATOR REJECT: inductive ${ns} declares numParams=${t.numParams} but its type has only ${nb} leading Π binder${nb === 1 ? "" : "s"}`,
+        `%% SKIP: inductive ${ns} declares numParams=${t.numParams} but its type has only ${nb} leading Π binder${nb === 1 ? "" : "s"}`,
       );
-      emit(`%solve _violation_${violationCounter++} : tcb-violation.`);
       emitBlank();
       skips.push(`inductive ${ns}: numParams=${t.numParams} > #binders=${nb}`);
       return;
@@ -2190,8 +2199,7 @@ function emitInductive(ir: IndRec, env: Env): void {
     );
     if (why !== null) {
       const cs = nameToString(N(c.name));
-      emit(`%% TRANSLATOR REJECT: ctor ${cs} — ${why}`);
-      emit(`%solve _violation_${violationCounter++} : tcb-violation.`);
+      emit(`%% SKIP: ctor ${cs} — ${why}`);
       emitBlank();
       skips.push(`ctor ${cs}: ${why}`);
       return;
@@ -2221,9 +2229,8 @@ function emitInductive(ir: IndRec, env: Env): void {
     if (!indTypeSpec) {
       // Should not happen for well-formed lean4export output.
       emit(
-        `%% TRANSLATOR REJECT: ctor ${nameToString(N(c.name))} — induct field doesn't match any type in this inductive block`,
+        `%% SKIP: ctor ${nameToString(N(c.name))} — induct field doesn't match any type in this inductive block`,
       );
-      emit(`%solve _violation_${violationCounter++} : tcb-violation.`);
       emitBlank();
       skips.push(`ctor ${nameToString(N(c.name))}: induct pointer invalid`);
       continue;

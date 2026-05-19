@@ -15,41 +15,11 @@ id/decl : {u : lvl} declared "id" (lcons u lnil)
    (defn (elam (esort u) ([x] (elam x ([y] y)))))
    (dkind-ok/defn (id/type-wf u) (id/value-typed u)).
 
-%% inductive reduceCtorType
-reduceCtorType/type-wf :
-   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
-   = (defeq/sort-refl-at (lsucc lzero)).
-
-reduceCtorType/ends-in-sort :
-   ends-in-sort (esort (lsucc lzero))
-   = ends-in-sort/sort.
-
-reduceCtorType/decl : declared "reduceCtorType" lnil
-   (esort (lsucc lzero))
-   indt
-   (dkind-ok/indt reduceCtorType/type-wf reduceCtorType/ends-in-sort).
-
-%% inductive ctor reduceCtorType.mk
-reduceCtorType_mk/type-wf :
-   defeq (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil)) (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil)) (esort (lsucc lzero))
-   = (defeq/app (defeq/app (defeq/const (id/decl (lsucc (lsucc lzero)))) (defeq/sort-refl-at (lsucc lzero))) (defeq/const reduceCtorType/decl)).
-
-%% TRANSLATOR REJECT: ctor reduceCtorType.mk — type is not strictly positive in reduceCtorType (or uses unsupported expr form)
-%solve _violation_0 : tcb-violation.
-
-%% inductive recursor reduceCtorType.rec
-reduceCtorType_rec/type-wf :
-   defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
-   = (defeq/sort-refl-at lzero).
-
-reduceCtorType_rec/decl : declared "reduceCtorType.rec" lnil
-   (esort lzero)
-   irec
-   (dkind-ok/irec reduceCtorType_rec/type-wf).
+%% SKIP: ctor reduceCtorType.mk — result-type head is "id", expected "reduceCtorType"
 
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.
 
 %% Translator summary:
-%%   - ctor reduceCtorType.mk: strict positivity not witnessable
+%%   - ctor reduceCtorType.mk: result-type head is "id", expected "reduceCtorType"

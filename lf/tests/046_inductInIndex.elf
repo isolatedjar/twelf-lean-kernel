@@ -10,44 +10,11 @@ aProp/decl : declared "aProp" lnil
    ax
    (dkind-ok/ax aProp/type-wf).
 
-%% inductive inductInIndex
-inductInIndex/type-wf :
-   defeq (eforall (esort lzero) ([x] (esort lzero))) (eforall (esort lzero) ([x] (esort lzero))) (esort (limax (lsucc lzero) (lsucc lzero)))
-   = (defeq/forall (defeq/sort-refl-at lzero) ([x] [y] (defeq/sort-refl-at lzero))).
-
-inductInIndex/ends-in-sort :
-   ends-in-sort (eforall (esort lzero) ([x] (esort lzero)))
-   = (ends-in-sort/forall ([x] ends-in-sort/sort)).
-
-inductInIndex/decl : declared "inductInIndex" lnil
-   (eforall (esort lzero) ([x] (esort lzero)))
-   indt
-   (dkind-ok/indt inductInIndex/type-wf inductInIndex/ends-in-sort).
-
-%% inductive ctor inductInIndex.mk
-inductInIndex_mk/type-wf :
-   defeq (eapp (econst "inductInIndex" lnil) (eapp (econst "inductInIndex" lnil) (econst "aProp" lnil))) (eapp (econst "inductInIndex" lnil) (eapp (econst "inductInIndex" lnil) (econst "aProp" lnil))) (esort lzero)
-   = (defeq/app (defeq/const inductInIndex/decl) (defeq/app (defeq/const inductInIndex/decl) (defeq/const aProp/decl))).
-
-inductInIndex_mk/positivity :
-   ctor-positive "inductInIndex" lnil (eapp (econst "inductInIndex" lnil) (eapp (econst "inductInIndex" lnil) (econst "aProp" lnil)))
-   = (ctor-positive/intro ([S] (eapp S (eapp S (econst "aProp" lnil)))) (ctor-spine/result (applies-self/app applies-self/refl))).
-
-inductInIndex_mk/decl : declared "inductInIndex.mk" lnil
-   (eapp (econst "inductInIndex" lnil) (eapp (econst "inductInIndex" lnil) (econst "aProp" lnil)))
-   ctor
-   (dkind-ok/ctor inductInIndex_mk/type-wf inductInIndex_mk/positivity).
-
-%% inductive recursor inductInIndex.rec
-inductInIndex_rec/type-wf :
-   defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
-   = (defeq/sort-refl-at lzero).
-
-inductInIndex_rec/decl : declared "inductInIndex.rec" lnil
-   (esort lzero)
-   irec
-   (dkind-ok/irec inductInIndex_rec/type-wf).
+%% SKIP: ctor inductInIndex.mk — result-type index arg #1 mentions the inductive "inductInIndex" (not allowed in index position)
 
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.
+
+%% Translator summary:
+%%   - ctor inductInIndex.mk: result-type index arg #1 mentions the inductive "inductInIndex" (not allowed in index position)

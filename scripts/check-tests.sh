@@ -97,10 +97,12 @@ done
 # Cap so lines don't blow out on wide names.
 (( max_len > 50 )) && max_len=50
 
-n_correct=0
-n_incomplete=0
-n_fail_good=0
-n_pass_bad=0
+n_good_pass=0
+n_good_incomp=0
+n_good_fail=0
+n_bad_pass=0
+n_bad_incomp=0
+n_bad_fail=0
 n_no_header=0
 
 echo ""
@@ -138,19 +140,21 @@ for file in "${test_files[@]}"; do
         *)          got_emoji="?" ;;
     esac
 
-    # Verdict.
-    if [[ "$got" == "incomplete" ]]; then
-        verdict="⚠️ "
-        (( n_incomplete++ )) || true
-    elif [[ "$expected_raw" == "$got" ]]; then
-        verdict="✅"
-        (( n_correct++ )) || true
-    elif [[ "$expected_raw" == "reject" && "$got" == "accept" ]]; then
-        verdict="💥"
-        (( n_pass_bad++ )) || true
-    else
-        verdict="❌"
-        (( n_fail_good++ )) || true
+    # Verdict.  Track good/bad cases separately so that "should reject"
+    # tests in INCOMPLETE state are visibly distinct from genuine Twelf
+    # rejections.
+    if [[ "$expected_raw" == "accept" ]]; then
+        case "$got" in
+            accept)     verdict="✅"; (( n_good_pass++ ))  || true ;;
+            incomplete) verdict="⚠️ "; (( n_good_incomp++ )) || true ;;
+            *)          verdict="❌"; (( n_good_fail++ ))  || true ;;
+        esac
+    elif [[ "$expected_raw" == "reject" ]]; then
+        case "$got" in
+            reject)     verdict="✅"; (( n_bad_pass++ ))   || true ;;
+            incomplete) verdict="⚠️ "; (( n_bad_incomp++ )) || true ;;
+            *)          verdict="💥"; (( n_bad_fail++ ))   || true ;;
+        esac
     fi
 
     printf "  %-*s  expected %s  got %s  %s\n" \
@@ -161,19 +165,27 @@ done
 # Summary
 # ---------------------------------------------------------------------------
 
-total=$(( n_correct + n_incomplete + n_fail_good + n_pass_bad ))
+n_good=$(( n_good_pass + n_good_incomp + n_good_fail ))
+n_bad=$((  n_bad_pass  + n_bad_incomp  + n_bad_fail  ))
+total=$(( n_good + n_bad ))
 
 echo ""
 echo "  ────────────────────────────────────────"
 printf "  %d tests\n" "$total"
-[[ $n_correct    -gt 0 ]] && printf "  ✅  correct:          %d\n" "$n_correct"
-[[ $n_incomplete -gt 0 ]] && printf "  ⚠️   incomplete:        %d\n" "$n_incomplete"
-[[ $n_fail_good  -gt 0 ]] && printf "  ❌  failed good test:  %d\n" "$n_fail_good"
-[[ $n_pass_bad   -gt 0 ]] && printf "  💥  passed bad test:   %d\n" "$n_pass_bad"
-[[ $n_no_header  -gt 0 ]] && printf "  ?   no header:         %d\n" "$n_no_header"
+echo ""
+printf "  Good tests (expected accept) — %d total:\n" "$n_good"
+printf "    ✅  pass:        %d\n" "$n_good_pass"
+printf "    ⚠️   incomplete:  %d\n" "$n_good_incomp"
+printf "    ❌  failed:      %d\n" "$n_good_fail"
+echo ""
+printf "  Bad tests (expected reject) — %d total:\n" "$n_bad"
+printf "    ✅  reject:      %d\n" "$n_bad_pass"
+printf "    ⚠️   incomplete:  %d  (translator declined — not Twelf-verified)\n" "$n_bad_incomp"
+printf "    💥  accept:      %d\n" "$n_bad_fail"
+[[ $n_no_header -gt 0 ]] && printf "  ?   no header:         %d\n" "$n_no_header"
 echo ""
 
-# Exit non-zero if anything is wrong (💥 or ❌).
-if [[ $(( n_fail_good + n_pass_bad )) -gt 0 ]]; then
+# Exit non-zero if anything wrong (good ❌ or bad 💥).
+if [[ $(( n_good_fail + n_bad_fail )) -gt 0 ]]; then
     exit 1
 fi

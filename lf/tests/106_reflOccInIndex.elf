@@ -55,35 +55,11 @@ Nat_rec/decl : {u : lvl} declared "Nat.rec" (lcons u lnil)
    irec
    (dkind-ok/irec (Nat_rec/type-wf u)).
 
-%% inductive reflOccInIndex
-reflOccInIndex/type-wf :
-   defeq (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (esort (limax (lsucc (lsucc lzero)) (lsucc (lsucc lzero))))
-   = (defeq/forall (defeq/sort-refl-at (lsucc lzero)) ([x] [y] (defeq/sort-refl-at (lsucc lzero)))).
-
-reflOccInIndex/ends-in-sort :
-   ends-in-sort (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero))))
-   = (ends-in-sort/forall ([x] ends-in-sort/sort)).
-
-reflOccInIndex/decl : declared "reflOccInIndex" lnil
-   (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero))))
-   indt
-   (dkind-ok/indt reflOccInIndex/type-wf reflOccInIndex/ends-in-sort).
-
-%% SKIP: inductive ctor reflOccInIndex.mk — type synth failed: app: cannot bridge arg type to function domain
-
-%% inductive recursor reflOccInIndex.rec
-reflOccInIndex_rec/type-wf :
-   defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
-   = (defeq/sort-refl-at lzero).
-
-reflOccInIndex_rec/decl : declared "reflOccInIndex.rec" lnil
-   (esort lzero)
-   irec
-   (dkind-ok/irec reflOccInIndex_rec/type-wf).
+%% SKIP: ctor reflOccInIndex.mk — field #1 has type Sort 1 (which lives at Sort 2); inductive is at Sort 1, so the field's universe must be ≤ 0
 
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.
 
 %% Translator summary:
-%%   - inductive ctor reflOccInIndex.mk: type synth failed (app: cannot bridge arg type to function domain)
+%%   - ctor reflOccInIndex.mk: field #1 has type Sort 1 (which lives at Sort 2); inductive is at Sort 1, so the field's universe must be ≤ 0

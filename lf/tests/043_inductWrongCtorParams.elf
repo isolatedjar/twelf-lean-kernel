@@ -10,44 +10,11 @@ aProp/decl : declared "aProp" lnil
    ax
    (dkind-ok/ax aProp/type-wf).
 
-%% inductive inductWrongCtorParams
-inductWrongCtorParams/type-wf :
-   defeq (eforall (esort lzero) ([x] (esort (lsucc lzero)))) (eforall (esort lzero) ([x] (esort (lsucc lzero)))) (esort (limax (lsucc lzero) (lsucc (lsucc lzero))))
-   = (defeq/forall (defeq/sort-refl-at lzero) ([x] [y] (defeq/sort-refl-at (lsucc lzero)))).
-
-inductWrongCtorParams/ends-in-sort :
-   ends-in-sort (eforall (esort lzero) ([x] (esort (lsucc lzero))))
-   = (ends-in-sort/forall ([x] ends-in-sort/sort)).
-
-inductWrongCtorParams/decl : declared "inductWrongCtorParams" lnil
-   (eforall (esort lzero) ([x] (esort (lsucc lzero))))
-   indt
-   (dkind-ok/indt inductWrongCtorParams/type-wf inductWrongCtorParams/ends-in-sort).
-
-%% inductive ctor inductWrongCtorParams.mk
-inductWrongCtorParams_mk/type-wf :
-   defeq (eforall (esort (lsucc lzero)) ([x] (eapp (econst "inductWrongCtorParams" lnil) (econst "aProp" lnil)))) (eforall (esort (lsucc lzero)) ([x] (eapp (econst "inductWrongCtorParams" lnil) (econst "aProp" lnil)))) (esort (limax (lsucc (lsucc lzero)) (lsucc lzero)))
-   = (defeq/forall (defeq/sort-refl-at (lsucc lzero)) ([x] [y] (defeq/app (defeq/const inductWrongCtorParams/decl) (defeq/const aProp/decl)))).
-
-inductWrongCtorParams_mk/positivity :
-   ctor-positive "inductWrongCtorParams" lnil (eforall (esort (lsucc lzero)) ([x] (eapp (econst "inductWrongCtorParams" lnil) (econst "aProp" lnil))))
-   = (ctor-positive/intro ([S] (eforall (esort (lsucc lzero)) ([x] (eapp S (econst "aProp" lnil))))) (ctor-spine/arg (strict-pos/no-occur (esort (lsucc lzero))) ([_y0] (ctor-spine/result (applies-self/app applies-self/refl))))).
-
-inductWrongCtorParams_mk/decl : declared "inductWrongCtorParams.mk" lnil
-   (eforall (esort (lsucc lzero)) ([x] (eapp (econst "inductWrongCtorParams" lnil) (econst "aProp" lnil))))
-   ctor
-   (dkind-ok/ctor inductWrongCtorParams_mk/type-wf inductWrongCtorParams_mk/positivity).
-
-%% inductive recursor inductWrongCtorParams.rec
-inductWrongCtorParams_rec/type-wf :
-   defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
-   = (defeq/sort-refl-at lzero).
-
-inductWrongCtorParams_rec/decl : declared "inductWrongCtorParams.rec" lnil
-   (esort lzero)
-   irec
-   (dkind-ok/irec inductWrongCtorParams_rec/type-wf).
+%% SKIP: ctor inductWrongCtorParams.mk — result-type param arg #1 should be bvar(0) (the param binder), got const
 
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.
+
+%% Translator summary:
+%%   - ctor inductWrongCtorParams.mk: result-type param arg #1 should be bvar(0) (the param binder), got const
