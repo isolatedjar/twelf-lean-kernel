@@ -15,11 +15,15 @@ inductBadNonSort2/type-wf :
    defeq (econst "aType" lnil) (econst "aType" lnil) (esort (lsucc lzero))
    = (defeq/const aType/decl).
 
-%% SKIP: inductive inductBadNonSort2 — type signature is not a forall-chain ending in a sort literal
+%% Translator can't construct ends-in-sort for "inductBadNonSort2";
+%% deferring to Twelf — %solve ABORTs if no proof exists.
+%solve inductBadNonSort2/ends-in-sort : ends-in-sort (econst "aType" lnil).
+
+inductBadNonSort2/decl : declared "inductBadNonSort2" lnil
+   (econst "aType" lnil)
+   indt
+   (dkind-ok/indt inductBadNonSort2/type-wf inductBadNonSort2/ends-in-sort).
 
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.
-
-%% Translator summary:
-%%   - inductive inductBadNonSort2: type signature is not Π…→Sort_

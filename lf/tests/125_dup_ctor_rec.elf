@@ -28,8 +28,15 @@ dup_ctor_rec_rec/decl : declared "dup_ctor_rec.rec" lnil
    ctor
    (dkind-ok/ctor dup_ctor_rec_rec/type-wf dup_ctor_rec_rec/positivity).
 
-%% SKIP: duplicate declaration of "dup_ctor_rec.rec"
-%%   previously declared as kind=ctor, now seen as kind=inductive recursor
+%% inductive recursor dup_ctor_rec.rec
+dup_ctor_rec_rec__dup1/type-wf :
+   {u : lvl} defeq (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z))))))) (esort (limax (limax (lsucc lzero) (lsucc u)) (limax u (limax (lsucc lzero) u))))
+   = [u] (defeq/forall (defeq/forall (defeq/const dup_ctor_rec/decl) ([x] [y] (defeq/sort-refl-at u))) ([x] [y] (defeq/forall (defeq/app y (defeq/const dup_ctor_rec_rec/decl)) ([z] [w] (defeq/forall (defeq/const dup_ctor_rec/decl) ([x1] [y1] (defeq/app y y1))))))).
+
+dup_ctor_rec_rec__dup1/decl : {u : lvl} declared "dup_ctor_rec.rec" (lcons u lnil)
+   (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z)))))))
+   irec
+   (dkind-ok/irec (dup_ctor_rec_rec__dup1/type-wf u)).
 
 %% stage-1 enum iota helpers: dup_ctor_rec
 dup_ctor_rec/as-enum : {u : lvl}
@@ -48,6 +55,3 @@ dup_ctor_rec_rec/iota : {u : lvl}
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.
-
-%% Translator summary:
-%%   - duplicate declaration: dup_ctor_rec.rec (was ctor, now inductive recursor)

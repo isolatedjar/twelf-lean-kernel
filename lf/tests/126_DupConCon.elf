@@ -28,8 +28,19 @@ dup_ind_con_con_mk/decl : declared "dup_ind_con_con.mk" lnil
    ctor
    (dkind-ok/ctor dup_ind_con_con_mk/type-wf dup_ind_con_con_mk/positivity).
 
-%% SKIP: duplicate declaration of "dup_ind_con_con.mk"
-%%   previously declared as kind=ctor, now seen as kind=inductive ctor
+%% inductive ctor dup_ind_con_con.mk
+dup_ind_con_con_mk__dup1/type-wf :
+   defeq (econst "DupConCon" lnil) (econst "DupConCon" lnil) (esort (lsucc lzero))
+   = (defeq/const DupConCon/decl).
+
+dup_ind_con_con_mk__dup1/positivity :
+   ctor-positive "DupConCon" lnil (econst "DupConCon" lnil)
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
+
+dup_ind_con_con_mk__dup1/decl : declared "dup_ind_con_con.mk" lnil
+   (econst "DupConCon" lnil)
+   ctor
+   (dkind-ok/ctor dup_ind_con_con_mk__dup1/type-wf dup_ind_con_con_mk__dup1/positivity).
 
 %% inductive recursor DupConCon.rec
 DupConCon_rec/type-wf :
@@ -67,6 +78,3 @@ dup_ind_con_con_mk/iota : {u : lvl}
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.
-
-%% Translator summary:
-%%   - duplicate declaration: dup_ind_con_con.mk (was ctor, now inductive ctor)

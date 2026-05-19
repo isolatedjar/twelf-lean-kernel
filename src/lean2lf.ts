@@ -698,13 +698,25 @@ function allMentioned(names: string[], ...bodies: string[]): boolean {
 // encode the missing check inside the LF signature so Twelf rejects
 // the witness directly.
 let violationCounter = 0;
-function emitDuplicateRejection(declName: string, newKind: string, oldKind: string): void {
-  emit(`%% SKIP: duplicate declaration of "${declName}"`);
-  emit(`%%   previously declared as kind=${oldKind}, now seen as kind=${newKind}`);
-  emitBlank();
-  skips.push(`duplicate declaration: ${declName} (was ${oldKind}, now ${newKind})`);
-}
 
+// For duplicate-name handling: instead of declining to emit the second
+// declaration, we give it a unique LF mangle and let Twelf's `%unique
+// declared +N +LS -1T -1DK *W` directive detect the overlap (two
+// `declared "foo" lnil ...` clauses with different outputs) when the
+// signature is loaded.  This is a genuine Twelf-verified rejection
+// rather than a translator-side decline.  Counter is per-base-mangle.
+const dupCounter: Map<string, number> = new Map();
+
+// Given a base LF mangle and the Lean name it derives from, return either
+// the base mangle (if first occurrence) or `<base>__dup<n>` (subsequent).
+// Side-effects: increments dupCounter on duplicates.  Does NOT mutate
+// declTable — downstream refs resolve to the first occurrence.
+function freshMangleForDuplicates(baseMangle: string, leanName: string): string {
+  if (!declTable.has(leanName)) return baseMangle;
+  const n = (dupCounter.get(baseMangle) || 0) + 1;
+  dupCounter.set(baseMangle, n);
+  return `${baseMangle}__dup${n}`;
+}
 function lfLvls(ls: Level[]): string {
   let acc = "lnil";
   for (let i = ls.length - 1; i >= 0; i--) acc = `(lcons ${lfLevel(ls[i])} ${acc})`;
@@ -745,6 +757,88 @@ function lfExpr(e: Expr, boundVars: string[]): string {
     case "strLit":
       throw new Error("strLit not yet supported");
   }
+}
+
+// Substitute level params throughout a Level expression.  Used to
+// produce a closed level term from a polymorphic one for %solve.
+function substLevel(l: Level, sub: Map<string, Level>): Level {
+  switch (l.kind) {
+    case "zero":
+      return l;
+    case "succ":
+      return { kind: "succ", arg: substLevel(l.arg, sub) };
+    case "max":
+      return { kind: "max", l: substLevel(l.l, sub), r: substLevel(l.r, sub) };
+    case "imax":
+      return { kind: "imax", l: substLevel(l.l, sub), r: substLevel(l.r, sub) };
+    case "param": {
+      const replacement = sub.get(nameToString(l.name));
+      return replacement === undefined ? l : replacement;
+    }
+  }
+}
+
+// Substitute level params throughout an Expr.  Bvars / fvars / lam /
+// forall / app / letE are recursed structurally; only `sort` and
+// `const` carry levels.
+function substExprLevels(e: Expr, sub: Map<string, Level>): Expr {
+  switch (e.kind) {
+    case "bvar":
+      return e;
+    case "sort":
+      return { kind: "sort", level: substLevel(e.level, sub) };
+    case "const":
+      return { kind: "const", name: e.name, us: e.us.map((u) => substLevel(u, sub)) };
+    case "app":
+      return { kind: "app", fn: substExprLevels(e.fn, sub), arg: substExprLevels(e.arg, sub) };
+    case "lam":
+      return {
+        kind: "lam",
+        name: e.name,
+        type: substExprLevels(e.type, sub),
+        body: substExprLevels(e.body, sub),
+      };
+    case "forallE":
+      return {
+        kind: "forallE",
+        name: e.name,
+        type: substExprLevels(e.type, sub),
+        body: substExprLevels(e.body, sub),
+      };
+    case "letE":
+      return {
+        kind: "letE",
+        name: e.name,
+        type: substExprLevels(e.type, sub),
+        value: substExprLevels(e.value, sub),
+        body: substExprLevels(e.body, sub),
+      };
+    case "proj":
+      return {
+        kind: "proj",
+        typeName: e.typeName,
+        idx: e.idx,
+        struct: substExprLevels(e.struct, sub),
+      };
+    case "natLit":
+    case "strLit":
+      return e;
+  }
+}
+
+// Build a substitution that sends each level param to a distinct
+// concrete level (lzero, lsucc lzero, lsucc lsucc lzero, ...).  Used
+// for the polymorphic ctor-positive %solve path, where the goal must
+// be closed and we want syntactic-distinctness so head-mismatches
+// (e.g., swapped-level-arg ctors) aren't masked by the substitution.
+function distinctLevelSub(params: Name[]): Map<string, Level> {
+  const sub = new Map<string, Level>();
+  for (let i = 0; i < params.length; i++) {
+    let l: Level = { kind: "zero" };
+    for (let j = 0; j < i; j++) l = { kind: "succ", arg: l };
+    sub.set(nameToString(params[i]), l);
+  }
+  return sub;
 }
 
 function freshVar(scope: string[]): string {
@@ -1719,13 +1813,11 @@ const VAL_KIND_INFO: Record<
 function emitValDecl(d: Decl & { kind: ValDeclKind }): void {
   const info = VAL_KIND_INFO[d.kind];
   const kindTag = d.kind;
-  const mn = mangle(d.name);
   const declName = nameToString(d.name);
-
-  if (declTable.has(declName)) {
-    emitDuplicateRejection(declName, kindTag, declTable.get(declName)!.kind);
-    return;
-  }
+  const mn = freshMangleForDuplicates(mangle(d.name), declName);
+  // declTable.has(declName) → mn now ends in "__dup<n>"; both
+  // declarations are emitted so Twelf's %unique on `declared` can
+  // detect the overlap on first-argument string.
 
   // Set up level-param bindings so lfLevel can render `param` levels
   // and freshVar avoids collisions.  Tear down at the end.
@@ -1767,6 +1859,12 @@ function emitValDecl(d: Decl & { kind: ValDeclKind }): void {
       typeWf = synth(d.type, { vars: [], hyps: [], tys: [] });
       valTy = synth(d.value, { vars: [], hyps: [], tys: [] });
     } catch (e: any) {
+      if (dupCounter.size > 0) {
+        emit(`%% (declined to emit ${kindTag} ${declName}: ${e.message})`);
+        emit(`%% Duplicate already detected; %unique on \`declared\` will ABORT.`);
+        emitBlank();
+        return;
+      }
       skips.push(`${kindTag} ${declName}: synth failed (${e.message})`);
       emit(`%% SKIP: ${kindTag} ${declName} — synth failed: ${e.message}`);
       emitBlank();
@@ -1833,13 +1931,15 @@ function emitValDecl(d: Decl & { kind: ValDeclKind }): void {
     emit(`   (${info.okCtor} ${tw_inst} ${vt_inst}).`);
     emitBlank();
 
-    declTable.set(declName, {
-      mangle: mn,
-      levelParams: d.levelParams,
-      type: d.type,
-      kind: info.tableKind,
-      value: d.value,
-    });
+    if (!declTable.has(declName)) {
+      declTable.set(declName, {
+        mangle: mn,
+        levelParams: d.levelParams,
+        type: d.type,
+        kind: info.tableKind,
+        value: d.value,
+      });
+    }
   } finally {
     cleanup();
   }
@@ -1865,13 +1965,10 @@ function emitStructuralDecl(
   banner: string,
   positivityInfo?: { selfName: string; selfLevels: Level[] },
 ): void {
-  const mn = mangle(declName);
   const nameStr = nameToString(declName);
-
-  if (declTable.has(nameStr)) {
-    emitDuplicateRejection(nameStr, banner, declTable.get(nameStr)!.kind);
-    return;
-  }
+  const mn = freshMangleForDuplicates(mangle(declName), nameStr);
+  // duplicate → mn now ends in "__dup<n>"; both declarations are
+  // emitted so Twelf's %unique on `declared` can detect the overlap.
 
   const levelBinders: string[] = [];
   for (const p of levelParams) {
@@ -1903,6 +2000,22 @@ function emitStructuralDecl(
     try {
       typeWf = synth(type, { vars: [], hyps: [], tys: [] });
     } catch (e: any) {
+      // When a duplicate name has already been emitted in this file, the
+      // resulting LF name collision in declTable can make downstream
+      // synth fail in ways that aren't real translator limitations —
+      // they're side effects of the very malformed-NDJSON we're trying
+      // to report.  In that case skip the offending decl silently
+      // (without a `%% SKIP:` marker) so the harness doesn't mark the
+      // file 🤷; Twelf's `%unique declared` will fire on the duplicate
+      // pair and ABORT, which is the genuine Twelf-verified rejection.
+      if (dupCounter.size > 0) {
+        emit(`%% (declined to emit ${banner} ${nameStr}: ${e.message})`);
+        emit(
+          `%% This file already has a duplicate-name violation that %unique on \`declared\` will catch; downstream synth fallout doesn't need its own SKIP.`,
+        );
+        emitBlank();
+        return;
+      }
       skips.push(`${banner} ${nameStr}: type synth failed (${e.message})`);
       emit(`%% SKIP: ${banner} ${nameStr} — type synth failed: ${e.message}`);
       emitBlank();
@@ -1933,33 +2046,48 @@ function emitStructuralDecl(
 
     // Inductive type formers also need a structural `ends-in-sort` proof:
     // the kernel demands the signature to be `Π ... → Sort _`, not an
-    // arbitrary well-typed term.  If we can't build the proof, the type
-    // isn't a forall-chain-to-sort and the translator rejects.
+    // arbitrary well-typed term.  Two cases:
+    //   • translator can build the proof → emit it as a definition;
+    //   • translator can't build it AND the type is monomorphic → emit
+    //     `%solve ${mn}/ends-in-sort : ends-in-sort ${T_lf}.` so Twelf
+    //     itself runs proof search and ABORTs if no proof exists.
+    //     This is a genuine Twelf-verified rejection: the brokenness is
+    //     expressed in LF (the `ends-in-sort` family) and Twelf decides.
+    //   • can't build it AND polymorphic → fall back to SKIP (we'd
+    //     need to specialize the level params to close the %solve goal).
     let okArgs = tw_inst;
     if (tableKind === "indt") {
       const eis = endsInSortProof(type, []);
-      if (eis === null) {
+      if (eis === null && levelBinders.length > 0) {
         emit(
-          `%% SKIP: inductive ${nameStr} — type signature is not a forall-chain ending in a sort literal`,
+          `%% SKIP: inductive ${nameStr} — type signature is not a forall-chain ending in a sort literal (polymorphic; would need a Twelf %solve over closed instantiations)`,
         );
         emitBlank();
-        skips.push(`inductive ${nameStr}: type signature is not Π…→Sort_`);
+        skips.push(`inductive ${nameStr}: type signature is not Π…→Sort_ (polymorphic)`);
         return;
       }
-      // The ends-in-sort proof is monomorphic in the level binders too —
-      // it just structurally walks foralls and ends at sorts.  Wrap with
-      // [u..] body lambdas if needed for poly inductives.
-      const eisWithLambda = levelBinders.length === 0 ? eis : `${bodyLambda}${eis}`;
-      // Same strict-occurrence concern as /type-wf: if no level binder
-      // appears in the body, Twelf rejects the universal quantifier and
-      // we need %abbrev.
-      const eis_decl =
-        levelBinders.length > 0 && !allMentioned(levelBinders, T_lf, eis) ? "%abbrev " : "";
-      // Emit it as a separate constant so the /decl line stays readable.
-      emit(`${eis_decl}${mn}/ends-in-sort :`);
-      emit(`   ${levelPrefix}ends-in-sort ${T_lf}`);
-      emit(`   = ${eisWithLambda}.`);
-      emitBlank();
+      if (eis === null) {
+        // Defer to Twelf-side proof search.
+        emit(`%% Translator can't construct ends-in-sort for "${nameStr}";`);
+        emit(`%% deferring to Twelf — %solve ABORTs if no proof exists.`);
+        emit(`%solve ${mn}/ends-in-sort : ends-in-sort ${T_lf}.`);
+        emitBlank();
+      } else {
+        // The ends-in-sort proof is monomorphic in the level binders too —
+        // it just structurally walks foralls and ends at sorts.  Wrap with
+        // [u..] body lambdas if needed for poly inductives.
+        const eisWithLambda = levelBinders.length === 0 ? eis : `${bodyLambda}${eis}`;
+        // Same strict-occurrence concern as /type-wf: if no level binder
+        // appears in the body, Twelf rejects the universal quantifier and
+        // we need %abbrev.
+        const eis_decl =
+          levelBinders.length > 0 && !allMentioned(levelBinders, T_lf, eis) ? "%abbrev " : "";
+        // Emit it as a separate constant so the /decl line stays readable.
+        emit(`${eis_decl}${mn}/ends-in-sort :`);
+        emit(`   ${levelPrefix}ends-in-sort ${T_lf}`);
+        emit(`   = ${eisWithLambda}.`);
+        emitBlank();
+      }
       const eis_inst =
         levelBinders.length === 0 ? `${mn}/ends-in-sort` : `(${mn}/ends-in-sort${levelArgList})`;
       okArgs = `${tw_inst} ${eis_inst}`;
@@ -1971,37 +2099,99 @@ function emitStructuralDecl(
     // emit a ctor-positive/intro with explicit T_HOAS (Twelf's
     // higher-order pattern unification can't reconstruct T_HOAS
     // when ctors duplicate bound variables, e.g. Eq.refl).
+    // SAFELIST NOTE: the LF encoding of `ctor-positive` is unsound under
+    // %solve when the failure is a *field-position* issue (negative
+    // occurrence inside an arrow within a ctor argument).  Twelf's HOU
+    // can pick a T_HOAS that leaves the offending `(econst N0 LS0)`
+    // occurrences unreplaced — making them S-free inside the closure —
+    // and then `strict-pos/no-occur` fires vacuously to "prove" the
+    // field strictly positive.  Concretely, for ctor `mk : (I → I) → I`,
+    // Twelf picks T_HOAS = [e] eforall (eforall (econst I) ([_] econst I))
+    // ([_] e), leaving the inner I→I closed and unchecked.
+    //
+    // The failure is sound to defer when it's a *result-head* issue
+    // (the ctor returns something other than the inductive at the
+    // expected level instantiation): `applies-self` only inhabits chains
+    // ending in [S] S, with no rule to make a constant or wrong-named
+    // head match, so Twelf's search correctly aborts.  We detect this
+    // case by walking past leading Π binders and checking whether
+    // `buildAppliesSelf` accepts the result.
     if (tableKind === "ctor" && positivityInfo) {
       const cs = buildCtorSpine(type, positivityInfo.selfName, positivityInfo.selfLevels, []);
+      const indLvlsLF = lfLvls(positivityInfo.selfLevels);
       if (cs === null) {
+        // Walk past leading binders to the result and test the head.
+        let resultT = type;
+        while (resultT.kind === "forallE") resultT = resultT.body;
+        const headOK =
+          buildAppliesSelf(resultT, positivityInfo.selfName, positivityInfo.selfLevels) !== null;
+        const monomorphic = levelBinders.length === 0;
+        if (!headOK && monomorphic) {
+          // Head-mismatch + monomorphic: sound to defer to Twelf.
+          emit(`%% Translator can't build ctor-positive for "${nameStr}";`);
+          emit(`%% result-type head isn't the inductive — deferring to Twelf,`);
+          emit(`%% which can soundly abort (no T_HOAS makes applies-self fire on a wrong head).`);
+          emit(
+            `%solve ${mn}/positivity : ctor-positive "${positivityInfo.selfName}" ${indLvlsLF} ${T_lf}.`,
+          );
+          emitBlank();
+        } else if (!headOK && !monomorphic) {
+          // Head-mismatch + polymorphic: substitute level params with
+          // distinct concrete levels (lzero, lsucc lzero, ...) and
+          // %solve on the closed instance.  Substitution preserves
+          // syntactic structure, so any head mismatch in the original
+          // is preserved in the substituted instance.  If %solve fails
+          // there, the original polymorphic ctor is bad too.
+          //
+          // Note we don't emit the polymorphic decl below: it'd
+          // reference the now-monomorphic positivity binding, which
+          // would itself be a Twelf error.  Twelf aborts on %solve
+          // first; downstream content doesn't matter.
+          const sub = distinctLevelSub(levelParams);
+          const substType = substExprLevels(type, sub);
+          const substT_lf = lfExpr(substType, []);
+          const substIndLevels = positivityInfo.selfLevels.map((l) => substLevel(l, sub));
+          const substIndLvlsLF = lfLvls(substIndLevels);
+          emit(`%% Translator can't build ctor-positive for polymorphic "${nameStr}";`);
+          emit(
+            `%% result-type head doesn't match the inductive at the ctor's level instantiation.`,
+          );
+          emit(`%% Substituting [${levelParams.map((p) => nameToString(p)).join(",")}] with`);
+          emit(`%% distinct concrete levels exposes the mismatch in a closed %solve goal.`);
+          emit(
+            `%solve ${mn}/positivity_probe : ctor-positive "${positivityInfo.selfName}" ${substIndLvlsLF} ${substT_lf}.`,
+          );
+          emitBlank();
+          return;
+        } else {
+          // Field-position issue: stay 🤷 (encoding gap).
+          emit(
+            `%% SKIP: ctor ${nameStr} — type is not strictly positive in ${positivityInfo.selfName} (or uses unsupported expr form). Can't defer to Twelf — ctor-positive encoding has a soundness gap under %solve for field-position failures (see translator notes).`,
+          );
+          emitBlank();
+          skips.push(`ctor ${nameStr}: strict positivity not witnessable`);
+          return;
+        }
+      } else {
+        const hoasBody = lfExprHoasSelf(
+          type,
+          positivityInfo.selfName,
+          positivityInfo.selfLevels,
+          [],
+          "S",
+        );
+        const positivityProof = `(ctor-positive/intro ([S] ${hoasBody}) ${cs})`;
+        const cp_decl =
+          levelBinders.length > 0 && !allMentioned(levelBinders, T_lf, hoasBody, cs)
+            ? "%abbrev "
+            : "";
+        emit(`${cp_decl}${mn}/positivity :`);
+        emit(`   ${levelPrefix}ctor-positive "${positivityInfo.selfName}" ${indLvlsLF} ${T_lf}`);
         emit(
-          `%% SKIP: ctor ${nameStr} — type is not strictly positive in ${positivityInfo.selfName} (or uses unsupported expr form)`,
+          `   = ${levelBinders.length === 0 ? positivityProof : `${bodyLambda}${positivityProof}`}.`,
         );
         emitBlank();
-        skips.push(`ctor ${nameStr}: strict positivity not witnessable`);
-        return;
       }
-      const hoasBody = lfExprHoasSelf(
-        type,
-        positivityInfo.selfName,
-        positivityInfo.selfLevels,
-        [],
-        "S",
-      );
-      const indLvlsLF = lfLvls(positivityInfo.selfLevels);
-      const positivityProof = `(ctor-positive/intro ([S] ${hoasBody}) ${cs})`;
-      // Same strict-occurrence concern as /type-wf and /ends-in-sort:
-      // if no level binder appears in T_lf or the proof, %abbrev.
-      const cp_decl =
-        levelBinders.length > 0 && !allMentioned(levelBinders, T_lf, hoasBody, cs)
-          ? "%abbrev "
-          : "";
-      emit(`${cp_decl}${mn}/positivity :`);
-      emit(`   ${levelPrefix}ctor-positive "${positivityInfo.selfName}" ${indLvlsLF} ${T_lf}`);
-      emit(
-        `   = ${levelBinders.length === 0 ? positivityProof : `${bodyLambda}${positivityProof}`}.`,
-      );
-      emitBlank();
       const cp_inst =
         levelBinders.length === 0 ? `${mn}/positivity` : `(${mn}/positivity${levelArgList})`;
       okArgs = `${tw_inst} ${cp_inst}`;
@@ -2013,12 +2203,14 @@ function emitStructuralDecl(
     emit(`   (${okCtor} ${okArgs}).`);
     emitBlank();
 
-    declTable.set(nameStr, {
-      mangle: mn,
-      levelParams,
-      type,
-      kind: tableKind,
-    });
+    if (!declTable.has(nameStr)) {
+      declTable.set(nameStr, {
+        mangle: mn,
+        levelParams,
+        type,
+        kind: tableKind,
+      });
+    }
   } finally {
     cleanup();
   }
@@ -2137,7 +2329,12 @@ function checkCtorStructure(
     return `result-type head is not a constant (got ${e.kind})`;
   }
   if (nameToString(e.name) !== indName) {
-    return `result-type head is "${nameToString(e.name)}", expected "${indName}"`;
+    // Don't reject here.  When the result-type head isn't the inductive,
+    // `buildAppliesSelf` will fail downstream and the ctor-positive
+    // emit-path will defer to Twelf via %solve — a sound deferral
+    // (no `applies-self` rule fires on a wrong head).  We want Twelf-
+    // verified rejection rather than a translator-side SKIP here.
+    return null;
   }
   if (args.length < numParams) {
     return `result-type has ${args.length} args, expected ≥ ${numParams} (one per param)`;

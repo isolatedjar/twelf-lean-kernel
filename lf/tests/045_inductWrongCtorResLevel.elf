@@ -19,7 +19,11 @@ inductWrongCtorResLevel_mk/type-wf :
    {u1 : lvl} {u2 : lvl} defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResLevel" (lcons u2 (lcons u1 lnil))) x) y))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResLevel" (lcons u2 (lcons u1 lnil))) x) y))))) (esort (limax (lsucc lzero) (limax (lsucc lzero) (lsucc lzero))))
    = [u1] [u2] (defeq/forall (defeq/sort-refl-at lzero) ([x] [y] (defeq/forall (defeq/sort-refl-at lzero) ([z] [w] (defeq/app (defeq/app (defeq/const (inductWrongCtorResLevel/decl u2 u1)) y) w))))).
 
-%% SKIP: ctor inductWrongCtorResLevel.mk — type is not strictly positive in inductWrongCtorResLevel (or uses unsupported expr form)
+%% Translator can't build ctor-positive for polymorphic "inductWrongCtorResLevel.mk";
+%% result-type head doesn't match the inductive at the ctor's level instantiation.
+%% Substituting [u1,u2] with
+%% distinct concrete levels exposes the mismatch in a closed %solve goal.
+%solve inductWrongCtorResLevel_mk/positivity_probe : ctor-positive "inductWrongCtorResLevel" (lcons lzero (lcons (lsucc lzero) lnil)) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResLevel" (lcons (lsucc lzero) (lcons lzero lnil))) x) y))))).
 
 %% inductive recursor inductWrongCtorResLevel.rec
 inductWrongCtorResLevel_rec/type-wf :
@@ -34,6 +38,3 @@ inductWrongCtorResLevel_rec/decl : declared "inductWrongCtorResLevel.rec" lnil
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.
-
-%% Translator summary:
-%%   - ctor inductWrongCtorResLevel.mk: strict positivity not witnessable

@@ -14,8 +14,19 @@ dup_ind_def/decl : declared "dup_ind_def" lnil
    (defn (esort lzero))
    (dkind-ok/defn dup_ind_def/type-wf dup_ind_def/value-typed).
 
-%% SKIP: duplicate declaration of "dup_ind_def"
-%%   previously declared as kind=defn, now seen as kind=inductive
+%% inductive dup_ind_def
+dup_ind_def__dup1/type-wf :
+   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
+   = (defeq/sort-refl-at (lsucc lzero)).
+
+dup_ind_def__dup1/ends-in-sort :
+   ends-in-sort (esort (lsucc lzero))
+   = ends-in-sort/sort.
+
+dup_ind_def__dup1/decl : declared "dup_ind_def" lnil
+   (esort (lsucc lzero))
+   indt
+   (dkind-ok/indt dup_ind_def__dup1/type-wf dup_ind_def__dup1/ends-in-sort).
 
 %% inductive ctor dup_ind_def.mk
 dup_ind_def_mk/type-wf :
@@ -58,6 +69,3 @@ dup_ind_def_mk/iota : {u : lvl}
 %mode declared +N +LS -T -DK -W.
 %worlds () (declared _ _ _ _ _).
 %unique declared +N +LS -1T -1DK *W.
-
-%% Translator summary:
-%%   - duplicate declaration: dup_ind_def (was defn, now inductive)
