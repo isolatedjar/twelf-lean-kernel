@@ -88,7 +88,12 @@ export const ExprSchema: z.ZodType<Expr> = z.lazy(() =>
       value: ExprSchema,
       body: ExprSchema,
     }),
-    z.object({ kind: z.literal("proj"), typeName: NameSchema, idx: z.number(), struct: ExprSchema }),
+    z.object({
+      kind: z.literal("proj"),
+      typeName: NameSchema,
+      idx: z.number(),
+      struct: ExprSchema,
+    }),
     z.object({ kind: z.literal("natLit"), value: z.string() }),
     z.object({ kind: z.literal("strLit"), value: z.string() }),
   ]),
@@ -150,10 +155,33 @@ export type Inductive = z.infer<typeof InductiveSchema>;
 // --- Top-level declarations ---------------------------------------------
 
 export const DeclSchema = z.discriminatedUnion("kind", [
-  z.object({ kind: z.literal("def"), name: NameSchema, levelParams: z.array(NameSchema), type: ExprSchema, value: ExprSchema }),
-  z.object({ kind: z.literal("thm"), name: NameSchema, levelParams: z.array(NameSchema), type: ExprSchema, value: ExprSchema }),
-  z.object({ kind: z.literal("axiom"), name: NameSchema, levelParams: z.array(NameSchema), type: ExprSchema }),
-  z.object({ kind: z.literal("opaque"), name: NameSchema, levelParams: z.array(NameSchema), type: ExprSchema, value: ExprSchema }),
+  z.object({
+    kind: z.literal("def"),
+    name: NameSchema,
+    levelParams: z.array(NameSchema),
+    type: ExprSchema,
+    value: ExprSchema,
+  }),
+  z.object({
+    kind: z.literal("thm"),
+    name: NameSchema,
+    levelParams: z.array(NameSchema),
+    type: ExprSchema,
+    value: ExprSchema,
+  }),
+  z.object({
+    kind: z.literal("axiom"),
+    name: NameSchema,
+    levelParams: z.array(NameSchema),
+    type: ExprSchema,
+  }),
+  z.object({
+    kind: z.literal("opaque"),
+    name: NameSchema,
+    levelParams: z.array(NameSchema),
+    type: ExprSchema,
+    value: ExprSchema,
+  }),
   z.object({ kind: z.literal("quot") }),
   InductiveSchema,
 ]);
@@ -218,22 +246,24 @@ export function nameFromJSON(j: NameJSON): Name {
 // a Name (recursive struct with kind="anon"/"str"/"num").  Used by
 // parse.ts to compact Names before serialization, and by lean2lf.ts
 // to re-inflate compacted Names after JSON.parse.
-export function transformNamesToJSON(v: any): any {
+export function transformNamesToJSON(v: unknown): unknown {
   if (v === null || typeof v !== "object") return v;
   if (Array.isArray(v)) return v.map(transformNamesToJSON);
-  if (v.kind === "anon" || v.kind === "str" || v.kind === "num") {
-    return nameToJSON(v as Name);
+  const obj = v as Record<string, unknown>;
+  if (obj["kind"] === "anon" || obj["kind"] === "str" || obj["kind"] === "num") {
+    return nameToJSON(obj as unknown as Name);
   }
-  const out: any = {};
-  for (const k in v) out[k] = transformNamesToJSON(v[k]);
+  const out: Record<string, unknown> = {};
+  for (const k in obj) out[k] = transformNamesToJSON(obj[k]);
   return out;
 }
 
-export function transformNamesFromJSON(v: any): any {
+export function transformNamesFromJSON(v: unknown): unknown {
   if (v === null || typeof v !== "object") return v;
   if (Array.isArray(v)) return v.map(transformNamesFromJSON);
-  if ("_n" in v && Array.isArray(v._n)) return nameFromJSON(v as NameJSON);
-  const out: any = {};
-  for (const k in v) out[k] = transformNamesFromJSON(v[k]);
+  const obj = v as Record<string, unknown>;
+  if ("_n" in obj && Array.isArray(obj["_n"])) return nameFromJSON(obj as unknown as NameJSON);
+  const out: Record<string, unknown> = {};
+  for (const k in obj) out[k] = transformNamesFromJSON(obj[k]);
   return out;
 }

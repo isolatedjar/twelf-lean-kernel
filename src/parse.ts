@@ -11,17 +11,17 @@
 // can be replaced with a z.discriminatedUnion + z.parse pair.
 
 import * as readline from "node:readline";
+
 import type {
-  Name,
-  Level,
-  Expr,
   BinderInfo,
-  IndType,
+  Decl,
+  Expr,
   IndCtor,
   IndRecursor,
-  IndRecRule,
+  IndType,
   Inductive,
-  Decl,
+  Level,
+  Name,
   ParsedEnv,
 } from "./shared.ts";
 import { transformNamesToJSON } from "./shared.ts";
@@ -75,6 +75,7 @@ type IndCtorSpec = {
   numParams: number;
   numFields: number;
   induct: number;
+  cidx?: number;
 };
 type IndRecRuleSpec = { ctor: number; nfields: number; rhs: number };
 type IndRecSpec = {
@@ -131,94 +132,131 @@ function asArrayOfInts(x: unknown): number[] | null {
   return out;
 }
 
+function sub(obj: Record<string, unknown>, key: string): Record<string, unknown> | null {
+  const v = obj[key];
+  return typeof v === "object" && v !== null && !Array.isArray(v)
+    ? (v as Record<string, unknown>)
+    : null;
+}
+
 function parseLine(line: string): Item | null {
-  let obj: any;
+  let raw: unknown;
   try {
-    obj = JSON.parse(line);
+    raw = JSON.parse(line);
   } catch {
     return null;
   }
-  if (typeof obj !== "object" || obj === null) return null;
+  if (typeof raw !== "object" || raw === null) return null;
+  const obj = raw as Record<string, unknown>;
 
   // Names: { in: idx, str: { pre, str } } or { in: idx, num: { pre, i } }
   if ("in" in obj && "str" in obj) {
-    return { tag: "str", idx: asInt(obj.in)!, pre: asInt(obj.str.pre)!, str: asStr(obj.str.str)! };
+    const str = sub(obj, "str");
+    if (!str) return null;
+    return { tag: "str", idx: asInt(obj["in"])!, pre: asInt(str["pre"])!, str: asStr(str["str"])! };
   }
   if ("in" in obj && "num" in obj) {
-    return { tag: "num", idx: asInt(obj.in)!, pre: asInt(obj.num.pre)!, i: asInt(obj.num.i)! };
+    const num = sub(obj, "num");
+    if (!num) return null;
+    return { tag: "num", idx: asInt(obj["in"])!, pre: asInt(num["pre"])!, i: asInt(num["i"])! };
   }
 
   // Levels: { il: idx, <variant>: ... }
   if ("il" in obj && "succ" in obj)
-    return { tag: "succ", idx: asInt(obj.il)!, arg: asInt(obj.succ)! };
-  if ("il" in obj && "max" in obj)
-    return { tag: "max", idx: asInt(obj.il)!, l: obj.max[0], r: obj.max[1] };
-  if ("il" in obj && "imax" in obj)
-    return { tag: "imax", idx: asInt(obj.il)!, l: obj.imax[0], r: obj.imax[1] };
+    return { tag: "succ", idx: asInt(obj["il"])!, arg: asInt(obj["succ"])! };
+  if ("il" in obj && "max" in obj) {
+    const max = asArrayOfInts(obj["max"]);
+    if (!max || max[0] === undefined || max[1] === undefined) return null;
+    return { tag: "max", idx: asInt(obj["il"])!, l: max[0], r: max[1] };
+  }
+  if ("il" in obj && "imax" in obj) {
+    const imax = asArrayOfInts(obj["imax"]);
+    if (!imax || imax[0] === undefined || imax[1] === undefined) return null;
+    return { tag: "imax", idx: asInt(obj["il"])!, l: imax[0], r: imax[1] };
+  }
   if ("il" in obj && "param" in obj)
-    return { tag: "param", idx: asInt(obj.il)!, name: asInt(obj.param)! };
+    return { tag: "param", idx: asInt(obj["il"])!, name: asInt(obj["param"])! };
 
   // Expressions: { ie: idx, <variant>: ... }
   if ("ie" in obj) {
-    const idx = asInt(obj.ie)!;
-    if ("bvar" in obj) return { tag: "bvar", idx, deBruijn: asInt(obj.bvar)! };
-    if ("sort" in obj) return { tag: "sort", idx, level: asInt(obj.sort)! };
-    if ("const" in obj)
-      return { tag: "const", idx, name: asInt(obj.const.name)!, us: asArrayOfInts(obj.const.us)! };
-    if ("app" in obj) return { tag: "app", idx, fn: asInt(obj.app.fn)!, arg: asInt(obj.app.arg)! };
-    if ("lam" in obj)
+    const idx = asInt(obj["ie"])!;
+    if ("bvar" in obj) return { tag: "bvar", idx, deBruijn: asInt(obj["bvar"])! };
+    if ("sort" in obj) return { tag: "sort", idx, level: asInt(obj["sort"])! };
+    if ("const" in obj) {
+      const c = sub(obj, "const");
+      if (!c) return null;
+      return { tag: "const", idx, name: asInt(c["name"])!, us: asArrayOfInts(c["us"])! };
+    }
+    if ("app" in obj) {
+      const app = sub(obj, "app");
+      if (!app) return null;
+      return { tag: "app", idx, fn: asInt(app["fn"])!, arg: asInt(app["arg"])! };
+    }
+    if ("lam" in obj) {
+      const lam = sub(obj, "lam");
+      if (!lam) return null;
       return {
         tag: "lam",
         idx,
-        bi: obj.lam.binderInfo,
-        name: asInt(obj.lam.name)!,
-        type: asInt(obj.lam.type)!,
-        body: asInt(obj.lam.body)!,
+        bi: lam["binderInfo"] as BinderInfo,
+        name: asInt(lam["name"])!,
+        type: asInt(lam["type"])!,
+        body: asInt(lam["body"])!,
       };
-    if ("forallE" in obj)
+    }
+    if ("forallE" in obj) {
+      const forallE = sub(obj, "forallE");
+      if (!forallE) return null;
       return {
         tag: "forallE",
         idx,
-        bi: obj.forallE.binderInfo,
-        name: asInt(obj.forallE.name)!,
-        type: asInt(obj.forallE.type)!,
-        body: asInt(obj.forallE.body)!,
+        bi: forallE["binderInfo"] as BinderInfo,
+        name: asInt(forallE["name"])!,
+        type: asInt(forallE["type"])!,
+        body: asInt(forallE["body"])!,
       };
-    if ("letE" in obj)
+    }
+    if ("letE" in obj) {
+      const letE = sub(obj, "letE");
+      if (!letE) return null;
       return {
         tag: "letE",
         idx,
-        name: asInt(obj.letE.name)!,
-        type: asInt(obj.letE.type)!,
-        value: asInt(obj.letE.value)!,
-        body: asInt(obj.letE.body)!,
+        name: asInt(letE["name"])!,
+        type: asInt(letE["type"])!,
+        value: asInt(letE["value"])!,
+        body: asInt(letE["body"])!,
       };
-    if ("proj" in obj)
+    }
+    if ("proj" in obj) {
+      const proj = sub(obj, "proj");
+      if (!proj) return null;
       return {
         tag: "proj",
         idx,
-        typeName: asInt(obj.proj.typeName)!,
-        pidx: asInt(obj.proj.idx)!,
-        struct: asInt(obj.proj.struct)!,
+        typeName: asInt(proj["typeName"])!,
+        pidx: asInt(proj["idx"])!,
+        struct: asInt(proj["struct"])!,
       };
-    if ("natVal" in obj) return { tag: "natLit", idx, value: asStr(obj.natVal)! };
-    if ("strVal" in obj) return { tag: "strLit", idx, value: asStr(obj.strVal)! };
+    }
+    if ("natVal" in obj) return { tag: "natLit", idx, value: asStr(obj["natVal"])! };
+    if ("strVal" in obj) return { tag: "strLit", idx, value: asStr(obj["strVal"])! };
     return null;
   }
 
   // Top-level items
-  if ("def" in obj) return { tag: "def", ...obj.def };
-  if ("thm" in obj) return { tag: "thm", ...obj.thm };
-  if ("axiom" in obj) return { tag: "axiom", ...obj.axiom };
-  if ("opaque" in obj) return { tag: "opaque", ...obj.opaque };
+  if ("def" in obj) return { tag: "def", ...(sub(obj, "def") ?? {}) } as unknown as DefRec;
+  if ("thm" in obj) return { tag: "thm", ...(sub(obj, "thm") ?? {}) } as unknown as ThmRec;
+  if ("axiom" in obj) return { tag: "axiom", ...(sub(obj, "axiom") ?? {}) } as unknown as AxRec;
+  if ("opaque" in obj) return { tag: "opaque", ...(sub(obj, "opaque") ?? {}) } as unknown as OpqRec;
   if ("quot" in obj) return { tag: "quot" };
   if ("inductive" in obj) {
-    const i = obj.inductive;
+    const ind = sub(obj, "inductive") ?? {};
     return {
       tag: "inductive",
-      types: i.types ?? [],
-      ctors: i.ctors ?? [],
-      recs: i.recs ?? [],
+      types: (ind["types"] ?? []) as IndTypeSpec[],
+      ctors: (ind["ctors"] ?? []) as IndCtorSpec[],
+      recs: (ind["recs"] ?? []) as IndRecSpec[],
     };
   }
   if ("meta" in obj) return { tag: "meta" };
@@ -380,11 +418,7 @@ class Env {
     // Ctors in the same inductive block come with a `cidx` declaration
     // index; we sort by it so lean2lf.ts can iterate in canonical order
     // (and stage-1 enum iota helpers match the recursor's minor order).
-    const sortedCtors = rec.ctors.slice().sort((a, b) => {
-      const ai = (a as any).cidx ?? 0;
-      const bi = (b as any).cidx ?? 0;
-      return ai - bi;
-    });
+    const sortedCtors = rec.ctors.slice().sort((a, b) => (a.cidx ?? 0) - (b.cidx ?? 0));
     const ctors: IndCtor[] = sortedCtors.map((c) => ({
       name: this.names.get(c.name)!,
       levelParams: c.levelParams.map((i) => this.names.get(i)!),
@@ -489,7 +523,8 @@ async function main(): Promise<void> {
   process.stdout.write(json + "\n");
 }
 
-main().catch((err) => {
+main().catch((err: unknown) => {
+  // eslint-disable-next-line no-console
   console.error(err);
   process.exit(1);
 });

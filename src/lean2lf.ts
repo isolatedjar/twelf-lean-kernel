@@ -12,30 +12,18 @@
 // previously used `tcb-violation` are gone — see translator notes on
 // each %% SKIP path for the principled (Twelf-side) replacement.
 
-import type {
-  Name,
-  Level,
-  Expr,
-  BinderInfo,
-  IndType,
-  IndCtor,
-  IndRecursor,
-  IndRecRule,
-  Inductive,
-  Decl,
-  ParsedEnv,
-} from "./shared.ts";
-import { nameToString, transformNamesFromJSON } from "./shared.ts";
 import {
+  freshVar,
   levelParamBindings,
-  natLiteralsSeen,
-  mangle,
-  nameToLfLevelVar,
+  lfExpr,
   lfLevel,
   lfLvls,
-  lfExpr,
-  freshVar,
+  mangle,
+  nameToLfLevelVar,
+  natLiteralsSeen,
 } from "./render.ts";
+import type { Decl, Expr, Inductive, Level, Name, ParsedEnv } from "./shared.ts";
+import { nameToString, transformNamesFromJSON } from "./shared.ts";
 
 // Build a Twelf proof of `ends-in-sort <lfExpr t>` if `t` is structurally
 // a (possibly empty) chain of forall-binders ending in a sort literal.
@@ -86,10 +74,10 @@ function isSelfRef(t: Expr, selfName: string, selfLevels: Level[]): boolean {
   if (t.kind !== "const") return false;
   if (nameToString(t.name) !== selfName) return false;
   if (t.us.length !== selfLevels.length) return false;
-  for (let i = 0; i < t.us.length; i++) {
-    if (!levelEq(t.us[i], selfLevels[i])) return false;
-  }
-  return true;
+  return t.us.every((u, i) => {
+    const sl = selfLevels[i];
+    return sl !== undefined && levelEq(u, sl);
+  });
 }
 
 // Does t syntactically mention the inductive's self-reference?
@@ -257,8 +245,6 @@ function allMentioned(names: string[], ...bodies: string[]): boolean {
 // verified it as bad.  The principled fix for each SKIP path is to
 // encode the missing check inside the LF signature so Twelf rejects
 // the witness directly.
-let violationCounter = 0;
-
 // For duplicate-name handling: instead of declining to emit the second
 // declaration, we give it a unique LF mangle and let Twelf's `%unique
 // declared +N +LS -1T -1DK *W` directive detect the overlap (two
@@ -352,14 +338,13 @@ function substExprLevels(e: Expr, sub: Map<string, Level>): Expr {
 // (e.g., swapped-level-arg ctors) aren't masked by the substitution.
 function distinctLevelSub(params: Name[]): Map<string, Level> {
   const sub = new Map<string, Level>();
-  for (let i = 0; i < params.length; i++) {
+  for (const [i, p] of params.entries()) {
     let l: Level = { kind: "zero" };
     for (let j = 0; j < i; j++) l = { kind: "succ", arg: l };
-    sub.set(nameToString(params[i]), l);
+    sub.set(nameToString(p), l);
   }
   return sub;
 }
-
 
 // =====================================================================
 // 7. Type synthesis + proof construction
@@ -429,39 +414,45 @@ function subst(e: Expr, r: Expr, depth: number = 0): Expr {
 // Structural equality of Exprs.  De Bruijn means this is α-equivalence.
 // Binder display-names are not part of the structural identity.
 function exprEq(a: Expr, b: Expr): boolean {
-  if (a.kind !== b.kind) return false;
   switch (a.kind) {
     case "bvar":
-      return a.deBruijn === (b as any).deBruijn;
+      return b.kind === "bvar" && a.deBruijn === b.deBruijn;
     case "sort":
-      return levelEq(a.level, (b as any).level);
+      return b.kind === "sort" && levelEq(a.level, b.level);
     case "const":
       return (
-        nameEq(a.name, (b as any).name) &&
-        a.us.length === (b as any).us.length &&
-        a.us.every((u, i) => levelEq(u, (b as any).us[i]))
+        b.kind === "const" &&
+        nameEq(a.name, b.name) &&
+        a.us.length === b.us.length &&
+        a.us.every((u, i) => {
+          const bU = b.us[i];
+          return bU !== undefined && levelEq(u, bU);
+        })
       );
     case "app":
-      return exprEq(a.fn, (b as any).fn) && exprEq(a.arg, (b as any).arg);
+      return b.kind === "app" && exprEq(a.fn, b.fn) && exprEq(a.arg, b.arg);
     case "lam":
+      return b.kind === "lam" && exprEq(a.type, b.type) && exprEq(a.body, b.body);
     case "forallE":
-      return exprEq(a.type, (b as any).type) && exprEq(a.body, (b as any).body);
+      return b.kind === "forallE" && exprEq(a.type, b.type) && exprEq(a.body, b.body);
     case "letE":
       return (
-        exprEq(a.type, (b as any).type) &&
-        exprEq(a.value, (b as any).value) &&
-        exprEq(a.body, (b as any).body)
+        b.kind === "letE" &&
+        exprEq(a.type, b.type) &&
+        exprEq(a.value, b.value) &&
+        exprEq(a.body, b.body)
       );
     case "proj":
       return (
-        nameEq(a.typeName, (b as any).typeName) &&
-        a.idx === (b as any).idx &&
-        exprEq(a.struct, (b as any).struct)
+        b.kind === "proj" &&
+        nameEq(a.typeName, b.typeName) &&
+        a.idx === b.idx &&
+        exprEq(a.struct, b.struct)
       );
     case "natLit":
-      return a.value === (b as any).value;
+      return b.kind === "natLit" && a.value === b.value;
     case "strLit":
-      return a.value === (b as any).value;
+      return b.kind === "strLit" && a.value === b.value;
   }
 }
 
@@ -542,25 +533,28 @@ const iotaTable: Map<string, IotaInfo> = new Map();
 // --- Level-equality solver (unchanged) -------------------------------
 
 function levelEq(a: Level, b: Level): boolean {
-  if (a.kind !== b.kind) return false;
   switch (a.kind) {
     case "zero":
-      return true;
+      return b.kind === "zero";
     case "succ":
-      return levelEq(a.arg, (b as any).arg);
+      return b.kind === "succ" && levelEq(a.arg, b.arg);
     case "max":
+      return b.kind === "max" && levelEq(a.l, b.l) && levelEq(a.r, b.r);
     case "imax":
-      return levelEq((a as any).l, (b as any).l) && levelEq((a as any).r, (b as any).r);
+      return b.kind === "imax" && levelEq(a.l, b.l) && levelEq(a.r, b.r);
     case "param":
-      return nameEq(a.name, (b as any).name);
+      return b.kind === "param" && nameEq(a.name, b.name);
   }
 }
 function nameEq(a: Name, b: Name): boolean {
-  if (a.kind !== b.kind) return false;
-  if (a.kind === "anon") return true;
-  if (a.kind === "str") return a.str === (b as any).str && nameEq(a.pre, (b as any).pre);
-  if (a.kind === "num") return a.i === (b as any).i && nameEq(a.pre, (b as any).pre);
-  return false;
+  switch (a.kind) {
+    case "anon":
+      return b.kind === "anon";
+    case "str":
+      return b.kind === "str" && a.str === b.str && nameEq(a.pre, b.pre);
+    case "num":
+      return b.kind === "num" && a.i === b.i && nameEq(a.pre, b.pre);
+  }
 }
 
 // One-step top-level reduction.  Each rule corresponds to an lvl-eq
@@ -692,18 +686,18 @@ function solveLvlEq(from: Level, to: Level, depth: number = 0): string | null {
 
 // Parse the inferred-type string back to a Level for solver use.
 // Cheap parser — matches our own output exactly.
-function parseLvlSyntax(s: string): Level {
-  s = s.trim();
+function _parseLvlSyntax(raw: string): Level {
+  const s = raw.trim();
   if (s === "lzero") return { kind: "zero" };
   // Strip outer parens.
   if (s.startsWith("(") && s.endsWith(")")) {
     const inner = s.slice(1, -1);
-    const parts = splitTopLevel(inner);
-    if (parts[0] === "lsucc") return { kind: "succ", arg: parseLvlSyntax(parts[1]) };
-    if (parts[0] === "lmax")
-      return { kind: "max", l: parseLvlSyntax(parts[1]), r: parseLvlSyntax(parts[2]) };
-    if (parts[0] === "limax")
-      return { kind: "imax", l: parseLvlSyntax(parts[1]), r: parseLvlSyntax(parts[2]) };
+    const [head, arg1, arg2] = splitTopLevel(inner);
+    if (head === "lsucc" && arg1 !== undefined) return { kind: "succ", arg: _parseLvlSyntax(arg1) };
+    if (head === "lmax" && arg1 !== undefined && arg2 !== undefined)
+      return { kind: "max", l: _parseLvlSyntax(arg1), r: _parseLvlSyntax(arg2) };
+    if (head === "limax" && arg1 !== undefined && arg2 !== undefined)
+      return { kind: "imax", l: _parseLvlSyntax(arg1), r: _parseLvlSyntax(arg2) };
   }
   throw new Error(`parseLvlSyntax: cannot parse ${s}`);
 }
@@ -773,8 +767,9 @@ function synth(e: Expr, scope: Scope): Synth {
       // Build the level-param → actual-level substitution and apply it
       // to the looked-up type.
       const m: Map<string, Level> = new Map();
-      for (let i = 0; i < entry.levelParams.length; i++) {
-        m.set(nameToString(entry.levelParams[i]), e.us[i]);
+      for (const [i, lp] of entry.levelParams.entries()) {
+        const u = e.us[i];
+        if (u !== undefined) m.set(nameToString(lp), u);
       }
       const tyExpr = substLevels(entry.type, m);
       // For poly decls, `<mangle>/decl` is itself an LF function that
@@ -861,7 +856,7 @@ function synth(e: Expr, scope: Scope): Synth {
       };
     }
     default:
-      throw new Error(`synth: case ${(e as any).kind} not yet supported`);
+      throw new Error(`synth: case ${(e as { kind: string }).kind} not yet supported`);
   }
 }
 
@@ -890,7 +885,7 @@ function tryIotaEnum(e: Expr, scope: Scope): { result: Expr; proof: string } | n
   // and no further application: a 0-field ctor invocation.
   if (args.length === 0) return null;
   const major = args[args.length - 1];
-  if (major.kind !== "const") return null;
+  if (major === undefined || major.kind !== "const") return null;
   if (major.us.length !== 0) return null;
   // Look up iota info for this ctor.
   const ctorName = nameToString(major.name);
@@ -901,9 +896,11 @@ function tryIotaEnum(e: Expr, scope: Scope): { result: Expr; proof: string } | n
   if (head.us.length !== 1) return null;
   const k = info.allCtors.length;
   if (args.length !== k + 2) return null; // motive + k cases + major
-  const u: Level = head.us[0];
+  const u = head.us[0];
+  if (u === undefined) return null;
 
   const motive = args[0];
+  if (motive === undefined) return null;
   const cases = args.slice(1, k + 1);
 
   // Build the expected motive type: eforall (econst indName lnil) ([_] esort u)
@@ -931,8 +928,9 @@ function tryIotaEnum(e: Expr, scope: Scope): { result: Expr; proof: string } | n
   // For each case, build expected type (eapp motive (econst ctor_i lnil))
   // and bridge as needed.
   const caseProofs: string[] = [];
-  for (let i = 0; i < k; i++) {
+  for (const [i, caseExpr] of cases.entries()) {
     const ci = info.allCtors[i];
+    if (ci === undefined) return null;
     const expectedCaseTy: Expr = {
       kind: "app",
       fn: motive,
@@ -940,7 +938,7 @@ function tryIotaEnum(e: Expr, scope: Scope): { result: Expr; proof: string } | n
     };
     let caseS: Synth;
     try {
-      caseS = synth(cases[i], scope);
+      caseS = synth(caseExpr, scope);
     } catch {
       return null;
     }
@@ -961,7 +959,9 @@ function tryIotaEnum(e: Expr, scope: Scope): { result: Expr; proof: string } | n
   // β-reduced form `(M.body[ctor])`.  Wrap with defeq/conv via β-reduction
   // of the type index so the proof's index matches what callers expect.
   if (motive.kind === "lam") {
-    const ctorExpr: Expr = { kind: "const", name: info.allCtors[info.position].nameStruct, us: [] };
+    const posCtorInfo = info.allCtors[info.position];
+    if (posCtorInfo === undefined) return null;
+    const ctorExpr: Expr = { kind: "const", name: posCtorInfo.nameStruct, us: [] };
     const allBound = [...scope.vars, ...scope.hyps];
     const v = freshVar(allBound);
     const h = freshVar([...allBound, v]);
@@ -985,8 +985,10 @@ function tryIotaEnum(e: Expr, scope: Scope): { result: Expr; proof: string } | n
     helperCall = `(defeq/conv ${betaProof} ${helperCall})`;
   }
 
+  const resultExpr = cases[info.position];
+  if (resultExpr === undefined) return null;
   return {
-    result: cases[info.position],
+    result: resultExpr,
     proof: helperCall,
   };
 }
@@ -1035,8 +1037,9 @@ function reduceOnce(e: Expr, scope: Scope): { result: Expr; proof: string } | nu
       e.us.length === entry.levelParams.length
     ) {
       const m: Map<string, Level> = new Map();
-      for (let i = 0; i < entry.levelParams.length; i++) {
-        m.set(nameToString(entry.levelParams[i]), e.us[i]);
+      for (const [i, lp] of entry.levelParams.entries()) {
+        const u = e.us[i];
+        if (u !== undefined) m.set(nameToString(lp), u);
       }
       const declInst =
         e.us.length === 0
@@ -1159,7 +1162,9 @@ function whnf(
   let typeOfType: Expr | null = null;
   try {
     typeOfType = synth(e, scope).tyExpr;
-  } catch {}
+  } catch {
+    // synth may fail for unsupported expression forms; typeOfType stays null
+  }
 
   let cur = e;
   let chain: string | null = null;
@@ -1186,7 +1191,9 @@ function bridgeTypes(a: Expr, b: Expr, scope: Scope, depth: number = 0): string 
     try {
       const aS = synth(a, scope);
       if (aS.tyExpr.kind === "sort") return aS.proof;
-    } catch {}
+    } catch {
+      // synth may fail; fall through to return null
+    }
     return null;
   }
   if (a.kind === "sort" && b.kind === "sort") {
@@ -1248,7 +1255,6 @@ function bridgeTypes(a: Expr, b: Expr, scope: Scope, depth: number = 0): string 
   // Helper: convert a proof from its native typeOfType to targetT (or
   // leave alone if they match / either is null).
   function coerce(proof: string, nativeT: Expr | null): string | null {
-    if (proof === null) return null;
     if (targetT === null || nativeT === null) return proof;
     if (exprEq(nativeT, targetT)) return proof;
     const conv = bridgeTypes(nativeT, targetT, scope, depth + 1);
@@ -1280,8 +1286,9 @@ function bridgeTypes(a: Expr, b: Expr, scope: Scope, depth: number = 0): string 
   if (segments.length === 0) {
     return a.kind === "sort" ? "defeq/sort-refl" : null;
   }
-  if (segments.length === 1) return segments[0];
-  return segments.slice(1).reduce((acc, p) => `(defeq/trans ${acc} ${p})`, segments[0]);
+  const seed = segments[0] ?? "";
+  if (segments.length === 1) return seed;
+  return segments.slice(1).reduce((acc, p) => `(defeq/trans ${acc} ${p})`, seed);
 }
 
 // =====================================================================
@@ -1361,15 +1368,16 @@ function emitValDecl(d: Decl & { kind: ValDeclKind }): void {
     try {
       typeWf = synth(d.type, { vars: [], hyps: [], tys: [] });
       valTy = synth(d.value, { vars: [], hyps: [], tys: [] });
-    } catch (e: any) {
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
       if (dupCounter.size > 0) {
-        emit(`%% (declined to emit ${kindTag} ${declName}: ${e.message})`);
+        emit(`%% (declined to emit ${kindTag} ${declName}: ${msg})`);
         emit(`%% Duplicate already detected; %unique on \`declared\` will ABORT.`);
         emitBlank();
         return;
       }
-      skips.push(`${kindTag} ${declName}: synth failed (${e.message})`);
-      emit(`%% SKIP: ${kindTag} ${declName} — synth failed: ${e.message}`);
+      skips.push(`${kindTag} ${declName}: synth failed (${msg})`);
+      emit(`%% SKIP: ${kindTag} ${declName} — synth failed: ${msg}`);
       emitBlank();
       return;
     }
@@ -1502,7 +1510,8 @@ function emitStructuralDecl(
     let typeWf: Synth;
     try {
       typeWf = synth(type, { vars: [], hyps: [], tys: [] });
-    } catch (e: any) {
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
       // When a duplicate name has already been emitted in this file, the
       // resulting LF name collision in declTable can make downstream
       // synth fail in ways that aren't real translator limitations —
@@ -1512,15 +1521,15 @@ function emitStructuralDecl(
       // file 🤷; Twelf's `%unique declared` will fire on the duplicate
       // pair and ABORT, which is the genuine Twelf-verified rejection.
       if (dupCounter.size > 0) {
-        emit(`%% (declined to emit ${banner} ${nameStr}: ${e.message})`);
+        emit(`%% (declined to emit ${banner} ${nameStr}: ${msg})`);
         emit(
           `%% This file already has a duplicate-name violation that %unique on \`declared\` will catch; downstream synth fallout doesn't need its own SKIP.`,
         );
         emitBlank();
         return;
       }
-      skips.push(`${banner} ${nameStr}: type synth failed (${e.message})`);
-      emit(`%% SKIP: ${banner} ${nameStr} — type synth failed: ${e.message}`);
+      skips.push(`${banner} ${nameStr}: type synth failed (${msg})`);
+      emit(`%% SKIP: ${banner} ${nameStr} — type synth failed: ${msg}`);
       emitBlank();
       return;
     }
@@ -1755,37 +1764,41 @@ function emitAxiom(d: Decl & { kind: "axiom" }): void {
 
 function countLeadingForalls(e: Expr): number {
   let n = 0;
-  while (e.kind === "forallE") {
-    e = e.body;
+  let cur = e;
+  while (cur.kind === "forallE") {
+    cur = cur.body;
     n++;
   }
   return n;
 }
 
 // Strip leading Π binders and return the result-type expression.
-function stripForalls(e: Expr, n: number): Expr | null {
+function _stripForalls(e: Expr, n: number): Expr | null {
+  let cur = e;
   for (let i = 0; i < n; i++) {
-    if (e.kind !== "forallE") return null;
-    e = e.body;
+    if (cur.kind !== "forallE") return null;
+    cur = cur.body;
   }
-  return e;
+  return cur;
 }
 
 // If the level is a chain of lsucc applied to lzero, return its numeric
 // value; otherwise null (we don't reason about max/imax/param levels).
 function levelToNumber(l: Level): number | null {
   let n = 0;
-  while (l.kind === "succ") {
-    l = l.arg;
+  let cur = l;
+  while (cur.kind === "succ") {
+    cur = cur.arg;
     n++;
   }
-  return l.kind === "zero" ? n : null;
+  return cur.kind === "zero" ? n : null;
 }
 
 // Inductive's universe, if its type signature ends in a concrete Sort.
 function inductiveResultUniverse(t: Expr): Level | null {
-  while (t.kind === "forallE") t = t.body;
-  return t.kind === "sort" ? t.level : null;
+  let cur = t;
+  while (cur.kind === "forallE") cur = cur.body;
+  return cur.kind === "sort" ? cur.level : null;
 }
 
 // Returns null if the ctor's structure passes all checks (b), (c), (d);
@@ -1843,18 +1856,17 @@ function checkCtorStructure(
     return `result-type has ${args.length} args, expected ≥ ${numParams} (one per param)`;
   }
   // (b) param args must be bvars referring to the param binders in order.
-  for (let i = 0; i < numParams; i++) {
+  for (const [i, a] of args.slice(0, numParams).entries()) {
     const expected = numFields + numParams - 1 - i;
-    const a = args[i];
     if (a.kind !== "bvar" || a.deBruijn !== expected) {
       const got = a.kind === "bvar" ? `bvar(${a.deBruijn})` : a.kind;
       return `result-type param arg #${i + 1} should be bvar(${expected}) (the param binder), got ${got}`;
     }
   }
   // (c) index args must not mention the inductive.
-  for (let i = numParams; i < args.length; i++) {
-    if (exprMentions(args[i], indName, indLevels)) {
-      return `result-type index arg #${i - numParams + 1} mentions the inductive "${indName}" (not allowed in index position)`;
+  for (const [i, a] of args.slice(numParams).entries()) {
+    if (exprMentions(a, indName, indLevels)) {
+      return `result-type index arg #${i + 1} mentions the inductive "${indName}" (not allowed in index position)`;
     }
   }
   return null;
@@ -1962,6 +1974,7 @@ function emitStage1EnumIotaHelpers(ind: Inductive): void {
   if (ind.recursors.length !== 1) return;
   const indSpec = ind.types[0];
   const recSpec = ind.recursors[0];
+  if (indSpec === undefined || recSpec === undefined) return;
   // No level params on the inductive itself.
   if (indSpec.levelParams.length !== 0) return;
   // Ctors for this inductive (already sorted by cidx in parse.ts).
@@ -1994,12 +2007,12 @@ function emitStage1EnumIotaHelpers(ind: Inductive): void {
 
   // Register each ctor in iotaTable so reduceOnce can invoke the helper.
   const allCtors = ctorInfo.map((c) => ({ name: c.name, nameStruct: c.nameStruct }));
-  for (let i = 0; i < k; i++) {
-    iotaTable.set(ctorInfo[i].name, {
+  for (const [i, ci] of ctorInfo.entries()) {
+    iotaTable.set(ci.name, {
       recName,
       indName: indSpec.name,
       indNameStr: indName,
-      ctorMangle: ctorInfo[i].mangle,
+      ctorMangle: ci.mangle,
       position: i,
       allCtors,
     });
@@ -2010,14 +2023,14 @@ function emitStage1EnumIotaHelpers(ind: Inductive): void {
   const motiveType = `(eforall ${indConst} ([x] (esort ${u})))`;
   const resultPart = `(eforall ${indConst} ([t] (eapp M t)))`;
   let bodyM = resultPart;
-  for (let i = k - 1; i >= 0; i--) {
-    bodyM = `(eforall (eapp M (econst "${ctorInfo[i].name}" lnil)) ([x] ${bodyM}))`;
+  for (const ci of [...ctorInfo].reverse()) {
+    bodyM = `(eforall (eapp M (econst "${ci.name}" lnil)) ([x] ${bodyM}))`;
   }
   const fullRecType = `(eforall ${motiveType} ([M] ${bodyM}))`;
 
   let cnamesExpr = "cnil";
-  for (let i = k - 1; i >= 0; i--) {
-    cnamesExpr = `(ccons "${ctorInfo[i].name}" ${cnamesExpr})`;
+  for (const ci of [...ctorInfo].reverse()) {
+    cnamesExpr = `(ccons "${ci.name}" ${cnamesExpr})`;
   }
 
   let asEnumBody = "enum-rec-body/done";
@@ -2037,9 +2050,9 @@ function emitStage1EnumIotaHelpers(ind: Inductive): void {
 
   // Per-ctor iota helpers.
   const positions = ["first", "second", "third"];
-  for (let i = 0; i < k; i++) {
-    const c = ctorInfo[i];
-    const ruleName = k === 1 ? "defeq/iota-enum-1" : `defeq/iota-enum-${k}-${positions[i]}`;
+  for (const [i, c] of ctorInfo.entries()) {
+    const pos = positions[i] ?? i.toString();
+    const ruleName = k === 1 ? "defeq/iota-enum-1" : `defeq/iota-enum-${k}-${pos}`;
 
     // LHS = recursor applied to motive, k cases, then the i-th ctor.
     let lhs = `(econst "${recName}" (lcons ${u} lnil))`;
@@ -2055,10 +2068,8 @@ function emitStage1EnumIotaHelpers(ind: Inductive): void {
     // Build premise lines and body lambda bindings.
     const premiseLines: string[] = [];
     premiseLines.push(`   defeq M M ${motiveType}`);
-    for (let j = 0; j < k; j++) {
-      premiseLines.push(
-        `   -> defeq Mp${j + 1} Mp${j + 1} (eapp M (econst "${ctorInfo[j].name}" lnil))`,
-      );
+    for (const [j, cj] of ctorInfo.entries()) {
+      premiseLines.push(`   -> defeq Mp${j + 1} Mp${j + 1} (eapp M (econst "${cj.name}" lnil))`);
     }
 
     // Build the body: defeq/extra applied to the iota rule applied to all premises.
@@ -2115,10 +2126,11 @@ async function main(): Promise<void> {
           emitInductive(decl);
           break;
       }
-    } catch (e: any) {
-      const tag = decl.kind ?? "decl";
-      skips.push(`${tag}: untranslatable (${e.message})`);
-      emit(`%% SKIP: ${tag} — untranslatable: ${e.message}`);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      const tag = decl.kind;
+      skips.push(`${tag}: untranslatable (${msg})`);
+      emit(`%% SKIP: ${tag} — untranslatable: ${msg}`);
       emitBlank();
     }
   }
@@ -2149,7 +2161,8 @@ async function main(): Promise<void> {
   process.stdout.write([...prelude, ...out].join("\n") + "\n");
 }
 
-main().catch((err) => {
+main().catch((err: unknown) => {
+  // eslint-disable-next-line no-console
   console.error(err);
   process.exit(1);
 });
