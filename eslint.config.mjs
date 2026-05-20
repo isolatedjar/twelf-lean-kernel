@@ -14,6 +14,7 @@ export default defineConfig([
     "**/.stryker-tmp/", // stryker mutation reports
     "**/coverage", // istanbul coverage reports
     "**/playwright-report/", // playwright test reports
+    "**/vendor",
   ]),
   {
     files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
