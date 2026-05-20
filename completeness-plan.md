@@ -241,7 +241,7 @@ ctor-positive/intro :
    -> ctor-positive N0 LS0 (T_HOAS (econst N0 LS0)).
 ```
 
-The adequacy comment claims T_HOAS is _the_ canonical full-capture function
+The adequacy comment claims T*HOAS is \_the* canonical full-capture function
 `(λS. T[N0 LS0 ↦ S])`. But nothing in the encoding enforces this — any T_HOAS
 that reproduces T when applied to `(econst N0 LS0)` is accepted. Twelf's
 higher-order pattern unification can pick a T_HOAS that leaves some
@@ -268,7 +268,7 @@ test `buildAppliesSelf` on the result): if the head IS applicable but
 and we stay 🤷 rather than defer to Twelf.
 
 **Principled fix (not done):** add a `fully-captures N0 LS0 T_HOAS T` judgment
-that's only inhabited when T_HOAS abstracts _every_ occurrence of
+that's only inhabited when T*HOAS abstracts \_every* occurrence of
 `(econst N0 LS0)` in T. Make `ctor-positive/intro` take a `fully-captures`
 premise. The judgment is recursive over Expr structure and decidable (no
 higher-order ambiguity), so the resulting strengthened `ctor-positive` would

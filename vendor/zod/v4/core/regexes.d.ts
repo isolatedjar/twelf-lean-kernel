@@ -45,17 +45,15 @@ export declare const domain: RegExp;
 export declare const httpProtocol: RegExp;
 export declare const e164: RegExp;
 export declare const date: RegExp;
-export declare function time(args: {
-    precision?: number | null;
-}): RegExp;
+export declare function time(args: { precision?: number | null }): RegExp;
 export declare function datetime(args: {
-    precision?: number | null;
-    offset?: boolean;
-    local?: boolean;
+  precision?: number | null;
+  offset?: boolean;
+  local?: boolean;
 }): RegExp;
 export declare const string: (params?: {
-    minimum?: number | undefined;
-    maximum?: number | undefined;
+  minimum?: number | undefined;
+  maximum?: number | undefined;
 }) => RegExp;
 export declare const bigint: RegExp;
 export declare const integer: RegExp;

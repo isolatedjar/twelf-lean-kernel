@@ -1,6 +1,11 @@
 import type { $ZodRegistry } from "./registries.js";
 import type * as schemas from "./schemas.js";
-import { type Processor, type RegistryToJSONSchemaParams, type ToJSONSchemaParams, type ZodStandardJSONSchemaPayload } from "./to-json-schema.js";
+import {
+  type Processor,
+  type RegistryToJSONSchemaParams,
+  type ToJSONSchemaParams,
+  type ZodStandardJSONSchemaPayload,
+} from "./to-json-schema.js";
 export declare const stringProcessor: Processor<schemas.$ZodString>;
 export declare const numberProcessor: Processor<schemas.$ZodNumber>;
 export declare const booleanProcessor: Processor<schemas.$ZodBoolean>;
@@ -41,9 +46,15 @@ export declare const promiseProcessor: Processor<schemas.$ZodPromise>;
 export declare const optionalProcessor: Processor<schemas.$ZodOptional>;
 export declare const lazyProcessor: Processor<schemas.$ZodLazy>;
 export declare const allProcessors: Record<string, Processor<any>>;
-export declare function toJSONSchema<T extends schemas.$ZodType>(schema: T, params?: ToJSONSchemaParams): ZodStandardJSONSchemaPayload<T>;
-export declare function toJSONSchema(registry: $ZodRegistry<{
+export declare function toJSONSchema<T extends schemas.$ZodType>(
+  schema: T,
+  params?: ToJSONSchemaParams,
+): ZodStandardJSONSchemaPayload<T>;
+export declare function toJSONSchema(
+  registry: $ZodRegistry<{
     id?: string | undefined;
-}>, params?: RegistryToJSONSchemaParams): {
-    schemas: Record<string, ZodStandardJSONSchemaPayload<schemas.$ZodType>>;
+  }>,
+  params?: RegistryToJSONSchemaParams,
+): {
+  schemas: Record<string, ZodStandardJSONSchemaPayload<schemas.$ZodType>>;
 };
