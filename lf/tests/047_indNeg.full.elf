@@ -1,5 +1,10 @@
 %%% Expected outcome: reject
 %%% The classic example of an inductive with negative recursive occurrence
+%% This file contains 1 hole tag(s):
+%%   - hole/ctor-positive (count: see HOLE/ctor-positive markers below)
+%% Files with any hole/<tag> use are NOT Twelf-verified.
+hole/ctor-positive : {N : name} {LS : lvls} {T : expr} ctor-positive N LS T.
+
 %% inductive indNeg
 indNeg/type-wf :
    defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
@@ -19,7 +24,15 @@ indNeg_mk/type-wf :
    defeq (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (esort (limax (limax (lsucc lzero) (lsucc lzero)) (lsucc lzero)))
    = (defeq/forall (defeq/forall (defeq/const indNeg/decl) ([x] [y] (defeq/const indNeg/decl))) ([x] [y] (defeq/const indNeg/decl))).
 
-%% SKIP: ctor indNeg.mk — type is not strictly positive in indNeg (or uses unsupported expr form). Can't defer to Twelf — ctor-positive encoding has a soundness gap under %solve for field-position failures (see translator notes).
+%% HOLE/ctor-positive: indNeg.mk — strict positivity in indNeg not witnessable by current encoding (likely field-position negative occurrence)
+indNeg_mk/positivity :
+   ctor-positive "indNeg" lnil (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil)))
+   = (hole/ctor-positive "indNeg" lnil (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil)))).
+
+indNeg_mk/decl : declared "indNeg.mk" lnil
+   (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil)))
+   ctor
+   (dkind-ok/ctor indNeg_mk/type-wf indNeg_mk/positivity).
 
 %% inductive recursor indNeg.rec
 indNeg_rec/type-wf :
@@ -31,6 +44,3 @@ indNeg_rec/decl : declared "indNeg.rec" lnil
    irec
    (dkind-ok/irec indNeg_rec/type-wf).
 
-
-%% Translator summary:
-%%   - ctor indNeg.mk: strict positivity not witnessable

@@ -3,6 +3,11 @@
 %%% *behind further arrows* inside a constructor argument.
 %%% 
 %%% The constructor argument is a function type `Nat → (I → Nat)`.
+%% This file contains 1 hole tag(s):
+%%   - hole/ctor-positive (count: see HOLE/ctor-positive markers below)
+%% Files with any hole/<tag> use are NOT Twelf-verified.
+hole/ctor-positive : {N : name} {LS : lvls} {T : expr} ctor-positive N LS T.
+
 %% inductive Nat
 Nat/type-wf :
    defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
@@ -74,7 +79,15 @@ reflOccLeft_mk/type-wf :
    defeq (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil))) (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil))) (esort (limax (limax (lsucc lzero) (limax (lsucc lzero) (lsucc lzero))) (lsucc lzero)))
    = (defeq/forall (defeq/forall (defeq/const Nat/decl) ([x] [y] (defeq/forall (defeq/const reflOccLeft/decl) ([z] [w] (defeq/const Nat/decl))))) ([x] [y] (defeq/const reflOccLeft/decl))).
 
-%% SKIP: ctor reflOccLeft.mk — type is not strictly positive in reflOccLeft (or uses unsupported expr form). Can't defer to Twelf — ctor-positive encoding has a soundness gap under %solve for field-position failures (see translator notes).
+%% HOLE/ctor-positive: reflOccLeft.mk — strict positivity in reflOccLeft not witnessable by current encoding (likely field-position negative occurrence)
+reflOccLeft_mk/positivity :
+   ctor-positive "reflOccLeft" lnil (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil)))
+   = (hole/ctor-positive "reflOccLeft" lnil (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil)))).
+
+reflOccLeft_mk/decl : declared "reflOccLeft.mk" lnil
+   (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil)))
+   ctor
+   (dkind-ok/ctor reflOccLeft_mk/type-wf reflOccLeft_mk/positivity).
 
 %% inductive recursor reflOccLeft.rec
 reflOccLeft_rec/type-wf :
@@ -86,6 +99,3 @@ reflOccLeft_rec/decl : declared "reflOccLeft.rec" lnil
    irec
    (dkind-ok/irec reflOccLeft_rec/type-wf).
 
-
-%% Translator summary:
-%%   - ctor reflOccLeft.mk: strict positivity not witnessable

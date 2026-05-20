@@ -2,6 +2,11 @@
 %%% When checking inductives, we expect the kernel to **not** reduce the type of the constructor parameters
 %%% further than head normal form. Recursive occurrences nested inside the head normal form are considered
 %%% negative occurrences, even if they could be reduced to disappear.
+%% This file contains 1 hole tag(s):
+%%   - hole/ctor-positive (count: see HOLE/ctor-positive markers below)
+%% Files with any hole/<tag> use are NOT Twelf-verified.
+hole/ctor-positive : {N : name} {LS : lvls} {T : expr} ctor-positive N LS T.
+
 %% def constType
 constType/type-wf :
    defeq (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort (limax (lsucc (lsucc lzero)) (limax (lsucc (lsucc lzero)) (lsucc (lsucc lzero)))))
@@ -45,7 +50,15 @@ indNegReducible_mk/type-wf :
    defeq (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil))) (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil))) (esort (limax (limax (lsucc lzero) (lsucc lzero)) (lsucc lzero)))
    = (defeq/forall (defeq/forall (defeq/app (defeq/app (defeq/const constType/decl) (defeq/const aType/decl)) (defeq/const indNegReducible/decl)) ([x] [y] (defeq/const indNegReducible/decl))) ([x] [y] (defeq/const indNegReducible/decl))).
 
-%% SKIP: ctor indNegReducible.mk — type is not strictly positive in indNegReducible (or uses unsupported expr form). Can't defer to Twelf — ctor-positive encoding has a soundness gap under %solve for field-position failures (see translator notes).
+%% HOLE/ctor-positive: indNegReducible.mk — strict positivity in indNegReducible not witnessable by current encoding (likely field-position negative occurrence)
+indNegReducible_mk/positivity :
+   ctor-positive "indNegReducible" lnil (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil)))
+   = (hole/ctor-positive "indNegReducible" lnil (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil)))).
+
+indNegReducible_mk/decl : declared "indNegReducible.mk" lnil
+   (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil)))
+   ctor
+   (dkind-ok/ctor indNegReducible_mk/type-wf indNegReducible_mk/positivity).
 
 %% inductive recursor indNegReducible.rec
 indNegReducible_rec/type-wf :
@@ -57,6 +70,3 @@ indNegReducible_rec/decl : declared "indNegReducible.rec" lnil
    irec
    (dkind-ok/irec indNegReducible_rec/type-wf).
 
-
-%% Translator summary:
-%%   - ctor indNegReducible.mk: strict positivity not witnessable
