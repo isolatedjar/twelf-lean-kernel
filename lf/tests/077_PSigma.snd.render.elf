@@ -1,0 +1,29 @@
+%%% Render-only view of: 077_PSigma.snd
+%%% Type-checking dependent projection functions
+%% inductive PSigma (numParams=2, numIndices=0)
+PSigma/render-type : {u : lvl} {v : lvl} expr =
+   [u] [v] (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (esort (lmax (lmax (lsucc lzero) u) v)))))).
+
+%% ctor PSigma.mk (induct=PSigma, numFields=2)
+PSigma_mk/render-type : {u : lvl} {v : lvl} expr =
+   [u] [v] (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y))))))))).
+
+%% recursor PSigma.rec (numMotives=1, numMinors=1, k=false)
+PSigma_rec/render-type : {u_1 : lvl} {u : lvl} {v : lvl} expr =
+   [u_1] [u] [v] (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (esort u_1))) ([z] (eforall (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PSigma.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([x1] (eapp z x1))))))))))).
+%%   rec-rule for PSigma.mk (nfields=2)
+PSigma_rec/render-rule0-rhs : {u_1 : lvl} {u : lvl} {v : lvl} expr =
+   [u_1] [u] [v] (elam (esort u) ([x] (elam (eforall x ([y] (esort v))) ([y] (elam (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (esort u_1))) ([z] (elam (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PSigma.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (elam x ([x1] (elam (eapp y x1) ([y1] (eapp (eapp w x1) y1))))))))))))).
+
+%% def PSigma.fst
+PSigma_fst/render-type : {u : lvl} {v : lvl} expr =
+   [u] [v] (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] x)))))).
+PSigma_fst/render-value : {u : lvl} {v : lvl} expr =
+   [u] [v] (elam (esort u) ([x] (elam (eforall x ([y] (esort v))) ([y] (elam (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PSigma" 0 z))))))).
+
+%% def PSigma.snd
+PSigma_snd/render-type : {u : lvl} {v : lvl} expr =
+   [u] [v] (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (eapp y (eapp (eapp (eapp (econst "PSigma.fst" (lcons u (lcons v lnil))) x) y) z)))))))).
+PSigma_snd/render-value : {u : lvl} {v : lvl} expr =
+   [u] [v] (elam (esort u) ([x] (elam (eforall x ([y] (esort v))) ([y] (elam (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PSigma" 1 z))))))).
+

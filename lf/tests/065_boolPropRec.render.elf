@@ -1,0 +1,30 @@
+%%% Render-only view of: 065_boolPropRec
+%%% Inductive predicates eliminate into Prop if they have more than one constructor.
+%% inductive BoolProp (numParams=0, numIndices=0)
+BoolProp/render-type : expr =
+   (esort lzero).
+
+%% ctor BoolProp.a (induct=BoolProp, numFields=0)
+BoolProp_a/render-type : expr =
+   (econst "BoolProp" lnil).
+
+%% ctor BoolProp.b (induct=BoolProp, numFields=0)
+BoolProp_b/render-type : expr =
+   (econst "BoolProp" lnil).
+
+%% recursor BoolProp.rec (numMotives=1, numMinors=2, k=false)
+BoolProp_rec/render-type : expr =
+   (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "BoolProp.a" lnil)) ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w))))))))).
+%%   rec-rule for BoolProp.a (nfields=0)
+BoolProp_rec/render-rule0-rhs : expr =
+   (elam (eforall (econst "BoolProp" lnil) ([x] (esort lzero))) ([x] (elam (eapp x (econst "BoolProp.a" lnil)) ([y] (elam (eapp x (econst "BoolProp.b" lnil)) ([z] y)))))).
+%%   rec-rule for BoolProp.b (nfields=0)
+BoolProp_rec/render-rule1-rhs : expr =
+   (elam (eforall (econst "BoolProp" lnil) ([x] (esort lzero))) ([x] (elam (eapp x (econst "BoolProp.a" lnil)) ([y] (elam (eapp x (econst "BoolProp.b" lnil)) ([z] z)))))).
+
+%% def boolPropRec
+boolPropRec/render-type : expr =
+   (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "BoolProp.a" lnil)) ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w))))))))).
+boolPropRec/render-value : expr =
+   (econst "BoolProp.rec" lnil).
+

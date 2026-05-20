@@ -1,0 +1,23 @@
+%%% Render-only view of: 061_punitRec
+%%% Asserting the type of the generated recursor
+%% inductive PUnit (numParams=0, numIndices=0)
+PUnit/render-type : {u : lvl} expr =
+   [u] (esort u).
+
+%% ctor PUnit.unit (induct=PUnit, numFields=0)
+PUnit_unit/render-type : {u : lvl} expr =
+   [u] (econst "PUnit" (lcons u lnil)).
+
+%% recursor PUnit.rec (numMotives=1, numMinors=1, k=false)
+PUnit_rec/render-type : {u_1 : lvl} {u : lvl} expr =
+   [u_1] [u] (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))).
+%%   rec-rule for PUnit.unit (nfields=0)
+PUnit_rec/render-rule0-rhs : {u_1 : lvl} {u : lvl} expr =
+   [u_1] [u] (elam (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort u_1))) ([x] (elam (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] y)))).
+
+%% def punitRec
+punitRec/render-type : {u : lvl} {lv_w : lvl} expr =
+   [u] [lv_w] (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort lv_w))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))).
+punitRec/render-value : {u : lvl} {lv_w : lvl} expr =
+   [u] [lv_w] (econst "PUnit.rec" (lcons lv_w (lcons u lnil))).
+

@@ -1,0 +1,78 @@
+%%% Render-only view of: 072_listRecReduction
+%%% Reduction behavior of `List.rec`
+%% inductive List (numParams=1, numIndices=0)
+List/render-type : {u : lvl} expr =
+   [u] (eforall (esort (lsucc u)) ([x] (esort (lsucc u)))).
+
+%% ctor List.nil (induct=List, numFields=0)
+List_nil/render-type : {u : lvl} expr =
+   [u] (eforall (esort (lsucc u)) ([x] (eapp (econst "List" (lcons u lnil)) x))).
+
+%% ctor List.cons (induct=List, numFields=2)
+List_cons/render-type : {u : lvl} expr =
+   [u] (eforall (esort (lsucc u)) ([x] (eforall x ([y] (eforall (eapp (econst "List" (lcons u lnil)) x) ([z] (eapp (econst "List" (lcons u lnil)) x))))))).
+
+%% recursor List.rec (numMotives=1, numMinors=2, k=false)
+List_rec/render-type : {u_1 : lvl} {u : lvl} expr =
+   [u_1] [u] (eforall (esort (lsucc u)) ([x] (eforall (eforall (eapp (econst "List" (lcons u lnil)) x) ([y] (esort u_1))) ([y] (eforall (eapp y (eapp (econst "List.nil" (lcons u lnil)) x)) ([z] (eforall (eforall x ([w] (eforall (eapp (econst "List" (lcons u lnil)) x) ([x1] (eforall (eapp y x1) ([y1] (eapp y (eapp (eapp (eapp (econst "List.cons" (lcons u lnil)) x) w) x1)))))))) ([w] (eforall (eapp (econst "List" (lcons u lnil)) x) ([x1] (eapp y x1))))))))))).
+%%   rec-rule for List.nil (nfields=0)
+List_rec/render-rule0-rhs : {u_1 : lvl} {u : lvl} expr =
+   [u_1] [u] (elam (esort (lsucc u)) ([x] (elam (eforall (eapp (econst "List" (lcons u lnil)) x) ([y] (esort u_1))) ([y] (elam (eapp y (eapp (econst "List.nil" (lcons u lnil)) x)) ([z] (elam (eforall x ([w] (eforall (eapp (econst "List" (lcons u lnil)) x) ([x1] (eforall (eapp y x1) ([y1] (eapp y (eapp (eapp (eapp (econst "List.cons" (lcons u lnil)) x) w) x1)))))))) ([w] z)))))))).
+%%   rec-rule for List.cons (nfields=2)
+List_rec/render-rule1-rhs : {u_1 : lvl} {u : lvl} expr =
+   [u_1] [u] (elam (esort (lsucc u)) ([x] (elam (eforall (eapp (econst "List" (lcons u lnil)) x) ([y] (esort u_1))) ([y] (elam (eapp y (eapp (econst "List.nil" (lcons u lnil)) x)) ([z] (elam (eforall x ([w] (eforall (eapp (econst "List" (lcons u lnil)) x) ([x1] (eforall (eapp y x1) ([y1] (eapp y (eapp (eapp (eapp (econst "List.cons" (lcons u lnil)) x) w) x1)))))))) ([w] (elam x ([x1] (elam (eapp (econst "List" (lcons u lnil)) x) ([y1] (eapp (eapp (eapp w x1) y1) (eapp (eapp (eapp (eapp (eapp (econst "List.rec" (lcons u_1 (lcons u lnil))) x) y) z) w) y1)))))))))))))).
+
+%% inductive And (numParams=2, numIndices=0)
+And/render-type : expr =
+   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))).
+
+%% ctor And.intro (induct=And, numFields=2)
+And_intro/render-type : expr =
+   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))).
+
+%% recursor And.rec (numMotives=1, numMinors=1, k=false)
+And_rec/render-type : {u : lvl} expr =
+   [u] (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] (esort u))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "And.intro" lnil) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "And" lnil) x) y) ([x1] (eapp z x1))))))))))).
+%%   rec-rule for And.intro (nfields=2)
+And_rec/render-rule0-rhs : {u : lvl} expr =
+   [u] (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] (esort u))) ([z] (elam (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "And.intro" lnil) x) y) w) x1)))))) ([w] (elam x ([x1] (elam y ([y1] (eapp (eapp w x1) y1))))))))))))).
+
+%% inductive Eq (numParams=2, numIndices=1)
+Eq/render-type : {u_1 : lvl} expr =
+   [u_1] (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))).
+
+%% ctor Eq.refl (induct=Eq, numFields=0)
+Eq_refl/render-type : {u_1 : lvl} expr =
+   [u_1] (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))).
+
+%% recursor Eq.rec (numMotives=1, numMinors=1, k=true)
+Eq_rec/render-type : {u : lvl} {u_1 : lvl} expr =
+   [u] [u_1] (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))).
+%%   rec-rule for Eq.refl (nfields=0)
+Eq_rec/render-rule0-rhs : {u : lvl} {u_1 : lvl} expr =
+   [u] [u_1] (elam (esort u_1) ([x] (elam x ([y] (elam (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (elam (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] w)))))))).
+
+%% def List.recOn
+List_recOn/render-type : {u_1 : lvl} {u : lvl} expr =
+   [u_1] [u] (eforall (esort (lsucc u)) ([x] (eforall (eforall (eapp (econst "List" (lcons u lnil)) x) ([y] (esort u_1))) ([y] (eforall (eapp (econst "List" (lcons u lnil)) x) ([z] (eforall (eapp y (eapp (econst "List.nil" (lcons u lnil)) x)) ([w] (eforall (eforall x ([x1] (eforall (eapp (econst "List" (lcons u lnil)) x) ([y1] (eforall (eapp y y1) ([z1] (eapp y (eapp (eapp (eapp (econst "List.cons" (lcons u lnil)) x) x1) y1)))))))) ([x1] (eapp y z))))))))))).
+List_recOn/render-value : {u_1 : lvl} {u : lvl} expr =
+   [u_1] [u] (elam (esort (lsucc u)) ([x] (elam (eforall (eapp (econst "List" (lcons u lnil)) x) ([y] (esort u_1))) ([y] (elam (eapp (econst "List" (lcons u lnil)) x) ([z] (elam (eapp y (eapp (econst "List.nil" (lcons u lnil)) x)) ([w] (elam (eforall x ([x1] (eforall (eapp (econst "List" (lcons u lnil)) x) ([y1] (eforall (eapp y y1) ([z1] (eapp y (eapp (eapp (eapp (econst "List.cons" (lcons u lnil)) x) x1) y1)))))))) ([x1] (eapp (eapp (eapp (eapp (eapp (econst "List.rec" (lcons u_1 (lcons u lnil))) x) y) w) x1) z))))))))))).
+
+%% def myListApped
+myListApped/render-type : expr =
+   (eforall (esort (lsucc lzero)) ([x] (eforall (eapp (econst "List" (lcons lzero lnil)) x) ([y] (eforall (eapp (econst "List" (lcons lzero lnil)) x) ([z] (eapp (econst "List" (lcons lzero lnil)) x))))))).
+myListApped/render-value : expr =
+   (elam (esort (lsucc lzero)) ([x] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([y] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([z] (eapp (eapp (eapp (eapp (eapp (econst "List.recOn" (lcons (lsucc lzero) (lcons lzero lnil))) x) (elam (eapp (econst "List" (lcons lzero lnil)) x) ([w] (eapp (econst "List" (lcons lzero lnil)) x)))) y) z) (elam x ([w] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([x1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([y1] (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) y1)))))))))))))).
+
+%% def id
+id/render-type : {u : lvl} expr =
+   [u] (eforall (esort u) ([x] (eforall x ([y] x)))).
+id/render-value : {u : lvl} expr =
+   [u] (elam (esort u) ([x] (elam x ([y] y)))).
+
+%% thm listRecReduction
+listRecReduction/render-type : expr =
+   (eforall (esort (lsucc lzero)) ([x] (eforall (eapp (econst "List" (lcons lzero lnil)) x) ([y] (eforall (eapp (econst "List" (lcons lzero lnil)) x) ([z] (eapp (eapp (econst "And" lnil) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x)) (eapp (eapp (eapp (econst "myListApped" lnil) x) (eapp (econst "List.nil" (lcons lzero lnil)) x)) z)) z)) (eforall x ([w] (eforall (eapp (econst "List" (lcons lzero lnil)) x) ([x1] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x)) (eapp (eapp (eapp (econst "myListApped" lnil) x) (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) x1)) z)) (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) (eapp (eapp (eapp (econst "myListApped" lnil) x) x1) z)))))))))))))).
+listRecReduction/render-value : expr =
+   (elam (esort (lsucc lzero)) ([x] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([y] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([z] (eapp (eapp (econst "id" (lcons lzero lnil)) (eapp (eapp (econst "And" lnil) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x)) (eapp (eapp (eapp (econst "myListApped" lnil) x) (eapp (econst "List.nil" (lcons lzero lnil)) x)) z)) z)) (eforall x ([w] (eforall (eapp (econst "List" (lcons lzero lnil)) x) ([x1] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x)) (eapp (eapp (eapp (econst "myListApped" lnil) x) (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) x1)) z)) (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) (eapp (eapp (eapp (econst "myListApped" lnil) x) x1) z))))))))) (eapp (eapp (eapp (eapp (econst "And.intro" lnil) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x)) (eapp (eapp (eapp (eapp (eapp (econst "List.recOn" (lcons (lsucc lzero) (lcons lzero lnil))) x) (elam (eapp (econst "List" (lcons lzero lnil)) x) ([w] (eapp (econst "List" (lcons lzero lnil)) x)))) (eapp (econst "List.nil" (lcons lzero lnil)) x)) z) (elam x ([w] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([x1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([y1] (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) y1))))))))) z)) (eforall x ([w] (eforall (eapp (econst "List" (lcons lzero lnil)) x) ([x1] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x)) (eapp (eapp (eapp (eapp (eapp (econst "List.recOn" (lcons (lsucc lzero) (lcons lzero lnil))) x) (elam (eapp (econst "List" (lcons lzero lnil)) x) ([y1] (eapp (econst "List" (lcons lzero lnil)) x)))) (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) x1)) z) (elam x ([y1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([z1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([w1] (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) y1) w1))))))))) (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) (eapp (eapp (eapp (eapp (eapp (econst "List.recOn" (lcons (lsucc lzero) (lcons lzero lnil))) x) (elam (eapp (econst "List" (lcons lzero lnil)) x) ([y1] (eapp (econst "List" (lcons lzero lnil)) x)))) x1) z) (elam x ([y1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([z1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([w1] (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) y1) w1))))))))))))))) (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x)) (eapp (eapp (eapp (eapp (eapp (econst "List.recOn" (lcons (lsucc lzero) (lcons lzero lnil))) x) (elam (eapp (econst "List" (lcons lzero lnil)) x) ([w] (eapp (econst "List" (lcons lzero lnil)) x)))) (eapp (econst "List.nil" (lcons lzero lnil)) x)) z) (elam x ([w] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([x1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([y1] (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) y1)))))))))) (elam x ([w] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([x1] (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x)) (eapp (eapp (eapp (eapp (eapp (econst "List.recOn" (lcons (lsucc lzero) (lcons lzero lnil))) x) (elam (eapp (econst "List" (lcons lzero lnil)) x) ([y1] (eapp (econst "List" (lcons lzero lnil)) x)))) (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) x1)) z) (elam x ([y1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([z1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([w1] (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) y1) w1))))))))))))))))))))).
+

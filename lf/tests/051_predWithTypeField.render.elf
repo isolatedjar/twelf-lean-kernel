@@ -1,0 +1,23 @@
+%%% Render-only view of: 051_predWithTypeField
+%%% An inductive proposition can have constructors with fields of arbitrary level.
+%% inductive PredWithTypeField (numParams=0, numIndices=0)
+PredWithTypeField/render-type : expr =
+   (esort lzero).
+
+%% ctor PredWithTypeField.mk (induct=PredWithTypeField, numFields=1)
+PredWithTypeField_mk/render-type : expr =
+   (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil))).
+
+%% recursor PredWithTypeField.rec (numMotives=1, numMinors=1, k=false)
+PredWithTypeField_rec/render-type : expr =
+   (eforall (eforall (econst "PredWithTypeField" lnil) ([x] (esort lzero))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "PredWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "PredWithTypeField" lnil) ([z] (eapp x z))))))).
+%%   rec-rule for PredWithTypeField.mk (nfields=1)
+PredWithTypeField_rec/render-rule0-rhs : expr =
+   (elam (eforall (econst "PredWithTypeField" lnil) ([x] (esort lzero))) ([x] (elam (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "PredWithTypeField.mk" lnil) y)))) ([y] (elam (esort (lsucc lzero)) ([z] (eapp y z))))))).
+
+%% def predWithTypeField
+predWithTypeField/render-type : expr =
+   (esort lzero).
+predWithTypeField/render-value : expr =
+   (econst "PredWithTypeField" lnil).
+

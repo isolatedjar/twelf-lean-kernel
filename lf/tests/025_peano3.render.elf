@@ -1,0 +1,62 @@
+%%% Render-only view of: 025_peano3
+%%% Peano arithmetic: 2 * 2 = 4
+%% def PN
+PN/render-type : {u_1 : lvl} expr =
+   [u_1] (esort (limax (lsucc u_1) u_1)).
+PN/render-value : {u_1 : lvl} expr =
+   [u_1] (eforall (esort u_1) ([x] (eforall (eforall x ([y] x)) ([y] (eforall x ([z] x)))))).
+
+%% def PN.succ
+PN_succ/render-type : {u_1 : lvl} expr =
+   [u_1] (eforall (econst "PN" (lcons u_1 lnil)) ([x] (econst "PN" (lcons u_1 lnil)))).
+PN_succ/render-value : {u_1 : lvl} expr =
+   [u_1] (elam (econst "PN" (lcons u_1 lnil)) ([x] (elam (esort u_1) ([y] (elam (eforall y ([z] y)) ([z] (elam y ([w] (eapp z (eapp (eapp (eapp x y) z) w)))))))))).
+
+%% def PN.zero
+PN_zero/render-type : {u_1 : lvl} expr =
+   [u_1] (econst "PN" (lcons u_1 lnil)).
+PN_zero/render-value : {u_1 : lvl} expr =
+   [u_1] (elam (esort u_1) ([x] (elam (eforall x ([y] x)) ([y] (elam x ([z] z)))))).
+
+%% def PN.lit0
+PN_lit0/render-type : {u_1 : lvl} expr =
+   [u_1] (econst "PN" (lcons u_1 lnil)).
+PN_lit0/render-value : {u_1 : lvl} expr =
+   [u_1] (econst "PN.zero" (lcons u_1 lnil)).
+
+%% def PN.lit1
+PN_lit1/render-type : {u_1 : lvl} expr =
+   [u_1] (econst "PN" (lcons u_1 lnil)).
+PN_lit1/render-value : {u_1 : lvl} expr =
+   [u_1] (eapp (econst "PN.succ" (lcons u_1 lnil)) (econst "PN.lit0" (lcons u_1 lnil))).
+
+%% def PN.lit2
+PN_lit2/render-type : {u_1 : lvl} expr =
+   [u_1] (econst "PN" (lcons u_1 lnil)).
+PN_lit2/render-value : {u_1 : lvl} expr =
+   [u_1] (eapp (econst "PN.succ" (lcons u_1 lnil)) (econst "PN.lit1" (lcons u_1 lnil))).
+
+%% def PN.lit3
+PN_lit3/render-type : {u_1 : lvl} expr =
+   [u_1] (econst "PN" (lcons u_1 lnil)).
+PN_lit3/render-value : {u_1 : lvl} expr =
+   [u_1] (eapp (econst "PN.succ" (lcons u_1 lnil)) (econst "PN.lit2" (lcons u_1 lnil))).
+
+%% def PN.lit4
+PN_lit4/render-type : {u_1 : lvl} expr =
+   [u_1] (econst "PN" (lcons u_1 lnil)).
+PN_lit4/render-value : {u_1 : lvl} expr =
+   [u_1] (eapp (econst "PN.succ" (lcons u_1 lnil)) (econst "PN.lit3" (lcons u_1 lnil))).
+
+%% def PN.mul
+PN_mul/render-type : {u_1 : lvl} expr =
+   [u_1] (eforall (econst "PN" (lcons u_1 lnil)) ([x] (eforall (econst "PN" (lcons u_1 lnil)) ([y] (econst "PN" (lcons u_1 lnil)))))).
+PN_mul/render-value : {u_1 : lvl} expr =
+   [u_1] (elam (econst "PN" (lcons u_1 lnil)) ([x] (elam (econst "PN" (lcons u_1 lnil)) ([y] (elam (esort u_1) ([z] (elam (eforall z ([w] z)) ([w] (elam z ([x1] (eapp (eapp (eapp x z) (eapp (eapp y z) w)) x1))))))))))).
+
+%% thm peano3
+peano3/render-type : {u : lvl} expr =
+   [u] (eforall (eforall (econst "PN" (lcons u lnil)) ([x] (esort lzero))) ([x] (eforall (eforall (econst "PN" (lcons u lnil)) ([y] (eapp x y))) ([y] (eapp x (econst "PN.lit4" (lcons u lnil))))))).
+peano3/render-value : {u : lvl} expr =
+   [u] (elam (eforall (econst "PN" (lcons u lnil)) ([x] (esort lzero))) ([x] (elam (eforall (econst "PN" (lcons u lnil)) ([y] (eapp x y))) ([y] (eapp y (eapp (eapp (econst "PN.mul" (lcons u lnil)) (econst "PN.lit2" (lcons u lnil))) (econst "PN.lit2" (lcons u lnil)))))))).
+

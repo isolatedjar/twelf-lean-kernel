@@ -1,0 +1,14 @@
+%%% Render-only view of: 006_betaReduction
+%%% Lambda reduction
+%% def constType
+constType/render-type : expr =
+   (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))).
+constType/render-value : expr =
+   (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))).
+
+%% def betaReduction
+betaReduction/render-type : expr =
+   (eapp (eapp (econst "constType" lnil) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))).
+betaReduction/render-value : expr =
+   (eforall (esort lzero) ([x] x)).
+

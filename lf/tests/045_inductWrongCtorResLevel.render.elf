@@ -1,0 +1,14 @@
+%%% Render-only view of: 045_inductWrongCtorResLevel
+%%% An inductive with a constructor with wrong level parameters in result (they are swapped)
+%% inductive inductWrongCtorResLevel (numParams=2, numIndices=0)
+inductWrongCtorResLevel/render-type : {u1 : lvl} {u2 : lvl} expr =
+   [u1] [u2] (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))).
+
+%% ctor inductWrongCtorResLevel.mk (induct=inductWrongCtorResLevel, numFields=0)
+inductWrongCtorResLevel_mk/render-type : {u1 : lvl} {u2 : lvl} expr =
+   [u1] [u2] (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResLevel" (lcons u2 (lcons u1 lnil))) x) y))))).
+
+%% recursor inductWrongCtorResLevel.rec (numMotives=0, numMinors=0, k=false)
+inductWrongCtorResLevel_rec/render-type : expr =
+   (esort lzero).
+
