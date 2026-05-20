@@ -28,6 +28,21 @@ npx tsc --noEmit
 
 Twelf server binary: `/home/user/twelf-src/bin/twelf-server`
 
+## Regenerating the tutorial NDJSON test cases
+
+The NDJSON files under `tests/tutorial/` are generated from the Lean 4 source
+in `lean/tutorial/` (a copy of the tutorial project from
+[lean-kernel-arena](https://github.com/leanprover/lean-kernel-arena/tree/master/tutorial)).
+They are checked in so the TypeScript pipeline can run without Lean.
+
+To regenerate them (requires `elan`/`lake` on PATH):
+
+```bash
+./scripts/regen-tutorial-ndjson.sh
+```
+
+After regenerating NDJSON, re-run `./scripts/gen-tests.sh` to update the `.elf` files.
+
 ## Key files
 
 | File | Role |
@@ -41,6 +56,8 @@ Twelf server binary: `/home/user/twelf-src/bin/twelf-server`
 | `src/lean2lf.ts` | JSON IR → Twelf LF translator |
 | `scripts/gen-tests.sh` | Generate `lf/tests/*.elf` from `tests/*.ndjson` |
 | `scripts/check-tests.sh` | Run Twelf on each `.elf` and report results |
+| `scripts/regen-tutorial-ndjson.sh` | Regenerate `tests/tutorial/**/*.ndjson` from Lean source |
+| `lean/tutorial/` | Lean 4 source for the tutorial test suite |
 
 ## Test status
 
