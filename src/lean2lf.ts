@@ -26,52 +26,15 @@ import type {
   ParsedEnv,
 } from "./shared.ts";
 import { nameToString, transformNamesFromJSON } from "./shared.ts";
-
-// =====================================================================
-// Name mangling
-// =====================================================================
-
-function mangle(n: Name): string {
-  // Replace dots and disallowed chars for use as Twelf identifiers.
-  return nameToString(n).replace(/[^A-Za-z0-9_]/g, "_");
-}
-
-// =====================================================================
-// 6. LF emission for levels and expressions
-// =====================================================================
-
-// Map from Lean level-param name to its LF binder name.  Populated by
-// emitValDecl/emitAxiom while emitting a polymorphic declaration; empty
-// otherwise.  Consulted by lfLevel for the `param` case and by freshVar
-// to avoid collisions.
-const levelParamBindings: Map<string, string> = new Map();
-
-function lfLevel(l: Level): string {
-  switch (l.kind) {
-    case "zero":
-      return "lzero";
-    case "succ":
-      return `(lsucc ${lfLevel(l.arg)})`;
-    case "max":
-      return `(lmax ${lfLevel(l.l)} ${lfLevel(l.r)})`;
-    case "imax":
-      return `(limax ${lfLevel(l.l)} ${lfLevel(l.r)})`;
-    case "param": {
-      const v = levelParamBindings.get(nameToString(l.name));
-      if (v === undefined) throw new Error(`unbound level param: ${nameToString(l.name)}`);
-      return v;
-    }
-  }
-}
-
-// Sanitize a Lean level-param name into an LF identifier that won't
-// collide with freshVar's letters (x/y/z/w).
-function nameToLfLevelVar(n: Name): string {
-  const raw = nameToString(n).replace(/[^A-Za-z0-9_]/g, "_");
-  if (raw === "") return "lv_anon";
-  if (/^[xyzw]/.test(raw)) return `lv_${raw}`;
-  return raw;
-}
+import {
+  levelParamBindings,
+  mangle,
+  nameToLfLevelVar,
+  lfLevel,
+  lfLvls,
+  lfExpr,
+  freshVar,
+} from "./render.ts";
 
 // Build a Twelf proof of `ends-in-sort <lfExpr t>` if `t` is structurally
 // a (possibly empty) chain of forall-binders ending in a sort literal.
@@ -313,47 +276,6 @@ function freshMangleForDuplicates(baseMangle: string, leanName: string): string 
   dupCounter.set(baseMangle, n);
   return `${baseMangle}__dup${n}`;
 }
-function lfLvls(ls: Level[]): string {
-  let acc = "lnil";
-  for (let i = ls.length - 1; i >= 0; i--) acc = `(lcons ${lfLevel(ls[i])} ${acc})`;
-  return acc;
-}
-
-// HOAS translation: bvar 0 inside a binder becomes the LF-level variable
-// introduced at that binder.  `boundVars` is the LF-side variable name
-// stack, innermost-first.
-function lfExpr(e: Expr, boundVars: string[]): string {
-  switch (e.kind) {
-    case "bvar": {
-      const name = boundVars[e.deBruijn];
-      if (name === undefined)
-        throw new Error(`bvar ${e.deBruijn} out of scope (depth ${boundVars.length})`);
-      return name;
-    }
-    case "sort":
-      return `(esort ${lfLevel(e.level)})`;
-    case "const":
-      return `(econst "${nameToString(e.name)}" ${lfLvls(e.us)})`;
-    case "app":
-      return `(eapp ${lfExpr(e.fn, boundVars)} ${lfExpr(e.arg, boundVars)})`;
-    case "lam": {
-      const v = freshVar(boundVars);
-      return `(elam ${lfExpr(e.type, boundVars)} ([${v}] ${lfExpr(e.body, [v, ...boundVars])}))`;
-    }
-    case "forallE": {
-      const v = freshVar(boundVars);
-      return `(eforall ${lfExpr(e.type, boundVars)} ([${v}] ${lfExpr(e.body, [v, ...boundVars])}))`;
-    }
-    case "letE":
-      throw new Error("letE not yet supported");
-    case "proj":
-      throw new Error("proj not yet supported");
-    case "natLit":
-      throw new Error("natLit not yet supported");
-    case "strLit":
-      throw new Error("strLit not yet supported");
-  }
-}
 
 // Substitute level params throughout a Level expression.  Used to
 // produce a closed level term from a polymorphic one for %solve.
@@ -437,22 +359,6 @@ function distinctLevelSub(params: Name[]): Map<string, Level> {
   return sub;
 }
 
-function freshVar(scope: string[]): string {
-  // Predictable names: x, y, z, w, x1, y1, ...  Scope must include
-  // *every* bound name (vars and hyps both) — they live in the same
-  // LF namespace and would shadow.  We also avoid level-param binder
-  // names, which live in the same LF namespace.
-  const levelNames = Array.from(levelParamBindings.values());
-  const allScope = [...scope, ...levelNames];
-  const letters = ["x", "y", "z", "w"];
-  for (let suf = 0; suf < 1000; suf++) {
-    for (const l of letters) {
-      const v = suf === 0 ? l : `${l}${suf}`;
-      if (!allScope.includes(v)) return v;
-    }
-  }
-  throw new Error("ran out of fresh variable names");
-}
 
 // =====================================================================
 // 7. Type synthesis + proof construction
