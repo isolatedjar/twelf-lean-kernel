@@ -113,6 +113,12 @@ eapp    : expr -> expr -> expr.
 elam    : expr -> (expr -> expr) -> expr.
 eforall : expr -> (expr -> expr) -> expr.
 
+%% Representation-only constructors — no typing or reduction rules.
+%% integer and string come from the %use declarations above.
+eproj   : name -> integer -> expr -> expr.  %% field projection: struct type name, field index, struct
+enatlit : {n : integer} n >= 0 -> expr.      %% Lean Expr.lit (Literal.natVal n)
+estrlit : string  -> expr.                   %% Lean Expr.lit (Literal.strVal s)
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Definitional equality   Γ ⊢ e₁ ≡ e₂ : A
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
