@@ -1,0 +1,46 @@
+%%% Render-only view of: 067_sortElimPropRec
+%%% Inductive predicates eliminate into Sort if they have one constructors and it carries data, but the data is
+%%% known from the type, e.g. a parameter or an index
+%% inductive Bool (numParams=0, numIndices=0)
+Bool/render-type : expr =
+   (esort (lsucc lzero)).
+
+%% ctor Bool.false (induct=Bool, numFields=0)
+Bool_false/render-type : expr =
+   (econst "Bool" lnil).
+
+%% ctor Bool.true (induct=Bool, numFields=0)
+Bool_true/render-type : expr =
+   (econst "Bool" lnil).
+
+%% recursor Bool.rec (numMotives=1, numMinors=2, k=false)
+Bool_rec/render-type : {u : lvl} expr =
+   [u] (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))).
+%%   rec-rule for Bool.false (nfields=0)
+Bool_rec/render-rule0-rhs : {u : lvl} expr =
+   [u] (elam (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] y)))))).
+%%   rec-rule for Bool.true (nfields=0)
+Bool_rec/render-rule1-rhs : {u : lvl} expr =
+   [u] (elam (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] z)))))).
+
+%% inductive SortElimProp (numParams=1, numIndices=2)
+SortElimProp/render-type : expr =
+   (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (esort lzero))))))).
+
+%% ctor SortElimProp.mk (induct=SortElimProp, numFields=2)
+SortElimProp_mk/render-type : expr =
+   (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp (eapp (eapp (econst "SortElimProp" lnil) x) z) y))))))).
+
+%% recursor SortElimProp.rec (numMotives=1, numMinors=1, k=false)
+SortElimProp_rec/render-type : {u : lvl} expr =
+   [u] (eforall (econst "Bool" lnil) ([x] (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eforall (eapp (eapp (eapp (econst "SortElimProp" lnil) x) y) z) ([w] (esort u))))))) ([y] (eforall (eforall (econst "Bool" lnil) ([z] (eforall (econst "Bool" lnil) ([w] (eapp (eapp (eapp y w) z) (eapp (eapp (eapp (econst "SortElimProp.mk" lnil) x) z) w)))))) ([z] (eforall (econst "Bool" lnil) ([w] (eforall (econst "Bool" lnil) ([x1] (eforall (eapp (eapp (eapp (econst "SortElimProp" lnil) x) w) x1) ([y1] (eapp (eapp (eapp y w) x1) y1))))))))))))).
+%%   rec-rule for SortElimProp.mk (nfields=2)
+SortElimProp_rec/render-rule0-rhs : {u : lvl} expr =
+   [u] (elam (econst "Bool" lnil) ([x] (elam (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eforall (eapp (eapp (eapp (econst "SortElimProp" lnil) x) y) z) ([w] (esort u))))))) ([y] (elam (eforall (econst "Bool" lnil) ([z] (eforall (econst "Bool" lnil) ([w] (eapp (eapp (eapp y w) z) (eapp (eapp (eapp (econst "SortElimProp.mk" lnil) x) z) w)))))) ([z] (elam (econst "Bool" lnil) ([w] (elam (econst "Bool" lnil) ([x1] (eapp (eapp z w) x1))))))))))).
+
+%% def sortElimPropRec
+sortElimPropRec/render-type : {u : lvl} expr =
+   [u] (eforall (econst "Bool" lnil) ([x] (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eforall (eapp (eapp (eapp (econst "SortElimProp" lnil) x) y) z) ([w] (esort u))))))) ([y] (eforall (eforall (econst "Bool" lnil) ([z] (eforall (econst "Bool" lnil) ([w] (eapp (eapp (eapp y w) z) (eapp (eapp (eapp (econst "SortElimProp.mk" lnil) x) z) w)))))) ([z] (eforall (econst "Bool" lnil) ([w] (eforall (econst "Bool" lnil) ([x1] (eforall (eapp (eapp (eapp (econst "SortElimProp" lnil) x) w) x1) ([y1] (eapp (eapp (eapp y w) x1) y1))))))))))))).
+sortElimPropRec/render-value : {u : lvl} expr =
+   [u] (econst "SortElimProp.rec" (lcons u lnil)).
+

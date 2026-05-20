@@ -1,0 +1,23 @@
+%%% Render-only view of: 034_pprodType
+%%% A parametrized product type (with more general level parameters)
+%% inductive PProd (numParams=2, numIndices=0)
+PProd/render-type : {u : lvl} {v : lvl} expr =
+   [u] [v] (eforall (esort u) ([x] (eforall (esort v) ([y] (esort (lmax (lmax (lsucc lzero) u) v)))))).
+
+%% ctor PProd.mk (induct=PProd, numFields=2)
+PProd_mk/render-type : {u : lvl} {v : lvl} expr =
+   [u] [v] (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y))))))))).
+
+%% recursor PProd.rec (numMotives=1, numMinors=1, k=false)
+PProd_rec/render-type : {u_1 : lvl} {u : lvl} {v : lvl} expr =
+   [u_1] [u] [v] (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (esort u_1))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PProd.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([x1] (eapp z x1))))))))))).
+%%   rec-rule for PProd.mk (nfields=2)
+PProd_rec/render-rule0-rhs : {u_1 : lvl} {u : lvl} {v : lvl} expr =
+   [u_1] [u] [v] (elam (esort u) ([x] (elam (esort v) ([y] (elam (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (esort u_1))) ([z] (elam (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PProd.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (elam x ([x1] (elam y ([y1] (eapp (eapp w x1) y1))))))))))))).
+
+%% def pprodType
+pprodType/render-type : expr =
+   (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))).
+pprodType/render-value : expr =
+   (econst "PProd" (lcons (lsucc lzero) (lcons (lsucc lzero) lnil))).
+

@@ -1,0 +1,32 @@
+%%% Render-only view of: 093_aNatLit
+%%% Type checking Nat literals
+%solve nonneg_0 : 0 >= 0.
+
+%% inductive Nat (numParams=0, numIndices=0)
+Nat/render-type : expr =
+   (esort (lsucc lzero)).
+
+%% ctor Nat.zero (induct=Nat, numFields=0)
+Nat_zero/render-type : expr =
+   (econst "Nat" lnil).
+
+%% ctor Nat.succ (induct=Nat, numFields=1)
+Nat_succ/render-type : expr =
+   (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))).
+
+%% recursor Nat.rec (numMotives=1, numMinors=2, k=false)
+Nat_rec/render-type : {u : lvl} expr =
+   [u] (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))).
+%%   rec-rule for Nat.zero (nfields=0)
+Nat_rec/render-rule0-rhs : {u : lvl} expr =
+   [u] (elam (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Nat.zero" lnil)) ([y] (elam (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] y)))))).
+%%   rec-rule for Nat.succ (nfields=1)
+Nat_rec/render-rule1-rhs : {u : lvl} expr =
+   [u] (elam (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Nat.zero" lnil)) ([y] (elam (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (elam (econst "Nat" lnil) ([w] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "Nat.rec" (lcons u lnil)) x) y) z) w)))))))))).
+
+%% def aNatLit
+aNatLit/render-type : expr =
+   (econst "Nat" lnil).
+aNatLit/render-value : expr =
+   (enatlit 0 nonneg_0).
+

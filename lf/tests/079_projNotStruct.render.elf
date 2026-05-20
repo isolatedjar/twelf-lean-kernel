@@ -1,0 +1,30 @@
+%%% Render-only view of: 079_projNotStruct
+%%% Projection out something that is not a structure
+%% inductive N (numParams=0, numIndices=0)
+N/render-type : expr =
+   (esort (lsucc lzero)).
+
+%% ctor N.zero (induct=N, numFields=0)
+N_zero/render-type : expr =
+   (econst "N" lnil).
+
+%% ctor N.succ (induct=N, numFields=1)
+N_succ/render-type : expr =
+   (eforall (econst "N" lnil) ([x] (econst "N" lnil))).
+
+%% recursor N.rec (numMotives=1, numMinors=2, k=false)
+N_rec/render-type : {u : lvl} expr =
+   [u] (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))).
+%%   rec-rule for N.zero (nfields=0)
+N_rec/render-rule0-rhs : {u : lvl} expr =
+   [u] (elam (eforall (econst "N" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "N.zero" lnil)) ([y] (elam (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] y)))))).
+%%   rec-rule for N.succ (nfields=1)
+N_rec/render-rule1-rhs : {u : lvl} expr =
+   [u] (elam (eforall (econst "N" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "N.zero" lnil)) ([y] (elam (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (elam (econst "N" lnil) ([w] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "N.rec" (lcons u lnil)) x) y) z) w)))))))))).
+
+%% def projNotStruct
+projNotStruct/render-type : expr =
+   (eforall (econst "N" lnil) ([x] (econst "N" lnil))).
+projNotStruct/render-value : expr =
+   (elam (econst "N" lnil) ([x] (eproj "N" 0 x))).
+

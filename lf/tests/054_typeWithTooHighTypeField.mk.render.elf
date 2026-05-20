@@ -1,0 +1,14 @@
+%%% Render-only view of: 054_typeWithTooHighTypeField.mk
+%%% An inductive type can have fields of from higher universes.
+%% inductive typeWithTooHighTypeField (numParams=0, numIndices=0)
+typeWithTooHighTypeField/render-type : expr =
+   (esort (lsucc lzero)).
+
+%% ctor typeWithTooHighTypeField.mk (induct=typeWithTooHighTypeField, numFields=1)
+typeWithTooHighTypeField_mk/render-type : expr =
+   (eforall (esort (lsucc lzero)) ([x] (econst "typeWithTooHighTypeField" lnil))).
+
+%% recursor typeWithTooHighTypeField.rec (numMotives=0, numMinors=0, k=false)
+typeWithTooHighTypeField_rec/render-type : expr =
+   (esort lzero).
+

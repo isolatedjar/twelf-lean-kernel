@@ -1,0 +1,23 @@
+%%% Render-only view of: 033_prodType
+%%% A parametrized product type (with level parameters)
+%% inductive Prod (numParams=2, numIndices=0)
+Prod/render-type : {u : lvl} {v : lvl} expr =
+   [u] [v] (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (esort (lmax (lsucc u) (lsucc v))))))).
+
+%% ctor Prod.mk (induct=Prod, numFields=2)
+Prod_mk/render-type : {u : lvl} {v : lvl} expr =
+   [u] [v] (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y))))))))).
+
+%% recursor Prod.rec (numMotives=1, numMinors=1, k=false)
+Prod_rec/render-type : {u_1 : lvl} {u : lvl} {v : lvl} expr =
+   [u_1] [u] [v] (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] (esort u_1))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([x1] (eapp z x1))))))))))).
+%%   rec-rule for Prod.mk (nfields=2)
+Prod_rec/render-rule0-rhs : {u_1 : lvl} {u : lvl} {v : lvl} expr =
+   [u_1] [u] [v] (elam (esort (lsucc u)) ([x] (elam (esort (lsucc v)) ([y] (elam (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] (esort u_1))) ([z] (elam (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (elam x ([x1] (elam y ([y1] (eapp (eapp w x1) y1))))))))))))).
+
+%% def prodType
+prodType/render-type : expr =
+   (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))).
+prodType/render-value : expr =
+   (econst "Prod" (lcons lzero (lcons lzero lnil))).
+

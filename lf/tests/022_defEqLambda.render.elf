@@ -1,0 +1,8 @@
+%%% Render-only view of: 022_defEqLambda
+%%% Definitional equality between lambdas
+%% def defEqLambda
+defEqLambda/render-type : expr =
+   (eforall (eforall (eforall (esort lzero) ([x] (esort lzero))) ([x] (esort lzero))) ([x] (eforall (eforall (eforall (esort lzero) ([y] (esort lzero))) ([y] (eapp x y))) ([y] (eapp x (elam (esort lzero) ([z] (eforall z ([w] z))))))))).
+defEqLambda/render-value : expr =
+   (elam (eforall (eforall (esort lzero) ([x] (esort lzero))) ([x] (esort lzero))) ([x] (elam (eforall (eforall (esort lzero) ([y] (esort lzero))) ([y] (eapp x y))) ([y] (eapp y (elam (esort lzero) ([z] (eforall z ([w] z))))))))).
+

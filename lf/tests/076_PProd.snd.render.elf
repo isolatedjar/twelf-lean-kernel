@@ -1,0 +1,29 @@
+%%% Render-only view of: 076_PProd.snd
+%%% Type-checking projection functions
+%% inductive PProd (numParams=2, numIndices=0)
+PProd/render-type : {u : lvl} {v : lvl} expr =
+   [u] [v] (eforall (esort u) ([x] (eforall (esort v) ([y] (esort (lmax (lmax (lsucc lzero) u) v)))))).
+
+%% ctor PProd.mk (induct=PProd, numFields=2)
+PProd_mk/render-type : {u : lvl} {v : lvl} expr =
+   [u] [v] (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y))))))))).
+
+%% recursor PProd.rec (numMotives=1, numMinors=1, k=false)
+PProd_rec/render-type : {u_1 : lvl} {u : lvl} {v : lvl} expr =
+   [u_1] [u] [v] (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (esort u_1))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PProd.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([x1] (eapp z x1))))))))))).
+%%   rec-rule for PProd.mk (nfields=2)
+PProd_rec/render-rule0-rhs : {u_1 : lvl} {u : lvl} {v : lvl} expr =
+   [u_1] [u] [v] (elam (esort u) ([x] (elam (esort v) ([y] (elam (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (esort u_1))) ([z] (elam (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PProd.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (elam x ([x1] (elam y ([y1] (eapp (eapp w x1) y1))))))))))))).
+
+%% def PProd.fst
+PProd_fst/render-type : {u : lvl} {v : lvl} expr =
+   [u] [v] (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] x)))))).
+PProd_fst/render-value : {u : lvl} {v : lvl} expr =
+   [u] [v] (elam (esort u) ([x] (elam (esort v) ([y] (elam (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PProd" 0 z))))))).
+
+%% def PProd.snd
+PProd_snd/render-type : {u : lvl} {v : lvl} expr =
+   [u] [v] (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] y)))))).
+PProd_snd/render-value : {u : lvl} {v : lvl} expr =
+   [u] [v] (elam (esort u) ([x] (elam (esort v) ([y] (elam (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PProd" 1 z))))))).
+

@@ -5,7 +5,10 @@
 #
 # Usage:
 #   ./scripts/check-tests.sh <twelf-binary>
-#   ./scripts/check-tests.sh <twelf-binary> lf/tests/001_*.elf   # subset
+#   ./scripts/check-tests.sh <twelf-binary> lf/tests/001_*.full.elf   # subset
+#
+# Only *.full.elf files are checked.  *.render.elf files are a separate
+# pure-encoding artifact (no proofs) and are not Twelf-verified here.
 #
 # Output columns:
 #   <name>   expected <✅|❌>   got <✅|❌|🤷>   <verdict>
@@ -124,7 +127,7 @@ OS.exit" | "$TWELF"
 if [[ $# -gt 0 ]]; then
     test_files=("$@")
 else
-    test_files=("$TESTS_DIR"/*.elf)
+    test_files=("$TESTS_DIR"/*.full.elf)
 fi
 
 # ---------------------------------------------------------------------------
@@ -135,7 +138,7 @@ fi
 max_len=0
 for f in "${test_files[@]}"; do
     len=${#f}
-    base="$(basename "$f")"
+    base="$(basename "$f" .full.elf)"
     len=${#base}
     (( len > max_len )) && max_len=$len
 done
@@ -155,7 +158,7 @@ echo ""
 for file in "${test_files[@]}"; do
     [[ -f "$file" ]] || continue
 
-    base="$(basename "$file")"
+    base="$(basename "$file" .full.elf)"
 
     # Read expected outcome from header.
     expected_raw="$(grep -i "^%%% Expected outcome:" "$file" | head -1 | \

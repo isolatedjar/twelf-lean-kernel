@@ -1,0 +1,30 @@
+%%% Render-only view of: 056_boolRec
+%%% Asserting the type of the generated recursor
+%% inductive Bool (numParams=0, numIndices=0)
+Bool/render-type : expr =
+   (esort (lsucc lzero)).
+
+%% ctor Bool.false (induct=Bool, numFields=0)
+Bool_false/render-type : expr =
+   (econst "Bool" lnil).
+
+%% ctor Bool.true (induct=Bool, numFields=0)
+Bool_true/render-type : expr =
+   (econst "Bool" lnil).
+
+%% recursor Bool.rec (numMotives=1, numMinors=2, k=false)
+Bool_rec/render-type : {u : lvl} expr =
+   [u] (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))).
+%%   rec-rule for Bool.false (nfields=0)
+Bool_rec/render-rule0-rhs : {u : lvl} expr =
+   [u] (elam (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] y)))))).
+%%   rec-rule for Bool.true (nfields=0)
+Bool_rec/render-rule1-rhs : {u : lvl} expr =
+   [u] (elam (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] z)))))).
+
+%% def boolRec
+boolRec/render-type : {u : lvl} expr =
+   [u] (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))).
+boolRec/render-value : {u : lvl} expr =
+   [u] (elam (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] (elam (econst "Bool" lnil) ([w] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons u lnil)) x) y) z) w))))))))).
+
