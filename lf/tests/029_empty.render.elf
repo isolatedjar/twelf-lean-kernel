@@ -1,0 +1,16 @@
+%%% Render-only view of: 029_empty
+%%% A simple empty inductive type
+%% inductive Empty (numParams=0, numIndices=0)
+Empty/render-type : expr =
+   (esort (lsucc lzero)).
+
+%% recursor Empty.rec (numMotives=1, numMinors=0, k=false)
+Empty_rec/render-type : {u : lvl} expr =
+   [u] (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))).
+
+%% def empty
+empty/render-type : expr =
+   (esort (lsucc lzero)).
+empty/render-value : expr =
+   (econst "Empty" lnil).
+

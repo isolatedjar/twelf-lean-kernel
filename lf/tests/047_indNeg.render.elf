@@ -1,0 +1,14 @@
+%%% Render-only view of: 047_indNeg
+%%% The classic example of an inductive with negative recursive occurrence
+%% inductive indNeg (numParams=0, numIndices=0)
+indNeg/render-type : expr =
+   (esort (lsucc lzero)).
+
+%% ctor indNeg.mk (induct=indNeg, numFields=1)
+indNeg_mk/render-type : expr =
+   (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))).
+
+%% recursor indNeg.rec (numMotives=0, numMinors=0, k=false)
+indNeg_rec/render-type : expr =
+   (esort lzero).
+

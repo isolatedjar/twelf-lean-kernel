@@ -1,0 +1,39 @@
+%%% Render-only view of: 106_reflOccInIndex
+%%% Rejection: recursive occurrence in *index position*, behind a further arrow.
+%%% 
+%%% We build an indexed inductive `I : Type → Type` with a constructor argument
+%%% `Nat → I (I α)`, so the recursive occurrence appears as an index argument.
+%% inductive Nat (numParams=0, numIndices=0)
+Nat/render-type : expr =
+   (esort (lsucc lzero)).
+
+%% ctor Nat.zero (induct=Nat, numFields=0)
+Nat_zero/render-type : expr =
+   (econst "Nat" lnil).
+
+%% ctor Nat.succ (induct=Nat, numFields=1)
+Nat_succ/render-type : expr =
+   (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))).
+
+%% recursor Nat.rec (numMotives=1, numMinors=2, k=false)
+Nat_rec/render-type : {u : lvl} expr =
+   [u] (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))).
+%%   rec-rule for Nat.zero (nfields=0)
+Nat_rec/render-rule0-rhs : {u : lvl} expr =
+   [u] (elam (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Nat.zero" lnil)) ([y] (elam (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] y)))))).
+%%   rec-rule for Nat.succ (nfields=1)
+Nat_rec/render-rule1-rhs : {u : lvl} expr =
+   [u] (elam (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Nat.zero" lnil)) ([y] (elam (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (elam (econst "Nat" lnil) ([w] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "Nat.rec" (lcons u lnil)) x) y) z) w)))))))))).
+
+%% inductive reflOccInIndex (numParams=0, numIndices=1)
+reflOccInIndex/render-type : expr =
+   (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))).
+
+%% ctor reflOccInIndex.mk (induct=reflOccInIndex, numFields=1)
+reflOccInIndex_mk/render-type : expr =
+   (eforall (esort (lsucc lzero)) ([x] (eforall (eforall (econst "Nat" lnil) ([y] (eapp (econst "reflOccInIndex" lnil) (eapp (econst "reflOccInIndex" lnil) y)))) ([y] (eapp (econst "reflOccInIndex" lnil) x))))).
+
+%% recursor reflOccInIndex.rec (numMotives=0, numMinors=0, k=false)
+reflOccInIndex_rec/render-type : expr =
+   (esort lzero).
+

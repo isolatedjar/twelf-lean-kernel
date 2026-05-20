@@ -1,0 +1,21 @@
+%%% Render-only view of: 049_reduceCtorType.mk
+%%% When checking inductives, we expect the kernel to **not** reduce the type of the constructor itself;
+%%% that should be all manifest `forall`s
+%% def id
+id/render-type : {u : lvl} expr =
+   [u] (eforall (esort u) ([x] (eforall x ([y] x)))).
+id/render-value : {u : lvl} expr =
+   [u] (elam (esort u) ([x] (elam x ([y] y)))).
+
+%% inductive reduceCtorType (numParams=0, numIndices=0)
+reduceCtorType/render-type : expr =
+   (esort (lsucc lzero)).
+
+%% ctor reduceCtorType.mk (induct=reduceCtorType, numFields=0)
+reduceCtorType_mk/render-type : expr =
+   (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil)).
+
+%% recursor reduceCtorType.rec (numMotives=0, numMinors=0, k=false)
+reduceCtorType_rec/render-type : expr =
+   (esort lzero).
+

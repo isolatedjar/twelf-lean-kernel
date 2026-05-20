@@ -1,0 +1,50 @@
+%%% Render-only view of: 096_unitEta1
+%%% Unit eta
+%% inductive PUnit (numParams=0, numIndices=0)
+PUnit/render-type : {u : lvl} expr =
+   [u] (esort u).
+
+%% ctor PUnit.unit (induct=PUnit, numFields=0)
+PUnit_unit/render-type : {u : lvl} expr =
+   [u] (econst "PUnit" (lcons u lnil)).
+
+%% recursor PUnit.rec (numMotives=1, numMinors=1, k=false)
+PUnit_rec/render-type : {u_1 : lvl} {u : lvl} expr =
+   [u_1] [u] (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))).
+%%   rec-rule for PUnit.unit (nfields=0)
+PUnit_rec/render-rule0-rhs : {u_1 : lvl} {u : lvl} expr =
+   [u_1] [u] (elam (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort u_1))) ([x] (elam (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] y)))).
+
+%% def Unit
+Unit/render-type : expr =
+   (esort (lsucc lzero)).
+Unit/render-value : expr =
+   (econst "PUnit" (lcons (lsucc lzero) lnil)).
+
+%% inductive Eq (numParams=2, numIndices=1)
+Eq/render-type : {u_1 : lvl} expr =
+   [u_1] (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))).
+
+%% ctor Eq.refl (induct=Eq, numFields=0)
+Eq_refl/render-type : {u_1 : lvl} expr =
+   [u_1] (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))).
+
+%% recursor Eq.rec (numMotives=1, numMinors=1, k=true)
+Eq_rec/render-type : {u : lvl} {u_1 : lvl} expr =
+   [u] [u_1] (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))).
+%%   rec-rule for Eq.refl (nfields=0)
+Eq_rec/render-rule0-rhs : {u : lvl} {u_1 : lvl} expr =
+   [u] [u_1] (elam (esort u_1) ([x] (elam x ([y] (elam (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (elam (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] w)))))))).
+
+%% def rfl
+rfl/render-type : {u : lvl} expr =
+   [u] (eforall (esort u) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u lnil)) x) y) y))))).
+rfl/render-value : {u : lvl} expr =
+   [u] (elam (esort u) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons u lnil)) x) y))))).
+
+%% def unitEta1
+unitEta1/render-type : expr =
+   (eforall (econst "Unit" lnil) ([x] (eforall (econst "Unit" lnil) ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Unit" lnil)) x) y))))).
+unitEta1/render-value : expr =
+   (elam (econst "Unit" lnil) ([x] (elam (econst "Unit" lnil) ([y] (eapp (eapp (econst "rfl" (lcons (lsucc lzero) lnil)) (econst "Unit" lnil)) x))))).
+

@@ -1,0 +1,16 @@
+%%% Render-only view of: 055_emptyRec
+%%% Asserting the type of the generated recursor
+%% inductive Empty (numParams=0, numIndices=0)
+Empty/render-type : expr =
+   (esort (lsucc lzero)).
+
+%% recursor Empty.rec (numMotives=1, numMinors=0, k=false)
+Empty_rec/render-type : {u : lvl} expr =
+   [u] (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))).
+
+%% def emptyRec
+emptyRec/render-type : {u : lvl} expr =
+   [u] (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))).
+emptyRec/render-value : {u : lvl} expr =
+   [u] (econst "Empty.rec" (lcons u lnil)).
+

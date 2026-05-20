@@ -1,0 +1,16 @@
+%%% Render-only view of: 027_letTypeDep
+%%% Type checking a dependent let
+%% axiom aDepProp
+aDepProp/render-type : expr =
+   (eforall (esort (lsucc lzero)) ([x] (esort lzero))).
+
+%% axiom mkADepProp
+mkADepProp/render-type : expr =
+   (eforall (esort (lsucc lzero)) ([x] (eapp (econst "aDepProp" lnil) x))).
+
+%% def letTypeDep
+letTypeDep/render-type : expr =
+   (eapp (econst "aDepProp" lnil) (esort lzero)).
+letTypeDep/render-value : expr =
+   (eapp (elam (esort (lsucc lzero)) ([x] (eapp (econst "mkADepProp" lnil) x))) (esort lzero)).
+

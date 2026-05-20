@@ -1,0 +1,45 @@
+%%% Render-only view of: 031_twoBool
+%%% A simple product type
+%% inductive Bool (numParams=0, numIndices=0)
+Bool/render-type : expr =
+   (esort (lsucc lzero)).
+
+%% ctor Bool.false (induct=Bool, numFields=0)
+Bool_false/render-type : expr =
+   (econst "Bool" lnil).
+
+%% ctor Bool.true (induct=Bool, numFields=0)
+Bool_true/render-type : expr =
+   (econst "Bool" lnil).
+
+%% recursor Bool.rec (numMotives=1, numMinors=2, k=false)
+Bool_rec/render-type : {u : lvl} expr =
+   [u] (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))).
+%%   rec-rule for Bool.false (nfields=0)
+Bool_rec/render-rule0-rhs : {u : lvl} expr =
+   [u] (elam (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] y)))))).
+%%   rec-rule for Bool.true (nfields=0)
+Bool_rec/render-rule1-rhs : {u : lvl} expr =
+   [u] (elam (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] z)))))).
+
+%% inductive TwoBool (numParams=0, numIndices=0)
+TwoBool/render-type : expr =
+   (esort (lsucc lzero)).
+
+%% ctor TwoBool.mk (induct=TwoBool, numFields=2)
+TwoBool_mk/render-type : expr =
+   (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (econst "TwoBool" lnil))))).
+
+%% recursor TwoBool.rec (numMotives=1, numMinors=1, k=false)
+TwoBool_rec/render-type : {u : lvl} expr =
+   [u] (eforall (eforall (econst "TwoBool" lnil) ([x] (esort u))) ([x] (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp x (eapp (eapp (econst "TwoBool.mk" lnil) y) z)))))) ([y] (eforall (econst "TwoBool" lnil) ([z] (eapp x z))))))).
+%%   rec-rule for TwoBool.mk (nfields=2)
+TwoBool_rec/render-rule0-rhs : {u : lvl} expr =
+   [u] (elam (eforall (econst "TwoBool" lnil) ([x] (esort u))) ([x] (elam (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp x (eapp (eapp (econst "TwoBool.mk" lnil) y) z)))))) ([y] (elam (econst "Bool" lnil) ([z] (elam (econst "Bool" lnil) ([w] (eapp (eapp y z) w))))))))).
+
+%% def twoBool
+twoBool/render-type : expr =
+   (esort (lsucc lzero)).
+twoBool/render-value : expr =
+   (econst "TwoBool" lnil).
+

@@ -1,0 +1,12 @@
+%%% Render-only view of: 028_letRed
+%%% Reducing a let
+%% axiom aProp
+aProp/render-type : expr =
+   (esort lzero).
+
+%% def letRed
+letRed/render-type : expr =
+   (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)).
+letRed/render-value : expr =
+   (econst "aProp" lnil).
+

@@ -1,0 +1,23 @@
+%%% Render-only view of: 053_typeWithTypeFieldPoly
+%%% An inductive type can have fields of level up to that of the inductive (polymorphic variant).
+%% inductive TypeWithTypeFieldPoly (numParams=0, numIndices=0)
+TypeWithTypeFieldPoly/render-type : {u : lvl} expr =
+   [u] (esort (lsucc (lsucc u))).
+
+%% ctor TypeWithTypeFieldPoly.mk (induct=TypeWithTypeFieldPoly, numFields=1)
+TypeWithTypeFieldPoly_mk/render-type : {u : lvl} expr =
+   [u] (eforall (esort (lsucc u)) ([x] (econst "TypeWithTypeFieldPoly" (lcons u lnil)))).
+
+%% recursor TypeWithTypeFieldPoly.rec (numMotives=1, numMinors=1, k=false)
+TypeWithTypeFieldPoly_rec/render-type : {u_1 : lvl} {u : lvl} expr =
+   [u_1] [u] (eforall (eforall (econst "TypeWithTypeFieldPoly" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eforall (esort (lsucc u)) ([y] (eapp x (eapp (econst "TypeWithTypeFieldPoly.mk" (lcons u lnil)) y)))) ([y] (eforall (econst "TypeWithTypeFieldPoly" (lcons u lnil)) ([z] (eapp x z))))))).
+%%   rec-rule for TypeWithTypeFieldPoly.mk (nfields=1)
+TypeWithTypeFieldPoly_rec/render-rule0-rhs : {u_1 : lvl} {u : lvl} expr =
+   [u_1] [u] (elam (eforall (econst "TypeWithTypeFieldPoly" (lcons u lnil)) ([x] (esort u_1))) ([x] (elam (eforall (esort (lsucc u)) ([y] (eapp x (eapp (econst "TypeWithTypeFieldPoly.mk" (lcons u lnil)) y)))) ([y] (elam (esort (lsucc u)) ([z] (eapp y z))))))).
+
+%% def typeWithTypeFieldPoly
+typeWithTypeFieldPoly/render-type : {u : lvl} expr =
+   [u] (esort (lsucc (lsucc u))).
+typeWithTypeFieldPoly/render-value : {u : lvl} expr =
+   [u] (econst "TypeWithTypeFieldPoly" (lcons u lnil)).
+

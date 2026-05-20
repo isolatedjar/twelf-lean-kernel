@@ -1,0 +1,18 @@
+%%% Render-only view of: 043_inductWrongCtorParams
+%%% An inductive with a constructor with wrong parameters
+%% axiom aProp
+aProp/render-type : expr =
+   (esort lzero).
+
+%% inductive inductWrongCtorParams (numParams=1, numIndices=0)
+inductWrongCtorParams/render-type : expr =
+   (eforall (esort lzero) ([x] (esort (lsucc lzero)))).
+
+%% ctor inductWrongCtorParams.mk (induct=inductWrongCtorParams, numFields=0)
+inductWrongCtorParams_mk/render-type : expr =
+   (eforall (esort (lsucc lzero)) ([x] (eapp (econst "inductWrongCtorParams" lnil) (econst "aProp" lnil)))).
+
+%% recursor inductWrongCtorParams.rec (numMotives=0, numMinors=0, k=false)
+inductWrongCtorParams_rec/render-type : expr =
+   (esort lzero).
+
