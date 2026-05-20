@@ -1,6 +1,11 @@
 %%% Expected outcome: reject
 %%% Projecting out data is not allowed, even if this data appears as an index
 %%% and the recursor would allow it.
+%% This file contains 1 hole tag(s):
+%%   - hole/defeq (count: see HOLE/defeq markers below)
+%% Files with any hole/<tag> use are NOT Twelf-verified.
+hole/defeq : {E1 : expr} {E2 : expr} {T : expr} defeq E1 E2 T.
+
 %% inductive N
 N/type-wf :
    defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
@@ -143,8 +148,18 @@ ProjDataIndex_rec/decl : {u : lvl} declared "ProjDataIndex.rec" (lcons u lnil)
    irec
    (dkind-ok/irec (ProjDataIndex_rec/type-wf u)).
 
-%% SKIP: def projIndexData — synth failed: synth: case proj not yet supported
+%% def projIndexData
+projIndexData/type-wf :
+   defeq (eforall (econst "N" lnil) ([x] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (econst "N" lnil))))) (eforall (econst "N" lnil) ([x] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (econst "N" lnil))))) (esort (limax (lsucc lzero) (limax lzero (lsucc lzero))))
+   = (defeq/forall (defeq/const N/decl) ([x] [y] (defeq/forall (defeq/app (defeq/const ProjDataIndex/decl) y) ([z] [w] (defeq/const N/decl))))).
 
+%% HOLE/defeq: value-typed for projIndexData — synth: case proj not yet supported
+projIndexData/value-typed :
+   defeq (elam (econst "N" lnil) ([x] (elam (eapp (econst "ProjDataIndex" lnil) x) ([y] (eproj "PropStructure" 0 y))))) (elam (econst "N" lnil) ([x] (elam (eapp (econst "ProjDataIndex" lnil) x) ([y] (eproj "PropStructure" 0 y))))) (eforall (econst "N" lnil) ([x] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (econst "N" lnil)))))
+   = (hole/defeq (elam (econst "N" lnil) ([x] (elam (eapp (econst "ProjDataIndex" lnil) x) ([y] (eproj "PropStructure" 0 y))))) (elam (econst "N" lnil) ([x] (elam (eapp (econst "ProjDataIndex" lnil) x) ([y] (eproj "PropStructure" 0 y))))) (eforall (econst "N" lnil) ([x] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (econst "N" lnil)))))).
 
-%% Translator summary:
-%%   - def projIndexData: synth failed (synth: case proj not yet supported)
+projIndexData/decl : declared "projIndexData" lnil
+   (eforall (econst "N" lnil) ([x] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (econst "N" lnil)))))
+   (defn (elam (econst "N" lnil) ([x] (elam (eapp (econst "ProjDataIndex" lnil) x) ([y] (eproj "PropStructure" 0 y))))))
+   (dkind-ok/defn projIndexData/type-wf projIndexData/value-typed).
+

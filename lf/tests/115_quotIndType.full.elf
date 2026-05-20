@@ -1,5 +1,10 @@
 %%% Expected outcome: accept
 %%% Asserting the type of `Quot.ind`.
+%% This file contains 1 hole tag(s):
+%%   - hole/defeq (count: see HOLE/defeq markers below)
+%% Files with any hole/<tag> use are NOT Twelf-verified.
+hole/defeq : {E1 : expr} {E2 : expr} {T : expr} defeq E1 E2 T.
+
 %% inductive Eq
 Eq/type-wf :
    {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (esort (limax (lsucc u_1) (limax u_1 (limax u_1 (lsucc lzero)))))
@@ -42,8 +47,19 @@ Eq_rec/decl : {u : lvl} {u_1 : lvl} declared "Eq.rec" (lcons u (lcons u_1 lnil))
 %% SKIP: quot not yet supported
 %% SKIP: quot not yet supported
 %% SKIP: quot not yet supported
-%% SKIP: def quotIndType — synth failed: const "Quot" not in decl table
+%% def quotIndType
+%% HOLE/defeq: type-wf for quotIndType — const "Quot" not in decl table
+quotIndType/type-wf :
+   {u : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eapp z (eapp (eapp (eapp (econst "Quot.mk" (lcons u lnil)) x) y) w)))) ([w] (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([x1] (eapp z x1))))))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eapp z (eapp (eapp (eapp (econst "Quot.mk" (lcons u lnil)) x) y) w)))) ([w] (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([x1] (eapp z x1))))))))))) (esort lzero)
+   = [u] (hole/defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eapp z (eapp (eapp (eapp (econst "Quot.mk" (lcons u lnil)) x) y) w)))) ([w] (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([x1] (eapp z x1))))))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eapp z (eapp (eapp (eapp (econst "Quot.mk" (lcons u lnil)) x) y) w)))) ([w] (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([x1] (eapp z x1))))))))))) (esort lzero)).
 
+%% HOLE/defeq: value-typed for quotIndType — const "Quot.ind" not in decl table
+quotIndType/value-typed :
+   {u : lvl} defeq (econst "Quot.ind" (lcons u lnil)) (econst "Quot.ind" (lcons u lnil)) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eapp z (eapp (eapp (eapp (econst "Quot.mk" (lcons u lnil)) x) y) w)))) ([w] (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([x1] (eapp z x1)))))))))))
+   = [u] (hole/defeq (econst "Quot.ind" (lcons u lnil)) (econst "Quot.ind" (lcons u lnil)) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eapp z (eapp (eapp (eapp (econst "Quot.mk" (lcons u lnil)) x) y) w)))) ([w] (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([x1] (eapp z x1)))))))))))).
 
-%% Translator summary:
-%%   - def quotIndType: synth failed (const "Quot" not in decl table)
+quotIndType/decl : {u : lvl} declared "quotIndType" (lcons u lnil)
+   (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eapp z (eapp (eapp (eapp (econst "Quot.mk" (lcons u lnil)) x) y) w)))) ([w] (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([x1] (eapp z x1)))))))))))
+   (defn (econst "Quot.ind" (lcons u lnil)))
+   (dkind-ok/defn (quotIndType/type-wf u) (quotIndType/value-typed u)).
+

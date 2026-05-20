@@ -1,5 +1,10 @@
 %%% Expected outcome: accept
 %%% Type-checking projection functions
+%% This file contains 1 hole tag(s):
+%%   - hole/defeq (count: see HOLE/defeq markers below)
+%% Files with any hole/<tag> use are NOT Twelf-verified.
+hole/defeq : {E1 : expr} {E2 : expr} {T : expr} defeq E1 E2 T.
+
 %% inductive PProd
 PProd/type-wf :
    {u : lvl} {v : lvl} defeq (eforall (esort u) ([x] (eforall (esort v) ([y] (esort (lmax (lmax (lsucc lzero) u) v)))))) (eforall (esort u) ([x] (eforall (esort v) ([y] (esort (lmax (lmax (lsucc lzero) u) v)))))) (esort (limax (lsucc u) (limax (lsucc v) (lsucc (lmax (lmax (lsucc lzero) u) v)))))
@@ -38,11 +43,33 @@ PProd_rec/decl : {u_1 : lvl} {u : lvl} {v : lvl} declared "PProd.rec" (lcons u_1
    irec
    (dkind-ok/irec (PProd_rec/type-wf u_1 u v)).
 
-%% SKIP: def PProd.fst — synth failed: synth: case proj not yet supported
+%% def PProd.fst
+PProd_fst/type-wf :
+   {u : lvl} {v : lvl} defeq (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] x)))))) (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] x)))))) (esort (limax (lsucc u) (limax (lsucc v) (limax (lmax (lmax (lsucc lzero) u) v) u))))
+   = [u] [v] (defeq/forall (defeq/sort-refl-at u) ([x] [y] (defeq/forall (defeq/sort-refl-at v) ([z] [w] (defeq/forall (defeq/app (defeq/app (defeq/const (PProd/decl u v)) y) w) ([x1] [y1] y)))))).
 
-%% SKIP: def PProd.snd — synth failed: synth: case proj not yet supported
+%% HOLE/defeq: value-typed for PProd.fst — synth: case proj not yet supported
+PProd_fst/value-typed :
+   {u : lvl} {v : lvl} defeq (elam (esort u) ([x] (elam (esort v) ([y] (elam (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PProd" 0 z))))))) (elam (esort u) ([x] (elam (esort v) ([y] (elam (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PProd" 0 z))))))) (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] x))))))
+   = [u] [v] (hole/defeq (elam (esort u) ([x] (elam (esort v) ([y] (elam (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PProd" 0 z))))))) (elam (esort u) ([x] (elam (esort v) ([y] (elam (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PProd" 0 z))))))) (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] x))))))).
 
+PProd_fst/decl : {u : lvl} {v : lvl} declared "PProd.fst" (lcons u (lcons v lnil))
+   (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] x))))))
+   (defn (elam (esort u) ([x] (elam (esort v) ([y] (elam (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PProd" 0 z))))))))
+   (dkind-ok/defn (PProd_fst/type-wf u v) (PProd_fst/value-typed u v)).
 
-%% Translator summary:
-%%   - def PProd.fst: synth failed (synth: case proj not yet supported)
-%%   - def PProd.snd: synth failed (synth: case proj not yet supported)
+%% def PProd.snd
+PProd_snd/type-wf :
+   {u : lvl} {v : lvl} defeq (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] y)))))) (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] y)))))) (esort (limax (lsucc u) (limax (lsucc v) (limax (lmax (lmax (lsucc lzero) u) v) v))))
+   = [u] [v] (defeq/forall (defeq/sort-refl-at u) ([x] [y] (defeq/forall (defeq/sort-refl-at v) ([z] [w] (defeq/forall (defeq/app (defeq/app (defeq/const (PProd/decl u v)) y) w) ([x1] [y1] w)))))).
+
+%% HOLE/defeq: value-typed for PProd.snd — synth: case proj not yet supported
+PProd_snd/value-typed :
+   {u : lvl} {v : lvl} defeq (elam (esort u) ([x] (elam (esort v) ([y] (elam (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PProd" 1 z))))))) (elam (esort u) ([x] (elam (esort v) ([y] (elam (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PProd" 1 z))))))) (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] y))))))
+   = [u] [v] (hole/defeq (elam (esort u) ([x] (elam (esort v) ([y] (elam (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PProd" 1 z))))))) (elam (esort u) ([x] (elam (esort v) ([y] (elam (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PProd" 1 z))))))) (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] y))))))).
+
+PProd_snd/decl : {u : lvl} {v : lvl} declared "PProd.snd" (lcons u (lcons v lnil))
+   (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] y))))))
+   (defn (elam (esort u) ([x] (elam (esort v) ([y] (elam (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PProd" 1 z))))))))
+   (dkind-ok/defn (PProd_snd/type-wf u v) (PProd_snd/value-typed u v)).
+

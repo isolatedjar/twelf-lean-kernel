@@ -2,6 +2,11 @@
 %%% Projecting out of a proposition
 %%% 
 %%% The lean kernel disallows proof projections out of propositional structures that depend on data.
+%% This file contains 1 hole tag(s):
+%%   - hole/defeq (count: see HOLE/defeq markers below)
+%% Files with any hole/<tag> use are NOT Twelf-verified.
+hole/defeq : {E1 : expr} {E2 : expr} {T : expr} defeq E1 E2 T.
+
 %% inductive PUnit
 PUnit/type-wf :
    {u : lvl} defeq (esort u) (esort u) (esort (lsucc u))
@@ -116,8 +121,19 @@ PropStructure_rec/decl : {u : lvl} {v : lvl} declared "PropStructure.rec" (lcons
    irec
    (dkind-ok/irec (PropStructure_rec/type-wf u v)).
 
-%% SKIP: def projProp5 — synth failed: synth: case proj not yet supported
+%% def projProp5
+%% HOLE/defeq: type-wf for projProp5 — synth: case proj not yet supported
+projProp5/type-wf :
+   defeq (eforall (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "PUnit" (lcons (lsucc lzero) lnil))) (eproj "PropStructure" 3 x)) (eproj "PropStructure" 3 x)))) (eforall (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "PUnit" (lcons (lsucc lzero) lnil))) (eproj "PropStructure" 3 x)) (eproj "PropStructure" 3 x)))) (esort lzero)
+   = (hole/defeq (eforall (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "PUnit" (lcons (lsucc lzero) lnil))) (eproj "PropStructure" 3 x)) (eproj "PropStructure" 3 x)))) (eforall (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "PUnit" (lcons (lsucc lzero) lnil))) (eproj "PropStructure" 3 x)) (eproj "PropStructure" 3 x)))) (esort lzero)).
 
+%% HOLE/defeq: value-typed for projProp5 — synth: case proj not yet supported
+projProp5/value-typed :
+   defeq (elam (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (eproj "PropStructure" 4 x))) (elam (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (eproj "PropStructure" 4 x))) (eforall (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "PUnit" (lcons (lsucc lzero) lnil))) (eproj "PropStructure" 3 x)) (eproj "PropStructure" 3 x))))
+   = (hole/defeq (elam (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (eproj "PropStructure" 4 x))) (elam (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (eproj "PropStructure" 4 x))) (eforall (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "PUnit" (lcons (lsucc lzero) lnil))) (eproj "PropStructure" 3 x)) (eproj "PropStructure" 3 x))))).
 
-%% Translator summary:
-%%   - def projProp5: synth failed (synth: case proj not yet supported)
+projProp5/decl : declared "projProp5" lnil
+   (eforall (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "PUnit" (lcons (lsucc lzero) lnil))) (eproj "PropStructure" 3 x)) (eproj "PropStructure" 3 x))))
+   (defn (elam (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (eproj "PropStructure" 4 x))))
+   (dkind-ok/defn projProp5/type-wf projProp5/value-typed).
+

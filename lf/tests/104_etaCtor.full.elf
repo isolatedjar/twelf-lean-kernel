@@ -4,6 +4,11 @@
 %%% 
 %%% Taking the official kernel as the specification, the answer is no.
 %%% See <https://github.com/leanprover/lean4/issues/12520> for a discussion.
+%% This file contains 1 hole tag(s):
+%%   - hole/defeq (count: see HOLE/defeq markers below)
+%% Files with any hole/<tag> use are NOT Twelf-verified.
+hole/defeq : {E1 : expr} {E2 : expr} {T : expr} defeq E1 E2 T.
+
 %% inductive True
 True/type-wf :
    defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
@@ -207,11 +212,36 @@ Eq_rec/decl : {u : lvl} {u_1 : lvl} declared "Eq.rec" (lcons u (lcons u_1 lnil))
    irec
    (dkind-ok/irec (Eq_rec/type-wf u u_1)).
 
-%% SKIP: def T.val — synth failed: synth: case proj not yet supported
+%% def T.val
+T_val/type-wf :
+   defeq (eforall (econst "T" lnil) ([x] (econst "Bool" lnil))) (eforall (econst "T" lnil) ([x] (econst "Bool" lnil))) (esort (limax (lsucc lzero) (lsucc lzero)))
+   = (defeq/forall (defeq/const T/decl) ([x] [y] (defeq/const Bool/decl))).
 
-%% SKIP: def etaCtor — synth failed: const "T.val" not in decl table
+%% HOLE/defeq: value-typed for T.val — synth: case proj not yet supported
+T_val/value-typed :
+   defeq (elam (econst "T" lnil) ([x] (eproj "T" 0 x))) (elam (econst "T" lnil) ([x] (eproj "T" 0 x))) (eforall (econst "T" lnil) ([x] (econst "Bool" lnil)))
+   = (hole/defeq (elam (econst "T" lnil) ([x] (eproj "T" 0 x))) (elam (econst "T" lnil) ([x] (eproj "T" 0 x))) (eforall (econst "T" lnil) ([x] (econst "Bool" lnil)))).
 
+T_val/decl : declared "T.val" lnil
+   (eforall (econst "T" lnil) ([x] (econst "Bool" lnil)))
+   (defn (elam (econst "T" lnil) ([x] (eproj "T" 0 x))))
+   (dkind-ok/defn T_val/type-wf T_val/value-typed).
 
-%% Translator summary:
-%%   - def T.val: synth failed (synth: case proj not yet supported)
-%%   - def etaCtor: synth failed (const "T.val" not in decl table)
+%% TRANSLATOR: could not bridge inferred type to declared type
+%%   inferred type kind: forallE
+%%   declared type kind: forallE
+%%   emitting valTy.proof; Twelf will likely reject.
+%% def etaCtor
+etaCtor/type-wf :
+   defeq (eforall (eforall (econst "True" lnil) ([x] (econst "T" lnil))) ([x] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eforall (econst "True" lnil) ([y] (econst "T" lnil)))) (eapp (econst "T.mk" lnil) (eapp (econst "T.val" lnil) (eapp x (econst "True.intro" lnil))))) x))) (eforall (eforall (econst "True" lnil) ([x] (econst "T" lnil))) ([x] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eforall (econst "True" lnil) ([y] (econst "T" lnil)))) (eapp (econst "T.mk" lnil) (eapp (econst "T.val" lnil) (eapp x (econst "True.intro" lnil))))) x))) (esort (limax (limax lzero (lsucc lzero)) lzero))
+   = (defeq/forall (defeq/forall (defeq/const True/decl) ([x] [y] (defeq/const T/decl))) ([x] [y] (defeq/app (defeq/app (defeq/app (defeq/const (Eq/decl (lsucc lzero))) (defeq/conv (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-succ (lvl-eq/trans lvl-eq/max-zero-l lvl-eq/refl))) (defeq/forall (defeq/const True/decl) ([z] [w] (defeq/const T/decl))))) (defeq/app (defeq/const T_mk/decl) (defeq/app (defeq/const T_val/decl) (defeq/app y (defeq/const True_intro/decl))))) y))).
+
+etaCtor/value-typed :
+   defeq (elam (eforall (econst "True" lnil) ([x] (econst "T" lnil))) ([x] (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (eforall (econst "True" lnil) ([y] (econst "T" lnil)))) x))) (elam (eforall (econst "True" lnil) ([x] (econst "T" lnil))) ([x] (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (eforall (econst "True" lnil) ([y] (econst "T" lnil)))) x))) (eforall (eforall (econst "True" lnil) ([x] (econst "T" lnil))) ([x] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eforall (econst "True" lnil) ([y] (econst "T" lnil)))) (eapp (econst "T.mk" lnil) (eapp (econst "T.val" lnil) (eapp x (econst "True.intro" lnil))))) x)))
+   = (defeq/lam (defeq/forall (defeq/const True/decl) ([x] [y] (defeq/const T/decl))) ([x] [y] (defeq/app (defeq/app (defeq/const (Eq_refl/decl (lsucc lzero))) (defeq/conv (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-succ (lvl-eq/trans lvl-eq/max-zero-l lvl-eq/refl))) (defeq/forall (defeq/const True/decl) ([z] [w] (defeq/const T/decl))))) y))).
+
+etaCtor/decl : declared "etaCtor" lnil
+   (eforall (eforall (econst "True" lnil) ([x] (econst "T" lnil))) ([x] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eforall (econst "True" lnil) ([y] (econst "T" lnil)))) (eapp (econst "T.mk" lnil) (eapp (econst "T.val" lnil) (eapp x (econst "True.intro" lnil))))) x)))
+   (defn (elam (eforall (econst "True" lnil) ([x] (econst "T" lnil))) ([x] (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (eforall (econst "True" lnil) ([y] (econst "T" lnil)))) x))))
+   (dkind-ok/defn etaCtor/type-wf etaCtor/value-typed).
+

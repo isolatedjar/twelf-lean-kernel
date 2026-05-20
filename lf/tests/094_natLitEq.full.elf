@@ -1,5 +1,10 @@
 %%% Expected outcome: accept
 %%% Reducing Nat literals
+%% This file contains 1 hole tag(s):
+%%   - hole/defeq (count: see HOLE/defeq markers below)
+%% Files with any hole/<tag> use are NOT Twelf-verified.
+hole/defeq : {E1 : expr} {E2 : expr} {T : expr} defeq E1 E2 T.
+
 %solve nonneg_3 : 3 >= 0.
 
 %% inductive Eq
@@ -92,8 +97,19 @@ Nat_rec/decl : {u : lvl} declared "Nat.rec" (lcons u lnil)
    irec
    (dkind-ok/irec (Nat_rec/type-wf u)).
 
-%% SKIP: thm natLitEq — synth failed: synth: case natLit not yet supported
+%% thm natLitEq
+%% HOLE/defeq: type-wf for natLitEq — synth: case natLit not yet supported
+natLitEq/type-wf :
+   defeq (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3)) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (econst "Nat.zero" lnil))))) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3)) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (econst "Nat.zero" lnil))))) (esort lzero)
+   = (hole/defeq (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3)) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (econst "Nat.zero" lnil))))) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3)) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (econst "Nat.zero" lnil))))) (esort lzero)).
 
+%% HOLE/defeq: value-typed for natLitEq — synth: case natLit not yet supported
+natLitEq/value-typed :
+   defeq (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3)) (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3)) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3)) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (econst "Nat.zero" lnil)))))
+   = (hole/defeq (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3)) (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3)) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3)) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (econst "Nat.zero" lnil)))))).
 
-%% Translator summary:
-%%   - thm natLitEq: synth failed (synth: case natLit not yet supported)
+natLitEq/decl : declared "natLitEq" lnil
+   (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3)) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (econst "Nat.zero" lnil)))))
+   (thm (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3)))
+   (dkind-ok/thm natLitEq/type-wf natLitEq/value-typed).
+

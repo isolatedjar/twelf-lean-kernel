@@ -1,5 +1,10 @@
 %%% Expected outcome: reject
 %%% The binding domain of a forall has to be a sort
+%% This file contains 1 hole tag(s):
+%%   - hole/defeq (count: see HOLE/defeq markers below)
+%% Files with any hole/<tag> use are NOT Twelf-verified.
+hole/defeq : {E1 : expr} {E2 : expr} {T : expr} defeq E1 E2 T.
+
 %% def id
 id/type-wf :
    {u : lvl} defeq (eforall (esort u) ([x] (eforall x ([y] x)))) (eforall (esort u) ([x] (eforall x ([y] x)))) (esort (limax (lsucc u) (limax u u)))
@@ -14,8 +19,18 @@ id/decl : {u : lvl} declared "id" (lcons u lnil)
    (defn (elam (esort u) ([x] (elam x ([y] y)))))
    (dkind-ok/defn (id/type-wf u) (id/value-typed u)).
 
-%% SKIP: def forallSortBad — synth failed: forallE: binder type does not have a sort type (got app)
+%% def forallSortBad
+forallSortBad/type-wf :
+   defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
+   = (defeq/sort-refl-at lzero).
 
+%% HOLE/defeq: value-typed for forallSortBad — forallE: binder type does not have a sort type (got app)
+forallSortBad/value-typed :
+   defeq (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] (eforall y ([z] y)))))) (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] (eforall y ([z] y)))))) (esort lzero)
+   = (hole/defeq (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] (eforall y ([z] y)))))) (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] (eforall y ([z] y)))))) (esort lzero)).
 
-%% Translator summary:
-%%   - def forallSortBad: synth failed (forallE: binder type does not have a sort type (got app))
+forallSortBad/decl : declared "forallSortBad" lnil
+   (esort lzero)
+   (defn (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] (eforall y ([z] y)))))))
+   (dkind-ok/defn forallSortBad/type-wf forallSortBad/value-typed).
+

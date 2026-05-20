@@ -1,5 +1,10 @@
 %%% Expected outcome: reject
 %%% Projection out something that is not a structure
+%% This file contains 1 hole tag(s):
+%%   - hole/defeq (count: see HOLE/defeq markers below)
+%% Files with any hole/<tag> use are NOT Twelf-verified.
+hole/defeq : {E1 : expr} {E2 : expr} {T : expr} defeq E1 E2 T.
+
 %% inductive N
 N/type-wf :
    defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
@@ -52,8 +57,18 @@ N_rec/decl : {u : lvl} declared "N.rec" (lcons u lnil)
    irec
    (dkind-ok/irec (N_rec/type-wf u)).
 
-%% SKIP: def projNotStruct — synth failed: synth: case proj not yet supported
+%% def projNotStruct
+projNotStruct/type-wf :
+   defeq (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (esort (limax (lsucc lzero) (lsucc lzero)))
+   = (defeq/forall (defeq/const N/decl) ([x] [y] (defeq/const N/decl))).
 
+%% HOLE/defeq: value-typed for projNotStruct — synth: case proj not yet supported
+projNotStruct/value-typed :
+   defeq (elam (econst "N" lnil) ([x] (eproj "N" 0 x))) (elam (econst "N" lnil) ([x] (eproj "N" 0 x))) (eforall (econst "N" lnil) ([x] (econst "N" lnil)))
+   = (hole/defeq (elam (econst "N" lnil) ([x] (eproj "N" 0 x))) (elam (econst "N" lnil) ([x] (eproj "N" 0 x))) (eforall (econst "N" lnil) ([x] (econst "N" lnil)))).
 
-%% Translator summary:
-%%   - def projNotStruct: synth failed (synth: case proj not yet supported)
+projNotStruct/decl : declared "projNotStruct" lnil
+   (eforall (econst "N" lnil) ([x] (econst "N" lnil)))
+   (defn (elam (econst "N" lnil) ([x] (eproj "N" 0 x))))
+   (dkind-ok/defn projNotStruct/type-wf projNotStruct/value-typed).
+
