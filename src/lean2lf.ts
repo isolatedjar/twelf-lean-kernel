@@ -28,6 +28,7 @@ import type {
 import { nameToString, transformNamesFromJSON } from "./shared.ts";
 import {
   levelParamBindings,
+  natLiteralsSeen,
   mangle,
   nameToLfLevelVar,
   lfLevel,
@@ -2133,7 +2134,19 @@ async function main(): Promise<void> {
     for (const s of skips) emit(`%%   - ${s}`);
   }
 
-  process.stdout.write(out.join("\n") + "\n");
+  // Prepend %solve declarations for every nat literal encountered by
+  // lfExpr.  These discharge the `n >= 0` premise of `enatlit` in tcb.elf.
+  // %solve must come before the declarations that reference the resulting
+  // witnesses, so they go at the very top of the file.
+  const prelude: string[] = [];
+  if (natLiteralsSeen.size > 0) {
+    for (const n of natLiteralsSeen) {
+      prelude.push(`%solve nonneg_${n} : ${n} >= 0.`);
+    }
+    prelude.push(``);
+  }
+
+  process.stdout.write([...prelude, ...out].join("\n") + "\n");
 }
 
 main().catch((err) => {

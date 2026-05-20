@@ -20,6 +20,23 @@ import { nameToString } from "./shared.ts";
 export const levelParamBindings: Map<string, string> = new Map();
 
 // =====================================================================
+// Nat literal accumulator
+// =====================================================================
+//
+// Every (natLit n) we render becomes `(enatlit n nonneg_n)`, where
+// `nonneg_n` is a Twelf proof of `n >= 0` discharged via `%solve`.
+// %solve declarations must appear at the top level (not inside an
+// expression), so lfExpr accumulates the integers it has seen into
+// this set; main() in lean2lf.ts iterates it once at the end and
+// prepends a `%solve nonneg_N : N >= 0.` line per unique N.
+//
+// Stored as strings (not bigint) because the Lean IR carries arbitrary-
+// precision nat literals as strings already (`Expr.lit (Literal.natVal n)`
+// — see shared.ts), and Twelf accepts the same text as an integer literal.
+
+export const natLiteralsSeen: Set<string> = new Set();
+
+// =====================================================================
 // Name mangling
 // =====================================================================
 
@@ -91,13 +108,17 @@ export function lfExpr(e: Expr, boundVars: string[]): string {
       return `(eforall ${lfExpr(e.type, boundVars)} ([${v}] ${lfExpr(e.body, [v, ...boundVars])}))`;
     }
     case "letE":
-      throw new Error("letE not yet supported");
+      // Unreachable: parse.ts desugars letE to (λx:T. body) value before
+      // any IR reaches the translator. See desugarLetE in src/parse.ts.
+      throw new Error("letE should have been desugared by parse.ts");
     case "proj":
-      throw new Error("proj not yet supported");
-    case "natLit":
-      throw new Error("natLit not yet supported");
+      return `(eproj "${nameToString(e.typeName)}" ${e.idx} ${lfExpr(e.struct, boundVars)})`;
+    case "natLit": {
+      natLiteralsSeen.add(e.value);
+      return `(enatlit ${e.value} nonneg_${e.value})`;
+    }
     case "strLit":
-      throw new Error("strLit not yet supported");
+      return `(estrlit ${JSON.stringify(e.value)})`;
   }
 }
 

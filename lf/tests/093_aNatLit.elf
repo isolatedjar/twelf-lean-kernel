@@ -1,5 +1,7 @@
 %%% Expected outcome: accept
 %%% Type checking Nat literals
+%solve nonneg_0 : 0 >= 0.
+
 %% inductive Nat
 Nat/type-wf :
    defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
@@ -52,8 +54,8 @@ Nat_rec/decl : {u : lvl} declared "Nat.rec" (lcons u lnil)
    irec
    (dkind-ok/irec (Nat_rec/type-wf u)).
 
-%% SKIP: def aNatLit — could not translate type/value to LF
+%% SKIP: def aNatLit — synth failed: synth: case natLit not yet supported
 
 
 %% Translator summary:
-%%   - def aNatLit: untranslatable expression
+%%   - def aNatLit: synth failed (synth: case natLit not yet supported)
