@@ -1,5 +1,10 @@
 %%% Expected outcome: accept
 %%% Type-checking simple projection functions
+%% This file contains 1 hole tag(s):
+%%   - hole/defeq (count: see HOLE/defeq markers below)
+%% Files with any hole/<tag> use are NOT Twelf-verified.
+hole/defeq : {E1 : expr} {E2 : expr} {T : expr} defeq E1 E2 T.
+
 %% inductive And
 And/type-wf :
    defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (esort (limax (lsucc lzero) (limax (lsucc lzero) (lsucc lzero))))
@@ -38,11 +43,33 @@ And_rec/decl : {u : lvl} declared "And.rec" (lcons u lnil)
    irec
    (dkind-ok/irec (And_rec/type-wf u)).
 
-%% SKIP: thm And.left — synth failed: synth: case proj not yet supported
+%% thm And.left
+And_left/type-wf :
+   defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] x)))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] x)))))) (esort (limax (lsucc lzero) (limax (lsucc lzero) (limax lzero lzero))))
+   = (defeq/forall (defeq/sort-refl-at lzero) ([x] [y] (defeq/forall (defeq/sort-refl-at lzero) ([z] [w] (defeq/forall (defeq/app (defeq/app (defeq/const And/decl) y) w) ([x1] [y1] y)))))).
 
-%% SKIP: thm And.right — synth failed: synth: case proj not yet supported
+%% HOLE/defeq: value-typed for And.left — synth: case proj not yet supported
+And_left/value-typed :
+   defeq (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 0 z))))))) (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 0 z))))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] x))))))
+   = (hole/defeq (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 0 z))))))) (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 0 z))))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] x))))))).
 
+And_left/decl : declared "And.left" lnil
+   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] x))))))
+   (thm (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 0 z))))))))
+   (dkind-ok/thm And_left/type-wf And_left/value-typed).
 
-%% Translator summary:
-%%   - thm And.left: synth failed (synth: case proj not yet supported)
-%%   - thm And.right: synth failed (synth: case proj not yet supported)
+%% thm And.right
+And_right/type-wf :
+   defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] y)))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] y)))))) (esort (limax (lsucc lzero) (limax (lsucc lzero) (limax lzero lzero))))
+   = (defeq/forall (defeq/sort-refl-at lzero) ([x] [y] (defeq/forall (defeq/sort-refl-at lzero) ([z] [w] (defeq/forall (defeq/app (defeq/app (defeq/const And/decl) y) w) ([x1] [y1] w)))))).
+
+%% HOLE/defeq: value-typed for And.right — synth: case proj not yet supported
+And_right/value-typed :
+   defeq (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 1 z))))))) (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 1 z))))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] y))))))
+   = (hole/defeq (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 1 z))))))) (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 1 z))))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] y))))))).
+
+And_right/decl : declared "And.right" lnil
+   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] y))))))
+   (thm (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 1 z))))))))
+   (dkind-ok/thm And_right/type-wf And_right/value-typed).
+

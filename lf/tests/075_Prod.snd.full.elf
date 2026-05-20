@@ -1,5 +1,10 @@
 %%% Expected outcome: accept
 %%% Type-checking projection functions with parameters
+%% This file contains 1 hole tag(s):
+%%   - hole/defeq (count: see HOLE/defeq markers below)
+%% Files with any hole/<tag> use are NOT Twelf-verified.
+hole/defeq : {E1 : expr} {E2 : expr} {T : expr} defeq E1 E2 T.
+
 %% inductive Prod
 Prod/type-wf :
    {u : lvl} {v : lvl} defeq (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (esort (lmax (lsucc u) (lsucc v))))))) (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (esort (lmax (lsucc u) (lsucc v))))))) (esort (limax (lsucc (lsucc u)) (limax (lsucc (lsucc v)) (lsucc (lmax (lsucc u) (lsucc v))))))
@@ -38,11 +43,33 @@ Prod_rec/decl : {u_1 : lvl} {u : lvl} {v : lvl} declared "Prod.rec" (lcons u_1 (
    irec
    (dkind-ok/irec (Prod_rec/type-wf u_1 u v)).
 
-%% SKIP: def Prod.fst — synth failed: synth: case proj not yet supported
+%% def Prod.fst
+Prod_fst/type-wf :
+   {u : lvl} {v : lvl} defeq (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] x)))))) (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] x)))))) (esort (limax (lsucc (lsucc u)) (limax (lsucc (lsucc v)) (limax (lmax (lsucc u) (lsucc v)) (lsucc u)))))
+   = [u] [v] (defeq/forall (defeq/sort-refl-at (lsucc u)) ([x] [y] (defeq/forall (defeq/sort-refl-at (lsucc v)) ([z] [w] (defeq/forall (defeq/app (defeq/app (defeq/const (Prod/decl u v)) y) w) ([x1] [y1] y)))))).
 
-%% SKIP: def Prod.snd — synth failed: synth: case proj not yet supported
+%% HOLE/defeq: value-typed for Prod.fst — synth: case proj not yet supported
+Prod_fst/value-typed :
+   {u : lvl} {v : lvl} defeq (elam (esort (lsucc u)) ([x] (elam (esort (lsucc v)) ([y] (elam (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] (eproj "Prod" 0 z))))))) (elam (esort (lsucc u)) ([x] (elam (esort (lsucc v)) ([y] (elam (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] (eproj "Prod" 0 z))))))) (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] x))))))
+   = [u] [v] (hole/defeq (elam (esort (lsucc u)) ([x] (elam (esort (lsucc v)) ([y] (elam (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] (eproj "Prod" 0 z))))))) (elam (esort (lsucc u)) ([x] (elam (esort (lsucc v)) ([y] (elam (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] (eproj "Prod" 0 z))))))) (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] x))))))).
 
+Prod_fst/decl : {u : lvl} {v : lvl} declared "Prod.fst" (lcons u (lcons v lnil))
+   (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] x))))))
+   (defn (elam (esort (lsucc u)) ([x] (elam (esort (lsucc v)) ([y] (elam (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] (eproj "Prod" 0 z))))))))
+   (dkind-ok/defn (Prod_fst/type-wf u v) (Prod_fst/value-typed u v)).
 
-%% Translator summary:
-%%   - def Prod.fst: synth failed (synth: case proj not yet supported)
-%%   - def Prod.snd: synth failed (synth: case proj not yet supported)
+%% def Prod.snd
+Prod_snd/type-wf :
+   {u : lvl} {v : lvl} defeq (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] y)))))) (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] y)))))) (esort (limax (lsucc (lsucc u)) (limax (lsucc (lsucc v)) (limax (lmax (lsucc u) (lsucc v)) (lsucc v)))))
+   = [u] [v] (defeq/forall (defeq/sort-refl-at (lsucc u)) ([x] [y] (defeq/forall (defeq/sort-refl-at (lsucc v)) ([z] [w] (defeq/forall (defeq/app (defeq/app (defeq/const (Prod/decl u v)) y) w) ([x1] [y1] w)))))).
+
+%% HOLE/defeq: value-typed for Prod.snd — synth: case proj not yet supported
+Prod_snd/value-typed :
+   {u : lvl} {v : lvl} defeq (elam (esort (lsucc u)) ([x] (elam (esort (lsucc v)) ([y] (elam (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] (eproj "Prod" 1 z))))))) (elam (esort (lsucc u)) ([x] (elam (esort (lsucc v)) ([y] (elam (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] (eproj "Prod" 1 z))))))) (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] y))))))
+   = [u] [v] (hole/defeq (elam (esort (lsucc u)) ([x] (elam (esort (lsucc v)) ([y] (elam (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] (eproj "Prod" 1 z))))))) (elam (esort (lsucc u)) ([x] (elam (esort (lsucc v)) ([y] (elam (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] (eproj "Prod" 1 z))))))) (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] y))))))).
+
+Prod_snd/decl : {u : lvl} {v : lvl} declared "Prod.snd" (lcons u (lcons v lnil))
+   (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] y))))))
+   (defn (elam (esort (lsucc u)) ([x] (elam (esort (lsucc v)) ([y] (elam (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] (eproj "Prod" 1 z))))))))
+   (dkind-ok/defn (Prod_snd/type-wf u v) (Prod_snd/value-typed u v)).
+
