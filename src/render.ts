@@ -10,7 +10,7 @@
 // (to avoid colliding with binder names). Keeping it module-local here
 // avoids threading it through every call site.
 
-import type { Name, Level, Expr } from "./shared.ts";
+import type { Expr, Level, Name } from "./shared.ts";
 import { nameToString } from "./shared.ts";
 
 // =====================================================================
@@ -77,9 +77,7 @@ export function lfLevel(l: Level): string {
 }
 
 export function lfLvls(ls: Level[]): string {
-  let acc = "lnil";
-  for (let i = ls.length - 1; i >= 0; i--) acc = `(lcons ${lfLevel(ls[i])} ${acc})`;
-  return acc;
+  return ls.reduceRight((acc, l) => `(lcons ${lfLevel(l)} ${acc})`, "lnil");
 }
 
 // HOAS translation: bvar 0 inside a binder becomes the LF-level variable
