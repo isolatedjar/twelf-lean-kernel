@@ -1,5 +1,10 @@
 %%% Expected outcome: reject
 %%% Out of range projection
+%% This file contains 1 hole tag(s):
+%%   - hole/defeq (count: see HOLE/defeq markers below)
+%% Files with any hole/<tag> use are NOT Twelf-verified.
+hole/defeq : {E1 : expr} {E2 : expr} {T : expr} defeq E1 E2 T.
+
 %% inductive And
 And/type-wf :
    defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (esort (limax (lsucc lzero) (limax (lsucc lzero) (lsucc lzero))))
@@ -38,8 +43,18 @@ And_rec/decl : {u : lvl} declared "And.rec" (lcons u lnil)
    irec
    (dkind-ok/irec (And_rec/type-wf u)).
 
-%% SKIP: def projOutOfRange — synth failed: synth: case proj not yet supported
+%% def projOutOfRange
+projOutOfRange/type-wf :
+   defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] x)))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] x)))))) (esort (limax (lsucc lzero) (limax (lsucc lzero) (limax lzero lzero))))
+   = (defeq/forall (defeq/sort-refl-at lzero) ([x] [y] (defeq/forall (defeq/sort-refl-at lzero) ([z] [w] (defeq/forall (defeq/app (defeq/app (defeq/const And/decl) y) w) ([x1] [y1] y)))))).
 
+%% HOLE/defeq: value-typed for projOutOfRange — synth: case proj not yet supported
+projOutOfRange/value-typed :
+   defeq (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 2 z))))))) (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 2 z))))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] x))))))
+   = (hole/defeq (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 2 z))))))) (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 2 z))))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] x))))))).
 
-%% Translator summary:
-%%   - def projOutOfRange: synth failed (synth: case proj not yet supported)
+projOutOfRange/decl : declared "projOutOfRange" lnil
+   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] x))))))
+   (defn (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 2 z))))))))
+   (dkind-ok/defn projOutOfRange/type-wf projOutOfRange/value-typed).
+

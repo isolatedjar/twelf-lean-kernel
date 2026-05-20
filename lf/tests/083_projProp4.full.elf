@@ -2,6 +2,11 @@
 %%% Projecting out of a proposition
 %%% 
 %%% The lean kernel disallows data projections out of propositional structures.
+%% This file contains 1 hole tag(s):
+%%   - hole/defeq (count: see HOLE/defeq markers below)
+%% Files with any hole/<tag> use are NOT Twelf-verified.
+hole/defeq : {E1 : expr} {E2 : expr} {T : expr} defeq E1 E2 T.
+
 %% inductive PUnit
 PUnit/type-wf :
    {u : lvl} defeq (esort u) (esort u) (esort (lsucc u))
@@ -116,8 +121,18 @@ PropStructure_rec/decl : {u : lvl} {v : lvl} declared "PropStructure.rec" (lcons
    irec
    (dkind-ok/irec (PropStructure_rec/type-wf u v)).
 
-%% SKIP: def projProp4 — synth failed: synth: case proj not yet supported
+%% def projProp4
+projProp4/type-wf :
+   defeq (eforall (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (econst "PUnit" (lcons (lsucc lzero) lnil)))) (eforall (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (econst "PUnit" (lcons (lsucc lzero) lnil)))) (esort (limax lzero (lsucc lzero)))
+   = (defeq/forall (defeq/const (PropStructure/decl lzero (lsucc lzero))) ([x] [y] (defeq/const (PUnit/decl (lsucc lzero))))).
 
+%% HOLE/defeq: value-typed for projProp4 — synth: case proj not yet supported
+projProp4/value-typed :
+   defeq (elam (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (eproj "PropStructure" 3 x))) (elam (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (eproj "PropStructure" 3 x))) (eforall (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (econst "PUnit" (lcons (lsucc lzero) lnil))))
+   = (hole/defeq (elam (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (eproj "PropStructure" 3 x))) (elam (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (eproj "PropStructure" 3 x))) (eforall (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (econst "PUnit" (lcons (lsucc lzero) lnil))))).
 
-%% Translator summary:
-%%   - def projProp4: synth failed (synth: case proj not yet supported)
+projProp4/decl : declared "projProp4" lnil
+   (eforall (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (econst "PUnit" (lcons (lsucc lzero) lnil))))
+   (defn (elam (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (eproj "PropStructure" 3 x))))
+   (dkind-ok/defn projProp4/type-wf projProp4/value-typed).
+

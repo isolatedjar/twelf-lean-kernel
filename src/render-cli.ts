@@ -18,21 +18,9 @@
 // names well-formed).  It does NOT attempt to prove the dkind-ok
 // obligations — that's lean2lf.ts's job.
 
-import type {
-  Name,
-  Level,
-  Expr,
-  Decl,
-  ParsedEnv,
-} from "./shared.ts";
+import { levelParamBindings, lfExpr, mangle, nameToLfLevelVar, natLiteralsSeen } from "./render.ts";
+import type { Decl, Expr, Name, ParsedEnv } from "./shared.ts";
 import { nameToString, transformNamesFromJSON } from "./shared.ts";
-import {
-  mangle,
-  lfExpr,
-  nameToLfLevelVar,
-  levelParamBindings,
-  natLiteralsSeen,
-} from "./render.ts";
 
 // =====================================================================
 // Output buffer
@@ -75,8 +63,8 @@ function lvlPrefixes(params: Name[]): { binders: string; lams: string } {
 function tryRender(e: Expr): { ok: true; text: string } | { ok: false; err: string } {
   try {
     return { ok: true, text: lfExpr(e, []) };
-  } catch (err: any) {
-    return { ok: false, err: err.message };
+  } catch (err: unknown) {
+    return { ok: false, err: err instanceof Error ? err.message : String(err) };
   }
 }
 
@@ -130,7 +118,9 @@ function emitDecl(d: Decl): void {
     case "inductive": {
       for (const t of d.types) {
         const mn = mangle(t.name);
-        emit(`%% inductive ${nameToString(t.name)} (numParams=${t.numParams}, numIndices=${t.numIndices})`);
+        emit(
+          `%% inductive ${nameToString(t.name)} (numParams=${t.numParams}, numIndices=${t.numIndices})`,
+        );
         withLevelParams(t.levelParams, () => {
           const tr = tryRender(t.type);
           if (tr.ok) emitBinding(`${mn}/render-type`, t.levelParams, tr.text);
@@ -140,7 +130,9 @@ function emitDecl(d: Decl): void {
       }
       for (const c of d.ctors) {
         const mn = mangle(c.name);
-        emit(`%% ctor ${nameToString(c.name)} (induct=${nameToString(c.induct)}, numFields=${c.numFields})`);
+        emit(
+          `%% ctor ${nameToString(c.name)} (induct=${nameToString(c.induct)}, numFields=${c.numFields})`,
+        );
         withLevelParams(c.levelParams, () => {
           const tr = tryRender(c.type);
           if (tr.ok) emitBinding(`${mn}/render-type`, c.levelParams, tr.text);
@@ -191,8 +183,10 @@ async function main(): Promise<void> {
   for (const decl of parsed.decls) {
     try {
       emitDecl(decl);
-    } catch (e: any) {
-      emit(`%% RENDER-ERROR decl ${(decl as any).kind}: ${e.message}`);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      const kind = (decl as { kind?: string }).kind ?? "<unknown>";
+      emit(`%% RENDER-ERROR decl ${kind}: ${msg}`);
       emit(``);
     }
   }
@@ -210,7 +204,8 @@ async function main(): Promise<void> {
   process.stdout.write([...prelude, ...out].join("\n") + "\n");
 }
 
-main().catch((err) => {
+main().catch((err: unknown) => {
+  // eslint-disable-next-line no-console
   console.error(err);
   process.exit(1);
 });

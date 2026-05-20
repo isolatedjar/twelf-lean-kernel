@@ -1,5 +1,10 @@
 %%% Expected outcome: accept
 %%% Type checking Nat literals
+%% This file contains 1 hole tag(s):
+%%   - hole/defeq (count: see HOLE/defeq markers below)
+%% Files with any hole/<tag> use are NOT Twelf-verified.
+hole/defeq : {E1 : expr} {E2 : expr} {T : expr} defeq E1 E2 T.
+
 %solve nonneg_0 : 0 >= 0.
 
 %% inductive Nat
@@ -54,8 +59,18 @@ Nat_rec/decl : {u : lvl} declared "Nat.rec" (lcons u lnil)
    irec
    (dkind-ok/irec (Nat_rec/type-wf u)).
 
-%% SKIP: def aNatLit — synth failed: synth: case natLit not yet supported
+%% def aNatLit
+aNatLit/type-wf :
+   defeq (econst "Nat" lnil) (econst "Nat" lnil) (esort (lsucc lzero))
+   = (defeq/const Nat/decl).
 
+%% HOLE/defeq: value-typed for aNatLit — synth: case natLit not yet supported
+aNatLit/value-typed :
+   defeq (enatlit 0 nonneg_0) (enatlit 0 nonneg_0) (econst "Nat" lnil)
+   = (hole/defeq (enatlit 0 nonneg_0) (enatlit 0 nonneg_0) (econst "Nat" lnil)).
 
-%% Translator summary:
-%%   - def aNatLit: synth failed (synth: case natLit not yet supported)
+aNatLit/decl : declared "aNatLit" lnil
+   (econst "Nat" lnil)
+   (defn (enatlit 0 nonneg_0))
+   (dkind-ok/defn aNatLit/type-wf aNatLit/value-typed).
+

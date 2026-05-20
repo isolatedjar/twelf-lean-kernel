@@ -1,5 +1,10 @@
 %%% Expected outcome: accept
 %%% Asserting the type of `Quot.lift`.
+%% This file contains 1 hole tag(s):
+%%   - hole/defeq (count: see HOLE/defeq markers below)
+%% Files with any hole/<tag> use are NOT Twelf-verified.
+hole/defeq : {E1 : expr} {E2 : expr} {T : expr} defeq E1 E2 T.
+
 %% inductive Eq
 Eq/type-wf :
    {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (esort (limax (lsucc u_1) (limax u_1 (limax u_1 (lsucc lzero)))))
@@ -42,8 +47,19 @@ Eq_rec/decl : {u : lvl} {u_1 : lvl} declared "Eq.rec" (lcons u (lcons u_1 lnil))
 %% SKIP: quot not yet supported
 %% SKIP: quot not yet supported
 %% SKIP: quot not yet supported
-%% SKIP: def quotLiftType — synth failed: const "Quot" not in decl table
+%% def quotLiftType
+%% HOLE/defeq: type-wf for quotLiftType — const "Quot" not in decl table
+quotLiftType/type-wf :
+   {u : lvl} {v : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (esort v) ([z] (eforall (eforall x ([w] z)) ([w] (eforall (eforall x ([x1] (eforall x ([y1] (eforall (eapp (eapp y x1) y1) ([z1] (eapp (eapp (eapp (econst "Eq" (lcons v lnil)) z) (eapp w x1)) (eapp w y1)))))))) ([x1] (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([y1] z)))))))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (esort v) ([z] (eforall (eforall x ([w] z)) ([w] (eforall (eforall x ([x1] (eforall x ([y1] (eforall (eapp (eapp y x1) y1) ([z1] (eapp (eapp (eapp (econst "Eq" (lcons v lnil)) z) (eapp w x1)) (eapp w y1)))))))) ([x1] (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([y1] z)))))))))))) (esort lzero)
+   = [u] [v] (hole/defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (esort v) ([z] (eforall (eforall x ([w] z)) ([w] (eforall (eforall x ([x1] (eforall x ([y1] (eforall (eapp (eapp y x1) y1) ([z1] (eapp (eapp (eapp (econst "Eq" (lcons v lnil)) z) (eapp w x1)) (eapp w y1)))))))) ([x1] (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([y1] z)))))))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (esort v) ([z] (eforall (eforall x ([w] z)) ([w] (eforall (eforall x ([x1] (eforall x ([y1] (eforall (eapp (eapp y x1) y1) ([z1] (eapp (eapp (eapp (econst "Eq" (lcons v lnil)) z) (eapp w x1)) (eapp w y1)))))))) ([x1] (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([y1] z)))))))))))) (esort lzero)).
 
+%% HOLE/defeq: value-typed for quotLiftType — const "Quot.lift" not in decl table
+quotLiftType/value-typed :
+   {u : lvl} {v : lvl} defeq (econst "Quot.lift" (lcons u (lcons v lnil))) (econst "Quot.lift" (lcons u (lcons v lnil))) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (esort v) ([z] (eforall (eforall x ([w] z)) ([w] (eforall (eforall x ([x1] (eforall x ([y1] (eforall (eapp (eapp y x1) y1) ([z1] (eapp (eapp (eapp (econst "Eq" (lcons v lnil)) z) (eapp w x1)) (eapp w y1)))))))) ([x1] (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([y1] z))))))))))))
+   = [u] [v] (hole/defeq (econst "Quot.lift" (lcons u (lcons v lnil))) (econst "Quot.lift" (lcons u (lcons v lnil))) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (esort v) ([z] (eforall (eforall x ([w] z)) ([w] (eforall (eforall x ([x1] (eforall x ([y1] (eforall (eapp (eapp y x1) y1) ([z1] (eapp (eapp (eapp (econst "Eq" (lcons v lnil)) z) (eapp w x1)) (eapp w y1)))))))) ([x1] (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([y1] z))))))))))))).
 
-%% Translator summary:
-%%   - def quotLiftType: synth failed (const "Quot" not in decl table)
+quotLiftType/decl : {u : lvl} {v : lvl} declared "quotLiftType" (lcons u (lcons v lnil))
+   (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (esort v) ([z] (eforall (eforall x ([w] z)) ([w] (eforall (eforall x ([x1] (eforall x ([y1] (eforall (eapp (eapp y x1) y1) ([z1] (eapp (eapp (eapp (econst "Eq" (lcons v lnil)) z) (eapp w x1)) (eapp w y1)))))))) ([x1] (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([y1] z))))))))))))
+   (defn (econst "Quot.lift" (lcons u (lcons v lnil))))
+   (dkind-ok/defn (quotLiftType/type-wf u v) (quotLiftType/value-typed u v)).
+

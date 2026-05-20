@@ -3,6 +3,11 @@
 %%% 
 %%% The lean kernel rejects any projections out of a proposition that
 %%% come after a dependent data field, even if that is not used by the present projection.
+%% This file contains 1 hole tag(s):
+%%   - hole/defeq (count: see HOLE/defeq markers below)
+%% Files with any hole/<tag> use are NOT Twelf-verified.
+hole/defeq : {E1 : expr} {E2 : expr} {T : expr} defeq E1 E2 T.
+
 %% inductive PUnit
 PUnit/type-wf :
    {u : lvl} defeq (esort u) (esort u) (esort (lsucc u))
@@ -117,8 +122,18 @@ PropStructure_rec/decl : {u : lvl} {v : lvl} declared "PropStructure.rec" (lcons
    irec
    (dkind-ok/irec (PropStructure_rec/type-wf u v)).
 
-%% SKIP: def projProp6 — synth failed: synth: case proj not yet supported
+%% def projProp6
+projProp6/type-wf :
+   defeq (eforall (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (econst "PUnit" (lcons lzero lnil)))) (eforall (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (econst "PUnit" (lcons lzero lnil)))) (esort (limax lzero lzero))
+   = (defeq/forall (defeq/const (PropStructure/decl lzero (lsucc lzero))) ([x] [y] (defeq/const (PUnit/decl lzero)))).
 
+%% HOLE/defeq: value-typed for projProp6 — synth: case proj not yet supported
+projProp6/value-typed :
+   defeq (elam (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (eproj "PropStructure" 5 x))) (elam (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (eproj "PropStructure" 5 x))) (eforall (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (econst "PUnit" (lcons lzero lnil))))
+   = (hole/defeq (elam (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (eproj "PropStructure" 5 x))) (elam (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (eproj "PropStructure" 5 x))) (eforall (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (econst "PUnit" (lcons lzero lnil))))).
 
-%% Translator summary:
-%%   - def projProp6: synth failed (synth: case proj not yet supported)
+projProp6/decl : declared "projProp6" lnil
+   (eforall (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (econst "PUnit" (lcons lzero lnil))))
+   (defn (elam (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (eproj "PropStructure" 5 x))))
+   (dkind-ok/defn projProp6/type-wf projProp6/value-typed).
+

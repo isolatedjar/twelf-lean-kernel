@@ -1,5 +1,10 @@
 %%% Expected outcome: accept
 %%% Projection reductions
+%% This file contains 1 hole tag(s):
+%%   - hole/defeq (count: see HOLE/defeq markers below)
+%% Files with any hole/<tag> use are NOT Twelf-verified.
+hole/defeq : {E1 : expr} {E2 : expr} {T : expr} defeq E1 E2 T.
+
 %% inductive Eq
 Eq/type-wf :
    {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (esort (limax (lsucc u_1) (limax u_1 (limax u_1 (lsucc lzero)))))
@@ -151,7 +156,20 @@ Prod_rec/decl : {u_1 : lvl} {u : lvl} {v : lvl} declared "Prod.rec" (lcons u_1 (
    irec
    (dkind-ok/irec (Prod_rec/type-wf u_1 u v)).
 
-%% SKIP: def Prod.snd — synth failed: synth: case proj not yet supported
+%% def Prod.snd
+Prod_snd/type-wf :
+   {u : lvl} {v : lvl} defeq (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] y)))))) (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] y)))))) (esort (limax (lsucc (lsucc u)) (limax (lsucc (lsucc v)) (limax (lmax (lsucc u) (lsucc v)) (lsucc v)))))
+   = [u] [v] (defeq/forall (defeq/sort-refl-at (lsucc u)) ([x] [y] (defeq/forall (defeq/sort-refl-at (lsucc v)) ([z] [w] (defeq/forall (defeq/app (defeq/app (defeq/const (Prod/decl u v)) y) w) ([x1] [y1] w)))))).
+
+%% HOLE/defeq: value-typed for Prod.snd — synth: case proj not yet supported
+Prod_snd/value-typed :
+   {u : lvl} {v : lvl} defeq (elam (esort (lsucc u)) ([x] (elam (esort (lsucc v)) ([y] (elam (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] (eproj "Prod" 1 z))))))) (elam (esort (lsucc u)) ([x] (elam (esort (lsucc v)) ([y] (elam (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] (eproj "Prod" 1 z))))))) (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] y))))))
+   = [u] [v] (hole/defeq (elam (esort (lsucc u)) ([x] (elam (esort (lsucc v)) ([y] (elam (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] (eproj "Prod" 1 z))))))) (elam (esort (lsucc u)) ([x] (elam (esort (lsucc v)) ([y] (elam (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] (eproj "Prod" 1 z))))))) (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] y))))))).
+
+Prod_snd/decl : {u : lvl} {v : lvl} declared "Prod.snd" (lcons u (lcons v lnil))
+   (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] y))))))
+   (defn (elam (esort (lsucc u)) ([x] (elam (esort (lsucc v)) ([y] (elam (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] (eproj "Prod" 1 z))))))))
+   (dkind-ok/defn (Prod_snd/type-wf u v) (Prod_snd/value-typed u v)).
 
 %% def rfl
 rfl/type-wf :
@@ -167,9 +185,21 @@ rfl/decl : {u : lvl} declared "rfl" (lcons u lnil)
    (defn (elam (esort u) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons u lnil)) x) y))))))
    (dkind-ok/defn (rfl/type-wf u) (rfl/value-typed u)).
 
-%% SKIP: def projRed — synth failed: const "Prod.snd" not in decl table
+%% TRANSLATOR: could not bridge inferred type to declared type
+%%   inferred type kind: app
+%%   declared type kind: app
+%%   emitting valTy.proof; Twelf will likely reject.
+%% def projRed
+projRed/type-wf :
+   defeq (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (econst "Prod.snd" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (econst "Bool.false" lnil)))) (econst "Bool.false" lnil)) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (econst "Prod.snd" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (econst "Bool.false" lnil)))) (econst "Bool.false" lnil)) (esort lzero)
+   = (defeq/app (defeq/app (defeq/app (defeq/const (Eq/decl (lsucc lzero))) (defeq/const Bool/decl)) (defeq/app (defeq/app (defeq/app (defeq/const (Prod_snd/decl lzero lzero)) (defeq/const Bool/decl)) (defeq/const Bool/decl)) (defeq/app (defeq/app (defeq/app (defeq/app (defeq/const (Prod_mk/decl lzero lzero)) (defeq/const Bool/decl)) (defeq/const Bool/decl)) (defeq/const Bool_true/decl)) (defeq/const Bool_false/decl)))) (defeq/const Bool_false/decl)).
 
+projRed/value-typed :
+   defeq (eapp (eapp (econst "rfl" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (econst "Prod.snd" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (econst "Bool.false" lnil)))) (eapp (eapp (econst "rfl" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (econst "Prod.snd" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (econst "Bool.false" lnil)))) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (econst "Prod.snd" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (econst "Bool.false" lnil)))) (econst "Bool.false" lnil))
+   = (defeq/app (defeq/app (defeq/const (rfl/decl (lsucc lzero))) (defeq/const Bool/decl)) (defeq/app (defeq/app (defeq/app (defeq/const (Prod_snd/decl lzero lzero)) (defeq/const Bool/decl)) (defeq/const Bool/decl)) (defeq/app (defeq/app (defeq/app (defeq/app (defeq/const (Prod_mk/decl lzero lzero)) (defeq/const Bool/decl)) (defeq/const Bool/decl)) (defeq/const Bool_true/decl)) (defeq/const Bool_false/decl)))).
 
-%% Translator summary:
-%%   - def Prod.snd: synth failed (synth: case proj not yet supported)
-%%   - def projRed: synth failed (const "Prod.snd" not in decl table)
+projRed/decl : declared "projRed" lnil
+   (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (econst "Prod.snd" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (econst "Bool.false" lnil)))) (econst "Bool.false" lnil))
+   (defn (eapp (eapp (econst "rfl" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (econst "Prod.snd" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (econst "Bool.false" lnil)))))
+   (dkind-ok/defn projRed/type-wf projRed/value-typed).
+
