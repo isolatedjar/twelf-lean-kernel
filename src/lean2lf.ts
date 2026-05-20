@@ -1298,6 +1298,31 @@ function bridgeTypes(a: Expr, b: Expr, scope: Scope, depth: number = 0): string 
 const out: string[] = [];
 const skips: string[] = [];
 
+// Hole tracking.  Each entry is a tag matching one of the constants in
+// HOLE_AXIOM_DECLS below.  When the translator can't construct a proof
+// of a particular judgment, it emits `%% HOLE/<tag>:` and uses
+// `hole/<tag>` in place of a real proof; the harness counts these.
+//
+// Hole axioms are declared INLINE in each generated file (not in
+// sources.cfg) so that Twelf's higher-order unification can't sneak
+// them in to discharge unrelated `%solve` obligations across the
+// global signature.
+const holesUsed: Set<string> = new Set();
+
+const HOLE_AXIOM_DECLS: Record<string, string> = {
+  defeq: `hole/defeq : {E1 : expr} {E2 : expr} {T : expr} defeq E1 E2 T.`,
+  "ends-in-sort": `hole/ends-in-sort : {T : expr} ends-in-sort T.`,
+  "ctor-positive": `hole/ctor-positive : {N : name} {LS : lvls} {T : expr} ctor-positive N LS T.`,
+  "lvl-eq": `hole/lvl-eq : {L1 : lvl} {L2 : lvl} lvl-eq L1 L2.`,
+};
+
+function recordHole(tag: string): void {
+  if (!(tag in HOLE_AXIOM_DECLS)) {
+    throw new Error(`unknown hole tag: ${tag}`);
+  }
+  holesUsed.add(tag);
+}
+
 function emit(s: string): void {
   out.push(s);
 }
@@ -1364,36 +1389,83 @@ function emitValDecl(d: Decl & { kind: ValDeclKind }): void {
       return;
     }
 
-    let typeWf: Synth, valTy: Synth;
+    // Try each synth separately.  On failure, fall through to HOLE
+    // emission rather than abandoning the declaration — the
+    // surrounding `/decl` is still emitted using `hole/defeq` proofs.
+    let typeWf: Synth | null = null;
+    let valTy: Synth | null = null;
+    let typeWfErr: string | null = null;
+    let valTyErr: string | null = null;
     try {
       typeWf = synth(d.type, { vars: [], hyps: [], tys: [] });
+    } catch (e: unknown) {
+      typeWfErr = e instanceof Error ? e.message : String(e);
+    }
+    try {
       valTy = synth(d.value, { vars: [], hyps: [], tys: [] });
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
-      if (dupCounter.size > 0) {
-        emit(`%% (declined to emit ${kindTag} ${declName}: ${msg})`);
-        emit(`%% Duplicate already detected; %unique on \`declared\` will ABORT.`);
-        emitBlank();
-        return;
-      }
-      skips.push(`${kindTag} ${declName}: synth failed (${msg})`);
-      emit(`%% SKIP: ${kindTag} ${declName} — synth failed: ${msg}`);
+      valTyErr = e instanceof Error ? e.message : String(e);
+    }
+
+    // Existing duplicate-detection path: if a duplicate was already
+    // seen earlier in this file, %unique on `declared` will catch it,
+    // so we don't bother emitting a HOLE — keep the previous "declined"
+    // comment so the harness doesn't accidentally mark the file SKIP.
+    if ((typeWfErr || valTyErr) && dupCounter.size > 0) {
+      const reason = typeWfErr ?? valTyErr ?? "synth failed";
+      emit(`%% (declined to emit ${kindTag} ${declName}: ${reason})`);
+      emit(`%% Duplicate already detected; %unique on \`declared\` will ABORT.`);
       emitBlank();
       return;
     }
 
-    const typeWfTyLF = lfExpr(typeWf.tyExpr, []);
-    let valuePf: string = valTy.proof;
-    if (!exprEq(valTy.tyExpr, d.type)) {
-      const bridge = bridgeTypes(valTy.tyExpr, d.type, { vars: [], hyps: [], tys: [] });
-      if (bridge !== null) {
-        valuePf = `(defeq/conv ${bridge} ${valTy.proof})`;
-      } else {
-        emit(`%% TRANSLATOR: could not bridge inferred type to declared type`);
-        emit(`%%   inferred type kind: ${valTy.tyExpr.kind}`);
-        emit(`%%   declared type kind: ${d.type.kind}`);
-        emit(`%%   emitting valTy.proof; Twelf will likely reject.`);
+    // For type-wf we need a sort literal `(esort U)` even when synth
+    // failed.  Use lzero as the placeholder — hole/defeq accepts any
+    // combination of (E1, E2, T) so the specific sort doesn't matter.
+    const typeWfTyLF = typeWf ? lfExpr(typeWf.tyExpr, []) : "(esort lzero)";
+
+    let typeWfProof: string;
+    const typeWfHoleComment: string | null = typeWfErr
+      ? `%% HOLE/defeq: type-wf for ${declName} — ${typeWfErr}`
+      : null;
+    if (typeWf) {
+      typeWfProof = typeWf.proof;
+    } else {
+      recordHole("defeq");
+      typeWfProof = `(hole/defeq ${T_lf} ${T_lf} ${typeWfTyLF})`;
+    }
+
+    let valuePf: string;
+    const valTyHoleComment: string | null = valTyErr
+      ? `%% HOLE/defeq: value-typed for ${declName} — ${valTyErr}`
+      : null;
+    if (valTy) {
+      valuePf = valTy.proof;
+      if (!exprEq(valTy.tyExpr, d.type)) {
+        const bridge = bridgeTypes(valTy.tyExpr, d.type, { vars: [], hyps: [], tys: [] });
+        if (bridge !== null) {
+          valuePf = `(defeq/conv ${bridge} ${valTy.proof})`;
+        } else {
+          // bridge-failure path: synth produced a type, but it doesn't
+          // match the declared type and no defeq-conv bridge could be
+          // constructed.  We deliberately do NOT admit this via hole/defeq:
+          // the same shape arises (a) when a TCB rule is missing (good
+          // test that fails until iota/eta/K is implemented) and (b) when
+          // the test genuinely has a type mismatch and should be rejected
+          // (bad tests like 002_badDef).  Admitting via hole/defeq would
+          // collapse both into 🩹 and lose the soundness signal on the
+          // bad cases.  Instead, emit the inferred proof and let Twelf
+          // reject; the file ends up ❌ for good tests (named TODOs for
+          // future TCB work) and ✅ for bad tests.
+          emit(`%% TRANSLATOR: could not bridge inferred type to declared type`);
+          emit(`%%   inferred type kind: ${valTy.tyExpr.kind}`);
+          emit(`%%   declared type kind: ${d.type.kind}`);
+          emit(`%%   emitting valTy.proof; Twelf will likely reject.`);
+        }
       }
+    } else {
+      recordHole("defeq");
+      valuePf = `(hole/defeq ${V_lf} ${V_lf} ${T_lf})`;
     }
 
     // Polymorphic prefix: "{u_1 : lvl} ... {u_n : lvl}"  (empty if mono)
@@ -1418,17 +1490,19 @@ function emitValDecl(d: Decl & { kind: ValDeclKind }): void {
     // a level param that doesn't appear in its type or value.  Use
     // %abbrev in that case — it accepts vacuous binders.
     const tw_decl =
-      levelBinders.length > 0 && !allMentioned(levelBinders, T_lf, typeWf.proof, typeWfTyLF)
+      levelBinders.length > 0 && !allMentioned(levelBinders, T_lf, typeWfProof, typeWfTyLF)
         ? "%abbrev "
         : "";
     const vt_decl =
       levelBinders.length > 0 && !allMentioned(levelBinders, V_lf, valuePf, T_lf) ? "%abbrev " : "";
 
     emit(`%% ${kindTag} ${declName}`);
+    if (typeWfHoleComment) emit(typeWfHoleComment);
     emit(`${tw_decl}${mn}/type-wf :`);
     emit(`   ${levelPrefix}defeq ${T_lf} ${T_lf} ${typeWfTyLF}`);
-    emit(`   = ${bodyLambda}${typeWf.proof}.`);
+    emit(`   = ${bodyLambda}${typeWfProof}.`);
     emitBlank();
+    if (valTyHoleComment) emit(valTyHoleComment);
     emit(`${vt_decl}${mn}/value-typed :`);
     emit(`   ${levelPrefix}defeq ${V_lf} ${V_lf} ${T_lf}`);
     emit(`   = ${bodyLambda}${valuePf}.`);
@@ -1507,34 +1581,46 @@ function emitStructuralDecl(
       return;
     }
 
-    let typeWf: Synth;
+    let typeWf: Synth | null = null;
+    let typeWfErr: string | null = null;
     try {
       typeWf = synth(type, { vars: [], hyps: [], tys: [] });
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
-      // When a duplicate name has already been emitted in this file, the
-      // resulting LF name collision in declTable can make downstream
-      // synth fail in ways that aren't real translator limitations —
-      // they're side effects of the very malformed-NDJSON we're trying
-      // to report.  In that case skip the offending decl silently
-      // (without a `%% SKIP:` marker) so the harness doesn't mark the
-      // file 🤷; Twelf's `%unique declared` will fire on the duplicate
-      // pair and ABORT, which is the genuine Twelf-verified rejection.
-      if (dupCounter.size > 0) {
-        emit(`%% (declined to emit ${banner} ${nameStr}: ${msg})`);
-        emit(
-          `%% This file already has a duplicate-name violation that %unique on \`declared\` will catch; downstream synth fallout doesn't need its own SKIP.`,
-        );
-        emitBlank();
-        return;
-      }
-      skips.push(`${banner} ${nameStr}: type synth failed (${msg})`);
-      emit(`%% SKIP: ${banner} ${nameStr} — type synth failed: ${msg}`);
+      typeWfErr = e instanceof Error ? e.message : String(e);
+    }
+
+    // When a duplicate name has already been emitted in this file, the
+    // resulting LF name collision in declTable can make downstream
+    // synth fail in ways that aren't real translator limitations —
+    // they're side effects of the very malformed-NDJSON we're trying
+    // to report.  In that case skip the offending decl silently
+    // (without a `%% SKIP:` marker) so the harness doesn't mark the
+    // file 🤷; Twelf's `%unique declared` will fire on the duplicate
+    // pair and ABORT, which is the genuine Twelf-verified rejection.
+    if (typeWfErr && dupCounter.size > 0) {
+      emit(`%% (declined to emit ${banner} ${nameStr}: ${typeWfErr})`);
+      emit(
+        `%% This file already has a duplicate-name violation that %unique on \`declared\` will catch; downstream synth fallout doesn't need its own SKIP.`,
+      );
       emitBlank();
       return;
     }
 
-    const typeWfTyLF = lfExpr(typeWf.tyExpr, []);
+    // Placeholder sort when synth couldn't determine one.  hole/defeq
+    // accepts any (E1, E2, T) so the specific sort doesn't matter for
+    // typing — the decl is admitted, not verified.
+    const typeWfTyLF = typeWf ? lfExpr(typeWf.tyExpr, []) : "(esort lzero)";
+    let typeWfProof: string;
+    const typeWfHoleComment: string | null = typeWfErr
+      ? `%% HOLE/defeq: type-wf for ${nameStr} — ${typeWfErr}`
+      : null;
+    if (typeWf) {
+      typeWfProof = typeWf.proof;
+    } else {
+      recordHole("defeq");
+      typeWfProof = `(hole/defeq ${T_lf} ${T_lf} ${typeWfTyLF})`;
+    }
+
     const levelPrefix =
       levelBinders.length === 0 ? "" : levelBinders.map((n) => `{${n} : lvl}`).join(" ") + " ";
     const bodyLambda = levelBinders.length === 0 ? "" : levelBinders.map((n) => `[${n}] `).join("");
@@ -1545,14 +1631,15 @@ function emitStructuralDecl(
         : levelBinders.reduceRight((acc, n) => `(lcons ${n} ${acc})`, "lnil");
 
     const tw_decl =
-      levelBinders.length > 0 && !allMentioned(levelBinders, T_lf, typeWf.proof, typeWfTyLF)
+      levelBinders.length > 0 && !allMentioned(levelBinders, T_lf, typeWfProof, typeWfTyLF)
         ? "%abbrev "
         : "";
 
     emit(`%% ${banner} ${nameStr}`);
+    if (typeWfHoleComment) emit(typeWfHoleComment);
     emit(`${tw_decl}${mn}/type-wf :`);
     emit(`   ${levelPrefix}defeq ${T_lf} ${T_lf} ${typeWfTyLF}`);
-    emit(`   = ${bodyLambda}${typeWf.proof}.`);
+    emit(`   = ${bodyLambda}${typeWfProof}.`);
     emitBlank();
     const tw_inst = levelBinders.length === 0 ? `${mn}/type-wf` : `(${mn}/type-wf${levelArgList})`;
 
@@ -1676,13 +1763,25 @@ function emitStructuralDecl(
           emitBlank();
           return;
         } else {
-          // Field-position issue: stay 🤷 (encoding gap).
+          // Field-position issue: the ctor-positive LF encoding has a
+          // soundness gap (negative occurrence in a Π-domain inside a
+          // ctor argument; T_HOAS reconstruction lets it slip through).
+          // Previously SKIPped; now admit via hole/ctor-positive so the
+          // surrounding /decl is still emitted and downstream lookups
+          // succeed.  The 🩹 verdict advertises that the positivity
+          // check is unproven.
+          recordHole("ctor-positive");
           emit(
-            `%% SKIP: ctor ${nameStr} — type is not strictly positive in ${positivityInfo.selfName} (or uses unsupported expr form). Can't defer to Twelf — ctor-positive encoding has a soundness gap under %solve for field-position failures (see translator notes).`,
+            `%% HOLE/ctor-positive: ${nameStr} — strict positivity in ${positivityInfo.selfName} not witnessable by current encoding (likely field-position negative occurrence)`,
+          );
+          const cp_decl_h =
+            levelBinders.length > 0 && !allMentioned(levelBinders, T_lf) ? "%abbrev " : "";
+          emit(`${cp_decl_h}${mn}/positivity :`);
+          emit(`   ${levelPrefix}ctor-positive "${positivityInfo.selfName}" ${indLvlsLF} ${T_lf}`);
+          emit(
+            `   = ${bodyLambda}(hole/ctor-positive "${positivityInfo.selfName}" ${indLvlsLF} ${T_lf}).`,
           );
           emitBlank();
-          skips.push(`ctor ${nameStr}: strict positivity not witnessable`);
-          return;
         }
       } else {
         const hoasBody = lfExprHoasSelf(
@@ -1880,6 +1979,9 @@ function emitInductive(ind: Inductive): void {
   for (const t of ind.types) {
     const nb = countLeadingForalls(t.type);
     if (t.numParams > nb) {
+      // Soundness-critical: this mismatch isn't caught by any Twelf-side
+      // judgment.  Keep as SKIP rather than letting through to a
+      // potentially-admitted /decl.
       const ns = nameToString(t.name);
       emit(
         `%% SKIP: inductive ${ns} declares numParams=${t.numParams} but its type has only ${nb} leading Π binder${nb === 1 ? "" : "s"}`,
@@ -1907,6 +2009,10 @@ function emitInductive(ind: Inductive): void {
       c.numFields,
     );
     if (why !== null) {
+      // Soundness-critical: `buildCtorSpine` succeeds structurally even
+      // when bvars or param-arity are wrong, which means letting through
+      // produces an admitted-but-invalid ctor-positive witness.  Keep
+      // SKIP for all checkCtorStructure failures.
       const cs = nameToString(c.name);
       emit(`%% SKIP: ctor ${cs} — ${why}`);
       emitBlank();
@@ -2146,11 +2252,25 @@ async function main(): Promise<void> {
     for (const s of skips) emit(`%%   - ${s}`);
   }
 
-  // Prepend %solve declarations for every nat literal encountered by
-  // lfExpr.  These discharge the `n >= 0` premise of `enatlit` in tcb.elf.
-  // %solve must come before the declarations that reference the resulting
-  // witnesses, so they go at the very top of the file.
+  // Prepend file-level preludes:
+  //   1. Hole axiom declarations for every hole tag the translator used.
+  //      These are emitted inline (not in sources.cfg) so Twelf's
+  //      higher-order unification can't sneak them in to discharge
+  //      `%solve` obligations elsewhere in the global signature.
+  //   2. %solve declarations for every nat literal encountered by lfExpr
+  //      (discharges the `n >= 0` premise of `enatlit` from tcb.elf).
   const prelude: string[] = [];
+  if (holesUsed.size > 0) {
+    prelude.push(`%% This file contains ${holesUsed.size} hole tag(s):`);
+    for (const tag of holesUsed) {
+      prelude.push(`%%   - hole/${tag} (count: see HOLE/${tag} markers below)`);
+    }
+    prelude.push(`%% Files with any hole/<tag> use are NOT Twelf-verified.`);
+    for (const tag of holesUsed) {
+      prelude.push(HOLE_AXIOM_DECLS[tag]!);
+    }
+    prelude.push(``);
+  }
   if (natLiteralsSeen.size > 0) {
     for (const n of natLiteralsSeen) {
       prelude.push(`%solve nonneg_${n} : ${n} >= 0.`);

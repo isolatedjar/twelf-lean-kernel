@@ -1,0 +1,23 @@
+%%% Render-only view of: 052_typeWithTypeField
+%%% An inductive type can have fields of level up to that of the inductive.
+%% inductive TypeWithTypeField (numParams=0, numIndices=0)
+TypeWithTypeField/render-type : expr =
+   (esort (lsucc (lsucc lzero))).
+
+%% ctor TypeWithTypeField.mk (induct=TypeWithTypeField, numFields=1)
+TypeWithTypeField_mk/render-type : expr =
+   (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil))).
+
+%% recursor TypeWithTypeField.rec (numMotives=1, numMinors=1, k=false)
+TypeWithTypeField_rec/render-type : {u : lvl} expr =
+   [u] (eforall (eforall (econst "TypeWithTypeField" lnil) ([x] (esort u))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "TypeWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "TypeWithTypeField" lnil) ([z] (eapp x z))))))).
+%%   rec-rule for TypeWithTypeField.mk (nfields=1)
+TypeWithTypeField_rec/render-rule0-rhs : {u : lvl} expr =
+   [u] (elam (eforall (econst "TypeWithTypeField" lnil) ([x] (esort u))) ([x] (elam (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "TypeWithTypeField.mk" lnil) y)))) ([y] (elam (esort (lsucc lzero)) ([z] (eapp y z))))))).
+
+%% def typeWithTypeField
+typeWithTypeField/render-type : expr =
+   (esort (lsucc (lsucc lzero))).
+typeWithTypeField/render-value : expr =
+   (econst "TypeWithTypeField" lnil).
+

@@ -1,0 +1,23 @@
+%%% Render-only view of: 062_eqRec
+%%% Asserting the type of the generated recursor
+%% inductive Eq (numParams=2, numIndices=1)
+Eq/render-type : {u_1 : lvl} expr =
+   [u_1] (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))).
+
+%% ctor Eq.refl (induct=Eq, numFields=0)
+Eq_refl/render-type : {u_1 : lvl} expr =
+   [u_1] (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))).
+
+%% recursor Eq.rec (numMotives=1, numMinors=1, k=true)
+Eq_rec/render-type : {u : lvl} {u_1 : lvl} expr =
+   [u] [u_1] (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))).
+%%   rec-rule for Eq.refl (nfields=0)
+Eq_rec/render-rule0-rhs : {u : lvl} {u_1 : lvl} expr =
+   [u] [u_1] (elam (esort u_1) ([x] (elam x ([y] (elam (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (elam (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] w)))))))).
+
+%% def eqRec
+eqRec/render-type : {u : lvl} {u_1 : lvl} expr =
+   [u] [u_1] (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))).
+eqRec/render-value : {u : lvl} {u_1 : lvl} expr =
+   [u] [u_1] (econst "Eq.rec" (lcons u (lcons u_1 lnil))).
+

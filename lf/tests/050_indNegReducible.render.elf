@@ -1,0 +1,26 @@
+%%% Render-only view of: 050_indNegReducible
+%%% When checking inductives, we expect the kernel to **not** reduce the type of the constructor parameters
+%%% further than head normal form. Recursive occurrences nested inside the head normal form are considered
+%%% negative occurrences, even if they could be reduced to disappear.
+%% def constType
+constType/render-type : expr =
+   (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))).
+constType/render-value : expr =
+   (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))).
+
+%% axiom aType
+aType/render-type : expr =
+   (esort (lsucc lzero)).
+
+%% inductive indNegReducible (numParams=0, numIndices=0)
+indNegReducible/render-type : expr =
+   (esort (lsucc lzero)).
+
+%% ctor indNegReducible.mk (induct=indNegReducible, numFields=1)
+indNegReducible_mk/render-type : expr =
+   (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil))).
+
+%% recursor indNegReducible.rec (numMotives=0, numMinors=0, k=false)
+indNegReducible_rec/render-type : expr =
+   (esort lzero).
+

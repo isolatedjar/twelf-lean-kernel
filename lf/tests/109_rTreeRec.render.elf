@@ -1,0 +1,52 @@
+%%% Render-only view of: 109_rTreeRec
+%%% Asserting the type of the generated recursor.
+%% inductive Bool (numParams=0, numIndices=0)
+Bool/render-type : expr =
+   (esort (lsucc lzero)).
+
+%% ctor Bool.false (induct=Bool, numFields=0)
+Bool_false/render-type : expr =
+   (econst "Bool" lnil).
+
+%% ctor Bool.true (induct=Bool, numFields=0)
+Bool_true/render-type : expr =
+   (econst "Bool" lnil).
+
+%% recursor Bool.rec (numMotives=1, numMinors=2, k=false)
+Bool_rec/render-type : {u : lvl} expr =
+   [u] (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))).
+%%   rec-rule for Bool.false (nfields=0)
+Bool_rec/render-rule0-rhs : {u : lvl} expr =
+   [u] (elam (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] y)))))).
+%%   rec-rule for Bool.true (nfields=0)
+Bool_rec/render-rule1-rhs : {u : lvl} expr =
+   [u] (elam (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] z)))))).
+
+%% inductive RTree (numParams=0, numIndices=0)
+RTree/render-type : expr =
+   (esort (lsucc lzero)).
+
+%% ctor RTree.leaf (induct=RTree, numFields=0)
+RTree_leaf/render-type : expr =
+   (econst "RTree" lnil).
+
+%% ctor RTree.node (induct=RTree, numFields=1)
+RTree_node/render-type : expr =
+   (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil))).
+
+%% recursor RTree.rec (numMotives=1, numMinors=2, k=false)
+RTree_rec/render-type : {u : lvl} expr =
+   [u] (eforall (eforall (econst "RTree" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "RTree.leaf" lnil)) ([y] (eforall (eforall (eforall (econst "Bool" lnil) ([z] (econst "RTree" lnil))) ([z] (eforall (eforall (econst "Bool" lnil) ([w] (eapp x (eapp z w)))) ([w] (eapp x (eapp (econst "RTree.node" lnil) z)))))) ([z] (eforall (econst "RTree" lnil) ([w] (eapp x w))))))))).
+%%   rec-rule for RTree.leaf (nfields=0)
+RTree_rec/render-rule0-rhs : {u : lvl} expr =
+   [u] (elam (eforall (econst "RTree" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "RTree.leaf" lnil)) ([y] (elam (eforall (eforall (econst "Bool" lnil) ([z] (econst "RTree" lnil))) ([z] (eforall (eforall (econst "Bool" lnil) ([w] (eapp x (eapp z w)))) ([w] (eapp x (eapp (econst "RTree.node" lnil) z)))))) ([z] y)))))).
+%%   rec-rule for RTree.node (nfields=1)
+RTree_rec/render-rule1-rhs : {u : lvl} expr =
+   [u] (elam (eforall (econst "RTree" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "RTree.leaf" lnil)) ([y] (elam (eforall (eforall (econst "Bool" lnil) ([z] (econst "RTree" lnil))) ([z] (eforall (eforall (econst "Bool" lnil) ([w] (eapp x (eapp z w)))) ([w] (eapp x (eapp (econst "RTree.node" lnil) z)))))) ([z] (elam (eforall (econst "Bool" lnil) ([w] (econst "RTree" lnil))) ([w] (eapp (eapp z w) (elam (econst "Bool" lnil) ([x1] (eapp (eapp (eapp (eapp (econst "RTree.rec" (lcons u lnil)) x) y) z) (eapp w x1))))))))))))).
+
+%% def rTreeRec
+rTreeRec/render-type : {u_1 : lvl} expr =
+   [u_1] (eforall (eforall (econst "RTree" lnil) ([x] (esort u_1))) ([x] (eforall (eapp x (econst "RTree.leaf" lnil)) ([y] (eforall (eforall (eforall (econst "Bool" lnil) ([z] (econst "RTree" lnil))) ([z] (eforall (eforall (econst "Bool" lnil) ([w] (eapp x (eapp z w)))) ([w] (eapp x (eapp (econst "RTree.node" lnil) z)))))) ([z] (eforall (econst "RTree" lnil) ([w] (eapp x w))))))))).
+rTreeRec/render-value : {u_1 : lvl} expr =
+   [u_1] (econst "RTree.rec" (lcons u_1 lnil)).
+

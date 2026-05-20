@@ -1,0 +1,23 @@
+%%% Render-only view of: 066_existsRec
+%%% Inductive predicates eliminate into Prop if they have one constructors and it carries data.
+%% inductive Exists (numParams=2, numIndices=0)
+Exists/render-type : {u : lvl} expr =
+   [u] (eforall (esort u) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (esort lzero))))).
+
+%% ctor Exists.intro (induct=Exists, numFields=2)
+Exists_intro/render-type : {u : lvl} expr =
+   [u] (eforall (esort u) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "Exists" (lcons u lnil)) x) y))))))))).
+
+%% recursor Exists.rec (numMotives=1, numMinors=1, k=false)
+Exists_rec/render-type : {u : lvl} expr =
+   [u] (eforall (esort u) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall (eforall (eapp (eapp (econst "Exists" (lcons u lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Exists.intro" (lcons u lnil)) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "Exists" (lcons u lnil)) x) y) ([x1] (eapp z x1))))))))))).
+%%   rec-rule for Exists.intro (nfields=2)
+Exists_rec/render-rule0-rhs : {u : lvl} expr =
+   [u] (elam (esort u) ([x] (elam (eforall x ([y] (esort lzero))) ([y] (elam (eforall (eapp (eapp (econst "Exists" (lcons u lnil)) x) y) ([z] (esort lzero))) ([z] (elam (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Exists.intro" (lcons u lnil)) x) y) w) x1)))))) ([w] (elam x ([x1] (elam (eapp y x1) ([y1] (eapp (eapp w x1) y1))))))))))))).
+
+%% def existsRec
+existsRec/render-type : {u : lvl} expr =
+   [u] (eforall (esort u) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall (eforall (eapp (eapp (econst "Exists" (lcons u lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Exists.intro" (lcons u lnil)) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "Exists" (lcons u lnil)) x) y) ([x1] (eapp z x1))))))))))).
+existsRec/render-value : {u : lvl} expr =
+   [u] (econst "Exists.rec" (lcons u lnil)).
+

@@ -1,0 +1,125 @@
+%%% Expected outcome: accept
+%%% Peano arithmetic: 1 + 1 = 2
+%% This file contains 1 hole tag(s):
+%%   - hole/defeq (count: see HOLE/defeq markers below)
+%% Files with any hole/<tag> use are NOT Twelf-verified.
+hole/defeq : {E1 : expr} {E2 : expr} {T : expr} defeq E1 E2 T.
+
+%% def PN
+PN/type-wf :
+   {u_1 : lvl} defeq (esort (limax (lsucc u_1) u_1)) (esort (limax (lsucc u_1) u_1)) (esort (lsucc (limax (lsucc u_1) u_1)))
+   = [u_1] (defeq/sort-refl-at (limax (lsucc u_1) u_1)).
+
+PN/value-typed :
+   {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall (eforall x ([y] x)) ([y] (eforall x ([z] x)))))) (eforall (esort u_1) ([x] (eforall (eforall x ([y] x)) ([y] (eforall x ([z] x)))))) (esort (limax (lsucc u_1) u_1))
+   = [u_1] (defeq/conv (defeq/sort-eq (lvl-eq/trans (lvl-eq/limax-cong lvl-eq/refl lvl-eq/imax-idem) (lvl-eq/trans (lvl-eq/limax-cong lvl-eq/refl lvl-eq/imax-idem) lvl-eq/refl))) (defeq/forall (defeq/sort-refl-at u_1) ([x] [y] (defeq/forall (defeq/forall y ([z] [w] y)) ([z] [w] (defeq/forall y ([x1] [y1] y))))))).
+
+PN/decl : {u_1 : lvl} declared "PN" (lcons u_1 lnil)
+   (esort (limax (lsucc u_1) u_1))
+   (defn (eforall (esort u_1) ([x] (eforall (eforall x ([y] x)) ([y] (eforall x ([z] x)))))))
+   (dkind-ok/defn (PN/type-wf u_1) (PN/value-typed u_1)).
+
+%% def PN.succ
+PN_succ/type-wf :
+   {u_1 : lvl} defeq (eforall (econst "PN" (lcons u_1 lnil)) ([x] (econst "PN" (lcons u_1 lnil)))) (eforall (econst "PN" (lcons u_1 lnil)) ([x] (econst "PN" (lcons u_1 lnil)))) (esort (limax (limax (lsucc u_1) u_1) (limax (lsucc u_1) u_1)))
+   = [u_1] (defeq/forall (defeq/const (PN/decl u_1)) ([x] [y] (defeq/const (PN/decl u_1)))).
+
+%% HOLE/defeq: value-typed for PN.succ — app: function does not have a forall type (got const)
+PN_succ/value-typed :
+   {u_1 : lvl} defeq (elam (econst "PN" (lcons u_1 lnil)) ([x] (elam (esort u_1) ([y] (elam (eforall y ([z] y)) ([z] (elam y ([w] (eapp z (eapp (eapp (eapp x y) z) w)))))))))) (elam (econst "PN" (lcons u_1 lnil)) ([x] (elam (esort u_1) ([y] (elam (eforall y ([z] y)) ([z] (elam y ([w] (eapp z (eapp (eapp (eapp x y) z) w)))))))))) (eforall (econst "PN" (lcons u_1 lnil)) ([x] (econst "PN" (lcons u_1 lnil))))
+   = [u_1] (hole/defeq (elam (econst "PN" (lcons u_1 lnil)) ([x] (elam (esort u_1) ([y] (elam (eforall y ([z] y)) ([z] (elam y ([w] (eapp z (eapp (eapp (eapp x y) z) w)))))))))) (elam (econst "PN" (lcons u_1 lnil)) ([x] (elam (esort u_1) ([y] (elam (eforall y ([z] y)) ([z] (elam y ([w] (eapp z (eapp (eapp (eapp x y) z) w)))))))))) (eforall (econst "PN" (lcons u_1 lnil)) ([x] (econst "PN" (lcons u_1 lnil))))).
+
+PN_succ/decl : {u_1 : lvl} declared "PN.succ" (lcons u_1 lnil)
+   (eforall (econst "PN" (lcons u_1 lnil)) ([x] (econst "PN" (lcons u_1 lnil))))
+   (defn (elam (econst "PN" (lcons u_1 lnil)) ([x] (elam (esort u_1) ([y] (elam (eforall y ([z] y)) ([z] (elam y ([w] (eapp z (eapp (eapp (eapp x y) z) w)))))))))))
+   (dkind-ok/defn (PN_succ/type-wf u_1) (PN_succ/value-typed u_1)).
+
+%% def PN.zero
+PN_zero/type-wf :
+   {u_1 : lvl} defeq (econst "PN" (lcons u_1 lnil)) (econst "PN" (lcons u_1 lnil)) (esort (limax (lsucc u_1) u_1))
+   = [u_1] (defeq/const (PN/decl u_1)).
+
+PN_zero/value-typed :
+   {u_1 : lvl} defeq (elam (esort u_1) ([x] (elam (eforall x ([y] x)) ([y] (elam x ([z] z)))))) (elam (esort u_1) ([x] (elam (eforall x ([y] x)) ([y] (elam x ([z] z)))))) (econst "PN" (lcons u_1 lnil))
+   = [u_1] (defeq/conv (defeq/symm (defeq/delta (PN/decl u_1))) (defeq/lam (defeq/sort-refl-at u_1) ([x] [y] (defeq/lam (defeq/forall y ([z] [w] y)) ([z] [w] (defeq/lam y ([x1] [y1] y1))))))).
+
+PN_zero/decl : {u_1 : lvl} declared "PN.zero" (lcons u_1 lnil)
+   (econst "PN" (lcons u_1 lnil))
+   (defn (elam (esort u_1) ([x] (elam (eforall x ([y] x)) ([y] (elam x ([z] z)))))))
+   (dkind-ok/defn (PN_zero/type-wf u_1) (PN_zero/value-typed u_1)).
+
+%% def PN.lit0
+PN_lit0/type-wf :
+   {u_1 : lvl} defeq (econst "PN" (lcons u_1 lnil)) (econst "PN" (lcons u_1 lnil)) (esort (limax (lsucc u_1) u_1))
+   = [u_1] (defeq/const (PN/decl u_1)).
+
+PN_lit0/value-typed :
+   {u_1 : lvl} defeq (econst "PN.zero" (lcons u_1 lnil)) (econst "PN.zero" (lcons u_1 lnil)) (econst "PN" (lcons u_1 lnil))
+   = [u_1] (defeq/const (PN_zero/decl u_1)).
+
+PN_lit0/decl : {u_1 : lvl} declared "PN.lit0" (lcons u_1 lnil)
+   (econst "PN" (lcons u_1 lnil))
+   (defn (econst "PN.zero" (lcons u_1 lnil)))
+   (dkind-ok/defn (PN_lit0/type-wf u_1) (PN_lit0/value-typed u_1)).
+
+%% def PN.lit1
+PN_lit1/type-wf :
+   {u_1 : lvl} defeq (econst "PN" (lcons u_1 lnil)) (econst "PN" (lcons u_1 lnil)) (esort (limax (lsucc u_1) u_1))
+   = [u_1] (defeq/const (PN/decl u_1)).
+
+PN_lit1/value-typed :
+   {u_1 : lvl} defeq (eapp (econst "PN.succ" (lcons u_1 lnil)) (econst "PN.lit0" (lcons u_1 lnil))) (eapp (econst "PN.succ" (lcons u_1 lnil)) (econst "PN.lit0" (lcons u_1 lnil))) (econst "PN" (lcons u_1 lnil))
+   = [u_1] (defeq/app (defeq/const (PN_succ/decl u_1)) (defeq/const (PN_lit0/decl u_1))).
+
+PN_lit1/decl : {u_1 : lvl} declared "PN.lit1" (lcons u_1 lnil)
+   (econst "PN" (lcons u_1 lnil))
+   (defn (eapp (econst "PN.succ" (lcons u_1 lnil)) (econst "PN.lit0" (lcons u_1 lnil))))
+   (dkind-ok/defn (PN_lit1/type-wf u_1) (PN_lit1/value-typed u_1)).
+
+%% def PN.lit2
+PN_lit2/type-wf :
+   {u_1 : lvl} defeq (econst "PN" (lcons u_1 lnil)) (econst "PN" (lcons u_1 lnil)) (esort (limax (lsucc u_1) u_1))
+   = [u_1] (defeq/const (PN/decl u_1)).
+
+PN_lit2/value-typed :
+   {u_1 : lvl} defeq (eapp (econst "PN.succ" (lcons u_1 lnil)) (econst "PN.lit1" (lcons u_1 lnil))) (eapp (econst "PN.succ" (lcons u_1 lnil)) (econst "PN.lit1" (lcons u_1 lnil))) (econst "PN" (lcons u_1 lnil))
+   = [u_1] (defeq/app (defeq/const (PN_succ/decl u_1)) (defeq/const (PN_lit1/decl u_1))).
+
+PN_lit2/decl : {u_1 : lvl} declared "PN.lit2" (lcons u_1 lnil)
+   (econst "PN" (lcons u_1 lnil))
+   (defn (eapp (econst "PN.succ" (lcons u_1 lnil)) (econst "PN.lit1" (lcons u_1 lnil))))
+   (dkind-ok/defn (PN_lit2/type-wf u_1) (PN_lit2/value-typed u_1)).
+
+%% def PN.add
+PN_add/type-wf :
+   {u_1 : lvl} defeq (eforall (econst "PN" (lcons u_1 lnil)) ([x] (eforall (econst "PN" (lcons u_1 lnil)) ([y] (econst "PN" (lcons u_1 lnil)))))) (eforall (econst "PN" (lcons u_1 lnil)) ([x] (eforall (econst "PN" (lcons u_1 lnil)) ([y] (econst "PN" (lcons u_1 lnil)))))) (esort (limax (limax (lsucc u_1) u_1) (limax (limax (lsucc u_1) u_1) (limax (lsucc u_1) u_1))))
+   = [u_1] (defeq/forall (defeq/const (PN/decl u_1)) ([x] [y] (defeq/forall (defeq/const (PN/decl u_1)) ([z] [w] (defeq/const (PN/decl u_1)))))).
+
+%% HOLE/defeq: value-typed for PN.add — app: function does not have a forall type (got const)
+PN_add/value-typed :
+   {u_1 : lvl} defeq (elam (econst "PN" (lcons u_1 lnil)) ([x] (elam (econst "PN" (lcons u_1 lnil)) ([y] (elam (esort u_1) ([z] (elam (eforall z ([w] z)) ([w] (elam z ([x1] (eapp (eapp (eapp x z) w) (eapp (eapp (eapp y z) w) x1)))))))))))) (elam (econst "PN" (lcons u_1 lnil)) ([x] (elam (econst "PN" (lcons u_1 lnil)) ([y] (elam (esort u_1) ([z] (elam (eforall z ([w] z)) ([w] (elam z ([x1] (eapp (eapp (eapp x z) w) (eapp (eapp (eapp y z) w) x1)))))))))))) (eforall (econst "PN" (lcons u_1 lnil)) ([x] (eforall (econst "PN" (lcons u_1 lnil)) ([y] (econst "PN" (lcons u_1 lnil))))))
+   = [u_1] (hole/defeq (elam (econst "PN" (lcons u_1 lnil)) ([x] (elam (econst "PN" (lcons u_1 lnil)) ([y] (elam (esort u_1) ([z] (elam (eforall z ([w] z)) ([w] (elam z ([x1] (eapp (eapp (eapp x z) w) (eapp (eapp (eapp y z) w) x1)))))))))))) (elam (econst "PN" (lcons u_1 lnil)) ([x] (elam (econst "PN" (lcons u_1 lnil)) ([y] (elam (esort u_1) ([z] (elam (eforall z ([w] z)) ([w] (elam z ([x1] (eapp (eapp (eapp x z) w) (eapp (eapp (eapp y z) w) x1)))))))))))) (eforall (econst "PN" (lcons u_1 lnil)) ([x] (eforall (econst "PN" (lcons u_1 lnil)) ([y] (econst "PN" (lcons u_1 lnil))))))).
+
+PN_add/decl : {u_1 : lvl} declared "PN.add" (lcons u_1 lnil)
+   (eforall (econst "PN" (lcons u_1 lnil)) ([x] (eforall (econst "PN" (lcons u_1 lnil)) ([y] (econst "PN" (lcons u_1 lnil))))))
+   (defn (elam (econst "PN" (lcons u_1 lnil)) ([x] (elam (econst "PN" (lcons u_1 lnil)) ([y] (elam (esort u_1) ([z] (elam (eforall z ([w] z)) ([w] (elam z ([x1] (eapp (eapp (eapp x z) w) (eapp (eapp (eapp y z) w) x1)))))))))))))
+   (dkind-ok/defn (PN_add/type-wf u_1) (PN_add/value-typed u_1)).
+
+%% TRANSLATOR: could not bridge inferred type to declared type
+%%   inferred type kind: forallE
+%%   declared type kind: forallE
+%%   emitting valTy.proof; Twelf will likely reject.
+%% thm peano2
+peano2/type-wf :
+   {u : lvl} defeq (eforall (eforall (econst "PN" (lcons u lnil)) ([x] (esort lzero))) ([x] (eforall (eforall (econst "PN" (lcons u lnil)) ([y] (eapp x y))) ([y] (eapp x (econst "PN.lit2" (lcons u lnil))))))) (eforall (eforall (econst "PN" (lcons u lnil)) ([x] (esort lzero))) ([x] (eforall (eforall (econst "PN" (lcons u lnil)) ([y] (eapp x y))) ([y] (eapp x (econst "PN.lit2" (lcons u lnil))))))) (esort (limax (limax (limax (lsucc u) u) (lsucc lzero)) (limax (limax (limax (lsucc u) u) lzero) lzero)))
+   = [u] (defeq/forall (defeq/forall (defeq/const (PN/decl u)) ([x] [y] (defeq/sort-refl-at lzero))) ([x] [y] (defeq/forall (defeq/forall (defeq/const (PN/decl u)) ([z] [w] (defeq/app y w))) ([z] [w] (defeq/app y (defeq/const (PN_lit2/decl u))))))).
+
+peano2/value-typed :
+   {u : lvl} defeq (elam (eforall (econst "PN" (lcons u lnil)) ([x] (esort lzero))) ([x] (elam (eforall (econst "PN" (lcons u lnil)) ([y] (eapp x y))) ([y] (eapp y (eapp (eapp (econst "PN.add" (lcons u lnil)) (econst "PN.lit1" (lcons u lnil))) (econst "PN.lit1" (lcons u lnil)))))))) (elam (eforall (econst "PN" (lcons u lnil)) ([x] (esort lzero))) ([x] (elam (eforall (econst "PN" (lcons u lnil)) ([y] (eapp x y))) ([y] (eapp y (eapp (eapp (econst "PN.add" (lcons u lnil)) (econst "PN.lit1" (lcons u lnil))) (econst "PN.lit1" (lcons u lnil)))))))) (eforall (eforall (econst "PN" (lcons u lnil)) ([x] (esort lzero))) ([x] (eforall (eforall (econst "PN" (lcons u lnil)) ([y] (eapp x y))) ([y] (eapp x (econst "PN.lit2" (lcons u lnil)))))))
+   = [u] (defeq/lam (defeq/forall (defeq/const (PN/decl u)) ([x] [y] (defeq/sort-refl-at lzero))) ([x] [y] (defeq/lam (defeq/forall (defeq/const (PN/decl u)) ([z] [w] (defeq/app y w))) ([z] [w] (defeq/app w (defeq/app (defeq/app (defeq/const (PN_add/decl u)) (defeq/const (PN_lit1/decl u))) (defeq/const (PN_lit1/decl u)))))))).
+
+peano2/decl : {u : lvl} declared "peano2" (lcons u lnil)
+   (eforall (eforall (econst "PN" (lcons u lnil)) ([x] (esort lzero))) ([x] (eforall (eforall (econst "PN" (lcons u lnil)) ([y] (eapp x y))) ([y] (eapp x (econst "PN.lit2" (lcons u lnil)))))))
+   (thm (elam (eforall (econst "PN" (lcons u lnil)) ([x] (esort lzero))) ([x] (elam (eforall (econst "PN" (lcons u lnil)) ([y] (eapp x y))) ([y] (eapp y (eapp (eapp (econst "PN.add" (lcons u lnil)) (econst "PN.lit1" (lcons u lnil))) (econst "PN.lit1" (lcons u lnil)))))))))
+   (dkind-ok/thm (peano2/type-wf u) (peano2/value-typed u)).
+

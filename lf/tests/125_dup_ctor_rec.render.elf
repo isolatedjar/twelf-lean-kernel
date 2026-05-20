@@ -1,0 +1,17 @@
+%%% Render-only view of: 125_dup_ctor_rec
+%%% A constructor and a recursor with the same name
+%% inductive dup_ctor_rec (numParams=0, numIndices=0)
+dup_ctor_rec/render-type : expr =
+   (esort (lsucc lzero)).
+
+%% ctor dup_ctor_rec.rec (induct=dup_ctor_rec, numFields=0)
+dup_ctor_rec_rec/render-type : expr =
+   (econst "dup_ctor_rec" lnil).
+
+%% recursor dup_ctor_rec.rec (numMotives=1, numMinors=1, k=false)
+dup_ctor_rec_rec/render-type : {u : lvl} expr =
+   [u] (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z))))))).
+%%   rec-rule for dup_ctor_rec.rec (nfields=0)
+dup_ctor_rec_rec/render-rule0-rhs : {u : lvl} expr =
+   [u] (elam (eforall (econst "dup_ctor_rec" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] y)))).
+

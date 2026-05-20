@@ -1,0 +1,85 @@
+%%% Render-only view of: 104_etaCtor
+%%% Corner case for function eta:
+%%% Does a defeq between a partially applied constructor trigger eta expansion?
+%%% 
+%%% Taking the official kernel as the specification, the answer is no.
+%%% See <https://github.com/leanprover/lean4/issues/12520> for a discussion.
+%% inductive True (numParams=0, numIndices=0)
+True/render-type : expr =
+   (esort lzero).
+
+%% ctor True.intro (induct=True, numFields=0)
+True_intro/render-type : expr =
+   (econst "True" lnil).
+
+%% recursor True.rec (numMotives=1, numMinors=1, k=true)
+True_rec/render-type : {u : lvl} expr =
+   [u] (eforall (eforall (econst "True" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))).
+%%   rec-rule for True.intro (nfields=0)
+True_rec/render-rule0-rhs : {u : lvl} expr =
+   [u] (elam (eforall (econst "True" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "True.intro" lnil)) ([y] y)))).
+
+%% inductive Bool (numParams=0, numIndices=0)
+Bool/render-type : expr =
+   (esort (lsucc lzero)).
+
+%% ctor Bool.false (induct=Bool, numFields=0)
+Bool_false/render-type : expr =
+   (econst "Bool" lnil).
+
+%% ctor Bool.true (induct=Bool, numFields=0)
+Bool_true/render-type : expr =
+   (econst "Bool" lnil).
+
+%% recursor Bool.rec (numMotives=1, numMinors=2, k=false)
+Bool_rec/render-type : {u : lvl} expr =
+   [u] (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))).
+%%   rec-rule for Bool.false (nfields=0)
+Bool_rec/render-rule0-rhs : {u : lvl} expr =
+   [u] (elam (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] y)))))).
+%%   rec-rule for Bool.true (nfields=0)
+Bool_rec/render-rule1-rhs : {u : lvl} expr =
+   [u] (elam (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] z)))))).
+
+%% inductive T (numParams=0, numIndices=0)
+T/render-type : expr =
+   (esort (lsucc lzero)).
+
+%% ctor T.mk (induct=T, numFields=2)
+T_mk/render-type : expr =
+   (eforall (econst "Bool" lnil) ([x] (eforall (econst "True" lnil) ([y] (econst "T" lnil))))).
+
+%% recursor T.rec (numMotives=1, numMinors=1, k=false)
+T_rec/render-type : {u : lvl} expr =
+   [u] (eforall (eforall (econst "T" lnil) ([x] (esort u))) ([x] (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "True" lnil) ([z] (eapp x (eapp (eapp (econst "T.mk" lnil) y) z)))))) ([y] (eforall (econst "T" lnil) ([z] (eapp x z))))))).
+%%   rec-rule for T.mk (nfields=2)
+T_rec/render-rule0-rhs : {u : lvl} expr =
+   [u] (elam (eforall (econst "T" lnil) ([x] (esort u))) ([x] (elam (eforall (econst "Bool" lnil) ([y] (eforall (econst "True" lnil) ([z] (eapp x (eapp (eapp (econst "T.mk" lnil) y) z)))))) ([y] (elam (econst "Bool" lnil) ([z] (elam (econst "True" lnil) ([w] (eapp (eapp y z) w))))))))).
+
+%% inductive Eq (numParams=2, numIndices=1)
+Eq/render-type : {u_1 : lvl} expr =
+   [u_1] (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))).
+
+%% ctor Eq.refl (induct=Eq, numFields=0)
+Eq_refl/render-type : {u_1 : lvl} expr =
+   [u_1] (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))).
+
+%% recursor Eq.rec (numMotives=1, numMinors=1, k=true)
+Eq_rec/render-type : {u : lvl} {u_1 : lvl} expr =
+   [u] [u_1] (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))).
+%%   rec-rule for Eq.refl (nfields=0)
+Eq_rec/render-rule0-rhs : {u : lvl} {u_1 : lvl} expr =
+   [u] [u_1] (elam (esort u_1) ([x] (elam x ([y] (elam (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (elam (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] w)))))))).
+
+%% def T.val
+T_val/render-type : expr =
+   (eforall (econst "T" lnil) ([x] (econst "Bool" lnil))).
+T_val/render-value : expr =
+   (elam (econst "T" lnil) ([x] (eproj "T" 0 x))).
+
+%% def etaCtor
+etaCtor/render-type : expr =
+   (eforall (eforall (econst "True" lnil) ([x] (econst "T" lnil))) ([x] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eforall (econst "True" lnil) ([y] (econst "T" lnil)))) (eapp (econst "T.mk" lnil) (eapp (econst "T.val" lnil) (eapp x (econst "True.intro" lnil))))) x))).
+etaCtor/render-value : expr =
+   (elam (eforall (econst "True" lnil) ([x] (econst "T" lnil))) ([x] (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (eforall (econst "True" lnil) ([y] (econst "T" lnil)))) x))).
+

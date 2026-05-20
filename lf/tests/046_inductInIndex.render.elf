@@ -1,0 +1,18 @@
+%%% Render-only view of: 046_inductInIndex
+%%% A constructor with an unexpected occurrence of the type in index position of a return type.
+%% axiom aProp
+aProp/render-type : expr =
+   (esort lzero).
+
+%% inductive inductInIndex (numParams=0, numIndices=1)
+inductInIndex/render-type : expr =
+   (eforall (esort lzero) ([x] (esort lzero))).
+
+%% ctor inductInIndex.mk (induct=inductInIndex, numFields=0)
+inductInIndex_mk/render-type : expr =
+   (eapp (econst "inductInIndex" lnil) (eapp (econst "inductInIndex" lnil) (econst "aProp" lnil))).
+
+%% recursor inductInIndex.rec (numMotives=0, numMinors=0, k=false)
+inductInIndex_rec/render-type : expr =
+   (esort lzero).
+

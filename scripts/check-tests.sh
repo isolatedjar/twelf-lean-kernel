@@ -5,16 +5,19 @@
 #
 # Usage:
 #   ./scripts/check-tests.sh <twelf-binary>
-#   ./scripts/check-tests.sh <twelf-binary> lf/tests/001_*.elf   # subset
+#   ./scripts/check-tests.sh <twelf-binary> lf/tests/001_*.full.elf   # subset
 #
-# Output columns:
-#   <name>   expected <✅|❌>   got <✅|❌|🤷>   <verdict>
+# Only *.full.elf files are checked.  *.render.elf files are a separate
+# pure-encoding artifact (no proofs) and are not Twelf-verified here.
 #
-# Verdict key:
-#   ✅  correct (got matches expected, no skips)
-#   ⚠️   incomplete (translator emitted ≥1 %% SKIP:)
-#   ❌  failed a good test (expected accept, got reject)
-#   💥  passed a bad test  (expected reject, got accept) — most dangerous
+# Verdicts:
+#   ✅ — Twelf accepts (good) or rejects (bad), no hole admissions
+#   🩹 — file uses `hole/<tag>` admissions.  Whether Twelf accepts via
+#        admission or rejects on a downstream cascade, no firm conclusion
+#        can be drawn until the holes are filled.
+#   ⚠️  — translator emitted ≥1 %% SKIP: (declined to emit entirely)
+#   ❌ — good test rejected by Twelf with NO holes (genuine failure)
+#   💥 — bad test accepted by Twelf with NO holes (soundness failure)
 
 set -euo pipefail
 
@@ -77,6 +80,15 @@ check_one() {
         return 0
     fi
 
+    # Detect hole admissions.  The file is still loaded through Twelf
+    # (hole axioms are declared inline at the top), but the verdict is
+    # marked 🩹 rather than ✅ to signal that proof obligations were
+    # admitted rather than constructed.
+    local has_holes=0
+    if grep -q "^%% HOLE/" "$file" 2>/dev/null; then
+        has_holes=1
+    fi
+
     local abs_file
     abs_file="$(cd "$(dirname "$file")" && pwd)/$(basename "$file")"
 
@@ -108,12 +120,22 @@ OS.exit" | "$TWELF"
         exit 1
     fi
 
+    local twelf_verdict
     if grep -q "ABORT" "$tmpfile"; then
-        rm -f "$tmpfile"
-        echo "reject"
+        twelf_verdict="reject"
     else
-        rm -f "$tmpfile"
-        echo "accept"
+        twelf_verdict="accept"
+    fi
+    rm -f "$tmpfile"
+
+    # If the file uses hole admissions, the verdict isn't safe to draw
+    # conclusions from — the holes may be discharging things they
+    # shouldn't (causing accept) or propagating bad facts downstream
+    # (causing cascade reject).  Report 🩹 either way.
+    if (( has_holes )); then
+        echo "with-holes"
+    else
+        echo "$twelf_verdict"
     fi
 }
 
@@ -124,7 +146,7 @@ OS.exit" | "$TWELF"
 if [[ $# -gt 0 ]]; then
     test_files=("$@")
 else
-    test_files=("$TESTS_DIR"/*.elf)
+    test_files=("$TESTS_DIR"/*.full.elf)
 fi
 
 # ---------------------------------------------------------------------------
@@ -135,7 +157,7 @@ fi
 max_len=0
 for f in "${test_files[@]}"; do
     len=${#f}
-    base="$(basename "$f")"
+    base="$(basename "$f" .full.elf)"
     len=${#base}
     (( len > max_len )) && max_len=$len
 done
@@ -143,9 +165,11 @@ done
 (( max_len > 50 )) && max_len=50
 
 n_good_pass=0
+n_good_holes=0
 n_good_incomp=0
 n_good_fail=0
 n_bad_pass=0
+n_bad_holes=0
 n_bad_incomp=0
 n_bad_fail=0
 n_no_header=0
@@ -155,7 +179,7 @@ echo ""
 for file in "${test_files[@]}"; do
     [[ -f "$file" ]] || continue
 
-    base="$(basename "$file")"
+    base="$(basename "$file" .full.elf)"
 
     # Read expected outcome from header.
     expected_raw="$(grep -i "^%%% Expected outcome:" "$file" | head -1 | \
@@ -180,6 +204,7 @@ for file in "${test_files[@]}"; do
     # got emoji
     case "$got" in
         accept)     got_emoji="✅" ;;
+        with-holes) got_emoji="🩹" ;;
         reject)     got_emoji="❌" ;;
         incomplete) got_emoji="🤷" ;;
         *)          got_emoji="?" ;;
@@ -187,18 +212,20 @@ for file in "${test_files[@]}"; do
 
     # Verdict.  Track good/bad cases separately so that "should reject"
     # tests in INCOMPLETE state are visibly distinct from genuine Twelf
-    # rejections.
+    # rejections; with-holes tests are distinct from both.
     if [[ "$expected_raw" == "accept" ]]; then
         case "$got" in
-            accept)     verdict="✅"; (( n_good_pass++ ))  || true ;;
+            accept)     verdict="✅"; (( n_good_pass++ ))   || true ;;
+            with-holes) verdict="🩹"; (( n_good_holes++ ))  || true ;;
             incomplete) verdict="⚠️ "; (( n_good_incomp++ )) || true ;;
-            *)          verdict="❌"; (( n_good_fail++ ))  || true ;;
+            *)          verdict="❌"; (( n_good_fail++ ))   || true ;;
         esac
     elif [[ "$expected_raw" == "reject" ]]; then
         case "$got" in
-            reject)     verdict="✅"; (( n_bad_pass++ ))   || true ;;
+            reject)     verdict="✅"; (( n_bad_pass++ ))    || true ;;
+            with-holes) verdict="🩹"; (( n_bad_holes++ ))   || true ;;
             incomplete) verdict="⚠️ "; (( n_bad_incomp++ )) || true ;;
-            *)          verdict="💥"; (( n_bad_fail++ ))   || true ;;
+            *)          verdict="💥"; (( n_bad_fail++ ))    || true ;;
         esac
     fi
 
@@ -210,8 +237,8 @@ done
 # Summary
 # ---------------------------------------------------------------------------
 
-n_good=$(( n_good_pass + n_good_incomp + n_good_fail ))
-n_bad=$((  n_bad_pass  + n_bad_incomp  + n_bad_fail  ))
+n_good=$(( n_good_pass + n_good_holes + n_good_incomp + n_good_fail ))
+n_bad=$((  n_bad_pass  + n_bad_holes  + n_bad_incomp  + n_bad_fail  ))
 total=$(( n_good + n_bad ))
 
 echo ""
@@ -220,17 +247,21 @@ printf "  %d tests\n" "$total"
 echo ""
 printf "  Good tests (expected accept) — %d total:\n" "$n_good"
 printf "    ✅  pass:        %d\n" "$n_good_pass"
-printf "    ⚠️   incomplete:  %d\n" "$n_good_incomp"
+printf "    🩹  with-holes:  %d  (would-be-verified-if-holes-filled)\n" "$n_good_holes"
+printf "    ⚠️   incomplete:  %d  (translator declined — %% SKIP)\n" "$n_good_incomp"
 printf "    ❌  failed:      %d\n" "$n_good_fail"
 echo ""
 printf "  Bad tests (expected reject) — %d total:\n" "$n_bad"
 printf "    ✅  reject:      %d\n" "$n_bad_pass"
+printf "    🩹  with-holes:  %d  (would-be-rejected-if-holes-filled)\n" "$n_bad_holes"
 printf "    ⚠️   incomplete:  %d  (translator declined — not Twelf-verified)\n" "$n_bad_incomp"
-printf "    💥  accept:      %d\n" "$n_bad_fail"
+printf "    💥  accept:      %d  (soundness failure — no holes)\n" "$n_bad_fail"
 [[ $n_no_header -gt 0 ]] && printf "  ?   no header:         %d\n" "$n_no_header"
 echo ""
 
-# Exit non-zero if anything wrong (good ❌ or bad 💥).
+# Exit non-zero only on hard failures (good ❌ or bad 💥).  Holes are
+# tracked but not failures — they're named TODOs awaiting more proof
+# machinery.
 if [[ $(( n_good_fail + n_bad_fail )) -gt 0 ]]; then
     exit 1
 fi

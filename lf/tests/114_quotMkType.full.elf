@@ -1,0 +1,65 @@
+%%% Expected outcome: accept
+%%% Asserting the type of `Quot.mk`.
+%% This file contains 1 hole tag(s):
+%%   - hole/defeq (count: see HOLE/defeq markers below)
+%% Files with any hole/<tag> use are NOT Twelf-verified.
+hole/defeq : {E1 : expr} {E2 : expr} {T : expr} defeq E1 E2 T.
+
+%% inductive Eq
+Eq/type-wf :
+   {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (esort (limax (lsucc u_1) (limax u_1 (limax u_1 (lsucc lzero)))))
+   = [u_1] (defeq/forall (defeq/sort-refl-at u_1) ([x] [y] (defeq/forall y ([z] [w] (defeq/forall y ([x1] [y1] (defeq/sort-refl-at lzero))))))).
+
+Eq/ends-in-sort :
+   {u_1 : lvl} ends-in-sort (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero)))))))
+   = [u_1] (ends-in-sort/forall ([x] (ends-in-sort/forall ([y] (ends-in-sort/forall ([z] ends-in-sort/sort)))))).
+
+Eq/decl : {u_1 : lvl} declared "Eq" (lcons u_1 lnil)
+   (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero)))))))
+   indt
+   (dkind-ok/indt (Eq/type-wf u_1) (Eq/ends-in-sort u_1)).
+
+%% inductive ctor Eq.refl
+Eq_refl/type-wf :
+   {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))) (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))) (esort (limax (lsucc u_1) (limax u_1 lzero)))
+   = [u_1] (defeq/forall (defeq/sort-refl-at u_1) ([x] [y] (defeq/forall y ([z] [w] (defeq/app (defeq/app (defeq/app (defeq/const (Eq/decl u_1)) y) w) w))))).
+
+Eq_refl/positivity :
+   {u_1 : lvl} ctor-positive "Eq" (lcons u_1 lnil) (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y)))))
+   = [u_1] (ctor-positive/intro ([S] (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp S x) y) y)))))) (ctor-spine/arg (strict-pos/no-occur (esort u_1)) ([_y0] (ctor-spine/arg (strict-pos/no-occur _y0) ([_y1] (ctor-spine/result (applies-self/app (applies-self/app (applies-self/app applies-self/refl))))))))).
+
+Eq_refl/decl : {u_1 : lvl} declared "Eq.refl" (lcons u_1 lnil)
+   (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y)))))
+   ctor
+   (dkind-ok/ctor (Eq_refl/type-wf u_1) (Eq_refl/positivity u_1)).
+
+%% inductive recursor Eq.rec
+Eq_rec/type-wf :
+   {u : lvl} {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort (limax (lsucc u_1) (limax u_1 (limax (limax u_1 (limax lzero (lsucc u))) (limax u (limax u_1 (limax lzero u)))))))
+   = [u] [u_1] (defeq/forall (defeq/sort-refl-at u_1) ([x] [y] (defeq/forall y ([z] [w] (defeq/forall (defeq/forall y ([x1] [y1] (defeq/forall (defeq/app (defeq/app (defeq/app (defeq/const (Eq/decl u_1)) y) w) y1) ([z1] [w1] (defeq/sort-refl-at u))))) ([x1] [y1] (defeq/forall (defeq/app (defeq/app y1 w) (defeq/app (defeq/app (defeq/const (Eq_refl/decl u_1)) y) w)) ([z1] [w1] (defeq/forall y ([x2] [y2] (defeq/forall (defeq/app (defeq/app (defeq/app (defeq/const (Eq/decl u_1)) y) w) y2) ([z2] [w2] (defeq/app (defeq/app y1 y2) w2))))))))))))).
+
+Eq_rec/decl : {u : lvl} {u_1 : lvl} declared "Eq.rec" (lcons u (lcons u_1 lnil))
+   (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1)))))))))))))
+   irec
+   (dkind-ok/irec (Eq_rec/type-wf u u_1)).
+
+%% SKIP: quot not yet supported
+%% SKIP: quot not yet supported
+%% SKIP: quot not yet supported
+%% SKIP: quot not yet supported
+%% def quotMkType
+%% HOLE/defeq: type-wf for quotMkType — const "Quot" not in decl table
+quotMkType/type-wf :
+   {u : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eapp (eapp (econst "Quot" (lcons u lnil)) x) y))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eapp (eapp (econst "Quot" (lcons u lnil)) x) y))))))) (esort lzero)
+   = [u] (hole/defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eapp (eapp (econst "Quot" (lcons u lnil)) x) y))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eapp (eapp (econst "Quot" (lcons u lnil)) x) y))))))) (esort lzero)).
+
+%% HOLE/defeq: value-typed for quotMkType — const "Quot.mk" not in decl table
+quotMkType/value-typed :
+   {u : lvl} defeq (econst "Quot.mk" (lcons u lnil)) (econst "Quot.mk" (lcons u lnil)) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eapp (eapp (econst "Quot" (lcons u lnil)) x) y)))))))
+   = [u] (hole/defeq (econst "Quot.mk" (lcons u lnil)) (econst "Quot.mk" (lcons u lnil)) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eapp (eapp (econst "Quot" (lcons u lnil)) x) y)))))))).
+
+quotMkType/decl : {u : lvl} declared "quotMkType" (lcons u lnil)
+   (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eapp (eapp (econst "Quot" (lcons u lnil)) x) y)))))))
+   (defn (econst "Quot.mk" (lcons u lnil)))
+   (dkind-ok/defn (quotMkType/type-wf u) (quotMkType/value-typed u)).
+

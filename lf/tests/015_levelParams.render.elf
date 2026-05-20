@@ -1,0 +1,14 @@
+%%% Render-only view of: 015_levelParams
+%%% Level parameters
+%% def levelParamF
+levelParamF/render-type : {u : lvl} expr =
+   [u] (eforall (esort u) ([x] (eforall (esort u) ([y] (esort u))))).
+levelParamF/render-value : {u : lvl} expr =
+   [u] (elam (esort u) ([x] (elam (esort u) ([y] x)))).
+
+%% def levelParams
+levelParams/render-type : expr =
+   (eapp (eapp (econst "levelParamF" (lcons (lsucc lzero) lnil)) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))).
+levelParams/render-value : expr =
+   (eforall (esort lzero) ([x] x)).
+

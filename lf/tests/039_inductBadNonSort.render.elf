@@ -1,0 +1,12 @@
+%%% Render-only view of: 039_inductBadNonSort
+%%% An inductive type with a non-sort type
+%% def constType
+constType/render-type : expr =
+   (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))).
+constType/render-value : expr =
+   (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))).
+
+%% inductive inductBadNonSort (numParams=0, numIndices=0)
+inductBadNonSort/render-type : expr =
+   (econst "constType" lnil).
+

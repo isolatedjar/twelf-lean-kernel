@@ -1,0 +1,78 @@
+%%% Expected outcome: accept
+%%% When checking inductives, we expect the kernel to reduce the types of constructor arguments in all
+%%% positive positions.
+%% This file contains 2 hole tag(s):
+%%   - hole/defeq (count: see HOLE/defeq markers below)
+%%   - hole/ctor-positive (count: see HOLE/ctor-positive markers below)
+%% Files with any hole/<tag> use are NOT Twelf-verified.
+hole/defeq : {E1 : expr} {E2 : expr} {T : expr} defeq E1 E2 T.
+hole/ctor-positive : {N : name} {LS : lvls} {T : expr} ctor-positive N LS T.
+
+%% def id
+id/type-wf :
+   {u : lvl} defeq (eforall (esort u) ([x] (eforall x ([y] x)))) (eforall (esort u) ([x] (eforall x ([y] x)))) (esort (limax (lsucc u) (limax u u)))
+   = [u] (defeq/forall (defeq/sort-refl-at u) ([x] [y] (defeq/forall y ([z] [w] y)))).
+
+id/value-typed :
+   {u : lvl} defeq (elam (esort u) ([x] (elam x ([y] y)))) (elam (esort u) ([x] (elam x ([y] y)))) (eforall (esort u) ([x] (eforall x ([y] x))))
+   = [u] (defeq/lam (defeq/sort-refl-at u) ([x] [y] (defeq/lam y ([z] [w] w)))).
+
+id/decl : {u : lvl} declared "id" (lcons u lnil)
+   (eforall (esort u) ([x] (eforall x ([y] x))))
+   (defn (elam (esort u) ([x] (elam x ([y] y)))))
+   (dkind-ok/defn (id/type-wf u) (id/value-typed u)).
+
+%% def constType
+constType/type-wf :
+   defeq (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort (limax (lsucc (lsucc lzero)) (limax (lsucc (lsucc lzero)) (lsucc (lsucc lzero)))))
+   = (defeq/forall (defeq/sort-refl-at (lsucc lzero)) ([x] [y] (defeq/forall (defeq/sort-refl-at (lsucc lzero)) ([z] [w] (defeq/sort-refl-at (lsucc lzero)))))).
+
+constType/value-typed :
+   defeq (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero))))))
+   = (defeq/lam (defeq/sort-refl-at (lsucc lzero)) ([x] [y] (defeq/lam (defeq/sort-refl-at (lsucc lzero)) ([z] [w] y)))).
+
+constType/decl : declared "constType" lnil
+   (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero))))))
+   (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))
+   (dkind-ok/defn constType/type-wf constType/value-typed).
+
+%% inductive reduceCtorParamRefl
+reduceCtorParamRefl/type-wf :
+   defeq (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (esort (limax (lsucc (lsucc lzero)) (lsucc (lsucc lzero))))
+   = (defeq/forall (defeq/sort-refl-at (lsucc lzero)) ([x] [y] (defeq/sort-refl-at (lsucc lzero)))).
+
+reduceCtorParamRefl/ends-in-sort :
+   ends-in-sort (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero))))
+   = (ends-in-sort/forall ([x] ends-in-sort/sort)).
+
+reduceCtorParamRefl/decl : declared "reduceCtorParamRefl" lnil
+   (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero))))
+   indt
+   (dkind-ok/indt reduceCtorParamRefl/type-wf reduceCtorParamRefl/ends-in-sort).
+
+%% inductive ctor reduceCtorParamRefl.mk
+%% HOLE/defeq: type-wf for reduceCtorParamRefl.mk — forallE: binder type does not have a sort type (got app)
+reduceCtorParamRefl_mk/type-wf :
+   defeq (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero))) ([x] (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl" lnil) x)) (eapp (econst "reduceCtorParamRefl" lnil) x)))) ([y] (eapp (econst "reduceCtorParamRefl" lnil) x))))) (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero))) ([x] (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl" lnil) x)) (eapp (econst "reduceCtorParamRefl" lnil) x)))) ([y] (eapp (econst "reduceCtorParamRefl" lnil) x))))) (esort lzero)
+   = (hole/defeq (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero))) ([x] (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl" lnil) x)) (eapp (econst "reduceCtorParamRefl" lnil) x)))) ([y] (eapp (econst "reduceCtorParamRefl" lnil) x))))) (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero))) ([x] (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl" lnil) x)) (eapp (econst "reduceCtorParamRefl" lnil) x)))) ([y] (eapp (econst "reduceCtorParamRefl" lnil) x))))) (esort lzero)).
+
+%% HOLE/ctor-positive: reduceCtorParamRefl.mk — strict positivity in reduceCtorParamRefl not witnessable by current encoding (likely field-position negative occurrence)
+reduceCtorParamRefl_mk/positivity :
+   ctor-positive "reduceCtorParamRefl" lnil (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero))) ([x] (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl" lnil) x)) (eapp (econst "reduceCtorParamRefl" lnil) x)))) ([y] (eapp (econst "reduceCtorParamRefl" lnil) x)))))
+   = (hole/ctor-positive "reduceCtorParamRefl" lnil (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero))) ([x] (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl" lnil) x)) (eapp (econst "reduceCtorParamRefl" lnil) x)))) ([y] (eapp (econst "reduceCtorParamRefl" lnil) x)))))).
+
+reduceCtorParamRefl_mk/decl : declared "reduceCtorParamRefl.mk" lnil
+   (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero))) ([x] (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl" lnil) x)) (eapp (econst "reduceCtorParamRefl" lnil) x)))) ([y] (eapp (econst "reduceCtorParamRefl" lnil) x)))))
+   ctor
+   (dkind-ok/ctor reduceCtorParamRefl_mk/type-wf reduceCtorParamRefl_mk/positivity).
+
+%% inductive recursor reduceCtorParamRefl.rec
+reduceCtorParamRefl_rec/type-wf :
+   {u : lvl} defeq (eforall (esort (lsucc lzero)) ([x] (eforall (eforall (eapp (econst "reduceCtorParamRefl" lnil) x) ([y] (esort u))) ([y] (eforall (eforall (eforall x ([z] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl" lnil) x)) (eapp (econst "reduceCtorParamRefl" lnil) x)))) ([z] (eforall (eforall x ([w] (eapp y (eapp z w)))) ([w] (eapp y (eapp (eapp (econst "reduceCtorParamRefl.mk" lnil) x) z)))))) ([z] (eforall (eapp (econst "reduceCtorParamRefl" lnil) x) ([w] (eapp y w))))))))) (eforall (esort (lsucc lzero)) ([x] (eforall (eforall (eapp (econst "reduceCtorParamRefl" lnil) x) ([y] (esort u))) ([y] (eforall (eforall (eforall x ([z] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl" lnil) x)) (eapp (econst "reduceCtorParamRefl" lnil) x)))) ([z] (eforall (eforall x ([w] (eapp y (eapp z w)))) ([w] (eapp y (eapp (eapp (econst "reduceCtorParamRefl.mk" lnil) x) z)))))) ([z] (eforall (eapp (econst "reduceCtorParamRefl" lnil) x) ([w] (eapp y w))))))))) (esort (limax (lsucc (lsucc lzero)) (limax (limax (lsucc lzero) (lsucc u)) (limax (limax (limax (lsucc lzero) (lsucc lzero)) (limax (limax (lsucc lzero) u) u)) (limax (lsucc lzero) u)))))
+   = [u] (defeq/forall (defeq/sort-refl-at (lsucc lzero)) ([x] [y] (defeq/forall (defeq/forall (defeq/app (defeq/const reduceCtorParamRefl/decl) y) ([z] [w] (defeq/sort-refl-at u))) ([z] [w] (defeq/forall (defeq/forall (defeq/forall y ([x1] [y1] (defeq/app (defeq/app (defeq/const constType/decl) (defeq/app (defeq/const reduceCtorParamRefl/decl) y)) (defeq/app (defeq/const reduceCtorParamRefl/decl) y)))) ([x1] [y1] (defeq/forall (defeq/forall y ([z1] [w1] (defeq/app w (defeq/conv (defeq/trans (defeq/trans (defeq/app (defeq/app (defeq/delta constType/decl) (defeq/app (defeq/const reduceCtorParamRefl/decl) y)) (defeq/app (defeq/const reduceCtorParamRefl/decl) y)) (defeq/app (defeq/beta ([x2] [y2] (defeq/lam (defeq/sort-refl-at (lsucc lzero)) ([z2] [w2] y2))) (defeq/app (defeq/const reduceCtorParamRefl/decl) y)) (defeq/app (defeq/const reduceCtorParamRefl/decl) y))) (defeq/beta ([x2] [y2] (defeq/app (defeq/const reduceCtorParamRefl/decl) y)) (defeq/app (defeq/const reduceCtorParamRefl/decl) y))) (defeq/app y1 w1))))) ([z1] [w1] (defeq/app w (defeq/app (defeq/app (defeq/const reduceCtorParamRefl_mk/decl) (defeq/conv (defeq/symm (defeq/trans (defeq/trans (defeq/app (defeq/app (defeq/delta (id/decl (lsucc (lsucc (lsucc lzero))))) (defeq/sort-refl-at (lsucc (lsucc lzero)))) (defeq/sort-refl-at (lsucc lzero))) (defeq/app (defeq/beta ([x2] [y2] (defeq/lam y2 ([z2] [w2] w2))) (defeq/sort-refl-at (lsucc (lsucc lzero)))) (defeq/sort-refl-at (lsucc lzero)))) (defeq/beta ([x2] [y2] y2) (defeq/sort-refl-at (lsucc lzero))))) y)) y1)))))) ([x1] [y1] (defeq/forall (defeq/app (defeq/const reduceCtorParamRefl/decl) y) ([z1] [w1] (defeq/app w w1))))))))).
+
+reduceCtorParamRefl_rec/decl : {u : lvl} declared "reduceCtorParamRefl.rec" (lcons u lnil)
+   (eforall (esort (lsucc lzero)) ([x] (eforall (eforall (eapp (econst "reduceCtorParamRefl" lnil) x) ([y] (esort u))) ([y] (eforall (eforall (eforall x ([z] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl" lnil) x)) (eapp (econst "reduceCtorParamRefl" lnil) x)))) ([z] (eforall (eforall x ([w] (eapp y (eapp z w)))) ([w] (eapp y (eapp (eapp (econst "reduceCtorParamRefl.mk" lnil) x) z)))))) ([z] (eforall (eapp (econst "reduceCtorParamRefl" lnil) x) ([w] (eapp y w)))))))))
+   irec
+   (dkind-ok/irec (reduceCtorParamRefl_rec/type-wf u)).
+

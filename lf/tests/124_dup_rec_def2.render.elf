@@ -1,0 +1,25 @@
+%%% Render-only view of: 124_dup_rec_def2
+%%% A definition with the name of a recursor, and the recursor named differently.
+%%% This would pass simple checks for duplicate definitions in the parser, but should still
+%%% be rejected by the checker.
+%% def dup_rec_def2.rec
+dup_rec_def2_rec/render-type : expr =
+   (esort (lsucc lzero)).
+dup_rec_def2_rec/render-value : expr =
+   (esort lzero).
+
+%% inductive dup_rec_def2 (numParams=0, numIndices=0)
+dup_rec_def2/render-type : expr =
+   (esort (lsucc lzero)).
+
+%% ctor dup_rec_def2.mk (induct=dup_rec_def2, numFields=0)
+dup_rec_def2_mk/render-type : expr =
+   (econst "dup_rec_def2" lnil).
+
+%% recursor dup_rec_def2.original_rec (numMotives=1, numMinors=1, k=false)
+dup_rec_def2_original_rec/render-type : {u : lvl} expr =
+   [u] (eforall (eforall (econst "dup_rec_def2" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_rec_def2.mk" lnil)) ([y] (eforall (econst "dup_rec_def2" lnil) ([z] (eapp x z))))))).
+%%   rec-rule for dup_rec_def2.mk (nfields=0)
+dup_rec_def2_original_rec/render-rule0-rhs : {u : lvl} expr =
+   [u] (elam (eforall (econst "dup_rec_def2" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "dup_rec_def2.mk" lnil)) ([y] y)))).
+

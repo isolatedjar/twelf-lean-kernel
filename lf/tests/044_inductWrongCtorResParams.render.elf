@@ -1,0 +1,14 @@
+%%% Render-only view of: 044_inductWrongCtorResParams
+%%% An inductive with a constructor with wrong parameters in result (they are swapped)
+%% inductive inductWrongCtorResParams (numParams=2, numIndices=0)
+inductWrongCtorResParams/render-type : expr =
+   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))).
+
+%% ctor inductWrongCtorResParams.mk (induct=inductWrongCtorResParams, numFields=0)
+inductWrongCtorResParams_mk/render-type : expr =
+   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResParams" lnil) y) x))))).
+
+%% recursor inductWrongCtorResParams.rec (numMotives=0, numMinors=0, k=false)
+inductWrongCtorResParams_rec/render-type : expr =
+   (esort lzero).
+
