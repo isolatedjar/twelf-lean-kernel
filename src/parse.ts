@@ -537,16 +537,7 @@ async function main(): Promise<void> {
   }
 
   const parsed: ParsedEnv = { decls };
-  // Compact Names from their recursive struct form to a flat path array
-  // tagged with `_n`, dramatically shrinking and clarifying the output.
-  // lean2lf.ts re-inflates these via `transformNamesFromJSON` on input.
-  let json = JSON.stringify(transformNamesToJSON(parsed), null, 2);
-  // Collapse each `{"_n": [...]}` onto one line before passing to prettier,
-  // so names stay compact rather than expanding across multiple lines.
-  json = json.replace(
-    /\{\s*"_n":\s*\[(?:\s*(?:"[^"]*"|\d+)(?:\s*,\s*(?:"[^"]*"|\d+))*\s*)?\]\s*\}/g,
-    (match) => match.replace(/\s+/g, " ").replace(/\[ /, "[").replace(/ \]/, "]"),
-  );
+  const json = JSON.stringify(transformNamesToJSON(parsed));
   const prettierConfig = await prettier.resolveConfig(process.cwd());
   const formatted = await prettier.format(json, { ...prettierConfig, parser: "json" });
   process.stdout.write(formatted);
