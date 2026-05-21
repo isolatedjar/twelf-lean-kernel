@@ -73,8 +73,6 @@ gen_one() {
         "$PARSE_NDJSON" < "$ndjson"
     } > "$out_json"
 
-    npx prettier --write "$out_json"
-
     # Full pipeline: rendering + proof construction.  This is what
     # check-tests.sh runs through Twelf.
     {
