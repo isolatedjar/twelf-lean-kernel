@@ -75,6 +75,9 @@ Run `check-tests.sh` for the current pass/fail/skip breakdown.
 
 ## Plans and design docs
 
+- `RENDER-ADEQUACY.md` — design rule: `.render.elf` must carry every
+  load-bearing fact from the NDJSON in Twelf-LF text, not only in comments.
+  Read this before changing `src/render-cli.ts`.
 - `render-plan-revised-by-rob.md` — current active plan (render pass + hole
   emission)
 - `completeness-plan.md` — longer-term roadmap for filling proof gaps

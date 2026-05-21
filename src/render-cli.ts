@@ -17,6 +17,13 @@
 // syntactically well-formed (binders correctly scoped, levels valid,
 // names well-formed).  It does NOT attempt to prove the dkind-ok
 // obligations — that's lean2lf.ts's job.
+//
+// ADEQUACY RULE: every load-bearing fact from the NDJSON must appear
+// in the emitted Twelf-LF text, not solely in `%% ...` comments.  See
+// RENDER-ADEQUACY.md at the repo root for the rule, the per-declaration
+// checklist, and the current compliance gap.  When extending this file,
+// reread that doc and update the LF schema before falling back to a
+// comment.
 
 import { levelParamBindings, lfExpr, mangle, nameToLfLevelVar, natLiteralsSeen } from "./render.ts";
 import type { Decl, Expr, Name, ParsedEnv } from "./shared.ts";
