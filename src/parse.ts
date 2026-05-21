@@ -12,7 +12,7 @@
 
 import * as readline from "node:readline";
 
-import * as prettier from "prettier";
+import { format, resolveConfig } from "prettier";
 
 import type {
   BinderInfo,
@@ -538,8 +538,8 @@ async function main(): Promise<void> {
 
   const parsed: ParsedEnv = { decls };
   const json = JSON.stringify(transformNamesToJSON(parsed));
-  const prettierConfig = await prettier.resolveConfig(process.cwd());
-  const formatted = await prettier.format(json, { ...prettierConfig, parser: "json" });
+  const prettierConfig = await resolveConfig(process.cwd());
+  const formatted = await format(json, { ...prettierConfig, parser: "json" });
   process.stdout.write(formatted);
 }
 
