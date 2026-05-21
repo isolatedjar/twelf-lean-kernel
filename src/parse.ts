@@ -538,7 +538,8 @@ async function main(): Promise<void> {
 
   const parsed: ParsedEnv = { decls };
   const json = JSON.stringify(transformNamesToJSON(parsed));
-  const prettierConfig = await resolveConfig(process.cwd());
+  const prettierConfig = await resolveConfig(import.meta.filename);
+
   const formatted = await format(json, { ...prettierConfig, parser: "json" });
   process.stdout.write(formatted);
 }
