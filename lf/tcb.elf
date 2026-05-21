@@ -677,6 +677,67 @@ defeq/iota-enum-3-third :
         (eapp M (econst C3 lnil)).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Iota for quotient types
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Mario's `t-extra` for `Quot` covers two primitive reductions:
+%%%   Quot.lift α r β f h (Quot.mk α r a) ≡ f a         (mm0: quot_iota)
+%%%   Quot.ind  α r m h   (Quot.mk α r a) ≡ h a         (no mm0 analog)
+%%%
+%%% Both reductions pattern-match on the four `declared` witnesses
+%%% for Quot, Quot.mk, Quot.lift / Quot.ind (each at dkind=quot).
+%%% Names "Quot" / "Quot.mk" / "Quot.lift" / "Quot.ind" are fixed —
+%%% these are kernel built-ins, not user-extensible inductives.
+%%%
+%%% Soundness: the rules consume `declared … quot` facts, so they
+%%% only fire on the actual Quot family.  The typing premises on
+%%% A, R, B, F, H, A2 (resp. M for Quot.ind) preserve the typing
+%%% invariant of `defeq` (reflexivity is well-typedness).
+
+defeq/iota-quot-lift :
+   declared "Quot"      (lcons U lnil)              QuotType     quot WQuot
+   -> declared "Quot.mk"   (lcons U lnil)              QuotMkType   quot WQuotMk
+   -> declared "Quot.lift" (lcons U (lcons V lnil))    QuotLiftType quot WQuotLift
+   -> defeq A A (esort U)
+   -> defeq R R (eforall A ([_] (eforall A ([_] (esort lzero)))))
+   -> defeq B B (esort V)
+   -> defeq F F (eforall A ([_] B))
+   -> defeq H H
+        (eforall A ([a]
+          (eforall A ([b]
+            (eforall (eapp (eapp R a) b) ([_]
+              (eapp (eapp (eapp (econst "Eq" (lcons V lnil)) B)
+                          (eapp F a))
+                    (eapp F b))))))))
+   -> defeq A2 A2 A
+   -> defeq-extra
+        (eapp (eapp (eapp (eapp (eapp (eapp
+           (econst "Quot.lift" (lcons U (lcons V lnil))) A) R) B) F) H)
+           (eapp (eapp (eapp (econst "Quot.mk" (lcons U lnil)) A) R) A2))
+        (eapp F A2)
+        B.
+
+%%% Quot.ind is the Prop-eliminator: motive is into Prop, no
+%%% soundness premise (proof irrelevance handles equality of proofs).
+
+defeq/iota-quot-ind :
+   declared "Quot"     (lcons U lnil)              QuotType    quot WQuot
+   -> declared "Quot.mk"  (lcons U lnil)              QuotMkType  quot WQuotMk
+   -> declared "Quot.ind" (lcons U lnil)              QuotIndType quot WQuotInd
+   -> defeq A A (esort U)
+   -> defeq R R (eforall A ([_] (eforall A ([_] (esort lzero)))))
+   -> defeq M M (eforall (eapp (eapp (econst "Quot" (lcons U lnil)) A) R) ([_] (esort lzero)))
+   -> defeq H H
+        (eforall A ([a]
+          (eapp M (eapp (eapp (eapp (econst "Quot.mk" (lcons U lnil)) A) R) a))))
+   -> defeq A2 A2 A
+   -> defeq-extra
+        (eapp (eapp (eapp (eapp (eapp
+           (econst "Quot.ind" (lcons U lnil)) A) R) M) H)
+           (eapp (eapp (eapp (econst "Quot.mk" (lcons U lnil)) A) R) A2))
+        (eapp H A2)
+        (eapp M (eapp (eapp (eapp (econst "Quot.mk" (lcons U lnil)) A) R) A2)).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Translator-side rejection marker
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Uninhabited type used to deliberately fail Twelf type-checking
