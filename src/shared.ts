@@ -182,7 +182,13 @@ export const DeclSchema = z.discriminatedUnion("kind", [
     type: ExprSchema,
     value: ExprSchema,
   }),
-  z.object({ kind: z.literal("quot") }),
+  z.object({
+    kind: z.literal("quot"),
+    quotKind: z.union([z.literal("type"), z.literal("ctor"), z.literal("lift"), z.literal("ind")]),
+    name: NameSchema,
+    levelParams: z.array(NameSchema),
+    type: ExprSchema,
+  }),
   InductiveSchema,
 ]);
 export type Decl = z.infer<typeof DeclSchema>;

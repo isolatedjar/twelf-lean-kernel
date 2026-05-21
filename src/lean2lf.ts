@@ -993,6 +993,221 @@ function tryIotaEnum(e: Expr, scope: Scope): { result: Expr; proof: string } | n
   };
 }
 
+// tryQuotIota: detect a Quot.lift / Quot.ind iota redex.
+//
+// Pattern (lift): (Quot.lift.{u,v} A R B F H (Quot.mk.{u} A R A2))
+//   reduces to:  (F A2)            at type B
+// Pattern (ind):  (Quot.ind.{u} A R M H (Quot.mk.{u} A R A2))
+//   reduces to:  (H A2)            at type (M (Quot.mk A R A2))
+//
+// Builds the proof against `defeq/iota-quot-lift` / `defeq/iota-quot-ind`
+// in tcb.elf.  Both rules pattern-match on the Quot, Quot.mk, and
+// Quot.lift / Quot.ind `declared` witnesses; the per-file `declTable`
+// supplies the mangles for those.  The remaining premises are typing
+// proofs for A, R, B/M, F, H, A2 (bridge-typed against the expected
+// schema if `synth`'s output doesn't match syntactically).
+function tryQuotIota(e: Expr, scope: Scope): { result: Expr; proof: string } | null {
+  if (e.kind !== "app") return null;
+
+  // Walk the outer spine to find head + args.
+  const args: Expr[] = [];
+  let head: Expr = e;
+  while (head.kind === "app") {
+    args.unshift(head.arg);
+    head = head.fn;
+  }
+  if (head.kind !== "const") return null;
+  const headName = nameToString(head.name);
+  const isLift = headName === "Quot.lift";
+  const isInd = headName === "Quot.ind";
+  if (!isLift && !isInd) return null;
+
+  // Quot.lift takes 6 args (α r β f h q) at levels [u,v];
+  // Quot.ind  takes 5 args (α r β h q) at levels [u].
+  const expectedArgs = isLift ? 6 : 5;
+  if (args.length !== expectedArgs) return null;
+  const expectedLevels = isLift ? 2 : 1;
+  if (head.us.length !== expectedLevels) return null;
+
+  const u = head.us[0];
+  if (u === undefined) return null;
+  const v = isLift ? head.us[1] : undefined;
+  if (isLift && v === undefined) return null;
+
+  // The last arg (the quotient value) must be Quot.mk.{u} applied to
+  // exactly three args (α r a).
+  const major = args[expectedArgs - 1];
+  if (major === undefined || major.kind !== "app") return null;
+  const mkArgs: Expr[] = [];
+  let mkHead: Expr = major;
+  while (mkHead.kind === "app") {
+    mkArgs.unshift(mkHead.arg);
+    mkHead = mkHead.fn;
+  }
+  if (mkHead.kind !== "const") return null;
+  if (nameToString(mkHead.name) !== "Quot.mk") return null;
+  if (mkArgs.length !== 3) return null;
+  if (mkHead.us.length !== 1) return null;
+  const uMk = mkHead.us[0];
+  if (uMk === undefined) return null;
+  if (!levelEq(u, uMk)) return null;
+
+  // Decompose: outer args [A, R, B/M, F/H, H?, q]; Quot.mk args [Amk, Rmk, A2].
+  const A = args[0];
+  const R = args[1];
+  const Amk = mkArgs[0];
+  const Rmk = mkArgs[1];
+  const A2 = mkArgs[2];
+  if (
+    A === undefined ||
+    R === undefined ||
+    Amk === undefined ||
+    Rmk === undefined ||
+    A2 === undefined
+  )
+    return null;
+  // The α and r in Quot.mk must be the same as in Quot.lift/ind for the
+  // rule to fire — the rule has only one metavar A and one metavar R.
+  // We can't enforce that here syntactically (Twelf will check via
+  // unification), but if they disagree the proof won't type-check.
+
+  // Look up Quot, Quot.mk, Quot.lift / Quot.ind in declTable.
+  const quotEntry = declTable.get("Quot");
+  const quotMkEntry = declTable.get("Quot.mk");
+  const elimName = isLift ? "Quot.lift" : "Quot.ind";
+  const elimEntry = declTable.get(elimName);
+  if (
+    quotEntry === undefined ||
+    quotMkEntry === undefined ||
+    elimEntry === undefined ||
+    quotEntry.kind !== "quot" ||
+    quotMkEntry.kind !== "quot" ||
+    elimEntry.kind !== "quot"
+  ) {
+    return null;
+  }
+  const quotDecl = `(${quotEntry.mangle}/decl ${lfLevel(u)})`;
+  const quotMkDecl = `(${quotMkEntry.mangle}/decl ${lfLevel(u)})`;
+  const elimDecl = isLift
+    ? `(${elimEntry.mangle}/decl ${lfLevel(u)} ${lfLevel(v!)})`
+    : `(${elimEntry.mangle}/decl ${lfLevel(u)})`;
+
+  // Build the expected types for each rule premise and produce
+  // bridge-typed defeq proofs by calling synth + bridgeTypes.
+  function bridgedSynth(arg: Expr, expectedTy: Expr): string | null {
+    let s: Synth;
+    try {
+      s = synth(arg, scope);
+    } catch {
+      return null;
+    }
+    if (exprEq(s.tyExpr, expectedTy)) return s.proof;
+    const conv = bridgeTypes(s.tyExpr, expectedTy, scope, 0);
+    if (conv === null) return null;
+    return `(defeq/conv ${conv} ${s.proof})`;
+  }
+
+  const sortU: Expr = { kind: "sort", level: u };
+  const propType: Expr = { kind: "sort", level: { kind: "zero" } };
+  // relType = α → α → Prop.  The inner α reference needs a +1 shift
+  // because it appears one binder deeper (inside the outer eforall).
+  const relType: Expr = {
+    kind: "forallE",
+    name: { kind: "anon" },
+    type: A,
+    body: {
+      kind: "forallE",
+      name: { kind: "anon" },
+      type: shift(A, 1),
+      body: propType,
+    },
+  };
+
+  const aProof = bridgedSynth(A, sortU);
+  if (aProof === null) return null;
+  const rProof = bridgedSynth(R, relType);
+  if (rProof === null) return null;
+  const a2Proof = bridgedSynth(A2, A);
+  if (a2Proof === null) return null;
+
+  let elimProof: string;
+  let resultExpr: Expr;
+  if (isLift) {
+    const B = args[2];
+    const F = args[3];
+    const H = args[4];
+    if (B === undefined || F === undefined || H === undefined) return null;
+    const sortV: Expr = { kind: "sort", level: v! };
+    // fnType = α → β.  B (the codomain) appears one binder deeper
+    // (inside the outer eforall), so shift its free bvars by 1.
+    const fnType: Expr = {
+      kind: "forallE",
+      name: { kind: "anon" },
+      type: A,
+      body: shift(B, 1),
+    };
+    // H type: ∀ (a b : A), R a b → Eq.{v} B (F a) (F b)
+    // In LF: (eforall A ([a] (eforall A ([b] (eforall (R a b) ([_]
+    //   (eapp (eapp (eapp (econst "Eq" [v]) B) (F a)) (F b))))))).
+    // Building this Expr is mechanically straightforward but verbose.
+    // For now we leave it to synth + bridgeTypes to discover; if bridging
+    // fails we bail out and let synth's existing pathway handle it.
+    const bProof = bridgedSynth(B, sortV);
+    if (bProof === null) return null;
+    const fProof = bridgedSynth(F, fnType);
+    if (fProof === null) return null;
+    let hSynth: Synth;
+    try {
+      hSynth = synth(H, scope);
+    } catch {
+      return null;
+    }
+    // Use H's synthesized type for now (don't bridge against the full
+    // soundness shape; that'd require constructing Eq's expected type
+    // here, which adds substantial complexity).  The iota rule's H
+    // premise will be checked by Twelf during type-reconstruction.
+    const hProof = hSynth.proof;
+    elimProof = `(defeq/iota-quot-lift ${quotDecl} ${quotMkDecl} ${elimDecl} ${aProof} ${rProof} ${bProof} ${fProof} ${hProof} ${a2Proof})`;
+    resultExpr = { kind: "app", fn: F, arg: A2 };
+  } else {
+    const M = args[2];
+    const H = args[3];
+    if (M === undefined || H === undefined) return null;
+    // M : Quot α r → Prop.
+    const quotAR: Expr = {
+      kind: "app",
+      fn: {
+        kind: "app",
+        fn: { kind: "const", name: { kind: "str", pre: { kind: "anon" }, str: "Quot" }, us: [u] },
+        arg: A,
+      },
+      arg: R,
+    };
+    const motiveType: Expr = {
+      kind: "forallE",
+      name: { kind: "anon" },
+      type: quotAR,
+      body: propType,
+    };
+    const mProof = bridgedSynth(M, motiveType);
+    if (mProof === null) return null;
+    let hSynth: Synth;
+    try {
+      hSynth = synth(H, scope);
+    } catch {
+      return null;
+    }
+    const hProof = hSynth.proof;
+    elimProof = `(defeq/iota-quot-ind ${quotDecl} ${quotMkDecl} ${elimDecl} ${aProof} ${rProof} ${mProof} ${hProof} ${a2Proof})`;
+    resultExpr = { kind: "app", fn: H, arg: A2 };
+  }
+
+  return {
+    result: resultExpr,
+    proof: `(defeq/extra ${elimProof})`,
+  };
+}
+
 // reduceOnce(e, scope) attempts a single head-reduction step and returns
 // (e', proof : defeq e e' T) where T is the expression's type.  Returns
 // null if e is in whnf.  Sort-level rewrites (imax-zero, imax-succ,
@@ -1053,10 +1268,13 @@ function reduceOnce(e: Expr, scope: Scope): { result: Expr; proof: string } | nu
     return null;
   }
 
-  // app: try iota first (stage-1 enum recursors), then β, then lift from f.
+  // app: try iota first (stage-1 enum recursors, Quot), then β, then lift from f.
   if (e.kind === "app") {
     const iotaStep = tryIotaEnum(e, scope);
     if (iotaStep !== null) return iotaStep;
+
+    const quotStep = tryQuotIota(e, scope);
+    if (quotStep !== null) return quotStep;
 
     if (e.fn.kind === "lam") {
       const A = e.fn.type;
@@ -1831,6 +2049,20 @@ function emitAxiom(d: Decl & { kind: "axiom" }): void {
   emitStructuralDecl(d.name, d.levelParams, d.type, "ax", "dkind-ok/ax", "ax", "axiom");
 }
 
+// Quot primitives.  The Lean kernel treats Quot, Quot.mk, Quot.lift, and
+// Quot.ind as built-in declarations; each comes through the NDJSON as a
+// `quot` decl with `quotKind ∈ {type, ctor, lift, ind}`.  We emit each one
+// via the standard `emitStructuralDecl` flow, with dkind=`quot` (and the
+// corresponding `dkind-ok/quot` obligation).  Quot.sound is exported as an
+// ordinary `axiom`, not as a `quot` decl, and goes through `emitAxiom`.
+//
+// The iota rules `defeq/iota-quot-lift` (and -ind) in tcb.elf pattern-match
+// on the four `declared` witnesses emitted here.
+function emitQuot(d: Decl & { kind: "quot" }): void {
+  const banner = `quot ${d.quotKind}`;
+  emitStructuralDecl(d.name, d.levelParams, d.type, "quot", "dkind-ok/quot", "quot", banner);
+}
+
 // --- Pre-flight checks for inductive wellformedness invariants ----------
 //
 // The LF encoding's ctor-positive judgment verifies strict positivity and
@@ -2226,7 +2458,7 @@ async function main(): Promise<void> {
           emitAxiom(decl);
           break;
         case "quot":
-          emit(`%% SKIP: quot not yet supported`);
+          emitQuot(decl);
           break;
         case "inductive":
           emitInductive(decl);

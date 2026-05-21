@@ -57,7 +57,13 @@ type DefRec = { tag: "def"; name: number; levelParams: number[]; type: number; v
 type ThmRec = { tag: "thm"; name: number; levelParams: number[]; type: number; value: number };
 type AxRec = { tag: "axiom"; name: number; levelParams: number[]; type: number };
 type OpqRec = { tag: "opaque"; name: number; levelParams: number[]; type: number; value: number };
-type QuotRec = { tag: "quot" };
+type QuotRec = {
+  tag: "quot";
+  quotKind: "type" | "ctor" | "lift" | "ind";
+  name: number;
+  levelParams: number[];
+  type: number;
+};
 
 // `recs` is the NDJSON field name; we resolve it into `recursors`
 // (matching shared.ts) at decl-resolution time.
@@ -249,7 +255,17 @@ function parseLine(line: string): Item | null {
   if ("thm" in obj) return { tag: "thm", ...(sub(obj, "thm") ?? {}) } as unknown as ThmRec;
   if ("axiom" in obj) return { tag: "axiom", ...(sub(obj, "axiom") ?? {}) } as unknown as AxRec;
   if ("opaque" in obj) return { tag: "opaque", ...(sub(obj, "opaque") ?? {}) } as unknown as OpqRec;
-  if ("quot" in obj) return { tag: "quot" };
+  if ("quot" in obj) {
+    const q = sub(obj, "quot");
+    if (!q) return null;
+    return {
+      tag: "quot",
+      quotKind: q["kind"] as "type" | "ctor" | "lift" | "ind",
+      name: asInt(q["name"])!,
+      levelParams: asArrayOfInts(q["levelParams"]) ?? [],
+      type: asInt(q["type"])!,
+    };
+  }
   if ("inductive" in obj) {
     const ind = sub(obj, "inductive") ?? {};
     return {
@@ -407,6 +423,16 @@ class Env {
     }
   }
 
+  resolveQuot(rec: QuotRec): Decl {
+    return {
+      kind: "quot",
+      quotKind: rec.quotKind,
+      name: this.names.get(rec.name)!,
+      levelParams: rec.levelParams.map((i) => this.names.get(i)!),
+      type: desugarLetE(this.exprs.get(rec.type)!),
+    };
+  }
+
   resolveInductive(rec: IndRec): Inductive {
     const types: IndType[] = rec.types.map((t) => ({
       name: this.names.get(t.name)!,
@@ -499,7 +525,7 @@ async function main(): Promise<void> {
         decls.push(env.resolveDecl(rec));
         break;
       case "quot":
-        decls.push({ kind: "quot" });
+        decls.push(env.resolveQuot(rec));
         break;
       case "inductive":
         decls.push(env.resolveInductive(rec));
