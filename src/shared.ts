@@ -1,4 +1,5 @@
-// shared.ts — IR types shared between parse.ts and lean2lf.ts.
+// shared.ts — defines the output of `parse.ts` and the input of render.ts
+//
 //
 // parse.ts reads lean4export's NDJSON and emits an array of these
 // resolved declarations as JSON.  lean2lf.ts reads that JSON on stdin
@@ -14,8 +15,6 @@
 import { z } from "../vendor/zod/index.js";
 
 // --- Name ---
-// Recursive, so the TypeScript type is declared explicitly and the
-// schema is wrapped in z.lazy to break the circular reference.
 
 export type Name =
   | { kind: "anon" }

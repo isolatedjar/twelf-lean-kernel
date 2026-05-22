@@ -100,8 +100,11 @@ check_one() {
     set +e
     (
         cd "$LF_DIR" || exit 64
-        echo "Config.read sources.cfg
-Config.load
+        echo "loadFile tcb.elf
+set unsafe true
+loadFile freeze.elf
+set unsafe false
+loadFile derived.elf
 loadFile $abs_file
 loadFile final-checks.elf
 OS.exit" | "$TWELF"
