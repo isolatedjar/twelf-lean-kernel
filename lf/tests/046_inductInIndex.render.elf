@@ -1,18 +1,44 @@
 %%% Render-only view of: 046_inductInIndex
 %%% A constructor with an unexpected occurrence of the type in index position of a return type.
 %% axiom aProp
-aProp/render-type : expr =
-   (esort lzero).
+%%% HOLE
+aProp/type-wf : defeq (esort lzero) (esort lzero) (esort lzero).
 
-%% inductive inductInIndex (numParams=0, numIndices=1)
-inductInIndex/render-type : expr =
-   (eforall (esort lzero) ([x] (esort lzero))).
+aProp/decl : declared "aProp" lnil
+   (esort lzero)
+   ax
+   (dkind-ok/ax aProp/type-wf).
 
-%% ctor inductInIndex.mk (induct=inductInIndex, numFields=0)
-inductInIndex_mk/render-type : expr =
-   (eapp (econst "inductInIndex" lnil) (eapp (econst "inductInIndex" lnil) (econst "aProp" lnil))).
+%% inductive inductInIndex
+%%% HOLE
+inductInIndex/type-wf : defeq (eforall (esort lzero) ([x] (esort lzero))) (eforall (esort lzero) ([x] (esort lzero))) (esort lzero).
 
-%% recursor inductInIndex.rec (numMotives=0, numMinors=0, k=false)
-inductInIndex_rec/render-type : expr =
-   (esort lzero).
+%%% HOLE
+inductInIndex/ends-in-sort : ends-in-sort (eforall (esort lzero) ([x] (esort lzero))).
+
+inductInIndex/decl : declared "inductInIndex" lnil
+   (eforall (esort lzero) ([x] (esort lzero)))
+   indt
+   (dkind-ok/indt inductInIndex/type-wf inductInIndex/ends-in-sort).
+
+%% ctor inductInIndex.mk (of inductInIndex)
+%%% HOLE
+inductInIndex_mk/type-wf : defeq (eapp (econst "inductInIndex" lnil) (eapp (econst "inductInIndex" lnil) (econst "aProp" lnil))) (eapp (econst "inductInIndex" lnil) (eapp (econst "inductInIndex" lnil) (econst "aProp" lnil))) (esort lzero).
+
+%%% HOLE
+inductInIndex_mk/positivity : ctor-positive "inductInIndex" lnil (eapp (econst "inductInIndex" lnil) (eapp (econst "inductInIndex" lnil) (econst "aProp" lnil))).
+
+inductInIndex_mk/decl : declared "inductInIndex.mk" lnil
+   (eapp (econst "inductInIndex" lnil) (eapp (econst "inductInIndex" lnil) (econst "aProp" lnil)))
+   ctor
+   (dkind-ok/ctor inductInIndex_mk/type-wf inductInIndex_mk/positivity).
+
+%% recursor inductInIndex.rec
+%%% HOLE
+inductInIndex_rec/type-wf : defeq (esort lzero) (esort lzero) (esort lzero).
+
+inductInIndex_rec/decl : declared "inductInIndex.rec" lnil
+   (esort lzero)
+   irec
+   (dkind-ok/irec inductInIndex_rec/type-wf).
 

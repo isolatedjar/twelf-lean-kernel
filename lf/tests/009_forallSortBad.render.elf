@@ -1,14 +1,26 @@
 %%% Render-only view of: 009_forallSortBad
 %%% The binding domain of a forall has to be a sort
 %% def id
-id/render-type : {u : lvl} expr =
-   [u] (eforall (esort u) ([x] (eforall x ([y] x)))).
-id/render-value : {u : lvl} expr =
-   [u] (elam (esort u) ([x] (elam x ([y] y)))).
+%%% HOLE
+id/type-wf : {u : lvl} defeq (eforall (esort u) ([x] (eforall x ([y] x)))) (eforall (esort u) ([x] (eforall x ([y] x)))) (esort lzero).
+
+%%% HOLE
+id/value-typed : {u : lvl} defeq (elam (esort u) ([x] (elam x ([y] y)))) (elam (esort u) ([x] (elam x ([y] y)))) (eforall (esort u) ([x] (eforall x ([y] x)))).
+
+id/decl : {u : lvl} declared "id" (lcons u lnil)
+   (eforall (esort u) ([x] (eforall x ([y] x))))
+   (defn (elam (esort u) ([x] (elam x ([y] y)))))
+   (dkind-ok/defn (id/type-wf u) (id/value-typed u)).
 
 %% def forallSortBad
-forallSortBad/render-type : expr =
-   (esort lzero).
-forallSortBad/render-value : expr =
-   (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] (eforall y ([z] y)))))).
+%%% HOLE
+forallSortBad/type-wf : defeq (esort lzero) (esort lzero) (esort lzero).
+
+%%% HOLE
+forallSortBad/value-typed : defeq (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] (eforall y ([z] y)))))) (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] (eforall y ([z] y)))))) (esort lzero).
+
+forallSortBad/decl : declared "forallSortBad" lnil
+   (esort lzero)
+   (defn (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] (eforall y ([z] y)))))))
+   (dkind-ok/defn forallSortBad/type-wf forallSortBad/value-typed).
 

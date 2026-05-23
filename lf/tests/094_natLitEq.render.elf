@@ -2,46 +2,93 @@
 %%% Reducing Nat literals
 %solve nonneg_3 : 3 >= 0.
 
-%% inductive Eq (numParams=2, numIndices=1)
-Eq/render-type : {u_1 : lvl} expr =
-   [u_1] (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))).
+%% inductive Eq
+%%% HOLE
+Eq/type-wf : {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (esort lzero).
 
-%% ctor Eq.refl (induct=Eq, numFields=0)
-Eq_refl/render-type : {u_1 : lvl} expr =
-   [u_1] (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))).
+%%% HOLE
+Eq/ends-in-sort : {u_1 : lvl} ends-in-sort (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))).
 
-%% recursor Eq.rec (numMotives=1, numMinors=1, k=true)
-Eq_rec/render-type : {u : lvl} {u_1 : lvl} expr =
-   [u] [u_1] (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))).
-%%   rec-rule for Eq.refl (nfields=0)
-Eq_rec/render-rule0-rhs : {u : lvl} {u_1 : lvl} expr =
-   [u] [u_1] (elam (esort u_1) ([x] (elam x ([y] (elam (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (elam (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] w)))))))).
+Eq/decl : {u_1 : lvl} declared "Eq" (lcons u_1 lnil)
+   (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero)))))))
+   indt
+   (dkind-ok/indt (Eq/type-wf u_1) (Eq/ends-in-sort u_1)).
 
-%% inductive Nat (numParams=0, numIndices=0)
-Nat/render-type : expr =
-   (esort (lsucc lzero)).
+%% ctor Eq.refl (of Eq)
+%%% HOLE
+Eq_refl/type-wf : {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))) (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))) (esort lzero).
 
-%% ctor Nat.zero (induct=Nat, numFields=0)
-Nat_zero/render-type : expr =
-   (econst "Nat" lnil).
+%%% HOLE
+Eq_refl/positivity : {u_1 : lvl} ctor-positive "Eq" (lcons u_1 lnil) (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))).
 
-%% ctor Nat.succ (induct=Nat, numFields=1)
-Nat_succ/render-type : expr =
-   (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))).
+Eq_refl/decl : {u_1 : lvl} declared "Eq.refl" (lcons u_1 lnil)
+   (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y)))))
+   ctor
+   (dkind-ok/ctor (Eq_refl/type-wf u_1) (Eq_refl/positivity u_1)).
 
-%% recursor Nat.rec (numMotives=1, numMinors=2, k=false)
-Nat_rec/render-type : {u : lvl} expr =
-   [u] (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))).
-%%   rec-rule for Nat.zero (nfields=0)
-Nat_rec/render-rule0-rhs : {u : lvl} expr =
-   [u] (elam (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Nat.zero" lnil)) ([y] (elam (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] y)))))).
-%%   rec-rule for Nat.succ (nfields=1)
-Nat_rec/render-rule1-rhs : {u : lvl} expr =
-   [u] (elam (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Nat.zero" lnil)) ([y] (elam (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (elam (econst "Nat" lnil) ([w] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "Nat.rec" (lcons u lnil)) x) y) z) w)))))))))).
+%% recursor Eq.rec
+%%% HOLE
+Eq_rec/type-wf : {u : lvl} {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort lzero).
+
+Eq_rec/decl : {u : lvl} {u_1 : lvl} declared "Eq.rec" (lcons u (lcons u_1 lnil))
+   (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1)))))))))))))
+   irec
+   (dkind-ok/irec (Eq_rec/type-wf u u_1)).
+
+%% inductive Nat
+%%% HOLE
+Nat/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero).
+
+%%% HOLE
+Nat/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
+
+Nat/decl : declared "Nat" lnil
+   (esort (lsucc lzero))
+   indt
+   (dkind-ok/indt Nat/type-wf Nat/ends-in-sort).
+
+%% ctor Nat.zero (of Nat)
+%%% HOLE
+Nat_zero/type-wf : defeq (econst "Nat" lnil) (econst "Nat" lnil) (esort lzero).
+
+%%% HOLE
+Nat_zero/positivity : ctor-positive "Nat" lnil (econst "Nat" lnil).
+
+Nat_zero/decl : declared "Nat.zero" lnil
+   (econst "Nat" lnil)
+   ctor
+   (dkind-ok/ctor Nat_zero/type-wf Nat_zero/positivity).
+
+%% ctor Nat.succ (of Nat)
+%%% HOLE
+Nat_succ/type-wf : defeq (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (esort lzero).
+
+%%% HOLE
+Nat_succ/positivity : ctor-positive "Nat" lnil (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))).
+
+Nat_succ/decl : declared "Nat.succ" lnil
+   (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil)))
+   ctor
+   (dkind-ok/ctor Nat_succ/type-wf Nat_succ/positivity).
+
+%% recursor Nat.rec
+%%% HOLE
+Nat_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (esort lzero).
+
+Nat_rec/decl : {u : lvl} declared "Nat.rec" (lcons u lnil)
+   (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w)))))))))
+   irec
+   (dkind-ok/irec (Nat_rec/type-wf u)).
 
 %% thm natLitEq
-natLitEq/render-type : expr =
-   (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3)) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (econst "Nat.zero" lnil))))).
-natLitEq/render-value : expr =
-   (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3)).
+%%% HOLE
+natLitEq/type-wf : defeq (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3)) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (econst "Nat.zero" lnil))))) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3)) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (econst "Nat.zero" lnil))))) (esort lzero).
+
+%%% HOLE
+natLitEq/value-typed : defeq (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3)) (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3)) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3)) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (econst "Nat.zero" lnil))))).
+
+natLitEq/decl : declared "natLitEq" lnil
+   (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3)) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (econst "Nat.zero" lnil)))))
+   (thm (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3)))
+   (dkind-ok/thm natLitEq/type-wf natLitEq/value-typed).
 

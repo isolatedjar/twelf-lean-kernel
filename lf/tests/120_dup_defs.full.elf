@@ -1,13 +1,11 @@
 %%% Expected outcome: reject
 %%% Two definitions with the same name
 %% def dup_defs
-dup_defs/type-wf :
-   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
-   = (defeq/sort-refl-at (lsucc lzero)).
+%%% HOLE
+dup_defs/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero).
 
-dup_defs/value-typed :
-   defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
-   = (defeq/sort-refl-at lzero).
+%%% HOLE
+dup_defs/value-typed : defeq (esort lzero) (esort lzero) (esort (lsucc lzero)).
 
 dup_defs/decl : declared "dup_defs" lnil
    (esort (lsucc lzero))
@@ -15,16 +13,14 @@ dup_defs/decl : declared "dup_defs" lnil
    (dkind-ok/defn dup_defs/type-wf dup_defs/value-typed).
 
 %% def dup_defs
-dup_defs__dup1/type-wf :
-   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
-   = (defeq/sort-refl-at (lsucc lzero)).
+%%% HOLE
+dup_defs/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero).
 
-dup_defs__dup1/value-typed :
-   defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
-   = (defeq/sort-refl-at lzero).
+%%% HOLE
+dup_defs/value-typed : defeq (esort lzero) (esort lzero) (esort (lsucc lzero)).
 
-dup_defs__dup1/decl : declared "dup_defs" lnil
+dup_defs/decl : declared "dup_defs" lnil
    (esort (lsucc lzero))
    (defn (esort lzero))
-   (dkind-ok/defn dup_defs__dup1/type-wf dup_defs__dup1/value-typed).
+   (dkind-ok/defn dup_defs/type-wf dup_defs/value-typed).
 

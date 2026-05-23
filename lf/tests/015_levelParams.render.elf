@@ -1,14 +1,26 @@
 %%% Render-only view of: 015_levelParams
 %%% Level parameters
 %% def levelParamF
-levelParamF/render-type : {u : lvl} expr =
-   [u] (eforall (esort u) ([x] (eforall (esort u) ([y] (esort u))))).
-levelParamF/render-value : {u : lvl} expr =
-   [u] (elam (esort u) ([x] (elam (esort u) ([y] x)))).
+%%% HOLE
+levelParamF/type-wf : {u : lvl} defeq (eforall (esort u) ([x] (eforall (esort u) ([y] (esort u))))) (eforall (esort u) ([x] (eforall (esort u) ([y] (esort u))))) (esort lzero).
+
+%%% HOLE
+levelParamF/value-typed : {u : lvl} defeq (elam (esort u) ([x] (elam (esort u) ([y] x)))) (elam (esort u) ([x] (elam (esort u) ([y] x)))) (eforall (esort u) ([x] (eforall (esort u) ([y] (esort u))))).
+
+levelParamF/decl : {u : lvl} declared "levelParamF" (lcons u lnil)
+   (eforall (esort u) ([x] (eforall (esort u) ([y] (esort u)))))
+   (defn (elam (esort u) ([x] (elam (esort u) ([y] x)))))
+   (dkind-ok/defn (levelParamF/type-wf u) (levelParamF/value-typed u)).
 
 %% def levelParams
-levelParams/render-type : expr =
-   (eapp (eapp (econst "levelParamF" (lcons (lsucc lzero) lnil)) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))).
-levelParams/render-value : expr =
-   (eforall (esort lzero) ([x] x)).
+%%% HOLE
+levelParams/type-wf : defeq (eapp (eapp (econst "levelParamF" (lcons (lsucc lzero) lnil)) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))) (eapp (eapp (econst "levelParamF" (lcons (lsucc lzero) lnil)) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))) (esort lzero).
+
+%%% HOLE
+levelParams/value-typed : defeq (eforall (esort lzero) ([x] x)) (eforall (esort lzero) ([x] x)) (eapp (eapp (econst "levelParamF" (lcons (lsucc lzero) lnil)) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))).
+
+levelParams/decl : declared "levelParams" lnil
+   (eapp (eapp (econst "levelParamF" (lcons (lsucc lzero) lnil)) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero))))
+   (defn (eforall (esort lzero) ([x] x)))
+   (dkind-ok/defn levelParams/type-wf levelParams/value-typed).
 

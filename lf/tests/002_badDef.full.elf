@@ -1,17 +1,11 @@
 %%% Expected outcome: reject
 %%% Mismatched types
-%% TRANSLATOR: could not bridge inferred type to declared type
-%%   inferred type kind: sort
-%%   declared type kind: sort
-%%   emitting valTy.proof; Twelf will likely reject.
 %% def badDef
-badDef/type-wf :
-   defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
-   = (defeq/sort-refl-at lzero).
+%%% HOLE
+badDef/type-wf : defeq (esort lzero) (esort lzero) (esort lzero).
 
-badDef/value-typed :
-   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero)
-   = (defeq/sort-refl-at (lsucc lzero)).
+%%% HOLE
+badDef/value-typed : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero).
 
 badDef/decl : declared "badDef" lnil
    (esort lzero)

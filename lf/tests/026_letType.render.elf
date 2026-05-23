@@ -1,8 +1,14 @@
 %%% Render-only view of: 026_letType
 %%% Type checking a non-dependent let
 %% def letType
-letType/render-type : expr =
-   (esort (lsucc lzero)).
-letType/render-value : expr =
-   (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)).
+%%% HOLE
+letType/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero).
+
+%%% HOLE
+letType/value-typed : defeq (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (esort (lsucc lzero)).
+
+letType/decl : declared "letType" lnil
+   (esort (lsucc lzero))
+   (defn (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)))
+   (dkind-ok/defn letType/type-wf letType/value-typed).
 

@@ -1,23 +1,47 @@
 %%% Render-only view of: 059_prodRec
 %%% Asserting the type of the generated recursor
-%% inductive Prod (numParams=2, numIndices=0)
-Prod/render-type : {u : lvl} {v : lvl} expr =
-   [u] [v] (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (esort (lmax (lsucc u) (lsucc v))))))).
+%% inductive Prod
+%%% HOLE
+Prod/type-wf : {u : lvl} {v : lvl} defeq (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (esort (lmax (lsucc u) (lsucc v))))))) (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (esort (lmax (lsucc u) (lsucc v))))))) (esort lzero).
 
-%% ctor Prod.mk (induct=Prod, numFields=2)
-Prod_mk/render-type : {u : lvl} {v : lvl} expr =
-   [u] [v] (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y))))))))).
+%%% HOLE
+Prod/ends-in-sort : {u : lvl} {v : lvl} ends-in-sort (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (esort (lmax (lsucc u) (lsucc v))))))).
 
-%% recursor Prod.rec (numMotives=1, numMinors=1, k=false)
-Prod_rec/render-type : {u_1 : lvl} {u : lvl} {v : lvl} expr =
-   [u_1] [u] [v] (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] (esort u_1))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([x1] (eapp z x1))))))))))).
-%%   rec-rule for Prod.mk (nfields=2)
-Prod_rec/render-rule0-rhs : {u_1 : lvl} {u : lvl} {v : lvl} expr =
-   [u_1] [u] [v] (elam (esort (lsucc u)) ([x] (elam (esort (lsucc v)) ([y] (elam (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] (esort u_1))) ([z] (elam (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (elam x ([x1] (elam y ([y1] (eapp (eapp w x1) y1))))))))))))).
+Prod/decl : {u : lvl} {v : lvl} declared "Prod" (lcons u (lcons v lnil))
+   (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (esort (lmax (lsucc u) (lsucc v)))))))
+   indt
+   (dkind-ok/indt (Prod/type-wf u v) (Prod/ends-in-sort u v)).
+
+%% ctor Prod.mk (of Prod)
+%%% HOLE
+Prod_mk/type-wf : {u : lvl} {v : lvl} defeq (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y))))))))) (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y))))))))) (esort lzero).
+
+%%% HOLE
+Prod_mk/positivity : {u : lvl} {v : lvl} ctor-positive "Prod" (lcons u (lcons v lnil)) (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y))))))))).
+
+Prod_mk/decl : {u : lvl} {v : lvl} declared "Prod.mk" (lcons u (lcons v lnil))
+   (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y)))))))))
+   ctor
+   (dkind-ok/ctor (Prod_mk/type-wf u v) (Prod_mk/positivity u v)).
+
+%% recursor Prod.rec
+%%% HOLE
+Prod_rec/type-wf : {u_1 : lvl} {u : lvl} {v : lvl} defeq (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] (esort u_1))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([x1] (eapp z x1))))))))))) (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] (esort u_1))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([x1] (eapp z x1))))))))))) (esort lzero).
+
+Prod_rec/decl : {u_1 : lvl} {u : lvl} {v : lvl} declared "Prod.rec" (lcons u_1 (lcons u (lcons v lnil)))
+   (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] (esort u_1))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([x1] (eapp z x1)))))))))))
+   irec
+   (dkind-ok/irec (Prod_rec/type-wf u_1 u v)).
 
 %% def prodRec
-prodRec/render-type : {u : lvl} {v : lvl} {lv_w : lvl} expr =
-   [u] [v] [lv_w] (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] (esort u))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([x1] (eapp z x1))))))))))).
-prodRec/render-value : {u : lvl} {v : lvl} {lv_w : lvl} expr =
-   [u] [v] [lv_w] (econst "Prod.rec" (lcons u (lcons u (lcons v lnil)))).
+%%% HOLE
+prodRec/type-wf : {u : lvl} {v : lvl} {lv_w : lvl} defeq (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] (esort u))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([x1] (eapp z x1))))))))))) (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] (esort u))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([x1] (eapp z x1))))))))))) (esort lzero).
+
+%%% HOLE
+prodRec/value-typed : {u : lvl} {v : lvl} {lv_w : lvl} defeq (econst "Prod.rec" (lcons u (lcons u (lcons v lnil)))) (econst "Prod.rec" (lcons u (lcons u (lcons v lnil)))) (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] (esort u))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([x1] (eapp z x1))))))))))).
+
+prodRec/decl : {u : lvl} {v : lvl} {lv_w : lvl} declared "prodRec" (lcons u (lcons v (lcons lv_w lnil)))
+   (eforall (esort (lsucc u)) ([x] (eforall (esort (lsucc v)) ([y] (eforall (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([z] (esort u))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "Prod" (lcons u (lcons v lnil))) x) y) ([x1] (eapp z x1)))))))))))
+   (defn (econst "Prod.rec" (lcons u (lcons u (lcons v lnil)))))
+   (dkind-ok/defn (prodRec/type-wf u v lv_w) (prodRec/value-typed u v lv_w)).
 

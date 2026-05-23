@@ -1,14 +1,35 @@
 %%% Render-only view of: 047_indNeg
 %%% The classic example of an inductive with negative recursive occurrence
-%% inductive indNeg (numParams=0, numIndices=0)
-indNeg/render-type : expr =
-   (esort (lsucc lzero)).
+%% inductive indNeg
+%%% HOLE
+indNeg/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero).
 
-%% ctor indNeg.mk (induct=indNeg, numFields=1)
-indNeg_mk/render-type : expr =
-   (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))).
+%%% HOLE
+indNeg/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
-%% recursor indNeg.rec (numMotives=0, numMinors=0, k=false)
-indNeg_rec/render-type : expr =
-   (esort lzero).
+indNeg/decl : declared "indNeg" lnil
+   (esort (lsucc lzero))
+   indt
+   (dkind-ok/indt indNeg/type-wf indNeg/ends-in-sort).
+
+%% ctor indNeg.mk (of indNeg)
+%%% HOLE
+indNeg_mk/type-wf : defeq (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (esort lzero).
+
+%%% HOLE
+indNeg_mk/positivity : ctor-positive "indNeg" lnil (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))).
+
+indNeg_mk/decl : declared "indNeg.mk" lnil
+   (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil)))
+   ctor
+   (dkind-ok/ctor indNeg_mk/type-wf indNeg_mk/positivity).
+
+%% recursor indNeg.rec
+%%% HOLE
+indNeg_rec/type-wf : defeq (esort lzero) (esort lzero) (esort lzero).
+
+indNeg_rec/decl : declared "indNeg.rec" lnil
+   (esort lzero)
+   irec
+   (dkind-ok/irec indNeg_rec/type-wf).
 

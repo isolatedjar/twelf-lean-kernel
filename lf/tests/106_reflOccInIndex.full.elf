@@ -4,59 +4,80 @@
 %%% We build an indexed inductive `I : Type → Type` with a constructor argument
 %%% `Nat → I (I α)`, so the recursive occurrence appears as an index argument.
 %% inductive Nat
-Nat/type-wf :
-   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
-   = (defeq/sort-refl-at (lsucc lzero)).
+%%% HOLE
+Nat/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero).
 
-Nat/ends-in-sort :
-   ends-in-sort (esort (lsucc lzero))
-   = ends-in-sort/sort.
+%%% HOLE
+Nat/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
 Nat/decl : declared "Nat" lnil
    (esort (lsucc lzero))
    indt
    (dkind-ok/indt Nat/type-wf Nat/ends-in-sort).
 
-%% inductive ctor Nat.zero
-Nat_zero/type-wf :
-   defeq (econst "Nat" lnil) (econst "Nat" lnil) (esort (lsucc lzero))
-   = (defeq/const Nat/decl).
+%% ctor Nat.zero (of Nat)
+%%% HOLE
+Nat_zero/type-wf : defeq (econst "Nat" lnil) (econst "Nat" lnil) (esort lzero).
 
-Nat_zero/positivity :
-   ctor-positive "Nat" lnil (econst "Nat" lnil)
-   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
+%%% HOLE
+Nat_zero/positivity : ctor-positive "Nat" lnil (econst "Nat" lnil).
 
 Nat_zero/decl : declared "Nat.zero" lnil
    (econst "Nat" lnil)
    ctor
    (dkind-ok/ctor Nat_zero/type-wf Nat_zero/positivity).
 
-%% inductive ctor Nat.succ
-Nat_succ/type-wf :
-   defeq (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (esort (limax (lsucc lzero) (lsucc lzero)))
-   = (defeq/forall (defeq/const Nat/decl) ([x] [y] (defeq/const Nat/decl))).
+%% ctor Nat.succ (of Nat)
+%%% HOLE
+Nat_succ/type-wf : defeq (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (esort lzero).
 
-Nat_succ/positivity :
-   ctor-positive "Nat" lnil (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil)))
-   = (ctor-positive/intro ([S] (eforall S ([x] S))) (ctor-spine/arg (strict-pos/head applies-self/refl) ([_y0] (ctor-spine/result applies-self/refl)))).
+%%% HOLE
+Nat_succ/positivity : ctor-positive "Nat" lnil (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))).
 
 Nat_succ/decl : declared "Nat.succ" lnil
    (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil)))
    ctor
    (dkind-ok/ctor Nat_succ/type-wf Nat_succ/positivity).
 
-%% inductive recursor Nat.rec
-Nat_rec/type-wf :
-   {u : lvl} defeq (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (esort (limax (limax (lsucc lzero) (lsucc u)) (limax u (limax (limax (lsucc lzero) (limax u u)) (limax (lsucc lzero) u)))))
-   = [u] (defeq/forall (defeq/forall (defeq/const Nat/decl) ([x] [y] (defeq/sort-refl-at u))) ([x] [y] (defeq/forall (defeq/app y (defeq/const Nat_zero/decl)) ([z] [w] (defeq/forall (defeq/forall (defeq/const Nat/decl) ([x1] [y1] (defeq/forall (defeq/app y y1) ([z1] [w1] (defeq/app y (defeq/app (defeq/const Nat_succ/decl) y1)))))) ([x1] [y1] (defeq/forall (defeq/const Nat/decl) ([z1] [w1] (defeq/app y w1))))))))).
+%% recursor Nat.rec
+%%% HOLE
+Nat_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (esort lzero).
 
 Nat_rec/decl : {u : lvl} declared "Nat.rec" (lcons u lnil)
    (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w)))))))))
    irec
    (dkind-ok/irec (Nat_rec/type-wf u)).
 
-%% SKIP: ctor reflOccInIndex.mk — field #1 has type Sort 1 (which lives at Sort 2); inductive is at Sort 1, so the field's universe must be ≤ 0
+%% inductive reflOccInIndex
+%%% HOLE
+reflOccInIndex/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (esort lzero).
 
+%%% HOLE
+reflOccInIndex/ends-in-sort : ends-in-sort (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))).
 
-%% Translator summary:
-%%   - ctor reflOccInIndex.mk: field #1 has type Sort 1 (which lives at Sort 2); inductive is at Sort 1, so the field's universe must be ≤ 0
+reflOccInIndex/decl : declared "reflOccInIndex" lnil
+   (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero))))
+   indt
+   (dkind-ok/indt reflOccInIndex/type-wf reflOccInIndex/ends-in-sort).
+
+%% ctor reflOccInIndex.mk (of reflOccInIndex)
+%%% HOLE
+reflOccInIndex_mk/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (eforall (eforall (econst "Nat" lnil) ([y] (eapp (econst "reflOccInIndex" lnil) (eapp (econst "reflOccInIndex" lnil) y)))) ([y] (eapp (econst "reflOccInIndex" lnil) x))))) (eforall (esort (lsucc lzero)) ([x] (eforall (eforall (econst "Nat" lnil) ([y] (eapp (econst "reflOccInIndex" lnil) (eapp (econst "reflOccInIndex" lnil) y)))) ([y] (eapp (econst "reflOccInIndex" lnil) x))))) (esort lzero).
+
+%%% HOLE
+reflOccInIndex_mk/positivity : ctor-positive "reflOccInIndex" lnil (eforall (esort (lsucc lzero)) ([x] (eforall (eforall (econst "Nat" lnil) ([y] (eapp (econst "reflOccInIndex" lnil) (eapp (econst "reflOccInIndex" lnil) y)))) ([y] (eapp (econst "reflOccInIndex" lnil) x))))).
+
+reflOccInIndex_mk/decl : declared "reflOccInIndex.mk" lnil
+   (eforall (esort (lsucc lzero)) ([x] (eforall (eforall (econst "Nat" lnil) ([y] (eapp (econst "reflOccInIndex" lnil) (eapp (econst "reflOccInIndex" lnil) y)))) ([y] (eapp (econst "reflOccInIndex" lnil) x)))))
+   ctor
+   (dkind-ok/ctor reflOccInIndex_mk/type-wf reflOccInIndex_mk/positivity).
+
+%% recursor reflOccInIndex.rec
+%%% HOLE
+reflOccInIndex_rec/type-wf : defeq (esort lzero) (esort lzero) (esort lzero).
+
+reflOccInIndex_rec/decl : declared "reflOccInIndex.rec" lnil
+   (esort lzero)
+   irec
+   (dkind-ok/irec reflOccInIndex_rec/type-wf).
+

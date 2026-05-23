@@ -1,12 +1,26 @@
 %%% Render-only view of: 039_inductBadNonSort
 %%% An inductive type with a non-sort type
 %% def constType
-constType/render-type : expr =
-   (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))).
-constType/render-value : expr =
-   (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))).
+%%% HOLE
+constType/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort lzero).
 
-%% inductive inductBadNonSort (numParams=0, numIndices=0)
-inductBadNonSort/render-type : expr =
-   (econst "constType" lnil).
+%%% HOLE
+constType/value-typed : defeq (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))).
+
+constType/decl : declared "constType" lnil
+   (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero))))))
+   (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))
+   (dkind-ok/defn constType/type-wf constType/value-typed).
+
+%% inductive inductBadNonSort
+%%% HOLE
+inductBadNonSort/type-wf : defeq (econst "constType" lnil) (econst "constType" lnil) (esort lzero).
+
+%%% HOLE
+inductBadNonSort/ends-in-sort : ends-in-sort (econst "constType" lnil).
+
+inductBadNonSort/decl : declared "inductBadNonSort" lnil
+   (econst "constType" lnil)
+   indt
+   (dkind-ok/indt inductBadNonSort/type-wf inductBadNonSort/ends-in-sort).
 

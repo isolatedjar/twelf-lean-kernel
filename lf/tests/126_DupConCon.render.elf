@@ -1,24 +1,47 @@
 %%% Render-only view of: 126_DupConCon
 %%% An inductive with two constructors with the same name
-%% inductive DupConCon (numParams=0, numIndices=0)
-DupConCon/render-type : expr =
-   (esort (lsucc lzero)).
+%% inductive DupConCon
+%%% HOLE
+DupConCon/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero).
 
-%% ctor dup_ind_con_con.mk (induct=DupConCon, numFields=0)
-dup_ind_con_con_mk/render-type : expr =
-   (econst "DupConCon" lnil).
+%%% HOLE
+DupConCon/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
-%% ctor dup_ind_con_con.mk (induct=DupConCon, numFields=0)
-dup_ind_con_con_mk/render-type : expr =
-   (econst "DupConCon" lnil).
+DupConCon/decl : declared "DupConCon" lnil
+   (esort (lsucc lzero))
+   indt
+   (dkind-ok/indt DupConCon/type-wf DupConCon/ends-in-sort).
 
-%% recursor DupConCon.rec (numMotives=1, numMinors=2, k=false)
-DupConCon_rec/render-type : {u : lvl} expr =
-   [u] (eforall (eforall (econst "DupConCon" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] (eforall (econst "DupConCon" lnil) ([w] (eapp x w))))))))).
-%%   rec-rule for dup_ind_con_con.mk (nfields=0)
-DupConCon_rec/render-rule0-rhs : {u : lvl} expr =
-   [u] (elam (eforall (econst "DupConCon" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (elam (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] y)))))).
-%%   rec-rule for dup_ind_con_con.mk (nfields=0)
-DupConCon_rec/render-rule1-rhs : {u : lvl} expr =
-   [u] (elam (eforall (econst "DupConCon" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (elam (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] z)))))).
+%% ctor dup_ind_con_con.mk (of DupConCon)
+%%% HOLE
+dup_ind_con_con_mk/type-wf : defeq (econst "DupConCon" lnil) (econst "DupConCon" lnil) (esort lzero).
+
+%%% HOLE
+dup_ind_con_con_mk/positivity : ctor-positive "DupConCon" lnil (econst "DupConCon" lnil).
+
+dup_ind_con_con_mk/decl : declared "dup_ind_con_con.mk" lnil
+   (econst "DupConCon" lnil)
+   ctor
+   (dkind-ok/ctor dup_ind_con_con_mk/type-wf dup_ind_con_con_mk/positivity).
+
+%% ctor dup_ind_con_con.mk (of DupConCon)
+%%% HOLE
+dup_ind_con_con_mk/type-wf : defeq (econst "DupConCon" lnil) (econst "DupConCon" lnil) (esort lzero).
+
+%%% HOLE
+dup_ind_con_con_mk/positivity : ctor-positive "DupConCon" lnil (econst "DupConCon" lnil).
+
+dup_ind_con_con_mk/decl : declared "dup_ind_con_con.mk" lnil
+   (econst "DupConCon" lnil)
+   ctor
+   (dkind-ok/ctor dup_ind_con_con_mk/type-wf dup_ind_con_con_mk/positivity).
+
+%% recursor DupConCon.rec
+%%% HOLE
+DupConCon_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "DupConCon" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] (eforall (econst "DupConCon" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "DupConCon" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] (eforall (econst "DupConCon" lnil) ([w] (eapp x w))))))))) (esort lzero).
+
+DupConCon_rec/decl : {u : lvl} declared "DupConCon.rec" (lcons u lnil)
+   (eforall (eforall (econst "DupConCon" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] (eforall (econst "DupConCon" lnil) ([w] (eapp x w)))))))))
+   irec
+   (dkind-ok/irec (DupConCon_rec/type-wf u)).
 

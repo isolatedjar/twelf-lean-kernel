@@ -1,14 +1,35 @@
 %%% Render-only view of: 044_inductWrongCtorResParams
 %%% An inductive with a constructor with wrong parameters in result (they are swapped)
-%% inductive inductWrongCtorResParams (numParams=2, numIndices=0)
-inductWrongCtorResParams/render-type : expr =
-   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))).
+%% inductive inductWrongCtorResParams
+%%% HOLE
+inductWrongCtorResParams/type-wf : defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) (esort lzero).
 
-%% ctor inductWrongCtorResParams.mk (induct=inductWrongCtorResParams, numFields=0)
-inductWrongCtorResParams_mk/render-type : expr =
-   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResParams" lnil) y) x))))).
+%%% HOLE
+inductWrongCtorResParams/ends-in-sort : ends-in-sort (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))).
 
-%% recursor inductWrongCtorResParams.rec (numMotives=0, numMinors=0, k=false)
-inductWrongCtorResParams_rec/render-type : expr =
-   (esort lzero).
+inductWrongCtorResParams/decl : declared "inductWrongCtorResParams" lnil
+   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero))))))
+   indt
+   (dkind-ok/indt inductWrongCtorResParams/type-wf inductWrongCtorResParams/ends-in-sort).
+
+%% ctor inductWrongCtorResParams.mk (of inductWrongCtorResParams)
+%%% HOLE
+inductWrongCtorResParams_mk/type-wf : defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResParams" lnil) y) x))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResParams" lnil) y) x))))) (esort lzero).
+
+%%% HOLE
+inductWrongCtorResParams_mk/positivity : ctor-positive "inductWrongCtorResParams" lnil (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResParams" lnil) y) x))))).
+
+inductWrongCtorResParams_mk/decl : declared "inductWrongCtorResParams.mk" lnil
+   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResParams" lnil) y) x)))))
+   ctor
+   (dkind-ok/ctor inductWrongCtorResParams_mk/type-wf inductWrongCtorResParams_mk/positivity).
+
+%% recursor inductWrongCtorResParams.rec
+%%% HOLE
+inductWrongCtorResParams_rec/type-wf : defeq (esort lzero) (esort lzero) (esort lzero).
+
+inductWrongCtorResParams_rec/decl : declared "inductWrongCtorResParams.rec" lnil
+   (esort lzero)
+   irec
+   (dkind-ok/irec inductWrongCtorResParams_rec/type-wf).
 

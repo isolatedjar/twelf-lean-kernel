@@ -1,23 +1,47 @@
 %%% Render-only view of: 123_dup_rec_def
 %%% A definition and a recursor with the same name
 %% def dup_rec_def.rec
-dup_rec_def_rec/render-type : expr =
-   (esort (lsucc lzero)).
-dup_rec_def_rec/render-value : expr =
-   (esort lzero).
+%%% HOLE
+dup_rec_def_rec/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero).
 
-%% inductive dup_rec_def (numParams=0, numIndices=0)
-dup_rec_def/render-type : expr =
-   (esort (lsucc lzero)).
+%%% HOLE
+dup_rec_def_rec/value-typed : defeq (esort lzero) (esort lzero) (esort (lsucc lzero)).
 
-%% ctor dup_rec_def.mk (induct=dup_rec_def, numFields=0)
-dup_rec_def_mk/render-type : expr =
-   (econst "dup_rec_def" lnil).
+dup_rec_def_rec/decl : declared "dup_rec_def.rec" lnil
+   (esort (lsucc lzero))
+   (defn (esort lzero))
+   (dkind-ok/defn dup_rec_def_rec/type-wf dup_rec_def_rec/value-typed).
 
-%% recursor dup_rec_def.rec (numMotives=1, numMinors=1, k=false)
-dup_rec_def_rec/render-type : {u : lvl} expr =
-   [u] (eforall (eforall (econst "dup_rec_def" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_rec_def.mk" lnil)) ([y] (eforall (econst "dup_rec_def" lnil) ([z] (eapp x z))))))).
-%%   rec-rule for dup_rec_def.mk (nfields=0)
-dup_rec_def_rec/render-rule0-rhs : {u : lvl} expr =
-   [u] (elam (eforall (econst "dup_rec_def" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "dup_rec_def.mk" lnil)) ([y] y)))).
+%% inductive dup_rec_def
+%%% HOLE
+dup_rec_def/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero).
+
+%%% HOLE
+dup_rec_def/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
+
+dup_rec_def/decl : declared "dup_rec_def" lnil
+   (esort (lsucc lzero))
+   indt
+   (dkind-ok/indt dup_rec_def/type-wf dup_rec_def/ends-in-sort).
+
+%% ctor dup_rec_def.mk (of dup_rec_def)
+%%% HOLE
+dup_rec_def_mk/type-wf : defeq (econst "dup_rec_def" lnil) (econst "dup_rec_def" lnil) (esort lzero).
+
+%%% HOLE
+dup_rec_def_mk/positivity : ctor-positive "dup_rec_def" lnil (econst "dup_rec_def" lnil).
+
+dup_rec_def_mk/decl : declared "dup_rec_def.mk" lnil
+   (econst "dup_rec_def" lnil)
+   ctor
+   (dkind-ok/ctor dup_rec_def_mk/type-wf dup_rec_def_mk/positivity).
+
+%% recursor dup_rec_def.rec
+%%% HOLE
+dup_rec_def_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "dup_rec_def" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_rec_def.mk" lnil)) ([y] (eforall (econst "dup_rec_def" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "dup_rec_def" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_rec_def.mk" lnil)) ([y] (eforall (econst "dup_rec_def" lnil) ([z] (eapp x z))))))) (esort lzero).
+
+dup_rec_def_rec/decl : {u : lvl} declared "dup_rec_def.rec" (lcons u lnil)
+   (eforall (eforall (econst "dup_rec_def" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_rec_def.mk" lnil)) ([y] (eforall (econst "dup_rec_def" lnil) ([z] (eapp x z)))))))
+   irec
+   (dkind-ok/irec (dup_rec_def_rec/type-wf u)).
 

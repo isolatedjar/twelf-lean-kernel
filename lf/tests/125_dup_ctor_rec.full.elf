@@ -1,54 +1,35 @@
 %%% Expected outcome: reject
 %%% A constructor and a recursor with the same name
 %% inductive dup_ctor_rec
-dup_ctor_rec/type-wf :
-   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
-   = (defeq/sort-refl-at (lsucc lzero)).
+%%% HOLE
+dup_ctor_rec/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero).
 
-dup_ctor_rec/ends-in-sort :
-   ends-in-sort (esort (lsucc lzero))
-   = ends-in-sort/sort.
+%%% HOLE
+dup_ctor_rec/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
 dup_ctor_rec/decl : declared "dup_ctor_rec" lnil
    (esort (lsucc lzero))
    indt
    (dkind-ok/indt dup_ctor_rec/type-wf dup_ctor_rec/ends-in-sort).
 
-%% inductive ctor dup_ctor_rec.rec
-dup_ctor_rec_rec/type-wf :
-   defeq (econst "dup_ctor_rec" lnil) (econst "dup_ctor_rec" lnil) (esort (lsucc lzero))
-   = (defeq/const dup_ctor_rec/decl).
+%% ctor dup_ctor_rec.rec (of dup_ctor_rec)
+%%% HOLE
+dup_ctor_rec_rec/type-wf : defeq (econst "dup_ctor_rec" lnil) (econst "dup_ctor_rec" lnil) (esort lzero).
 
-dup_ctor_rec_rec/positivity :
-   ctor-positive "dup_ctor_rec" lnil (econst "dup_ctor_rec" lnil)
-   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
+%%% HOLE
+dup_ctor_rec_rec/positivity : ctor-positive "dup_ctor_rec" lnil (econst "dup_ctor_rec" lnil).
 
 dup_ctor_rec_rec/decl : declared "dup_ctor_rec.rec" lnil
    (econst "dup_ctor_rec" lnil)
    ctor
    (dkind-ok/ctor dup_ctor_rec_rec/type-wf dup_ctor_rec_rec/positivity).
 
-%% inductive recursor dup_ctor_rec.rec
-dup_ctor_rec_rec__dup1/type-wf :
-   {u : lvl} defeq (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z))))))) (esort (limax (limax (lsucc lzero) (lsucc u)) (limax u (limax (lsucc lzero) u))))
-   = [u] (defeq/forall (defeq/forall (defeq/const dup_ctor_rec/decl) ([x] [y] (defeq/sort-refl-at u))) ([x] [y] (defeq/forall (defeq/app y (defeq/const dup_ctor_rec_rec/decl)) ([z] [w] (defeq/forall (defeq/const dup_ctor_rec/decl) ([x1] [y1] (defeq/app y y1))))))).
+%% recursor dup_ctor_rec.rec
+%%% HOLE
+dup_ctor_rec_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z))))))) (esort lzero).
 
-dup_ctor_rec_rec__dup1/decl : {u : lvl} declared "dup_ctor_rec.rec" (lcons u lnil)
+dup_ctor_rec_rec/decl : {u : lvl} declared "dup_ctor_rec.rec" (lcons u lnil)
    (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z)))))))
    irec
-   (dkind-ok/irec (dup_ctor_rec_rec__dup1/type-wf u)).
-
-%% stage-1 enum iota helpers: dup_ctor_rec
-dup_ctor_rec/as-enum : {u : lvl}
-   enum-rec-type
-      (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort u))) ([M] (eforall (eapp M (econst "dup_ctor_rec.rec" lnil)) ([x] (eforall (econst "dup_ctor_rec" lnil) ([t] (eapp M t)))))))
-      "dup_ctor_rec" lnil (ccons "dup_ctor_rec.rec" cnil) u
-   = [u] enum-rec-type/intro ([M] [hM] (enum-rec-body/minor ([m1] [hm1] enum-rec-body/done))).
-
-dup_ctor_rec_rec/iota : {u : lvl}
-   defeq M M (eforall (econst "dup_ctor_rec" lnil) ([x] (esort u)))
-   -> defeq Mp1 Mp1 (eapp M (econst "dup_ctor_rec.rec" lnil))
-   -> defeq (eapp (eapp (eapp (econst "dup_ctor_rec.rec" (lcons u lnil)) M) Mp1) (econst "dup_ctor_rec.rec" lnil)) Mp1 (eapp M (econst "dup_ctor_rec.rec" lnil))
-   = [u] [hM] [hMp1]
-     defeq/extra (defeq/iota-enum-1 (dup_ctor_rec_rec/decl u) dup_ctor_rec_rec/decl (dup_ctor_rec/as-enum u) hM hMp1).
+   (dkind-ok/irec (dup_ctor_rec_rec/type-wf u)).
 

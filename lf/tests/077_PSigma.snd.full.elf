@@ -1,42 +1,32 @@
 %%% Expected outcome: accept
 %%% Type-checking dependent projection functions
-%% This file contains 1 hole tag(s):
-%%   - hole/defeq (count: see HOLE/defeq markers below)
-%% Files with any hole/<tag> use are NOT Twelf-verified.
-hole/defeq : {E1 : expr} {E2 : expr} {T : expr} defeq E1 E2 T.
-
 %% inductive PSigma
-PSigma/type-wf :
-   {u : lvl} {v : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (esort (lmax (lmax (lsucc lzero) u) v)))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (esort (lmax (lmax (lsucc lzero) u) v)))))) (esort (limax (lsucc u) (limax (limax u (lsucc v)) (lsucc (lmax (lmax (lsucc lzero) u) v)))))
-   = [u] [v] (defeq/forall (defeq/sort-refl-at u) ([x] [y] (defeq/forall (defeq/forall y ([z] [w] (defeq/sort-refl-at v))) ([z] [w] (defeq/sort-refl-at (lmax (lmax (lsucc lzero) u) v)))))).
+%%% HOLE
+PSigma/type-wf : {u : lvl} {v : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (esort (lmax (lmax (lsucc lzero) u) v)))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (esort (lmax (lmax (lsucc lzero) u) v)))))) (esort lzero).
 
-PSigma/ends-in-sort :
-   {u : lvl} {v : lvl} ends-in-sort (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (esort (lmax (lmax (lsucc lzero) u) v))))))
-   = [u] [v] (ends-in-sort/forall ([x] (ends-in-sort/forall ([y] ends-in-sort/sort)))).
+%%% HOLE
+PSigma/ends-in-sort : {u : lvl} {v : lvl} ends-in-sort (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (esort (lmax (lmax (lsucc lzero) u) v)))))).
 
 PSigma/decl : {u : lvl} {v : lvl} declared "PSigma" (lcons u (lcons v lnil))
    (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (esort (lmax (lmax (lsucc lzero) u) v))))))
    indt
    (dkind-ok/indt (PSigma/type-wf u v) (PSigma/ends-in-sort u v)).
 
-%% inductive ctor PSigma.mk
-PSigma_mk/type-wf :
-   {u : lvl} {v : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y))))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y))))))))) (esort (limax (lsucc u) (limax (limax u (lsucc v)) (limax u (limax v (lmax (lmax (lsucc lzero) u) v))))))
-   = [u] [v] (defeq/forall (defeq/sort-refl-at u) ([x] [y] (defeq/forall (defeq/forall y ([z] [w] (defeq/sort-refl-at v))) ([z] [w] (defeq/forall y ([x1] [y1] (defeq/forall (defeq/app w y1) ([z1] [w1] (defeq/app (defeq/app (defeq/const (PSigma/decl u v)) y) w))))))))).
+%% ctor PSigma.mk (of PSigma)
+%%% HOLE
+PSigma_mk/type-wf : {u : lvl} {v : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y))))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y))))))))) (esort lzero).
 
-PSigma_mk/positivity :
-   {u : lvl} {v : lvl} ctor-positive "PSigma" (lcons u (lcons v lnil)) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y)))))))))
-   = [u] [v] (ctor-positive/intro ([S] (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp S x) y)))))))))) (ctor-spine/arg (strict-pos/no-occur (esort u)) ([_y0] (ctor-spine/arg (strict-pos/no-occur (eforall _y0 ([x] (esort v)))) ([_y1] (ctor-spine/arg (strict-pos/no-occur _y0) ([_y2] (ctor-spine/arg (strict-pos/no-occur (eapp _y1 _y2)) ([_y3] (ctor-spine/result (applies-self/app (applies-self/app applies-self/refl)))))))))))).
+%%% HOLE
+PSigma_mk/positivity : {u : lvl} {v : lvl} ctor-positive "PSigma" (lcons u (lcons v lnil)) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y))))))))).
 
 PSigma_mk/decl : {u : lvl} {v : lvl} declared "PSigma.mk" (lcons u (lcons v lnil))
    (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y)))))))))
    ctor
    (dkind-ok/ctor (PSigma_mk/type-wf u v) (PSigma_mk/positivity u v)).
 
-%% inductive recursor PSigma.rec
-PSigma_rec/type-wf :
-   {u_1 : lvl} {u : lvl} {v : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (esort u_1))) ([z] (eforall (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PSigma.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([x1] (eapp z x1))))))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (esort u_1))) ([z] (eforall (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PSigma.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([x1] (eapp z x1))))))))))) (esort (limax (lsucc u) (limax (limax u (lsucc v)) (limax (limax (lmax (lmax (lsucc lzero) u) v) (lsucc u_1)) (limax (limax u (limax v u_1)) (limax (lmax (lmax (lsucc lzero) u) v) u_1))))))
-   = [u_1] [u] [v] (defeq/forall (defeq/sort-refl-at u) ([x] [y] (defeq/forall (defeq/forall y ([z] [w] (defeq/sort-refl-at v))) ([z] [w] (defeq/forall (defeq/forall (defeq/app (defeq/app (defeq/const (PSigma/decl u v)) y) w) ([x1] [y1] (defeq/sort-refl-at u_1))) ([x1] [y1] (defeq/forall (defeq/forall y ([z1] [w1] (defeq/forall (defeq/app w w1) ([x2] [y2] (defeq/app y1 (defeq/app (defeq/app (defeq/app (defeq/app (defeq/const (PSigma_mk/decl u v)) y) w) w1) y2)))))) ([z1] [w1] (defeq/forall (defeq/app (defeq/app (defeq/const (PSigma/decl u v)) y) w) ([x2] [y2] (defeq/app y1 y2))))))))))).
+%% recursor PSigma.rec
+%%% HOLE
+PSigma_rec/type-wf : {u_1 : lvl} {u : lvl} {v : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (esort u_1))) ([z] (eforall (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PSigma.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([x1] (eapp z x1))))))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (esort u_1))) ([z] (eforall (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PSigma.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([x1] (eapp z x1))))))))))) (esort lzero).
 
 PSigma_rec/decl : {u_1 : lvl} {u : lvl} {v : lvl} declared "PSigma.rec" (lcons u_1 (lcons u (lcons v lnil)))
    (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (esort u_1))) ([z] (eforall (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PSigma.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([x1] (eapp z x1)))))))))))
@@ -44,14 +34,11 @@ PSigma_rec/decl : {u_1 : lvl} {u : lvl} {v : lvl} declared "PSigma.rec" (lcons u
    (dkind-ok/irec (PSigma_rec/type-wf u_1 u v)).
 
 %% def PSigma.fst
-PSigma_fst/type-wf :
-   {u : lvl} {v : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] x)))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] x)))))) (esort (limax (lsucc u) (limax (limax u (lsucc v)) (limax (lmax (lmax (lsucc lzero) u) v) u))))
-   = [u] [v] (defeq/forall (defeq/sort-refl-at u) ([x] [y] (defeq/forall (defeq/forall y ([z] [w] (defeq/sort-refl-at v))) ([z] [w] (defeq/forall (defeq/app (defeq/app (defeq/const (PSigma/decl u v)) y) w) ([x1] [y1] y)))))).
+%%% HOLE
+PSigma_fst/type-wf : {u : lvl} {v : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] x)))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] x)))))) (esort lzero).
 
-%% HOLE/defeq: value-typed for PSigma.fst — synth: case proj not yet supported
-PSigma_fst/value-typed :
-   {u : lvl} {v : lvl} defeq (elam (esort u) ([x] (elam (eforall x ([y] (esort v))) ([y] (elam (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PSigma" 0 z))))))) (elam (esort u) ([x] (elam (eforall x ([y] (esort v))) ([y] (elam (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PSigma" 0 z))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] x))))))
-   = [u] [v] (hole/defeq (elam (esort u) ([x] (elam (eforall x ([y] (esort v))) ([y] (elam (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PSigma" 0 z))))))) (elam (esort u) ([x] (elam (eforall x ([y] (esort v))) ([y] (elam (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PSigma" 0 z))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] x))))))).
+%%% HOLE
+PSigma_fst/value-typed : {u : lvl} {v : lvl} defeq (elam (esort u) ([x] (elam (eforall x ([y] (esort v))) ([y] (elam (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PSigma" 0 z))))))) (elam (esort u) ([x] (elam (eforall x ([y] (esort v))) ([y] (elam (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PSigma" 0 z))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] x)))))).
 
 PSigma_fst/decl : {u : lvl} {v : lvl} declared "PSigma.fst" (lcons u (lcons v lnil))
    (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] x))))))
@@ -59,14 +46,11 @@ PSigma_fst/decl : {u : lvl} {v : lvl} declared "PSigma.fst" (lcons u (lcons v ln
    (dkind-ok/defn (PSigma_fst/type-wf u v) (PSigma_fst/value-typed u v)).
 
 %% def PSigma.snd
-PSigma_snd/type-wf :
-   {u : lvl} {v : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (eapp y (eapp (eapp (eapp (econst "PSigma.fst" (lcons u (lcons v lnil))) x) y) z)))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (eapp y (eapp (eapp (eapp (econst "PSigma.fst" (lcons u (lcons v lnil))) x) y) z)))))))) (esort (limax (lsucc u) (limax (limax u (lsucc v)) (limax (lmax (lmax (lsucc lzero) u) v) v))))
-   = [u] [v] (defeq/forall (defeq/sort-refl-at u) ([x] [y] (defeq/forall (defeq/forall y ([z] [w] (defeq/sort-refl-at v))) ([z] [w] (defeq/forall (defeq/app (defeq/app (defeq/const (PSigma/decl u v)) y) w) ([x1] [y1] (defeq/app w (defeq/app (defeq/app (defeq/app (defeq/const (PSigma_fst/decl u v)) y) w) y1)))))))).
+%%% HOLE
+PSigma_snd/type-wf : {u : lvl} {v : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (eapp y (eapp (eapp (eapp (econst "PSigma.fst" (lcons u (lcons v lnil))) x) y) z)))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (eapp y (eapp (eapp (eapp (econst "PSigma.fst" (lcons u (lcons v lnil))) x) y) z)))))))) (esort lzero).
 
-%% HOLE/defeq: value-typed for PSigma.snd — synth: case proj not yet supported
-PSigma_snd/value-typed :
-   {u : lvl} {v : lvl} defeq (elam (esort u) ([x] (elam (eforall x ([y] (esort v))) ([y] (elam (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PSigma" 1 z))))))) (elam (esort u) ([x] (elam (eforall x ([y] (esort v))) ([y] (elam (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PSigma" 1 z))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (eapp y (eapp (eapp (eapp (econst "PSigma.fst" (lcons u (lcons v lnil))) x) y) z))))))))
-   = [u] [v] (hole/defeq (elam (esort u) ([x] (elam (eforall x ([y] (esort v))) ([y] (elam (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PSigma" 1 z))))))) (elam (esort u) ([x] (elam (eforall x ([y] (esort v))) ([y] (elam (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PSigma" 1 z))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (eapp y (eapp (eapp (eapp (econst "PSigma.fst" (lcons u (lcons v lnil))) x) y) z))))))))).
+%%% HOLE
+PSigma_snd/value-typed : {u : lvl} {v : lvl} defeq (elam (esort u) ([x] (elam (eforall x ([y] (esort v))) ([y] (elam (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PSigma" 1 z))))))) (elam (esort u) ([x] (elam (eforall x ([y] (esort v))) ([y] (elam (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PSigma" 1 z))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (eapp y (eapp (eapp (eapp (econst "PSigma.fst" (lcons u (lcons v lnil))) x) y) z)))))))).
 
 PSigma_snd/decl : {u : lvl} {v : lvl} declared "PSigma.snd" (lcons u (lcons v lnil))
    (eforall (esort u) ([x] (eforall (eforall x ([y] (esort v))) ([y] (eforall (eapp (eapp (econst "PSigma" (lcons u (lcons v lnil))) x) y) ([z] (eapp y (eapp (eapp (eapp (econst "PSigma.fst" (lcons u (lcons v lnil))) x) y) z))))))))

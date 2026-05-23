@@ -1,23 +1,47 @@
 %%% Render-only view of: 051_predWithTypeField
 %%% An inductive proposition can have constructors with fields of arbitrary level.
-%% inductive PredWithTypeField (numParams=0, numIndices=0)
-PredWithTypeField/render-type : expr =
-   (esort lzero).
+%% inductive PredWithTypeField
+%%% HOLE
+PredWithTypeField/type-wf : defeq (esort lzero) (esort lzero) (esort lzero).
 
-%% ctor PredWithTypeField.mk (induct=PredWithTypeField, numFields=1)
-PredWithTypeField_mk/render-type : expr =
-   (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil))).
+%%% HOLE
+PredWithTypeField/ends-in-sort : ends-in-sort (esort lzero).
 
-%% recursor PredWithTypeField.rec (numMotives=1, numMinors=1, k=false)
-PredWithTypeField_rec/render-type : expr =
-   (eforall (eforall (econst "PredWithTypeField" lnil) ([x] (esort lzero))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "PredWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "PredWithTypeField" lnil) ([z] (eapp x z))))))).
-%%   rec-rule for PredWithTypeField.mk (nfields=1)
-PredWithTypeField_rec/render-rule0-rhs : expr =
-   (elam (eforall (econst "PredWithTypeField" lnil) ([x] (esort lzero))) ([x] (elam (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "PredWithTypeField.mk" lnil) y)))) ([y] (elam (esort (lsucc lzero)) ([z] (eapp y z))))))).
+PredWithTypeField/decl : declared "PredWithTypeField" lnil
+   (esort lzero)
+   indt
+   (dkind-ok/indt PredWithTypeField/type-wf PredWithTypeField/ends-in-sort).
+
+%% ctor PredWithTypeField.mk (of PredWithTypeField)
+%%% HOLE
+PredWithTypeField_mk/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil))) (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil))) (esort lzero).
+
+%%% HOLE
+PredWithTypeField_mk/positivity : ctor-positive "PredWithTypeField" lnil (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil))).
+
+PredWithTypeField_mk/decl : declared "PredWithTypeField.mk" lnil
+   (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil)))
+   ctor
+   (dkind-ok/ctor PredWithTypeField_mk/type-wf PredWithTypeField_mk/positivity).
+
+%% recursor PredWithTypeField.rec
+%%% HOLE
+PredWithTypeField_rec/type-wf : defeq (eforall (eforall (econst "PredWithTypeField" lnil) ([x] (esort lzero))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "PredWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "PredWithTypeField" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "PredWithTypeField" lnil) ([x] (esort lzero))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "PredWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "PredWithTypeField" lnil) ([z] (eapp x z))))))) (esort lzero).
+
+PredWithTypeField_rec/decl : declared "PredWithTypeField.rec" lnil
+   (eforall (eforall (econst "PredWithTypeField" lnil) ([x] (esort lzero))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "PredWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "PredWithTypeField" lnil) ([z] (eapp x z)))))))
+   irec
+   (dkind-ok/irec PredWithTypeField_rec/type-wf).
 
 %% def predWithTypeField
-predWithTypeField/render-type : expr =
-   (esort lzero).
-predWithTypeField/render-value : expr =
-   (econst "PredWithTypeField" lnil).
+%%% HOLE
+predWithTypeField/type-wf : defeq (esort lzero) (esort lzero) (esort lzero).
+
+%%% HOLE
+predWithTypeField/value-typed : defeq (econst "PredWithTypeField" lnil) (econst "PredWithTypeField" lnil) (esort lzero).
+
+predWithTypeField/decl : declared "predWithTypeField" lnil
+   (esort lzero)
+   (defn (econst "PredWithTypeField" lnil))
+   (dkind-ok/defn predWithTypeField/type-wf predWithTypeField/value-typed).
 

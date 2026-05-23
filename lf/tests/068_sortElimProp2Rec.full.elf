@@ -3,88 +3,56 @@
 %%% known from the type, e.g. a parameter or an index. However, it must occur directly in the result type,
 %%% with no intervening reduction.
 %% inductive Bool
-Bool/type-wf :
-   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
-   = (defeq/sort-refl-at (lsucc lzero)).
+%%% HOLE
+Bool/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero).
 
-Bool/ends-in-sort :
-   ends-in-sort (esort (lsucc lzero))
-   = ends-in-sort/sort.
+%%% HOLE
+Bool/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
 Bool/decl : declared "Bool" lnil
    (esort (lsucc lzero))
    indt
    (dkind-ok/indt Bool/type-wf Bool/ends-in-sort).
 
-%% inductive ctor Bool.false
-Bool_false/type-wf :
-   defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort (lsucc lzero))
-   = (defeq/const Bool/decl).
+%% ctor Bool.false (of Bool)
+%%% HOLE
+Bool_false/type-wf : defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort lzero).
 
-Bool_false/positivity :
-   ctor-positive "Bool" lnil (econst "Bool" lnil)
-   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
+%%% HOLE
+Bool_false/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil).
 
 Bool_false/decl : declared "Bool.false" lnil
    (econst "Bool" lnil)
    ctor
    (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity).
 
-%% inductive ctor Bool.true
-Bool_true/type-wf :
-   defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort (lsucc lzero))
-   = (defeq/const Bool/decl).
+%% ctor Bool.true (of Bool)
+%%% HOLE
+Bool_true/type-wf : defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort lzero).
 
-Bool_true/positivity :
-   ctor-positive "Bool" lnil (econst "Bool" lnil)
-   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
+%%% HOLE
+Bool_true/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil).
 
 Bool_true/decl : declared "Bool.true" lnil
    (econst "Bool" lnil)
    ctor
    (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity).
 
-%% inductive recursor Bool.rec
-Bool_rec/type-wf :
-   {u : lvl} defeq (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort (limax (limax (lsucc lzero) (lsucc u)) (limax u (limax u (limax (lsucc lzero) u)))))
-   = [u] (defeq/forall (defeq/forall (defeq/const Bool/decl) ([x] [y] (defeq/sort-refl-at u))) ([x] [y] (defeq/forall (defeq/app y (defeq/const Bool_false/decl)) ([z] [w] (defeq/forall (defeq/app y (defeq/const Bool_true/decl)) ([x1] [y1] (defeq/forall (defeq/const Bool/decl) ([z1] [w1] (defeq/app y w1))))))))).
+%% recursor Bool.rec
+%%% HOLE
+Bool_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort lzero).
 
 Bool_rec/decl : {u : lvl} declared "Bool.rec" (lcons u lnil)
    (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w)))))))))
    irec
    (dkind-ok/irec (Bool_rec/type-wf u)).
 
-%% stage-1 enum iota helpers: Bool
-Bool/as-enum : {u : lvl}
-   enum-rec-type
-      (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([M] (eforall (eapp M (econst "Bool.false" lnil)) ([x] (eforall (eapp M (econst "Bool.true" lnil)) ([x] (eforall (econst "Bool" lnil) ([t] (eapp M t)))))))))
-      "Bool" lnil (ccons "Bool.false" (ccons "Bool.true" cnil)) u
-   = [u] enum-rec-type/intro ([M] [hM] (enum-rec-body/minor ([m1] [hm1] (enum-rec-body/minor ([m2] [hm2] enum-rec-body/done))))).
-
-Bool_false/iota : {u : lvl}
-   defeq M M (eforall (econst "Bool" lnil) ([x] (esort u)))
-   -> defeq Mp1 Mp1 (eapp M (econst "Bool.false" lnil))
-   -> defeq Mp2 Mp2 (eapp M (econst "Bool.true" lnil))
-   -> defeq (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons u lnil)) M) Mp1) Mp2) (econst "Bool.false" lnil)) Mp1 (eapp M (econst "Bool.false" lnil))
-   = [u] [hM] [hMp1] [hMp2]
-     defeq/extra (defeq/iota-enum-2-first (Bool_rec/decl u) Bool_false/decl Bool_true/decl (Bool/as-enum u) hM hMp1 hMp2).
-
-Bool_true/iota : {u : lvl}
-   defeq M M (eforall (econst "Bool" lnil) ([x] (esort u)))
-   -> defeq Mp1 Mp1 (eapp M (econst "Bool.false" lnil))
-   -> defeq Mp2 Mp2 (eapp M (econst "Bool.true" lnil))
-   -> defeq (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons u lnil)) M) Mp1) Mp2) (econst "Bool.true" lnil)) Mp2 (eapp M (econst "Bool.true" lnil))
-   = [u] [hM] [hMp1] [hMp2]
-     defeq/extra (defeq/iota-enum-2-second (Bool_rec/decl u) Bool_false/decl Bool_true/decl (Bool/as-enum u) hM hMp1 hMp2).
-
 %% def id
-id/type-wf :
-   {u : lvl} defeq (eforall (esort u) ([x] (eforall x ([y] x)))) (eforall (esort u) ([x] (eforall x ([y] x)))) (esort (limax (lsucc u) (limax u u)))
-   = [u] (defeq/forall (defeq/sort-refl-at u) ([x] [y] (defeq/forall y ([z] [w] y)))).
+%%% HOLE
+id/type-wf : {u : lvl} defeq (eforall (esort u) ([x] (eforall x ([y] x)))) (eforall (esort u) ([x] (eforall x ([y] x)))) (esort lzero).
 
-id/value-typed :
-   {u : lvl} defeq (elam (esort u) ([x] (elam x ([y] y)))) (elam (esort u) ([x] (elam x ([y] y)))) (eforall (esort u) ([x] (eforall x ([y] x))))
-   = [u] (defeq/lam (defeq/sort-refl-at u) ([x] [y] (defeq/lam y ([z] [w] w)))).
+%%% HOLE
+id/value-typed : {u : lvl} defeq (elam (esort u) ([x] (elam x ([y] y)))) (elam (esort u) ([x] (elam x ([y] y)))) (eforall (esort u) ([x] (eforall x ([y] x)))).
 
 id/decl : {u : lvl} declared "id" (lcons u lnil)
    (eforall (esort u) ([x] (eforall x ([y] x))))
@@ -92,37 +60,32 @@ id/decl : {u : lvl} declared "id" (lcons u lnil)
    (dkind-ok/defn (id/type-wf u) (id/value-typed u)).
 
 %% inductive SortElimProp2
-SortElimProp2/type-wf :
-   defeq (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (esort lzero))))))) (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (esort lzero))))))) (esort (limax (lsucc lzero) (limax (lsucc lzero) (limax (lsucc lzero) (lsucc lzero)))))
-   = (defeq/forall (defeq/const Bool/decl) ([x] [y] (defeq/forall (defeq/const Bool/decl) ([z] [w] (defeq/forall (defeq/const Bool/decl) ([x1] [y1] (defeq/sort-refl-at lzero))))))).
+%%% HOLE
+SortElimProp2/type-wf : defeq (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (esort lzero))))))) (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (esort lzero))))))) (esort lzero).
 
-SortElimProp2/ends-in-sort :
-   ends-in-sort (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (esort lzero)))))))
-   = (ends-in-sort/forall ([x] (ends-in-sort/forall ([y] (ends-in-sort/forall ([z] ends-in-sort/sort)))))).
+%%% HOLE
+SortElimProp2/ends-in-sort : ends-in-sort (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (esort lzero))))))).
 
 SortElimProp2/decl : declared "SortElimProp2" lnil
    (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (esort lzero)))))))
    indt
    (dkind-ok/indt SortElimProp2/type-wf SortElimProp2/ends-in-sort).
 
-%% inductive ctor SortElimProp2.mk
-SortElimProp2_mk/type-wf :
-   defeq (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) z) (eapp (eapp (econst "id" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) y)))))))) (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) z) (eapp (eapp (econst "id" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) y)))))))) (esort (limax (lsucc lzero) (limax (lsucc lzero) (limax (lsucc lzero) lzero))))
-   = (defeq/forall (defeq/const Bool/decl) ([x] [y] (defeq/forall (defeq/const Bool/decl) ([z] [w] (defeq/forall (defeq/const Bool/decl) ([x1] [y1] (defeq/app (defeq/app (defeq/app (defeq/const SortElimProp2/decl) y) y1) (defeq/app (defeq/app (defeq/const (id/decl (lsucc lzero))) (defeq/const Bool/decl)) w)))))))).
+%% ctor SortElimProp2.mk (of SortElimProp2)
+%%% HOLE
+SortElimProp2_mk/type-wf : defeq (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) z) (eapp (eapp (econst "id" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) y)))))))) (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) z) (eapp (eapp (econst "id" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) y)))))))) (esort lzero).
 
-SortElimProp2_mk/positivity :
-   ctor-positive "SortElimProp2" lnil (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) z) (eapp (eapp (econst "id" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) y))))))))
-   = (ctor-positive/intro ([S] (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp (eapp (eapp S x) z) (eapp (eapp (econst "id" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) y))))))))) (ctor-spine/arg (strict-pos/no-occur (econst "Bool" lnil)) ([_y0] (ctor-spine/arg (strict-pos/no-occur (econst "Bool" lnil)) ([_y1] (ctor-spine/arg (strict-pos/no-occur (econst "Bool" lnil)) ([_y2] (ctor-spine/result (applies-self/app (applies-self/app (applies-self/app applies-self/refl))))))))))).
+%%% HOLE
+SortElimProp2_mk/positivity : ctor-positive "SortElimProp2" lnil (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) z) (eapp (eapp (econst "id" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) y)))))))).
 
 SortElimProp2_mk/decl : declared "SortElimProp2.mk" lnil
    (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) z) (eapp (eapp (econst "id" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) y))))))))
    ctor
    (dkind-ok/ctor SortElimProp2_mk/type-wf SortElimProp2_mk/positivity).
 
-%% inductive recursor SortElimProp2.rec
-SortElimProp2_rec/type-wf :
-   defeq (eforall (econst "Bool" lnil) ([x] (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) y) z) ([w] (esort lzero))))))) ([y] (eforall (eforall (econst "Bool" lnil) ([z] (eforall (econst "Bool" lnil) ([w] (eapp (eapp (eapp y w) (eapp (eapp (econst "id" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) z)) (eapp (eapp (eapp (econst "SortElimProp2.mk" lnil) x) z) w)))))) ([z] (eforall (econst "Bool" lnil) ([w] (eforall (econst "Bool" lnil) ([x1] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) w) x1) ([y1] (eapp (eapp (eapp y w) x1) y1))))))))))))) (eforall (econst "Bool" lnil) ([x] (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) y) z) ([w] (esort lzero))))))) ([y] (eforall (eforall (econst "Bool" lnil) ([z] (eforall (econst "Bool" lnil) ([w] (eapp (eapp (eapp y w) (eapp (eapp (econst "id" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) z)) (eapp (eapp (eapp (econst "SortElimProp2.mk" lnil) x) z) w)))))) ([z] (eforall (econst "Bool" lnil) ([w] (eforall (econst "Bool" lnil) ([x1] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) w) x1) ([y1] (eapp (eapp (eapp y w) x1) y1))))))))))))) (esort (limax (lsucc lzero) (limax (limax (lsucc lzero) (limax (lsucc lzero) (limax lzero (lsucc lzero)))) (limax (limax (lsucc lzero) (limax (lsucc lzero) lzero)) (limax (lsucc lzero) (limax (lsucc lzero) (limax lzero lzero)))))))
-   = (defeq/forall (defeq/const Bool/decl) ([x] [y] (defeq/forall (defeq/forall (defeq/const Bool/decl) ([z] [w] (defeq/forall (defeq/const Bool/decl) ([x1] [y1] (defeq/forall (defeq/app (defeq/app (defeq/app (defeq/const SortElimProp2/decl) y) w) y1) ([z1] [w1] (defeq/sort-refl-at lzero))))))) ([z] [w] (defeq/forall (defeq/forall (defeq/const Bool/decl) ([x1] [y1] (defeq/forall (defeq/const Bool/decl) ([z1] [w1] (defeq/app (defeq/app (defeq/app w w1) (defeq/app (defeq/app (defeq/const (id/decl (lsucc lzero))) (defeq/const Bool/decl)) y1)) (defeq/app (defeq/app (defeq/app (defeq/const SortElimProp2_mk/decl) y) y1) w1)))))) ([x1] [y1] (defeq/forall (defeq/const Bool/decl) ([z1] [w1] (defeq/forall (defeq/const Bool/decl) ([x2] [y2] (defeq/forall (defeq/app (defeq/app (defeq/app (defeq/const SortElimProp2/decl) y) w1) y2) ([z2] [w2] (defeq/app (defeq/app (defeq/app w w1) y2) w2))))))))))))).
+%% recursor SortElimProp2.rec
+%%% HOLE
+SortElimProp2_rec/type-wf : defeq (eforall (econst "Bool" lnil) ([x] (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) y) z) ([w] (esort lzero))))))) ([y] (eforall (eforall (econst "Bool" lnil) ([z] (eforall (econst "Bool" lnil) ([w] (eapp (eapp (eapp y w) (eapp (eapp (econst "id" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) z)) (eapp (eapp (eapp (econst "SortElimProp2.mk" lnil) x) z) w)))))) ([z] (eforall (econst "Bool" lnil) ([w] (eforall (econst "Bool" lnil) ([x1] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) w) x1) ([y1] (eapp (eapp (eapp y w) x1) y1))))))))))))) (eforall (econst "Bool" lnil) ([x] (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) y) z) ([w] (esort lzero))))))) ([y] (eforall (eforall (econst "Bool" lnil) ([z] (eforall (econst "Bool" lnil) ([w] (eapp (eapp (eapp y w) (eapp (eapp (econst "id" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) z)) (eapp (eapp (eapp (econst "SortElimProp2.mk" lnil) x) z) w)))))) ([z] (eforall (econst "Bool" lnil) ([w] (eforall (econst "Bool" lnil) ([x1] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) w) x1) ([y1] (eapp (eapp (eapp y w) x1) y1))))))))))))) (esort lzero).
 
 SortElimProp2_rec/decl : declared "SortElimProp2.rec" lnil
    (eforall (econst "Bool" lnil) ([x] (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) y) z) ([w] (esort lzero))))))) ([y] (eforall (eforall (econst "Bool" lnil) ([z] (eforall (econst "Bool" lnil) ([w] (eapp (eapp (eapp y w) (eapp (eapp (econst "id" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) z)) (eapp (eapp (eapp (econst "SortElimProp2.mk" lnil) x) z) w)))))) ([z] (eforall (econst "Bool" lnil) ([w] (eforall (econst "Bool" lnil) ([x1] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) w) x1) ([y1] (eapp (eapp (eapp y w) x1) y1)))))))))))))
@@ -130,13 +93,11 @@ SortElimProp2_rec/decl : declared "SortElimProp2.rec" lnil
    (dkind-ok/irec SortElimProp2_rec/type-wf).
 
 %% def sortElimProp2Rec
-sortElimProp2Rec/type-wf :
-   defeq (eforall (econst "Bool" lnil) ([x] (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) y) z) ([w] (esort lzero))))))) ([y] (eforall (eforall (econst "Bool" lnil) ([z] (eforall (econst "Bool" lnil) ([w] (eapp (eapp (eapp y w) z) (eapp (eapp (eapp (econst "SortElimProp2.mk" lnil) x) z) w)))))) ([z] (eforall (econst "Bool" lnil) ([w] (eforall (econst "Bool" lnil) ([x1] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) w) x1) ([y1] (eapp (eapp (eapp y w) x1) y1))))))))))))) (eforall (econst "Bool" lnil) ([x] (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) y) z) ([w] (esort lzero))))))) ([y] (eforall (eforall (econst "Bool" lnil) ([z] (eforall (econst "Bool" lnil) ([w] (eapp (eapp (eapp y w) z) (eapp (eapp (eapp (econst "SortElimProp2.mk" lnil) x) z) w)))))) ([z] (eforall (econst "Bool" lnil) ([w] (eforall (econst "Bool" lnil) ([x1] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) w) x1) ([y1] (eapp (eapp (eapp y w) x1) y1))))))))))))) (esort (limax (lsucc lzero) (limax (limax (lsucc lzero) (limax (lsucc lzero) (limax lzero (lsucc lzero)))) (limax (limax (lsucc lzero) (limax (lsucc lzero) lzero)) (limax (lsucc lzero) (limax (lsucc lzero) (limax lzero lzero)))))))
-   = (defeq/forall (defeq/const Bool/decl) ([x] [y] (defeq/forall (defeq/forall (defeq/const Bool/decl) ([z] [w] (defeq/forall (defeq/const Bool/decl) ([x1] [y1] (defeq/forall (defeq/app (defeq/app (defeq/app (defeq/const SortElimProp2/decl) y) w) y1) ([z1] [w1] (defeq/sort-refl-at lzero))))))) ([z] [w] (defeq/forall (defeq/forall (defeq/const Bool/decl) ([x1] [y1] (defeq/forall (defeq/const Bool/decl) ([z1] [w1] (defeq/app (defeq/app (defeq/app w w1) y1) (defeq/conv (defeq/trans (defeq/trans (defeq/app (defeq/app (defeq/app (defeq/const SortElimProp2/decl) y) w1) (defeq/app (defeq/app (defeq/delta (id/decl (lsucc lzero))) (defeq/const Bool/decl)) y1)) (defeq/app (defeq/app (defeq/app (defeq/const SortElimProp2/decl) y) w1) (defeq/app (defeq/beta ([x2] [y2] (defeq/lam y2 ([z2] [w2] w2))) (defeq/const Bool/decl)) y1))) (defeq/app (defeq/app (defeq/app (defeq/const SortElimProp2/decl) y) w1) (defeq/beta ([x2] [y2] y2) y1))) (defeq/app (defeq/app (defeq/app (defeq/const SortElimProp2_mk/decl) y) y1) w1))))))) ([x1] [y1] (defeq/forall (defeq/const Bool/decl) ([z1] [w1] (defeq/forall (defeq/const Bool/decl) ([x2] [y2] (defeq/forall (defeq/app (defeq/app (defeq/app (defeq/const SortElimProp2/decl) y) w1) y2) ([z2] [w2] (defeq/app (defeq/app (defeq/app w w1) y2) w2))))))))))))).
+%%% HOLE
+sortElimProp2Rec/type-wf : defeq (eforall (econst "Bool" lnil) ([x] (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) y) z) ([w] (esort lzero))))))) ([y] (eforall (eforall (econst "Bool" lnil) ([z] (eforall (econst "Bool" lnil) ([w] (eapp (eapp (eapp y w) z) (eapp (eapp (eapp (econst "SortElimProp2.mk" lnil) x) z) w)))))) ([z] (eforall (econst "Bool" lnil) ([w] (eforall (econst "Bool" lnil) ([x1] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) w) x1) ([y1] (eapp (eapp (eapp y w) x1) y1))))))))))))) (eforall (econst "Bool" lnil) ([x] (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) y) z) ([w] (esort lzero))))))) ([y] (eforall (eforall (econst "Bool" lnil) ([z] (eforall (econst "Bool" lnil) ([w] (eapp (eapp (eapp y w) z) (eapp (eapp (eapp (econst "SortElimProp2.mk" lnil) x) z) w)))))) ([z] (eforall (econst "Bool" lnil) ([w] (eforall (econst "Bool" lnil) ([x1] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) w) x1) ([y1] (eapp (eapp (eapp y w) x1) y1))))))))))))) (esort lzero).
 
-sortElimProp2Rec/value-typed :
-   defeq (econst "SortElimProp2.rec" lnil) (econst "SortElimProp2.rec" lnil) (eforall (econst "Bool" lnil) ([x] (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) y) z) ([w] (esort lzero))))))) ([y] (eforall (eforall (econst "Bool" lnil) ([z] (eforall (econst "Bool" lnil) ([w] (eapp (eapp (eapp y w) z) (eapp (eapp (eapp (econst "SortElimProp2.mk" lnil) x) z) w)))))) ([z] (eforall (econst "Bool" lnil) ([w] (eforall (econst "Bool" lnil) ([x1] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) w) x1) ([y1] (eapp (eapp (eapp y w) x1) y1)))))))))))))
-   = (defeq/conv (defeq/forall (defeq/const Bool/decl) ([x] [y] (defeq/forall (defeq/forall (defeq/const Bool/decl) ([z] [w] (defeq/forall (defeq/const Bool/decl) ([x1] [y1] (defeq/forall (defeq/app (defeq/app (defeq/app (defeq/const SortElimProp2/decl) y) w) y1) ([z1] [w1] (defeq/sort-refl-at lzero))))))) ([z] [w] (defeq/forall (defeq/forall (defeq/const Bool/decl) ([x1] [y1] (defeq/forall (defeq/const Bool/decl) ([z1] [w1] (defeq/trans (defeq/trans (defeq/app (defeq/app (defeq/app w w1) (defeq/app (defeq/app (defeq/delta (id/decl (lsucc lzero))) (defeq/const Bool/decl)) y1)) (defeq/app (defeq/app (defeq/app (defeq/const SortElimProp2_mk/decl) y) y1) w1)) (defeq/app (defeq/app (defeq/app w w1) (defeq/app (defeq/beta ([x2] [y2] (defeq/lam y2 ([z2] [w2] w2))) (defeq/const Bool/decl)) y1)) (defeq/conv (defeq/trans (defeq/trans (defeq/trans (defeq/app (defeq/app (defeq/app (defeq/const SortElimProp2/decl) y) w1) (defeq/app (defeq/app (defeq/delta (id/decl (lsucc lzero))) (defeq/const Bool/decl)) y1)) (defeq/app (defeq/app (defeq/app (defeq/const SortElimProp2/decl) y) w1) (defeq/app (defeq/beta ([x2] [y2] (defeq/lam y2 ([z2] [w2] w2))) (defeq/const Bool/decl)) y1))) (defeq/app (defeq/app (defeq/app (defeq/const SortElimProp2/decl) y) w1) (defeq/beta ([x2] [y2] y2) y1))) (defeq/symm (defeq/trans (defeq/app (defeq/app (defeq/app (defeq/const SortElimProp2/decl) y) w1) (defeq/app (defeq/beta ([x2] [y2] (defeq/lam y2 ([z2] [w2] w2))) (defeq/const Bool/decl)) y1)) (defeq/app (defeq/app (defeq/app (defeq/const SortElimProp2/decl) y) w1) (defeq/beta ([x2] [y2] y2) y1))))) (defeq/app (defeq/app (defeq/app (defeq/const SortElimProp2_mk/decl) y) y1) w1)))) (defeq/app (defeq/app (defeq/app w w1) (defeq/beta ([x2] [y2] y2) y1)) (defeq/conv (defeq/trans (defeq/trans (defeq/trans (defeq/app (defeq/app (defeq/app (defeq/const SortElimProp2/decl) y) w1) (defeq/app (defeq/app (defeq/delta (id/decl (lsucc lzero))) (defeq/const Bool/decl)) y1)) (defeq/app (defeq/app (defeq/app (defeq/const SortElimProp2/decl) y) w1) (defeq/app (defeq/beta ([x2] [y2] (defeq/lam y2 ([z2] [w2] w2))) (defeq/const Bool/decl)) y1))) (defeq/app (defeq/app (defeq/app (defeq/const SortElimProp2/decl) y) w1) (defeq/beta ([x2] [y2] y2) y1))) (defeq/symm (defeq/app (defeq/app (defeq/app (defeq/const SortElimProp2/decl) y) w1) (defeq/beta ([x2] [y2] y2) y1)))) (defeq/app (defeq/app (defeq/app (defeq/const SortElimProp2_mk/decl) y) y1) w1)))))))) ([x1] [y1] (defeq/forall (defeq/const Bool/decl) ([z1] [w1] (defeq/forall (defeq/const Bool/decl) ([x2] [y2] (defeq/forall (defeq/app (defeq/app (defeq/app (defeq/const SortElimProp2/decl) y) w1) y2) ([z2] [w2] (defeq/app (defeq/app (defeq/app w w1) y2) w2))))))))))))) (defeq/const SortElimProp2_rec/decl)).
+%%% HOLE
+sortElimProp2Rec/value-typed : defeq (econst "SortElimProp2.rec" lnil) (econst "SortElimProp2.rec" lnil) (eforall (econst "Bool" lnil) ([x] (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) y) z) ([w] (esort lzero))))))) ([y] (eforall (eforall (econst "Bool" lnil) ([z] (eforall (econst "Bool" lnil) ([w] (eapp (eapp (eapp y w) z) (eapp (eapp (eapp (econst "SortElimProp2.mk" lnil) x) z) w)))))) ([z] (eforall (econst "Bool" lnil) ([w] (eforall (econst "Bool" lnil) ([x1] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) w) x1) ([y1] (eapp (eapp (eapp y w) x1) y1))))))))))))).
 
 sortElimProp2Rec/decl : declared "sortElimProp2Rec" lnil
    (eforall (econst "Bool" lnil) ([x] (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) y) z) ([w] (esort lzero))))))) ([y] (eforall (eforall (econst "Bool" lnil) ([z] (eforall (econst "Bool" lnil) ([w] (eapp (eapp (eapp y w) z) (eapp (eapp (eapp (econst "SortElimProp2.mk" lnil) x) z) w)))))) ([z] (eforall (econst "Bool" lnil) ([w] (eforall (econst "Bool" lnil) ([x1] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) w) x1) ([y1] (eapp (eapp (eapp y w) x1) y1)))))))))))))

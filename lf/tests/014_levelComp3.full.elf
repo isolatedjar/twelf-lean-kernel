@@ -1,13 +1,11 @@
 %%% Expected outcome: accept
 %%% Some level computation
 %% def levelComp3
-levelComp3/type-wf :
-   defeq (esort (lsucc (lsucc (lsucc lzero)))) (esort (lsucc (lsucc (lsucc lzero)))) (esort (lsucc (lsucc (lsucc (lsucc lzero)))))
-   = (defeq/sort-refl-at (lsucc (lsucc (lsucc lzero)))).
+%%% HOLE
+levelComp3/type-wf : defeq (esort (lsucc (lsucc (lsucc lzero)))) (esort (lsucc (lsucc (lsucc lzero)))) (esort lzero).
 
-levelComp3/value-typed :
-   defeq (esort (limax (lsucc (lsucc lzero)) (lsucc lzero))) (esort (limax (lsucc (lsucc lzero)) (lsucc lzero))) (esort (lsucc (lsucc (lsucc lzero))))
-   = (defeq/conv (defeq/sort-eq (lvl-eq/trans (lvl-eq/lsucc-cong lvl-eq/imax-succ) (lvl-eq/trans (lvl-eq/lsucc-cong lvl-eq/max-succ) (lvl-eq/trans (lvl-eq/lsucc-cong (lvl-eq/lsucc-cong lvl-eq/max-zero-r)) lvl-eq/refl)))) (defeq/sort-refl-at (limax (lsucc (lsucc lzero)) (lsucc lzero)))).
+%%% HOLE
+levelComp3/value-typed : defeq (esort (limax (lsucc (lsucc lzero)) (lsucc lzero))) (esort (limax (lsucc (lsucc lzero)) (lsucc lzero))) (esort (lsucc (lsucc (lsucc lzero)))).
 
 levelComp3/decl : declared "levelComp3" lnil
    (esort (lsucc (lsucc (lsucc lzero))))

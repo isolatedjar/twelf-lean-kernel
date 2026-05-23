@@ -1,8 +1,14 @@
 %%% Render-only view of: 016_tut06_bad01
 %%% Duplicate universe parameters
 %% def tut06_bad01
-tut06_bad01/render-type : {u : lvl} {u : lvl} expr =
-   [u] [u] (esort (lsucc lzero)).
-tut06_bad01/render-value : {u : lvl} {u : lvl} expr =
-   [u] [u] (esort lzero).
+%%% HOLE
+tut06_bad01/type-wf : {u : lvl} {u : lvl} defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero).
+
+%%% HOLE
+tut06_bad01/value-typed : {u : lvl} {u : lvl} defeq (esort lzero) (esort lzero) (esort (lsucc lzero)).
+
+tut06_bad01/decl : {u : lvl} {u : lvl} declared "tut06_bad01" (lcons u (lcons u lnil))
+   (esort (lsucc lzero))
+   (defn (esort lzero))
+   (dkind-ok/defn (tut06_bad01/type-wf u u) (tut06_bad01/value-typed u u)).
 

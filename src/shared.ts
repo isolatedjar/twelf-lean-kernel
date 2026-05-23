@@ -200,6 +200,59 @@ export const ParsedEnvSchema = z.object({
 });
 export type ParsedEnv = z.infer<typeof ParsedEnvSchema>;
 
+// --- Prover plugin interface --------------------------------------------
+//
+// The generator (`generate-twelf.ts`, trusted) walks a ParsedEnv and, for
+// each proof obligation it encounters, asks the Prover to discharge it.
+// The Prover is UNTRUSTED: it can only influence the output through the
+// `Fmt` values it returns, which the generator pretty-prints into proof
+// terms.  An audit of shared.ts + parse.ts + generate-twelf.ts therefore
+// suffices; prover.ts need not be audited.
+//
+// A `Fmt` is a structured Twelf proof term — atoms and applications only.
+// Because it has no way to express a `.` (declaration terminator) or a raw
+// newline, a prover cannot "smuggle" the end of one declaration and the
+// start of another into a single Fmt (the generator additionally validates
+// atoms; see ppFmt in generate-twelf.ts).
+
+export type Fmt = { kind: "atom"; text: string } | { kind: "app"; fn: Fmt; args: Fmt[] };
+
+export function atom(text: string): Fmt {
+  return { kind: "atom", text };
+}
+
+export function app(fn: Fmt, ...args: Fmt[]): Fmt {
+  return args.length === 0 ? fn : { kind: "app", fn, args };
+}
+
+// A prover method returns:
+//   - an `Fmt`            → the generator emits `<const> : <type> = <Fmt>.`
+//   - `null`              → can't discharge it → generator emits a HOLE
+//                           (`<const> : <type>.`, a bare decl rejected by
+//                           %freeze)
+//   - `"fail-on-purpose"` → provably no proof → generator forces the whole
+//                           signature to fail.
+export type ProofResult = Fmt | null | "fail-on-purpose";
+
+// One method per proof-obligation shape the generator can raise.  Each gets
+// the relevant IR context; the generator owns rendering the obligation's
+// *type*, the prover only supplies the *proof*.
+export interface Prover {
+  // defeq T T (esort U) — T is a well-formed type.
+  typeWellFormed(ctx: { type: Expr; levelParams: Name[] }): ProofResult;
+  // defeq V V T — value V has type T.
+  valueHasType(ctx: { value: Expr; type: Expr; levelParams: Name[] }): ProofResult;
+  // ends-in-sort T — T is a Π-chain ending in a sort (inductive type formers).
+  endsInSort(ctx: { type: Expr; levelParams: Name[] }): ProofResult;
+  // ctor-positive IndName IndLevels T — ctor type is strictly positive.
+  ctorPositive(ctx: {
+    ctorType: Expr;
+    indName: Name;
+    indLevels: Level[];
+    levelParams: Name[];
+  }): ProofResult;
+}
+
 // --- Helpers ------------------------------------------------------------
 
 export function nameToString(n: Name): string {

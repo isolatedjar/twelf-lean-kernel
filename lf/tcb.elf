@@ -97,6 +97,18 @@ lcons : lvl -> lvls -> lvls.
 %abbrev name = string.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Deliberate-failure marker
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Uninhabited type.  When the generator's Prover decides a mandatory
+%%% proof obligation is provably impossible, the generated file emits
+%%%   %solve - : fail-on-purpose.
+%%% which Twelf reports as "No solution to %solve found" → ABORT, in both
+%%% the with-freeze and without-freeze loads.  This is how a checker
+%%% *rejects* an environment (as opposed to declining it via %%% SKIP).
+
+fail-on-purpose : type.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Expressions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

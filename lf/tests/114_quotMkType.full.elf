@@ -1,91 +1,52 @@
 %%% Expected outcome: accept
 %%% Asserting the type of `Quot.mk`.
 %% inductive Eq
-Eq/type-wf :
-   {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (esort (limax (lsucc u_1) (limax u_1 (limax u_1 (lsucc lzero)))))
-   = [u_1] (defeq/forall (defeq/sort-refl-at u_1) ([x] [y] (defeq/forall y ([z] [w] (defeq/forall y ([x1] [y1] (defeq/sort-refl-at lzero))))))).
+%%% HOLE
+Eq/type-wf : {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (esort lzero).
 
-Eq/ends-in-sort :
-   {u_1 : lvl} ends-in-sort (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero)))))))
-   = [u_1] (ends-in-sort/forall ([x] (ends-in-sort/forall ([y] (ends-in-sort/forall ([z] ends-in-sort/sort)))))).
+%%% HOLE
+Eq/ends-in-sort : {u_1 : lvl} ends-in-sort (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))).
 
 Eq/decl : {u_1 : lvl} declared "Eq" (lcons u_1 lnil)
    (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero)))))))
    indt
    (dkind-ok/indt (Eq/type-wf u_1) (Eq/ends-in-sort u_1)).
 
-%% inductive ctor Eq.refl
-Eq_refl/type-wf :
-   {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))) (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))) (esort (limax (lsucc u_1) (limax u_1 lzero)))
-   = [u_1] (defeq/forall (defeq/sort-refl-at u_1) ([x] [y] (defeq/forall y ([z] [w] (defeq/app (defeq/app (defeq/app (defeq/const (Eq/decl u_1)) y) w) w))))).
+%% ctor Eq.refl (of Eq)
+%%% HOLE
+Eq_refl/type-wf : {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))) (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))) (esort lzero).
 
-Eq_refl/positivity :
-   {u_1 : lvl} ctor-positive "Eq" (lcons u_1 lnil) (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y)))))
-   = [u_1] (ctor-positive/intro ([S] (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp S x) y) y)))))) (ctor-spine/arg (strict-pos/no-occur (esort u_1)) ([_y0] (ctor-spine/arg (strict-pos/no-occur _y0) ([_y1] (ctor-spine/result (applies-self/app (applies-self/app (applies-self/app applies-self/refl))))))))).
+%%% HOLE
+Eq_refl/positivity : {u_1 : lvl} ctor-positive "Eq" (lcons u_1 lnil) (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))).
 
 Eq_refl/decl : {u_1 : lvl} declared "Eq.refl" (lcons u_1 lnil)
    (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y)))))
    ctor
    (dkind-ok/ctor (Eq_refl/type-wf u_1) (Eq_refl/positivity u_1)).
 
-%% inductive recursor Eq.rec
-Eq_rec/type-wf :
-   {u : lvl} {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort (limax (lsucc u_1) (limax u_1 (limax (limax u_1 (limax lzero (lsucc u))) (limax u (limax u_1 (limax lzero u)))))))
-   = [u] [u_1] (defeq/forall (defeq/sort-refl-at u_1) ([x] [y] (defeq/forall y ([z] [w] (defeq/forall (defeq/forall y ([x1] [y1] (defeq/forall (defeq/app (defeq/app (defeq/app (defeq/const (Eq/decl u_1)) y) w) y1) ([z1] [w1] (defeq/sort-refl-at u))))) ([x1] [y1] (defeq/forall (defeq/app (defeq/app y1 w) (defeq/app (defeq/app (defeq/const (Eq_refl/decl u_1)) y) w)) ([z1] [w1] (defeq/forall y ([x2] [y2] (defeq/forall (defeq/app (defeq/app (defeq/app (defeq/const (Eq/decl u_1)) y) w) y2) ([z2] [w2] (defeq/app (defeq/app y1 y2) w2))))))))))))).
+%% recursor Eq.rec
+%%% HOLE
+Eq_rec/type-wf : {u : lvl} {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort lzero).
 
 Eq_rec/decl : {u : lvl} {u_1 : lvl} declared "Eq.rec" (lcons u (lcons u_1 lnil))
    (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1)))))))))))))
    irec
    (dkind-ok/irec (Eq_rec/type-wf u u_1)).
 
-%% quot type Quot
-Quot/type-wf :
-   {u : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (esort u))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (esort u))))) (esort (limax (lsucc u) (limax (limax u (limax u (lsucc lzero))) (lsucc u))))
-   = [u] (defeq/forall (defeq/sort-refl-at u) ([x] [y] (defeq/forall (defeq/forall y ([z] [w] (defeq/forall y ([x1] [y1] (defeq/sort-refl-at lzero))))) ([z] [w] (defeq/sort-refl-at u))))).
+%%% SKIP: quot Quot (type) — not yet represented
 
-Quot/decl : {u : lvl} declared "Quot" (lcons u lnil)
-   (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (esort u)))))
-   quot
-   (dkind-ok/quot (Quot/type-wf u)).
+%%% SKIP: quot Quot.mk (ctor) — not yet represented
 
-%% quot ctor Quot.mk
-Quot_mk/type-wf :
-   {u : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eapp (eapp (econst "Quot" (lcons u lnil)) x) y))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eapp (eapp (econst "Quot" (lcons u lnil)) x) y))))))) (esort (limax (lsucc u) (limax (limax u (limax u (lsucc lzero))) (limax u u))))
-   = [u] (defeq/forall (defeq/sort-refl-at u) ([x] [y] (defeq/forall (defeq/forall y ([z] [w] (defeq/forall y ([x1] [y1] (defeq/sort-refl-at lzero))))) ([z] [w] (defeq/forall y ([x1] [y1] (defeq/app (defeq/app (defeq/const (Quot/decl u)) y) w))))))).
+%%% SKIP: quot Quot.lift (lift) — not yet represented
 
-Quot_mk/decl : {u : lvl} declared "Quot.mk" (lcons u lnil)
-   (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eapp (eapp (econst "Quot" (lcons u lnil)) x) y)))))))
-   quot
-   (dkind-ok/quot (Quot_mk/type-wf u)).
-
-%% quot lift Quot.lift
-Quot_lift/type-wf :
-   {u : lvl} {v : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (esort v) ([z] (eforall (eforall x ([w] z)) ([w] (eforall (eforall x ([x1] (eforall x ([y1] (eforall (eapp (eapp y x1) y1) ([z1] (eapp (eapp (eapp (econst "Eq" (lcons v lnil)) z) (eapp w x1)) (eapp w y1)))))))) ([x1] (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([y1] z)))))))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (esort v) ([z] (eforall (eforall x ([w] z)) ([w] (eforall (eforall x ([x1] (eforall x ([y1] (eforall (eapp (eapp y x1) y1) ([z1] (eapp (eapp (eapp (econst "Eq" (lcons v lnil)) z) (eapp w x1)) (eapp w y1)))))))) ([x1] (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([y1] z)))))))))))) (esort (limax (lsucc u) (limax (limax u (limax u (lsucc lzero))) (limax (lsucc v) (limax (limax u v) (limax (limax u (limax u (limax lzero lzero))) (limax u v)))))))
-   = [u] [v] (defeq/forall (defeq/sort-refl-at u) ([x] [y] (defeq/forall (defeq/forall y ([z] [w] (defeq/forall y ([x1] [y1] (defeq/sort-refl-at lzero))))) ([z] [w] (defeq/forall (defeq/sort-refl-at v) ([x1] [y1] (defeq/forall (defeq/forall y ([z1] [w1] y1)) ([z1] [w1] (defeq/forall (defeq/forall y ([x2] [y2] (defeq/forall y ([z2] [w2] (defeq/forall (defeq/app (defeq/app w y2) w2) ([x3] [y3] (defeq/app (defeq/app (defeq/app (defeq/const (Eq/decl v)) y1) (defeq/app w1 y2)) (defeq/app w1 w2)))))))) ([x2] [y2] (defeq/forall (defeq/app (defeq/app (defeq/const (Quot/decl u)) y) w) ([z2] [w2] y1)))))))))))).
-
-Quot_lift/decl : {u : lvl} {v : lvl} declared "Quot.lift" (lcons u (lcons v lnil))
-   (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (esort v) ([z] (eforall (eforall x ([w] z)) ([w] (eforall (eforall x ([x1] (eforall x ([y1] (eforall (eapp (eapp y x1) y1) ([z1] (eapp (eapp (eapp (econst "Eq" (lcons v lnil)) z) (eapp w x1)) (eapp w y1)))))))) ([x1] (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([y1] z))))))))))))
-   quot
-   (dkind-ok/quot (Quot_lift/type-wf u v)).
-
-%% quot ind Quot.ind
-Quot_ind/type-wf :
-   {u : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eapp z (eapp (eapp (eapp (econst "Quot.mk" (lcons u lnil)) x) y) w)))) ([w] (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([x1] (eapp z x1))))))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eapp z (eapp (eapp (eapp (econst "Quot.mk" (lcons u lnil)) x) y) w)))) ([w] (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([x1] (eapp z x1))))))))))) (esort (limax (lsucc u) (limax (limax u (limax u (lsucc lzero))) (limax (limax u (lsucc lzero)) (limax (limax u lzero) (limax u lzero))))))
-   = [u] (defeq/forall (defeq/sort-refl-at u) ([x] [y] (defeq/forall (defeq/forall y ([z] [w] (defeq/forall y ([x1] [y1] (defeq/sort-refl-at lzero))))) ([z] [w] (defeq/forall (defeq/forall (defeq/app (defeq/app (defeq/const (Quot/decl u)) y) w) ([x1] [y1] (defeq/sort-refl-at lzero))) ([x1] [y1] (defeq/forall (defeq/forall y ([z1] [w1] (defeq/app y1 (defeq/app (defeq/app (defeq/app (defeq/const (Quot_mk/decl u)) y) w) w1)))) ([z1] [w1] (defeq/forall (defeq/app (defeq/app (defeq/const (Quot/decl u)) y) w) ([x2] [y2] (defeq/app y1 y2))))))))))).
-
-Quot_ind/decl : {u : lvl} declared "Quot.ind" (lcons u lnil)
-   (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eapp z (eapp (eapp (eapp (econst "Quot.mk" (lcons u lnil)) x) y) w)))) ([w] (eforall (eapp (eapp (econst "Quot" (lcons u lnil)) x) y) ([x1] (eapp z x1)))))))))))
-   quot
-   (dkind-ok/quot (Quot_ind/type-wf u)).
+%%% SKIP: quot Quot.ind (ind) — not yet represented
 
 %% def quotMkType
-quotMkType/type-wf :
-   {u : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eapp (eapp (econst "Quot" (lcons u lnil)) x) y))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eapp (eapp (econst "Quot" (lcons u lnil)) x) y))))))) (esort (limax (lsucc u) (limax (limax u (limax u (lsucc lzero))) (limax u u))))
-   = [u] (defeq/forall (defeq/sort-refl-at u) ([x] [y] (defeq/forall (defeq/forall y ([z] [w] (defeq/forall y ([x1] [y1] (defeq/sort-refl-at lzero))))) ([z] [w] (defeq/forall y ([x1] [y1] (defeq/app (defeq/app (defeq/const (Quot/decl u)) y) w))))))).
+%%% HOLE
+quotMkType/type-wf : {u : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eapp (eapp (econst "Quot" (lcons u lnil)) x) y))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eapp (eapp (econst "Quot" (lcons u lnil)) x) y))))))) (esort lzero).
 
-quotMkType/value-typed :
-   {u : lvl} defeq (econst "Quot.mk" (lcons u lnil)) (econst "Quot.mk" (lcons u lnil)) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eapp (eapp (econst "Quot" (lcons u lnil)) x) y)))))))
-   = [u] (defeq/const (Quot_mk/decl u)).
+%%% HOLE
+quotMkType/value-typed : {u : lvl} defeq (econst "Quot.mk" (lcons u lnil)) (econst "Quot.mk" (lcons u lnil)) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eapp (eapp (econst "Quot" (lcons u lnil)) x) y))))))).
 
 quotMkType/decl : {u : lvl} declared "quotMkType" (lcons u lnil)
    (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eapp (eapp (econst "Quot" (lcons u lnil)) x) y)))))))

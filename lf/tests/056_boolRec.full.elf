@@ -1,88 +1,56 @@
 %%% Expected outcome: accept
 %%% Asserting the type of the generated recursor
 %% inductive Bool
-Bool/type-wf :
-   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
-   = (defeq/sort-refl-at (lsucc lzero)).
+%%% HOLE
+Bool/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero).
 
-Bool/ends-in-sort :
-   ends-in-sort (esort (lsucc lzero))
-   = ends-in-sort/sort.
+%%% HOLE
+Bool/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
 Bool/decl : declared "Bool" lnil
    (esort (lsucc lzero))
    indt
    (dkind-ok/indt Bool/type-wf Bool/ends-in-sort).
 
-%% inductive ctor Bool.false
-Bool_false/type-wf :
-   defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort (lsucc lzero))
-   = (defeq/const Bool/decl).
+%% ctor Bool.false (of Bool)
+%%% HOLE
+Bool_false/type-wf : defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort lzero).
 
-Bool_false/positivity :
-   ctor-positive "Bool" lnil (econst "Bool" lnil)
-   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
+%%% HOLE
+Bool_false/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil).
 
 Bool_false/decl : declared "Bool.false" lnil
    (econst "Bool" lnil)
    ctor
    (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity).
 
-%% inductive ctor Bool.true
-Bool_true/type-wf :
-   defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort (lsucc lzero))
-   = (defeq/const Bool/decl).
+%% ctor Bool.true (of Bool)
+%%% HOLE
+Bool_true/type-wf : defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort lzero).
 
-Bool_true/positivity :
-   ctor-positive "Bool" lnil (econst "Bool" lnil)
-   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
+%%% HOLE
+Bool_true/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil).
 
 Bool_true/decl : declared "Bool.true" lnil
    (econst "Bool" lnil)
    ctor
    (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity).
 
-%% inductive recursor Bool.rec
-Bool_rec/type-wf :
-   {u : lvl} defeq (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort (limax (limax (lsucc lzero) (lsucc u)) (limax u (limax u (limax (lsucc lzero) u)))))
-   = [u] (defeq/forall (defeq/forall (defeq/const Bool/decl) ([x] [y] (defeq/sort-refl-at u))) ([x] [y] (defeq/forall (defeq/app y (defeq/const Bool_false/decl)) ([z] [w] (defeq/forall (defeq/app y (defeq/const Bool_true/decl)) ([x1] [y1] (defeq/forall (defeq/const Bool/decl) ([z1] [w1] (defeq/app y w1))))))))).
+%% recursor Bool.rec
+%%% HOLE
+Bool_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort lzero).
 
 Bool_rec/decl : {u : lvl} declared "Bool.rec" (lcons u lnil)
    (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w)))))))))
    irec
    (dkind-ok/irec (Bool_rec/type-wf u)).
 
-%% stage-1 enum iota helpers: Bool
-Bool/as-enum : {u : lvl}
-   enum-rec-type
-      (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([M] (eforall (eapp M (econst "Bool.false" lnil)) ([x] (eforall (eapp M (econst "Bool.true" lnil)) ([x] (eforall (econst "Bool" lnil) ([t] (eapp M t)))))))))
-      "Bool" lnil (ccons "Bool.false" (ccons "Bool.true" cnil)) u
-   = [u] enum-rec-type/intro ([M] [hM] (enum-rec-body/minor ([m1] [hm1] (enum-rec-body/minor ([m2] [hm2] enum-rec-body/done))))).
-
-Bool_false/iota : {u : lvl}
-   defeq M M (eforall (econst "Bool" lnil) ([x] (esort u)))
-   -> defeq Mp1 Mp1 (eapp M (econst "Bool.false" lnil))
-   -> defeq Mp2 Mp2 (eapp M (econst "Bool.true" lnil))
-   -> defeq (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons u lnil)) M) Mp1) Mp2) (econst "Bool.false" lnil)) Mp1 (eapp M (econst "Bool.false" lnil))
-   = [u] [hM] [hMp1] [hMp2]
-     defeq/extra (defeq/iota-enum-2-first (Bool_rec/decl u) Bool_false/decl Bool_true/decl (Bool/as-enum u) hM hMp1 hMp2).
-
-Bool_true/iota : {u : lvl}
-   defeq M M (eforall (econst "Bool" lnil) ([x] (esort u)))
-   -> defeq Mp1 Mp1 (eapp M (econst "Bool.false" lnil))
-   -> defeq Mp2 Mp2 (eapp M (econst "Bool.true" lnil))
-   -> defeq (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons u lnil)) M) Mp1) Mp2) (econst "Bool.true" lnil)) Mp2 (eapp M (econst "Bool.true" lnil))
-   = [u] [hM] [hMp1] [hMp2]
-     defeq/extra (defeq/iota-enum-2-second (Bool_rec/decl u) Bool_false/decl Bool_true/decl (Bool/as-enum u) hM hMp1 hMp2).
-
 %% def boolRec
-boolRec/type-wf :
-   {u : lvl} defeq (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort (limax (limax (lsucc lzero) (lsucc u)) (limax u (limax u (limax (lsucc lzero) u)))))
-   = [u] (defeq/forall (defeq/forall (defeq/const Bool/decl) ([x] [y] (defeq/sort-refl-at u))) ([x] [y] (defeq/forall (defeq/app y (defeq/const Bool_false/decl)) ([z] [w] (defeq/forall (defeq/app y (defeq/const Bool_true/decl)) ([x1] [y1] (defeq/forall (defeq/const Bool/decl) ([z1] [w1] (defeq/app y w1))))))))).
+%%% HOLE
+boolRec/type-wf : {u : lvl} defeq (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort lzero).
 
-boolRec/value-typed :
-   {u : lvl} defeq (elam (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] (elam (econst "Bool" lnil) ([w] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons u lnil)) x) y) z) w))))))))) (elam (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] (elam (econst "Bool" lnil) ([w] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons u lnil)) x) y) z) w))))))))) (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w)))))))))
-   = [u] (defeq/lam (defeq/forall (defeq/const Bool/decl) ([x] [y] (defeq/sort-refl-at u))) ([x] [y] (defeq/lam (defeq/app y (defeq/const Bool_false/decl)) ([z] [w] (defeq/lam (defeq/app y (defeq/const Bool_true/decl)) ([x1] [y1] (defeq/lam (defeq/const Bool/decl) ([z1] [w1] (defeq/app (defeq/app (defeq/app (defeq/app (defeq/const (Bool_rec/decl u)) y) w) y1) w1))))))))).
+%%% HOLE
+boolRec/value-typed : {u : lvl} defeq (elam (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] (elam (econst "Bool" lnil) ([w] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons u lnil)) x) y) z) w))))))))) (elam (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] (elam (econst "Bool" lnil) ([w] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons u lnil)) x) y) z) w))))))))) (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))).
 
 boolRec/decl : {u : lvl} declared "boolRec" (lcons u lnil)
    (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w)))))))))

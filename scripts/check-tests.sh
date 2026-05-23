@@ -1,270 +1,194 @@
 #!/usr/bin/env bash
 # scripts/check-tests.sh
 #
-# Run all lf/tests/*.elf through Twelf and report results.
+# Classify each generated test under the plugin-refactor taxonomy by
+# loading its .render.elf / .full.elf through Twelf with and without the
+# %freeze step.
 #
 # Usage:
 #   ./scripts/check-tests.sh <twelf-binary>
-#   ./scripts/check-tests.sh <twelf-binary> lf/tests/001_*.full.elf   # subset
+#   ./scripts/check-tests.sh <twelf-binary> 030 056      # subset by number
 #
-# Only *.full.elf files are checked.  *.render.elf files are a separate
-# pure-encoding artifact (no proofs) and are not Twelf-verified here.
+# Outcomes (per test), in precedence order:
+#   🤷  generator declined to represent the env  (.full.elf has %%% SKIP)
+#   🔴  .render.elf rejected by Twelf without freeze (rendering is broken)
+#   ✅  .full.elf accepted by the full pipeline (freeze + final-checks)
+#   🩹  .full.elf rejected with freeze but accepted without freeze
+#       (the only failures are unfilled HOLEs)
+#   ❌  .full.elf rejected even without freeze (a genuine error)
 #
-# Verdicts:
-#   ✅ — Twelf accepts (good) or rejects (bad), no hole admissions
-#   🩹 — file uses `hole/<tag>` admissions.  Whether Twelf accepts via
-#        admission or rejects on a downstream cascade, no firm conclusion
-#        can be drawn until the holes are filled.
-#   ⚠️  — translator emitted ≥1 %% SKIP: (declined to emit entirely)
-#   ❌ — good test rejected by Twelf with NO holes (genuine failure)
-#   💥 — bad test accepted by Twelf with NO holes (soundness failure)
+# Verdict per expected outcome:
+#   good (expect accept):  ✅→pass   🩹→incomplete   🤷/🔴/❌→fail
+#   bad  (expect reject):  ✅→💥      🩹→incomplete   🤷/🔴/❌→pass(reject)
 
 set -euo pipefail
 
-# ---------------------------------------------------------------------------
-# Args
-# ---------------------------------------------------------------------------
-
 TWELF="${1:-}"
 if [[ -z "$TWELF" ]]; then
-    echo "Usage: $0 <twelf-binary> [test-files...]" >&2
+    echo "Usage: $0 <twelf-binary> [test-numbers...]" >&2
     exit 1
 fi
 if [[ ! -x "$TWELF" ]]; then
     echo "Error: not executable: $TWELF" >&2
     exit 1
 fi
-# Resolve to absolute so we don't lose it when we cd into $LF_DIR.
 TWELF="$(cd "$(dirname "$TWELF")" && pwd)/$(basename "$TWELF")"
-shift  # remaining args, if any, are specific test files
+shift
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LF_DIR="$REPO_ROOT/lf"
 TESTS_DIR="$LF_DIR/tests"
 
-# Loud startup checks.  The previous version silently mis-reported
-# tests as "accept" when `cd "$LF_DIR"` failed inside the subshell:
-# `set -e` exited the inner shell, output came back empty, and
-# `grep -q ABORT` found nothing — making genuine rejections look
-# like soundness failures.  We now refuse to run if the layout
-# isn't right.
-if [[ ! -d "$LF_DIR" ]]; then
-    echo "Error: LF_DIR=$LF_DIR does not exist." >&2
-    echo "  This script expects <repo-root>/lf/{sources.cfg,final-checks.elf,tests/...}." >&2
-    exit 1
-fi
-if [[ ! -f "$LF_DIR/sources.cfg" ]]; then
-    echo "Error: $LF_DIR/sources.cfg is missing." >&2
-    exit 1
-fi
-if [[ ! -f "$LF_DIR/final-checks.elf" ]]; then
-    echo "Error: $LF_DIR/final-checks.elf is missing." >&2
-    echo "  Note: if you grabbed it from /mnt/user-data/outputs it may be" >&2
-    echo "  named final-checks.elf.txt — rename to final-checks.elf." >&2
-    exit 1
-fi
+for f in tcb.elf freeze.elf derived.elf final-checks.elf; do
+    if [[ ! -f "$LF_DIR/$f" ]]; then
+        echo "Error: $LF_DIR/$f is missing." >&2
+        exit 1
+    fi
+done
 
 # ---------------------------------------------------------------------------
-# Helpers
+# Twelf load helpers.  Each prints "accept" or "reject".
 # ---------------------------------------------------------------------------
 
-# Run one .elf file through Twelf.  Prints: accept | reject | incomplete
-# Loud-fail on infrastructure errors (Twelf binary missing, no output, etc.)
-# rather than silently returning a wrong verdict.
-check_one() {
-    local file="$1"
-
-    # Incomplete if translator marked any skipped declarations.
-    if grep -q "^%% SKIP:" "$file" 2>/dev/null; then
-        echo "incomplete"
-        return 0
-    fi
-
-    # Detect hole admissions.  The file is still loaded through Twelf
-    # (hole axioms are declared inline at the top), but the verdict is
-    # marked 🩹 rather than ✅ to signal that proof obligations were
-    # admitted rather than constructed.
-    local has_holes=0
-    if grep -q "^%% HOLE/" "$file" 2>/dev/null; then
-        has_holes=1
-    fi
-
-    local abs_file
-    abs_file="$(cd "$(dirname "$file")" && pwd)/$(basename "$file")"
-
-    # Capture Twelf output via tempfile.  Disable `set -e` for the
-    # block so we can detect failures explicitly rather than silently
-    # aborting the subshell.
-    local tmpfile
-    tmpfile=$(mktemp)
+# Run a Twelf session from a heredoc-style command string; "reject" if the
+# output contains ABORT, else "accept".
+run_twelf() {
+    local script="$1"
+    local tmp
+    tmp=$(mktemp)
     set +e
-    (
-        cd "$LF_DIR" || exit 64
-        echo "loadFile tcb.elf
+    ( cd "$LF_DIR" && printf '%s\n' "$script" | "$TWELF" ) > "$tmp" 2>&1
+    set -e
+    if [[ ! -s "$tmp" ]]; then
+        echo "ERROR: Twelf produced no output" >&2
+        rm -f "$tmp"
+        exit 1
+    fi
+    if grep -q "ABORT" "$tmp"; then echo "reject"; else echo "accept"; fi
+    rm -f "$tmp"
+}
+
+# .render.elf without freeze or final-checks.
+load_render_nofreeze() {
+    run_twelf "loadFile tcb.elf
+loadFile derived.elf
+loadFile $1
+OS.exit"
+}
+
+# .full.elf through the full pipeline (freeze + final-checks).
+load_full_freeze() {
+    run_twelf "loadFile tcb.elf
 set unsafe true
 loadFile freeze.elf
 set unsafe false
 loadFile derived.elf
-loadFile $abs_file
+loadFile $1
 loadFile final-checks.elf
-OS.exit" | "$TWELF"
-    ) > "$tmpfile" 2>&1
-    local rc=$?
-    set -e
+OS.exit"
+}
 
-    if [[ $rc -eq 64 ]]; then
-        echo "ERROR: cd to LF_DIR=$LF_DIR failed" >&2
-        rm -f "$tmpfile"
-        exit 1
-    fi
-    if [[ ! -s "$tmpfile" ]]; then
-        echo "ERROR: Twelf produced no output for $file (exit=$rc)" >&2
-        rm -f "$tmpfile"
-        exit 1
-    fi
+# .full.elf with the freeze step skipped (final-checks still loaded).
+load_full_nofreeze() {
+    run_twelf "loadFile tcb.elf
+loadFile derived.elf
+loadFile $1
+loadFile final-checks.elf
+OS.exit"
+}
 
-    local twelf_verdict
-    if grep -q "ABORT" "$tmpfile"; then
-        twelf_verdict="reject"
-    else
-        twelf_verdict="accept"
-    fi
-    rm -f "$tmpfile"
-
-    # If the file uses hole admissions, the verdict isn't safe to draw
-    # conclusions from — the holes may be discharging things they
-    # shouldn't (causing accept) or propagating bad facts downstream
-    # (causing cascade reject).  Report 🩹 either way.
-    if (( has_holes )); then
-        echo "with-holes"
-    else
-        echo "$twelf_verdict"
-    fi
+# Classify one test → one of: shrug | red | accept | holes | fail
+classify() {
+    local full="$1" render="$2"
+    if grep -q "^%%% SKIP" "$full" 2>/dev/null; then echo "shrug"; return; fi
+    [[ "$(load_render_nofreeze "$render")" == "reject" ]] && { echo "red"; return; }
+    [[ "$(load_full_freeze "$full")" == "accept" ]] && { echo "accept"; return; }
+    [[ "$(load_full_nofreeze "$full")" == "accept" ]] && { echo "holes"; return; }
+    echo "fail"
 }
 
 # ---------------------------------------------------------------------------
-# Collect test files
+# Collect test bases (those with a .full.elf).
 # ---------------------------------------------------------------------------
 
 if [[ $# -gt 0 ]]; then
-    test_files=("$@")
+    pattern="^($(IFS='|'; echo "$*"))_"
 else
-    test_files=("$TESTS_DIR"/*.full.elf)
+    pattern="."
 fi
 
-# ---------------------------------------------------------------------------
-# Run and collect results
-# ---------------------------------------------------------------------------
-
-# Width of the longest basename (for alignment).
-max_len=0
-for f in "${test_files[@]}"; do
-    len=${#f}
-    base="$(basename "$f" .full.elf)"
-    len=${#base}
-    (( len > max_len )) && max_len=$len
+bases=()
+for f in "$TESTS_DIR"/*.full.elf; do
+    [[ -f "$f" ]] || continue
+    b="$(basename "$f" .full.elf)"
+    echo "$b" | grep -qE "$pattern" && bases+=("$b")
 done
-# Cap so lines don't blow out on wide names.
+
+max_len=0
+for b in "${bases[@]}"; do (( ${#b} > max_len )) && max_len=${#b}; done
 (( max_len > 50 )) && max_len=50
 
-n_good_pass=0
-n_good_holes=0
-n_good_incomp=0
-n_good_fail=0
-n_bad_pass=0
-n_bad_holes=0
-n_bad_incomp=0
-n_bad_fail=0
+# good = expected accept; bad = expected reject
+g_pass=0 g_holes=0 g_fail=0
+b_reject=0 b_holes=0 b_accept=0
 n_no_header=0
 
 echo ""
+for b in "${bases[@]}"; do
+    full="$TESTS_DIR/$b.full.elf"
+    render="$TESTS_DIR/$b.render.elf"
 
-for file in "${test_files[@]}"; do
-    [[ -f "$file" ]] || continue
-
-    base="$(basename "$file" .full.elf)"
-
-    # Read expected outcome from header.
-    expected_raw="$(grep -i "^%%% Expected outcome:" "$file" | head -1 | \
-                    sed 's/^.*: *//' | tr -d ' \r' | tr '[:upper:]' '[:lower:]')"
-
-    if [[ -z "$expected_raw" ]]; then
-        printf "  %-*s  (no expected outcome header — skipped)\n" "$max_len" "$base"
+    expected="$(grep -i "^%%% Expected outcome:" "$full" | head -1 | \
+                sed 's/^.*: *//' | tr -d ' \r' | tr '[:upper:]' '[:lower:]')"
+    if [[ -z "$expected" ]]; then
+        printf "  %-*s  (no expected-outcome header)\n" "$max_len" "$b"
         (( n_no_header++ )) || true
         continue
     fi
 
-    # expected emoji
-    case "$expected_raw" in
-        accept) exp_emoji="✅" ;;
-        reject) exp_emoji="❌" ;;
-        *)      exp_emoji="?" ;;
+    outcome="$(classify "$full" "$render")"
+    case "$outcome" in
+        shrug)  emoji="🤷" ;;
+        red)    emoji="🔴" ;;
+        accept) emoji="✅" ;;
+        holes)  emoji="🩹" ;;
+        fail)   emoji="❌" ;;
     esac
 
-    # Run the check.
-    got="$(check_one "$file")"
-
-    # got emoji
-    case "$got" in
-        accept)     got_emoji="✅" ;;
-        with-holes) got_emoji="🩹" ;;
-        reject)     got_emoji="❌" ;;
-        incomplete) got_emoji="🤷" ;;
-        *)          got_emoji="?" ;;
-    esac
-
-    # Verdict.  Track good/bad cases separately so that "should reject"
-    # tests in INCOMPLETE state are visibly distinct from genuine Twelf
-    # rejections; with-holes tests are distinct from both.
-    if [[ "$expected_raw" == "accept" ]]; then
-        case "$got" in
-            accept)     verdict="✅"; (( n_good_pass++ ))   || true ;;
-            with-holes) verdict="🩹"; (( n_good_holes++ ))  || true ;;
-            incomplete) verdict="⚠️ "; (( n_good_incomp++ )) || true ;;
-            *)          verdict="❌"; (( n_good_fail++ ))   || true ;;
+    if [[ "$expected" == "accept" ]]; then
+        case "$outcome" in
+            accept) verdict="✅"; (( g_pass++ ))  || true ;;
+            holes)  verdict="🩹"; (( g_holes++ )) || true ;;
+            *)      verdict="❌"; (( g_fail++ ))  || true ;;
         esac
-    elif [[ "$expected_raw" == "reject" ]]; then
-        case "$got" in
-            reject)     verdict="✅"; (( n_bad_pass++ ))    || true ;;
-            with-holes) verdict="🩹"; (( n_bad_holes++ ))   || true ;;
-            incomplete) verdict="⚠️ "; (( n_bad_incomp++ )) || true ;;
-            *)          verdict="💥"; (( n_bad_fail++ ))    || true ;;
+    else
+        case "$outcome" in
+            accept) verdict="💥"; (( b_accept++ )) || true ;;
+            holes)  verdict="🩹"; (( b_holes++ ))  || true ;;
+            *)      verdict="✅"; (( b_reject++ )) || true ;;
         esac
     fi
 
-    printf "  %-*s  expected %s  got %s  %s\n" \
-        "$max_len" "$base" "$exp_emoji" "$got_emoji" "$verdict"
+    printf "  %-*s  expect %-6s  %s  %s\n" "$max_len" "$b" "$expected" "$emoji" "$verdict"
 done
 
-# ---------------------------------------------------------------------------
-# Summary
-# ---------------------------------------------------------------------------
-
-n_good=$(( n_good_pass + n_good_holes + n_good_incomp + n_good_fail ))
-n_bad=$((  n_bad_pass  + n_bad_holes  + n_bad_incomp  + n_bad_fail  ))
-total=$(( n_good + n_bad ))
+n_good=$(( g_pass + g_holes + g_fail ))
+n_bad=$(( b_reject + b_holes + b_accept ))
 
 echo ""
 echo "  ────────────────────────────────────────"
-printf "  %d tests\n" "$total"
-echo ""
+printf "  %d tests\n\n" "$(( n_good + n_bad ))"
 printf "  Good tests (expected accept) — %d total:\n" "$n_good"
-printf "    ✅  pass:        %d\n" "$n_good_pass"
-printf "    🩹  with-holes:  %d  (would-be-verified-if-holes-filled)\n" "$n_good_holes"
-printf "    ⚠️   incomplete:  %d  (translator declined — %% SKIP)\n" "$n_good_incomp"
-printf "    ❌  failed:      %d\n" "$n_good_fail"
+printf "    ✅  pass:        %d\n" "$g_pass"
+printf "    🩹  with-holes:  %d\n" "$g_holes"
+printf "    ❌  failed:      %d  (🤷 / 🔴 / genuine reject)\n" "$g_fail"
 echo ""
 printf "  Bad tests (expected reject) — %d total:\n" "$n_bad"
-printf "    ✅  reject:      %d\n" "$n_bad_pass"
-printf "    🩹  with-holes:  %d  (would-be-rejected-if-holes-filled)\n" "$n_bad_holes"
-printf "    ⚠️   incomplete:  %d  (translator declined — not Twelf-verified)\n" "$n_bad_incomp"
-printf "    💥  accept:      %d  (soundness failure — no holes)\n" "$n_bad_fail"
-[[ $n_no_header -gt 0 ]] && printf "  ?   no header:         %d\n" "$n_no_header"
+printf "    ✅  reject:      %d  (🤷 / 🔴 / genuine reject)\n" "$b_reject"
+printf "    🩹  with-holes:  %d\n" "$b_holes"
+printf "    💥  accept:      %d  (soundness failure)\n" "$b_accept"
+[[ $n_no_header -gt 0 ]] && printf "  ?   no header:    %d\n" "$n_no_header"
 echo ""
 
-# Exit non-zero only on hard failures (good ❌ or bad 💥).  Holes are
-# tracked but not failures — they're named TODOs awaiting more proof
-# machinery.
-if [[ $(( n_good_fail + n_bad_fail )) -gt 0 ]]; then
-    exit 1
-fi
+# Non-zero exit on a genuine good-test failure or a soundness failure.
+if [[ $(( g_fail + b_accept )) -gt 0 ]]; then exit 1; fi

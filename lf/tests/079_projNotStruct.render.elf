@@ -1,30 +1,59 @@
 %%% Render-only view of: 079_projNotStruct
 %%% Projection out something that is not a structure
-%% inductive N (numParams=0, numIndices=0)
-N/render-type : expr =
-   (esort (lsucc lzero)).
+%% inductive N
+%%% HOLE
+N/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero).
 
-%% ctor N.zero (induct=N, numFields=0)
-N_zero/render-type : expr =
-   (econst "N" lnil).
+%%% HOLE
+N/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
-%% ctor N.succ (induct=N, numFields=1)
-N_succ/render-type : expr =
-   (eforall (econst "N" lnil) ([x] (econst "N" lnil))).
+N/decl : declared "N" lnil
+   (esort (lsucc lzero))
+   indt
+   (dkind-ok/indt N/type-wf N/ends-in-sort).
 
-%% recursor N.rec (numMotives=1, numMinors=2, k=false)
-N_rec/render-type : {u : lvl} expr =
-   [u] (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))).
-%%   rec-rule for N.zero (nfields=0)
-N_rec/render-rule0-rhs : {u : lvl} expr =
-   [u] (elam (eforall (econst "N" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "N.zero" lnil)) ([y] (elam (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] y)))))).
-%%   rec-rule for N.succ (nfields=1)
-N_rec/render-rule1-rhs : {u : lvl} expr =
-   [u] (elam (eforall (econst "N" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "N.zero" lnil)) ([y] (elam (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (elam (econst "N" lnil) ([w] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "N.rec" (lcons u lnil)) x) y) z) w)))))))))).
+%% ctor N.zero (of N)
+%%% HOLE
+N_zero/type-wf : defeq (econst "N" lnil) (econst "N" lnil) (esort lzero).
+
+%%% HOLE
+N_zero/positivity : ctor-positive "N" lnil (econst "N" lnil).
+
+N_zero/decl : declared "N.zero" lnil
+   (econst "N" lnil)
+   ctor
+   (dkind-ok/ctor N_zero/type-wf N_zero/positivity).
+
+%% ctor N.succ (of N)
+%%% HOLE
+N_succ/type-wf : defeq (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (esort lzero).
+
+%%% HOLE
+N_succ/positivity : ctor-positive "N" lnil (eforall (econst "N" lnil) ([x] (econst "N" lnil))).
+
+N_succ/decl : declared "N.succ" lnil
+   (eforall (econst "N" lnil) ([x] (econst "N" lnil)))
+   ctor
+   (dkind-ok/ctor N_succ/type-wf N_succ/positivity).
+
+%% recursor N.rec
+%%% HOLE
+N_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) (esort lzero).
+
+N_rec/decl : {u : lvl} declared "N.rec" (lcons u lnil)
+   (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w)))))))))
+   irec
+   (dkind-ok/irec (N_rec/type-wf u)).
 
 %% def projNotStruct
-projNotStruct/render-type : expr =
-   (eforall (econst "N" lnil) ([x] (econst "N" lnil))).
-projNotStruct/render-value : expr =
-   (elam (econst "N" lnil) ([x] (eproj "N" 0 x))).
+%%% HOLE
+projNotStruct/type-wf : defeq (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (esort lzero).
+
+%%% HOLE
+projNotStruct/value-typed : defeq (elam (econst "N" lnil) ([x] (eproj "N" 0 x))) (elam (econst "N" lnil) ([x] (eproj "N" 0 x))) (eforall (econst "N" lnil) ([x] (econst "N" lnil))).
+
+projNotStruct/decl : declared "projNotStruct" lnil
+   (eforall (econst "N" lnil) ([x] (econst "N" lnil)))
+   (defn (elam (econst "N" lnil) ([x] (eproj "N" 0 x))))
+   (dkind-ok/defn projNotStruct/type-wf projNotStruct/value-typed).
 

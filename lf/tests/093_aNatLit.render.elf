@@ -2,31 +2,60 @@
 %%% Type checking Nat literals
 %solve nonneg_0 : 0 >= 0.
 
-%% inductive Nat (numParams=0, numIndices=0)
-Nat/render-type : expr =
-   (esort (lsucc lzero)).
+%% inductive Nat
+%%% HOLE
+Nat/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero).
 
-%% ctor Nat.zero (induct=Nat, numFields=0)
-Nat_zero/render-type : expr =
-   (econst "Nat" lnil).
+%%% HOLE
+Nat/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
-%% ctor Nat.succ (induct=Nat, numFields=1)
-Nat_succ/render-type : expr =
-   (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))).
+Nat/decl : declared "Nat" lnil
+   (esort (lsucc lzero))
+   indt
+   (dkind-ok/indt Nat/type-wf Nat/ends-in-sort).
 
-%% recursor Nat.rec (numMotives=1, numMinors=2, k=false)
-Nat_rec/render-type : {u : lvl} expr =
-   [u] (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))).
-%%   rec-rule for Nat.zero (nfields=0)
-Nat_rec/render-rule0-rhs : {u : lvl} expr =
-   [u] (elam (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Nat.zero" lnil)) ([y] (elam (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] y)))))).
-%%   rec-rule for Nat.succ (nfields=1)
-Nat_rec/render-rule1-rhs : {u : lvl} expr =
-   [u] (elam (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Nat.zero" lnil)) ([y] (elam (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (elam (econst "Nat" lnil) ([w] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "Nat.rec" (lcons u lnil)) x) y) z) w)))))))))).
+%% ctor Nat.zero (of Nat)
+%%% HOLE
+Nat_zero/type-wf : defeq (econst "Nat" lnil) (econst "Nat" lnil) (esort lzero).
+
+%%% HOLE
+Nat_zero/positivity : ctor-positive "Nat" lnil (econst "Nat" lnil).
+
+Nat_zero/decl : declared "Nat.zero" lnil
+   (econst "Nat" lnil)
+   ctor
+   (dkind-ok/ctor Nat_zero/type-wf Nat_zero/positivity).
+
+%% ctor Nat.succ (of Nat)
+%%% HOLE
+Nat_succ/type-wf : defeq (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (esort lzero).
+
+%%% HOLE
+Nat_succ/positivity : ctor-positive "Nat" lnil (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))).
+
+Nat_succ/decl : declared "Nat.succ" lnil
+   (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil)))
+   ctor
+   (dkind-ok/ctor Nat_succ/type-wf Nat_succ/positivity).
+
+%% recursor Nat.rec
+%%% HOLE
+Nat_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (esort lzero).
+
+Nat_rec/decl : {u : lvl} declared "Nat.rec" (lcons u lnil)
+   (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w)))))))))
+   irec
+   (dkind-ok/irec (Nat_rec/type-wf u)).
 
 %% def aNatLit
-aNatLit/render-type : expr =
-   (econst "Nat" lnil).
-aNatLit/render-value : expr =
-   (enatlit 0 nonneg_0).
+%%% HOLE
+aNatLit/type-wf : defeq (econst "Nat" lnil) (econst "Nat" lnil) (esort lzero).
+
+%%% HOLE
+aNatLit/value-typed : defeq (enatlit 0 nonneg_0) (enatlit 0 nonneg_0) (econst "Nat" lnil).
+
+aNatLit/decl : declared "aNatLit" lnil
+   (econst "Nat" lnil)
+   (defn (enatlit 0 nonneg_0))
+   (dkind-ok/defn aNatLit/type-wf aNatLit/value-typed).
 

@@ -1,6 +1,14 @@
 %%% Render-only view of: 042_inductTooFewParams
 %%% An inductive with too few parameters in the type
-%% inductive inductTooFewParams (numParams=2, numIndices=0)
-inductTooFewParams/render-type : expr =
-   (eforall (esort lzero) ([x] (esort lzero))).
+%% inductive inductTooFewParams
+%%% HOLE
+inductTooFewParams/type-wf : defeq (eforall (esort lzero) ([x] (esort lzero))) (eforall (esort lzero) ([x] (esort lzero))) (esort lzero).
+
+%%% HOLE
+inductTooFewParams/ends-in-sort : ends-in-sort (eforall (esort lzero) ([x] (esort lzero))).
+
+inductTooFewParams/decl : declared "inductTooFewParams" lnil
+   (eforall (esort lzero) ([x] (esort lzero)))
+   indt
+   (dkind-ok/indt inductTooFewParams/type-wf inductTooFewParams/ends-in-sort).
 

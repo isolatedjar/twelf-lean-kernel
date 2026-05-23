@@ -16,8 +16,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PARSE_NDJSON="$REPO_ROOT/src/parse.ts"
-LEAN_TO_LF="$REPO_ROOT/src/lean2lf.ts"
-RENDER_CLI="$REPO_ROOT/src/render-cli.ts"
+GENERATE="$REPO_ROOT/src/generate-twelf.ts"
 OUT_DIR="$REPO_ROOT/lf/tests"
 GOOD_DIR="$REPO_ROOT/tests/tutorial/good"
 BAD_DIR="$REPO_ROOT/tests/tutorial/bad"
@@ -73,23 +72,22 @@ gen_one() {
         "$PARSE_NDJSON" < "$ndjson"
     } > "$out_json"
 
-    npx prettier --write "$out_json"
+    npx prettier --write "$out_json" > /dev/null 2>&1
 
-    # Full pipeline: rendering + proof construction.  This is what
-    # check-tests.sh runs through Twelf.
+    # Both files come from the SAME generator (generate-twelf.ts), differing
+    # only in the Prover plugged in:
+    #   .full.elf   — RealProver (discharges what it can; HOLEs otherwise)
+    #   .render.elf — NullProver (every obligation a HOLE)
     {
         echo "%%% Expected outcome: $outcome"
         [[ -n "$description" ]] && printf '%s\n' "$description" | sed 's/^/%%% /'
-        "$LEAN_TO_LF" < "$out_json"
+        "$GENERATE" --prover real < "$out_json"
     } > "$out_full"
 
-    # Render-only view: pure encoding artifact for human audit.  Binds
-    # each Lean declaration's rendered shape as a Twelf constant, with
-    # no proof obligations.
     {
         echo "%%% Render-only view of: $base"
         [[ -n "$description" ]] && printf '%s\n' "$description" | sed 's/^/%%% /'
-        "$RENDER_CLI" < "$out_json"
+        "$GENERATE" --prover null < "$out_json"
     } > "$out_render"
 
     printf "  %-45s  -> %s, %s\n" "$base" "$(basename "$out_full")" "$(basename "$out_render")"

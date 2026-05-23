@@ -2,13 +2,11 @@
 %%% When checking inductives, we expect the kernel to **not** reduce the type of the constructor itself;
 %%% that should be all manifest `forall`s
 %% def id
-id/type-wf :
-   {u : lvl} defeq (eforall (esort u) ([x] (eforall x ([y] x)))) (eforall (esort u) ([x] (eforall x ([y] x)))) (esort (limax (lsucc u) (limax u u)))
-   = [u] (defeq/forall (defeq/sort-refl-at u) ([x] [y] (defeq/forall y ([z] [w] y)))).
+%%% HOLE
+id/type-wf : {u : lvl} defeq (eforall (esort u) ([x] (eforall x ([y] x)))) (eforall (esort u) ([x] (eforall x ([y] x)))) (esort lzero).
 
-id/value-typed :
-   {u : lvl} defeq (elam (esort u) ([x] (elam x ([y] y)))) (elam (esort u) ([x] (elam x ([y] y)))) (eforall (esort u) ([x] (eforall x ([y] x))))
-   = [u] (defeq/lam (defeq/sort-refl-at u) ([x] [y] (defeq/lam y ([z] [w] w)))).
+%%% HOLE
+id/value-typed : {u : lvl} defeq (elam (esort u) ([x] (elam x ([y] y)))) (elam (esort u) ([x] (elam x ([y] y)))) (eforall (esort u) ([x] (eforall x ([y] x)))).
 
 id/decl : {u : lvl} declared "id" (lcons u lnil)
    (eforall (esort u) ([x] (eforall x ([y] x))))
@@ -16,38 +14,32 @@ id/decl : {u : lvl} declared "id" (lcons u lnil)
    (dkind-ok/defn (id/type-wf u) (id/value-typed u)).
 
 %% inductive reduceCtorType
-reduceCtorType/type-wf :
-   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
-   = (defeq/sort-refl-at (lsucc lzero)).
+%%% HOLE
+reduceCtorType/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero).
 
-reduceCtorType/ends-in-sort :
-   ends-in-sort (esort (lsucc lzero))
-   = ends-in-sort/sort.
+%%% HOLE
+reduceCtorType/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
 reduceCtorType/decl : declared "reduceCtorType" lnil
    (esort (lsucc lzero))
    indt
    (dkind-ok/indt reduceCtorType/type-wf reduceCtorType/ends-in-sort).
 
-%% inductive ctor reduceCtorType.mk
-reduceCtorType_mk/type-wf :
-   defeq (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil)) (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil)) (esort (lsucc lzero))
-   = (defeq/app (defeq/app (defeq/const (id/decl (lsucc (lsucc lzero)))) (defeq/sort-refl-at (lsucc lzero))) (defeq/const reduceCtorType/decl)).
+%% ctor reduceCtorType.mk (of reduceCtorType)
+%%% HOLE
+reduceCtorType_mk/type-wf : defeq (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil)) (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil)) (esort lzero).
 
-%% Translator can't build ctor-positive for "reduceCtorType.mk";
-%% result-type head isn't the inductive — deferring to Twelf,
-%% which can soundly abort (no T_HOAS makes applies-self fire on a wrong head).
-%solve reduceCtorType_mk/positivity : ctor-positive "reduceCtorType" lnil (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil)).
+%%% HOLE
+reduceCtorType_mk/positivity : ctor-positive "reduceCtorType" lnil (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil)).
 
 reduceCtorType_mk/decl : declared "reduceCtorType.mk" lnil
    (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil))
    ctor
    (dkind-ok/ctor reduceCtorType_mk/type-wf reduceCtorType_mk/positivity).
 
-%% inductive recursor reduceCtorType.rec
-reduceCtorType_rec/type-wf :
-   defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
-   = (defeq/sort-refl-at lzero).
+%% recursor reduceCtorType.rec
+%%% HOLE
+reduceCtorType_rec/type-wf : defeq (esort lzero) (esort lzero) (esort lzero).
 
 reduceCtorType_rec/decl : declared "reduceCtorType.rec" lnil
    (esort lzero)

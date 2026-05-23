@@ -1,8 +1,14 @@
 %%% Render-only view of: 004_dependentType
 %%% Dependent type (forall)
 %% def dependentType
-dependentType/render-type : expr =
-   (esort lzero).
-dependentType/render-value : expr =
-   (eforall (esort lzero) ([x] x)).
+%%% HOLE
+dependentType/type-wf : defeq (esort lzero) (esort lzero) (esort lzero).
+
+%%% HOLE
+dependentType/value-typed : defeq (eforall (esort lzero) ([x] x)) (eforall (esort lzero) ([x] x)) (esort lzero).
+
+dependentType/decl : declared "dependentType" lnil
+   (esort lzero)
+   (defn (eforall (esort lzero) ([x] x)))
+   (dkind-ok/defn dependentType/type-wf dependentType/value-typed).
 

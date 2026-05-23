@@ -1,14 +1,26 @@
 %%% Render-only view of: 008_forallSortWhnf
 %%% The binding domain of a forall may need to be reduce before it is a sort
 %% def id
-id/render-type : {u : lvl} expr =
-   [u] (eforall (esort u) ([x] (eforall x ([y] x)))).
-id/render-value : {u : lvl} expr =
-   [u] (elam (esort u) ([x] (elam x ([y] y)))).
+%%% HOLE
+id/type-wf : {u : lvl} defeq (eforall (esort u) ([x] (eforall x ([y] x)))) (eforall (esort u) ([x] (eforall x ([y] x)))) (esort lzero).
+
+%%% HOLE
+id/value-typed : {u : lvl} defeq (elam (esort u) ([x] (elam x ([y] y)))) (elam (esort u) ([x] (elam x ([y] y)))) (eforall (esort u) ([x] (eforall x ([y] x)))).
+
+id/decl : {u : lvl} declared "id" (lcons u lnil)
+   (eforall (esort u) ([x] (eforall x ([y] x))))
+   (defn (elam (esort u) ([x] (elam x ([y] y)))))
+   (dkind-ok/defn (id/type-wf u) (id/value-typed u)).
 
 %% def forallSortWhnf
-forallSortWhnf/render-type : expr =
-   (esort lzero).
-forallSortWhnf/render-value : expr =
-   (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] x)))).
+%%% HOLE
+forallSortWhnf/type-wf : defeq (esort lzero) (esort lzero) (esort lzero).
+
+%%% HOLE
+forallSortWhnf/value-typed : defeq (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] x)))) (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] x)))) (esort lzero).
+
+forallSortWhnf/decl : declared "forallSortWhnf" lnil
+   (esort lzero)
+   (defn (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] x)))))
+   (dkind-ok/defn forallSortWhnf/type-wf forallSortWhnf/value-typed).
 

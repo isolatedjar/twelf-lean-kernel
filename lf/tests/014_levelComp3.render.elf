@@ -1,8 +1,14 @@
 %%% Render-only view of: 014_levelComp3
 %%% Some level computation
 %% def levelComp3
-levelComp3/render-type : expr =
-   (esort (lsucc (lsucc (lsucc lzero)))).
-levelComp3/render-value : expr =
-   (esort (limax (lsucc (lsucc lzero)) (lsucc lzero))).
+%%% HOLE
+levelComp3/type-wf : defeq (esort (lsucc (lsucc (lsucc lzero)))) (esort (lsucc (lsucc (lsucc lzero)))) (esort lzero).
+
+%%% HOLE
+levelComp3/value-typed : defeq (esort (limax (lsucc (lsucc lzero)) (lsucc lzero))) (esort (limax (lsucc (lsucc lzero)) (lsucc lzero))) (esort (lsucc (lsucc (lsucc lzero)))).
+
+levelComp3/decl : declared "levelComp3" lnil
+   (esort (lsucc (lsucc (lsucc lzero))))
+   (defn (esort (limax (lsucc (lsucc lzero)) (lsucc lzero))))
+   (dkind-ok/defn levelComp3/type-wf levelComp3/value-typed).
 

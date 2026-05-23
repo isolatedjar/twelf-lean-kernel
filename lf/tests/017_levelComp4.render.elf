@@ -1,8 +1,14 @@
 %%% Render-only view of: 017_levelComp4
 %%% Some level computation
 %% def levelComp4
-levelComp4/render-type : {u : lvl} expr =
-   [u] (esort (lsucc lzero)).
-levelComp4/render-value : {u : lvl} expr =
-   [u] (esort lzero).
+%%% HOLE
+levelComp4/type-wf : {u : lvl} defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero).
+
+%%% HOLE
+levelComp4/value-typed : {u : lvl} defeq (esort lzero) (esort lzero) (esort (lsucc lzero)).
+
+levelComp4/decl : {u : lvl} declared "levelComp4" (lcons u lnil)
+   (esort (lsucc lzero))
+   (defn (esort lzero))
+   (dkind-ok/defn (levelComp4/type-wf u) (levelComp4/value-typed u)).
 

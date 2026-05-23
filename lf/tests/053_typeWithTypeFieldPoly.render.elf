@@ -1,23 +1,47 @@
 %%% Render-only view of: 053_typeWithTypeFieldPoly
 %%% An inductive type can have fields of level up to that of the inductive (polymorphic variant).
-%% inductive TypeWithTypeFieldPoly (numParams=0, numIndices=0)
-TypeWithTypeFieldPoly/render-type : {u : lvl} expr =
-   [u] (esort (lsucc (lsucc u))).
+%% inductive TypeWithTypeFieldPoly
+%%% HOLE
+TypeWithTypeFieldPoly/type-wf : {u : lvl} defeq (esort (lsucc (lsucc u))) (esort (lsucc (lsucc u))) (esort lzero).
 
-%% ctor TypeWithTypeFieldPoly.mk (induct=TypeWithTypeFieldPoly, numFields=1)
-TypeWithTypeFieldPoly_mk/render-type : {u : lvl} expr =
-   [u] (eforall (esort (lsucc u)) ([x] (econst "TypeWithTypeFieldPoly" (lcons u lnil)))).
+%%% HOLE
+TypeWithTypeFieldPoly/ends-in-sort : {u : lvl} ends-in-sort (esort (lsucc (lsucc u))).
 
-%% recursor TypeWithTypeFieldPoly.rec (numMotives=1, numMinors=1, k=false)
-TypeWithTypeFieldPoly_rec/render-type : {u_1 : lvl} {u : lvl} expr =
-   [u_1] [u] (eforall (eforall (econst "TypeWithTypeFieldPoly" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eforall (esort (lsucc u)) ([y] (eapp x (eapp (econst "TypeWithTypeFieldPoly.mk" (lcons u lnil)) y)))) ([y] (eforall (econst "TypeWithTypeFieldPoly" (lcons u lnil)) ([z] (eapp x z))))))).
-%%   rec-rule for TypeWithTypeFieldPoly.mk (nfields=1)
-TypeWithTypeFieldPoly_rec/render-rule0-rhs : {u_1 : lvl} {u : lvl} expr =
-   [u_1] [u] (elam (eforall (econst "TypeWithTypeFieldPoly" (lcons u lnil)) ([x] (esort u_1))) ([x] (elam (eforall (esort (lsucc u)) ([y] (eapp x (eapp (econst "TypeWithTypeFieldPoly.mk" (lcons u lnil)) y)))) ([y] (elam (esort (lsucc u)) ([z] (eapp y z))))))).
+TypeWithTypeFieldPoly/decl : {u : lvl} declared "TypeWithTypeFieldPoly" (lcons u lnil)
+   (esort (lsucc (lsucc u)))
+   indt
+   (dkind-ok/indt (TypeWithTypeFieldPoly/type-wf u) (TypeWithTypeFieldPoly/ends-in-sort u)).
+
+%% ctor TypeWithTypeFieldPoly.mk (of TypeWithTypeFieldPoly)
+%%% HOLE
+TypeWithTypeFieldPoly_mk/type-wf : {u : lvl} defeq (eforall (esort (lsucc u)) ([x] (econst "TypeWithTypeFieldPoly" (lcons u lnil)))) (eforall (esort (lsucc u)) ([x] (econst "TypeWithTypeFieldPoly" (lcons u lnil)))) (esort lzero).
+
+%%% HOLE
+TypeWithTypeFieldPoly_mk/positivity : {u : lvl} ctor-positive "TypeWithTypeFieldPoly" (lcons u lnil) (eforall (esort (lsucc u)) ([x] (econst "TypeWithTypeFieldPoly" (lcons u lnil)))).
+
+TypeWithTypeFieldPoly_mk/decl : {u : lvl} declared "TypeWithTypeFieldPoly.mk" (lcons u lnil)
+   (eforall (esort (lsucc u)) ([x] (econst "TypeWithTypeFieldPoly" (lcons u lnil))))
+   ctor
+   (dkind-ok/ctor (TypeWithTypeFieldPoly_mk/type-wf u) (TypeWithTypeFieldPoly_mk/positivity u)).
+
+%% recursor TypeWithTypeFieldPoly.rec
+%%% HOLE
+TypeWithTypeFieldPoly_rec/type-wf : {u_1 : lvl} {u : lvl} defeq (eforall (eforall (econst "TypeWithTypeFieldPoly" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eforall (esort (lsucc u)) ([y] (eapp x (eapp (econst "TypeWithTypeFieldPoly.mk" (lcons u lnil)) y)))) ([y] (eforall (econst "TypeWithTypeFieldPoly" (lcons u lnil)) ([z] (eapp x z))))))) (eforall (eforall (econst "TypeWithTypeFieldPoly" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eforall (esort (lsucc u)) ([y] (eapp x (eapp (econst "TypeWithTypeFieldPoly.mk" (lcons u lnil)) y)))) ([y] (eforall (econst "TypeWithTypeFieldPoly" (lcons u lnil)) ([z] (eapp x z))))))) (esort lzero).
+
+TypeWithTypeFieldPoly_rec/decl : {u_1 : lvl} {u : lvl} declared "TypeWithTypeFieldPoly.rec" (lcons u_1 (lcons u lnil))
+   (eforall (eforall (econst "TypeWithTypeFieldPoly" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eforall (esort (lsucc u)) ([y] (eapp x (eapp (econst "TypeWithTypeFieldPoly.mk" (lcons u lnil)) y)))) ([y] (eforall (econst "TypeWithTypeFieldPoly" (lcons u lnil)) ([z] (eapp x z)))))))
+   irec
+   (dkind-ok/irec (TypeWithTypeFieldPoly_rec/type-wf u_1 u)).
 
 %% def typeWithTypeFieldPoly
-typeWithTypeFieldPoly/render-type : {u : lvl} expr =
-   [u] (esort (lsucc (lsucc u))).
-typeWithTypeFieldPoly/render-value : {u : lvl} expr =
-   [u] (econst "TypeWithTypeFieldPoly" (lcons u lnil)).
+%%% HOLE
+typeWithTypeFieldPoly/type-wf : {u : lvl} defeq (esort (lsucc (lsucc u))) (esort (lsucc (lsucc u))) (esort lzero).
+
+%%% HOLE
+typeWithTypeFieldPoly/value-typed : {u : lvl} defeq (econst "TypeWithTypeFieldPoly" (lcons u lnil)) (econst "TypeWithTypeFieldPoly" (lcons u lnil)) (esort (lsucc (lsucc u))).
+
+typeWithTypeFieldPoly/decl : {u : lvl} declared "typeWithTypeFieldPoly" (lcons u lnil)
+   (esort (lsucc (lsucc u)))
+   (defn (econst "TypeWithTypeFieldPoly" (lcons u lnil)))
+   (dkind-ok/defn (typeWithTypeFieldPoly/type-wf u) (typeWithTypeFieldPoly/value-typed u)).
 
