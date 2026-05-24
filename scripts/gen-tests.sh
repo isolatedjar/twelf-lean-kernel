@@ -72,8 +72,6 @@ gen_one() {
         "$PARSE_NDJSON" < "$ndjson"
     } > "$out_json"
 
-    npx prettier --write "$out_json" > /dev/null 2>&1
-
     # Both files come from the SAME generator (generate-twelf.ts), differing
     # only in the Prover plugged in:
     #   .full.elf   — RealProver (discharges what it can; HOLEs otherwise)

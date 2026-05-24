@@ -12,6 +12,8 @@
 
 import * as readline from "node:readline";
 
+import { format, resolveConfig } from "prettier";
+
 import type {
   BinderInfo,
   Decl,
@@ -535,18 +537,11 @@ async function main(): Promise<void> {
   }
 
   const parsed: ParsedEnv = { decls };
-  // Compact Names from their recursive struct form to a flat path array
-  // tagged with `_n`, dramatically shrinking and clarifying the output.
-  // lean2lf.ts re-inflates these via `transformNamesFromJSON` on input.
-  let json = JSON.stringify(transformNamesToJSON(parsed), null, 2);
-  // Collapse each `{"_n": [...]}` onto one line.  After pretty-print,
-  // a Name spans 4+ lines (the wrapper, the `_n:` key, the array body
-  // with one element per line, and closing braces) — flatten them.
-  json = json.replace(
-    /\{\s*"_n":\s*\[(?:\s*(?:"[^"]*"|\d+)(?:\s*,\s*(?:"[^"]*"|\d+))*\s*)?\]\s*\}/g,
-    (match) => match.replace(/\s+/g, " ").replace(/\[ /, "[").replace(/ \]/, "]"),
-  );
-  process.stdout.write(json + "\n");
+  const json = JSON.stringify(transformNamesToJSON(parsed));
+  const prettierConfig = await resolveConfig(import.meta.filename);
+
+  const formatted = await format(json, { ...prettierConfig, parser: "json" });
+  process.stdout.write(formatted);
 }
 
 main().catch((err: unknown) => {
