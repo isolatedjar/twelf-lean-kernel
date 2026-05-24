@@ -3,37 +3,102 @@
 %%% *behind further arrows* inside a constructor argument.
 %%% 
 %%% The constructor argument is a function type `Nat → (I → Nat)`.
-%% inductive Nat (numParams=0, numIndices=0)
-Nat/render-type : expr =
-   (esort (lsucc lzero)).
+%% inductive Nat
+%%% HOLE
+Nat/type-wf-sort : lvl.
 
-%% ctor Nat.zero (induct=Nat, numFields=0)
-Nat_zero/render-type : expr =
-   (econst "Nat" lnil).
+%%% HOLE
+Nat/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort Nat/type-wf-sort).
 
-%% ctor Nat.succ (induct=Nat, numFields=1)
-Nat_succ/render-type : expr =
-   (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))).
+%%% HOLE
+Nat/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
-%% recursor Nat.rec (numMotives=1, numMinors=2, k=false)
-Nat_rec/render-type : {u : lvl} expr =
-   [u] (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))).
-%%   rec-rule for Nat.zero (nfields=0)
-Nat_rec/render-rule0-rhs : {u : lvl} expr =
-   [u] (elam (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Nat.zero" lnil)) ([y] (elam (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] y)))))).
-%%   rec-rule for Nat.succ (nfields=1)
-Nat_rec/render-rule1-rhs : {u : lvl} expr =
-   [u] (elam (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Nat.zero" lnil)) ([y] (elam (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (elam (econst "Nat" lnil) ([w] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "Nat.rec" (lcons u lnil)) x) y) z) w)))))))))).
+Nat/decl : declared "Nat" lnil
+   (esort (lsucc lzero))
+   indt
+   (dkind-ok/indt Nat/type-wf Nat/ends-in-sort).
 
-%% inductive reflOccLeft (numParams=0, numIndices=0)
-reflOccLeft/render-type : expr =
-   (esort (lsucc lzero)).
+%% ctor Nat.zero (of Nat)
+%%% HOLE
+Nat_zero/type-wf-sort : lvl.
 
-%% ctor reflOccLeft.mk (induct=reflOccLeft, numFields=1)
-reflOccLeft_mk/render-type : expr =
-   (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil))).
+%%% HOLE
+Nat_zero/type-wf : defeq (econst "Nat" lnil) (econst "Nat" lnil) (esort Nat_zero/type-wf-sort).
 
-%% recursor reflOccLeft.rec (numMotives=0, numMinors=0, k=false)
-reflOccLeft_rec/render-type : expr =
-   (esort lzero).
+%%% HOLE
+Nat_zero/positivity : ctor-positive "Nat" lnil (econst "Nat" lnil).
+
+Nat_zero/decl : declared "Nat.zero" lnil
+   (econst "Nat" lnil)
+   ctor
+   (dkind-ok/ctor Nat_zero/type-wf Nat_zero/positivity).
+
+%% ctor Nat.succ (of Nat)
+%%% HOLE
+Nat_succ/type-wf-sort : lvl.
+
+%%% HOLE
+Nat_succ/type-wf : defeq (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (esort Nat_succ/type-wf-sort).
+
+%%% HOLE
+Nat_succ/positivity : ctor-positive "Nat" lnil (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))).
+
+Nat_succ/decl : declared "Nat.succ" lnil
+   (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil)))
+   ctor
+   (dkind-ok/ctor Nat_succ/type-wf Nat_succ/positivity).
+
+%% recursor Nat.rec
+%%% HOLE
+Nat_rec/type-wf-sort : {u : lvl} lvl.
+
+%%% HOLE
+Nat_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (esort (Nat_rec/type-wf-sort u)).
+
+Nat_rec/decl : {u : lvl} declared "Nat.rec" (lcons u lnil)
+   (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w)))))))))
+   irec
+   (dkind-ok/irec (Nat_rec/type-wf u)).
+
+%% inductive reflOccLeft
+%%% HOLE
+reflOccLeft/type-wf-sort : lvl.
+
+%%% HOLE
+reflOccLeft/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort reflOccLeft/type-wf-sort).
+
+%%% HOLE
+reflOccLeft/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
+
+reflOccLeft/decl : declared "reflOccLeft" lnil
+   (esort (lsucc lzero))
+   indt
+   (dkind-ok/indt reflOccLeft/type-wf reflOccLeft/ends-in-sort).
+
+%% ctor reflOccLeft.mk (of reflOccLeft)
+%%% HOLE
+reflOccLeft_mk/type-wf-sort : lvl.
+
+%%% HOLE
+reflOccLeft_mk/type-wf : defeq (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil))) (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil))) (esort reflOccLeft_mk/type-wf-sort).
+
+%%% HOLE
+reflOccLeft_mk/positivity : ctor-positive "reflOccLeft" lnil (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil))).
+
+reflOccLeft_mk/decl : declared "reflOccLeft.mk" lnil
+   (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil)))
+   ctor
+   (dkind-ok/ctor reflOccLeft_mk/type-wf reflOccLeft_mk/positivity).
+
+%% recursor reflOccLeft.rec
+%%% HOLE
+reflOccLeft_rec/type-wf-sort : lvl.
+
+%%% HOLE
+reflOccLeft_rec/type-wf : defeq (esort lzero) (esort lzero) (esort reflOccLeft_rec/type-wf-sort).
+
+reflOccLeft_rec/decl : declared "reflOccLeft.rec" lnil
+   (esort lzero)
+   irec
+   (dkind-ok/irec reflOccLeft_rec/type-wf).
 

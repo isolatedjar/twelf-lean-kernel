@@ -1,4 +1,5 @@
-// shared.ts — IR types shared between parse.ts and lean2lf.ts.
+// shared.ts — defines the output of `parse.ts` and the input of render.ts
+//
 //
 // parse.ts reads lean4export's NDJSON and emits an array of these
 // resolved declarations as JSON.  lean2lf.ts reads that JSON on stdin
@@ -14,8 +15,6 @@
 import { z } from "../vendor/zod/index.js";
 
 // --- Name ---
-// Recursive, so the TypeScript type is declared explicitly and the
-// schema is wrapped in z.lazy to break the circular reference.
 
 export type Name =
   | { kind: "anon" }
@@ -200,6 +199,67 @@ export const ParsedEnvSchema = z.object({
   decls: z.array(DeclSchema),
 });
 export type ParsedEnv = z.infer<typeof ParsedEnvSchema>;
+
+// --- Prover plugin interface --------------------------------------------
+//
+// The generator (`generate-twelf.ts`, trusted) walks a ParsedEnv and, for
+// each proof obligation it encounters, asks the Prover to discharge it.
+// The Prover is UNTRUSTED: it can only influence the output through the
+// `Fmt` values it returns, which the generator pretty-prints into proof
+// terms.  An audit of shared.ts + parse.ts + generate-twelf.ts therefore
+// suffices; prover.ts need not be audited.
+//
+// A `Fmt` is a structured Twelf proof term — atoms and applications only.
+// Because it has no way to express a `.` (declaration terminator) or a raw
+// newline, a prover cannot "smuggle" the end of one declaration and the
+// start of another into a single Fmt (the generator additionally validates
+// atoms; see ppFmt in generate-twelf.ts).
+
+export type Fmt = { kind: "atom"; text: string } | { kind: "app"; fn: Fmt; args: Fmt[] };
+
+export function atom(text: string): Fmt {
+  return { kind: "atom", text };
+}
+
+export function app(fn: Fmt, ...args: Fmt[]): Fmt {
+  return args.length === 0 ? fn : { kind: "app", fn, args };
+}
+
+// A prover method returns:
+//   - an `Fmt`            → the generator emits `<const> : <type> = <Fmt>.`
+//   - `null`              → can't discharge it → generator emits a HOLE
+//                           (`<const> : <type>.`, a bare decl rejected by
+//                           %freeze)
+//   - `"fail-on-purpose"` → provably no proof → generator forces the whole
+//                           signature to fail.
+export type ProofResult = Fmt | null | "fail-on-purpose";
+
+// type-wf is special: the obligation is `defeq T T (esort U)`, and the
+// universe `U` is itself synthesized (it's the Sort that T inhabits — not
+// given in the NDJSON).  The prover returns BOTH the synthesized sort (a
+// `lvl` term) and the proof, so the generator can emit the universe as its
+// own obligation on the freezable, declared-independent `lvl` family rather
+// than relying on a placeholder or on Twelf reconstructing an implicit var.
+export type TypeWfResult = { sort: Fmt; proof: Fmt } | null | "fail-on-purpose";
+
+// One method per proof-obligation shape the generator can raise.  Each gets
+// the relevant IR context; the generator owns rendering the obligation's
+// *type*, the prover only supplies the *proof*.
+export interface Prover {
+  // defeq T T (esort U) — T is a well-formed type; U is its (synthesized) sort.
+  typeWellFormed(ctx: { type: Expr; levelParams: Name[] }): TypeWfResult;
+  // defeq V V T — value V has type T.
+  valueHasType(ctx: { value: Expr; type: Expr; levelParams: Name[] }): ProofResult;
+  // ends-in-sort T — T is a Π-chain ending in a sort (inductive type formers).
+  endsInSort(ctx: { type: Expr; levelParams: Name[] }): ProofResult;
+  // ctor-positive IndName IndLevels T — ctor type is strictly positive.
+  ctorPositive(ctx: {
+    ctorType: Expr;
+    indName: Name;
+    indLevels: Level[];
+    levelParams: Name[];
+  }): ProofResult;
+}
 
 // --- Helpers ------------------------------------------------------------
 

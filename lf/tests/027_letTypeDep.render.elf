@@ -1,16 +1,41 @@
 %%% Render-only view of: 027_letTypeDep
 %%% Type checking a dependent let
 %% axiom aDepProp
-aDepProp/render-type : expr =
-   (eforall (esort (lsucc lzero)) ([x] (esort lzero))).
+%%% HOLE
+aDepProp/type-wf-sort : lvl.
+
+%%% HOLE
+aDepProp/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (esort lzero))) (eforall (esort (lsucc lzero)) ([x] (esort lzero))) (esort aDepProp/type-wf-sort).
+
+aDepProp/decl : declared "aDepProp" lnil
+   (eforall (esort (lsucc lzero)) ([x] (esort lzero)))
+   ax
+   (dkind-ok/ax aDepProp/type-wf).
 
 %% axiom mkADepProp
-mkADepProp/render-type : expr =
-   (eforall (esort (lsucc lzero)) ([x] (eapp (econst "aDepProp" lnil) x))).
+%%% HOLE
+mkADepProp/type-wf-sort : lvl.
+
+%%% HOLE
+mkADepProp/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (eapp (econst "aDepProp" lnil) x))) (eforall (esort (lsucc lzero)) ([x] (eapp (econst "aDepProp" lnil) x))) (esort mkADepProp/type-wf-sort).
+
+mkADepProp/decl : declared "mkADepProp" lnil
+   (eforall (esort (lsucc lzero)) ([x] (eapp (econst "aDepProp" lnil) x)))
+   ax
+   (dkind-ok/ax mkADepProp/type-wf).
 
 %% def letTypeDep
-letTypeDep/render-type : expr =
-   (eapp (econst "aDepProp" lnil) (esort lzero)).
-letTypeDep/render-value : expr =
-   (eapp (elam (esort (lsucc lzero)) ([x] (eapp (econst "mkADepProp" lnil) x))) (esort lzero)).
+%%% HOLE
+letTypeDep/type-wf-sort : lvl.
+
+%%% HOLE
+letTypeDep/type-wf : defeq (eapp (econst "aDepProp" lnil) (esort lzero)) (eapp (econst "aDepProp" lnil) (esort lzero)) (esort letTypeDep/type-wf-sort).
+
+%%% HOLE
+letTypeDep/value-typed : defeq (eapp (elam (esort (lsucc lzero)) ([x] (eapp (econst "mkADepProp" lnil) x))) (esort lzero)) (eapp (elam (esort (lsucc lzero)) ([x] (eapp (econst "mkADepProp" lnil) x))) (esort lzero)) (eapp (econst "aDepProp" lnil) (esort lzero)).
+
+letTypeDep/decl : declared "letTypeDep" lnil
+   (eapp (econst "aDepProp" lnil) (esort lzero))
+   (defn (eapp (elam (esort (lsucc lzero)) ([x] (eapp (econst "mkADepProp" lnil) x))) (esort lzero)))
+   (dkind-ok/defn letTypeDep/type-wf letTypeDep/value-typed).
 

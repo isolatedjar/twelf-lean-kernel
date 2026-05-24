@@ -1,14 +1,44 @@
 %%% Render-only view of: 045_inductWrongCtorResLevel
 %%% An inductive with a constructor with wrong level parameters in result (they are swapped)
-%% inductive inductWrongCtorResLevel (numParams=2, numIndices=0)
-inductWrongCtorResLevel/render-type : {u1 : lvl} {u2 : lvl} expr =
-   [u1] [u2] (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))).
+%% inductive inductWrongCtorResLevel
+%%% HOLE
+inductWrongCtorResLevel/type-wf-sort : {u1 : lvl} {u2 : lvl} lvl.
 
-%% ctor inductWrongCtorResLevel.mk (induct=inductWrongCtorResLevel, numFields=0)
-inductWrongCtorResLevel_mk/render-type : {u1 : lvl} {u2 : lvl} expr =
-   [u1] [u2] (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResLevel" (lcons u2 (lcons u1 lnil))) x) y))))).
+%%% HOLE
+inductWrongCtorResLevel/type-wf : {u1 : lvl} {u2 : lvl} defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) (esort (inductWrongCtorResLevel/type-wf-sort u1 u2)).
 
-%% recursor inductWrongCtorResLevel.rec (numMotives=0, numMinors=0, k=false)
-inductWrongCtorResLevel_rec/render-type : expr =
-   (esort lzero).
+%%% HOLE
+inductWrongCtorResLevel/ends-in-sort : {u1 : lvl} {u2 : lvl} ends-in-sort (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))).
+
+inductWrongCtorResLevel/decl : {u1 : lvl} {u2 : lvl} declared "inductWrongCtorResLevel" (lcons u1 (lcons u2 lnil))
+   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero))))))
+   indt
+   (dkind-ok/indt (inductWrongCtorResLevel/type-wf u1 u2) (inductWrongCtorResLevel/ends-in-sort u1 u2)).
+
+%% ctor inductWrongCtorResLevel.mk (of inductWrongCtorResLevel)
+%%% HOLE
+inductWrongCtorResLevel_mk/type-wf-sort : {u1 : lvl} {u2 : lvl} lvl.
+
+%%% HOLE
+inductWrongCtorResLevel_mk/type-wf : {u1 : lvl} {u2 : lvl} defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResLevel" (lcons u2 (lcons u1 lnil))) x) y))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResLevel" (lcons u2 (lcons u1 lnil))) x) y))))) (esort (inductWrongCtorResLevel_mk/type-wf-sort u1 u2)).
+
+%%% HOLE
+inductWrongCtorResLevel_mk/positivity : {u1 : lvl} {u2 : lvl} ctor-positive "inductWrongCtorResLevel" (lcons u1 (lcons u2 lnil)) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResLevel" (lcons u2 (lcons u1 lnil))) x) y))))).
+
+inductWrongCtorResLevel_mk/decl : {u1 : lvl} {u2 : lvl} declared "inductWrongCtorResLevel.mk" (lcons u1 (lcons u2 lnil))
+   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResLevel" (lcons u2 (lcons u1 lnil))) x) y)))))
+   ctor
+   (dkind-ok/ctor (inductWrongCtorResLevel_mk/type-wf u1 u2) (inductWrongCtorResLevel_mk/positivity u1 u2)).
+
+%% recursor inductWrongCtorResLevel.rec
+%%% HOLE
+inductWrongCtorResLevel_rec/type-wf-sort : lvl.
+
+%%% HOLE
+inductWrongCtorResLevel_rec/type-wf : defeq (esort lzero) (esort lzero) (esort inductWrongCtorResLevel_rec/type-wf-sort).
+
+inductWrongCtorResLevel_rec/decl : declared "inductWrongCtorResLevel.rec" lnil
+   (esort lzero)
+   irec
+   (dkind-ok/irec inductWrongCtorResLevel_rec/type-wf).
 

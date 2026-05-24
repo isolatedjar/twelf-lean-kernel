@@ -1,11 +1,6 @@
 %%% tcb.elf — Trusted base for a Twelf-as-LF kernel checker for Lean.
 %%%
-%%% Specifically following Carneiro's "The Type Theory of Lean" (2019) and the
-%%% abstract specification in lean4lean's Theory/Typing/Basic.lean, but
-%%% unapologetically incomplete and incrementally in development following the
-%%% Lean Kernel Arena test cases (https://arena.lean-lang.org/tutorial/).
-%%%
-%%% Lean environments are checked by appending them after the sequence of
+%%% A environments are checked by appending them after the sequence of
 %%% files in sources.cfg.
 %%%
 %%% Conventions that these environments must obey:
@@ -100,6 +95,18 @@ lcons : lvl -> lvls -> lvls.
 %%% Lean names are string literals — full dotted form, e.g. "List.cons".
 
 %abbrev name = string.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Deliberate-failure marker
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Uninhabited type.  When the generator's Prover decides a mandatory
+%%% proof obligation is provably impossible, the generated file emits
+%%%   %solve - : fail-on-purpose.
+%%% which Twelf reports as "No solution to %solve found" → ABORT, in both
+%%% the with-freeze and without-freeze loads.  This is how a checker
+%%% *rejects* an environment (as opposed to declining it via %%% SKIP).
+
+fail-on-purpose : type.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Expressions
@@ -737,15 +744,3 @@ defeq/iota-quot-ind :
         (eapp H A2)
         (eapp M (eapp (eapp (eapp (econst "Quot.mk" (lcons U lnil)) A) R) A2)).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Translator-side rejection marker
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Uninhabited type used to deliberately fail Twelf type-checking
-%%% when the translator detects an input it considers invalid (e.g.
-%%% duplicate declarations).  The generated file emits
-%%%   %solve - : tcb-violation.
-%%% which Twelf reports as `No solution to %solve found` → ABORT.
-%%% Soundness note: this is the translator deciding to reject; the
-%%% TCB just provides a convenient mechanism.
-
-tcb-violation : type.

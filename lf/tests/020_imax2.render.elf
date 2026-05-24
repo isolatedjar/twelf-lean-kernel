@@ -1,8 +1,17 @@
 %%% Render-only view of: 020_imax2
 %%% Type inference for forall using imax
 %% def imax2
-imax2/render-type : expr =
-   (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc lzero))))).
-imax2/render-value : expr =
-   (elam (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] x)))).
+%%% HOLE
+imax2/type-wf-sort : lvl.
+
+%%% HOLE
+imax2/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc lzero))))) (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc lzero))))) (esort imax2/type-wf-sort).
+
+%%% HOLE
+imax2/value-typed : defeq (elam (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] x)))) (elam (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] x)))) (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc lzero))))).
+
+imax2/decl : declared "imax2" lnil
+   (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc lzero)))))
+   (defn (elam (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] x)))))
+   (dkind-ok/defn imax2/type-wf imax2/value-typed).
 

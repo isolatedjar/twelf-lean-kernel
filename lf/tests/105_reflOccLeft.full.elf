@@ -3,57 +3,57 @@
 %%% *behind further arrows* inside a constructor argument.
 %%% 
 %%% The constructor argument is a function type `Nat → (I → Nat)`.
-%% This file contains 1 hole tag(s):
-%%   - hole/ctor-positive (count: see HOLE/ctor-positive markers below)
-%% Files with any hole/<tag> use are NOT Twelf-verified.
-hole/ctor-positive : {N : name} {LS : lvls} {T : expr} ctor-positive N LS T.
-
 %% inductive Nat
-Nat/type-wf :
-   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
-   = (defeq/sort-refl-at (lsucc lzero)).
+%%% HOLE
+Nat/type-wf-sort : lvl.
 
-Nat/ends-in-sort :
-   ends-in-sort (esort (lsucc lzero))
-   = ends-in-sort/sort.
+%%% HOLE
+Nat/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort Nat/type-wf-sort).
+
+%%% HOLE
+Nat/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
 Nat/decl : declared "Nat" lnil
    (esort (lsucc lzero))
    indt
    (dkind-ok/indt Nat/type-wf Nat/ends-in-sort).
 
-%% inductive ctor Nat.zero
-Nat_zero/type-wf :
-   defeq (econst "Nat" lnil) (econst "Nat" lnil) (esort (lsucc lzero))
-   = (defeq/const Nat/decl).
+%% ctor Nat.zero (of Nat)
+%%% HOLE
+Nat_zero/type-wf-sort : lvl.
 
-Nat_zero/positivity :
-   ctor-positive "Nat" lnil (econst "Nat" lnil)
-   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
+%%% HOLE
+Nat_zero/type-wf : defeq (econst "Nat" lnil) (econst "Nat" lnil) (esort Nat_zero/type-wf-sort).
+
+%%% HOLE
+Nat_zero/positivity : ctor-positive "Nat" lnil (econst "Nat" lnil).
 
 Nat_zero/decl : declared "Nat.zero" lnil
    (econst "Nat" lnil)
    ctor
    (dkind-ok/ctor Nat_zero/type-wf Nat_zero/positivity).
 
-%% inductive ctor Nat.succ
-Nat_succ/type-wf :
-   defeq (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (esort (limax (lsucc lzero) (lsucc lzero)))
-   = (defeq/forall (defeq/const Nat/decl) ([x] [y] (defeq/const Nat/decl))).
+%% ctor Nat.succ (of Nat)
+%%% HOLE
+Nat_succ/type-wf-sort : lvl.
 
-Nat_succ/positivity :
-   ctor-positive "Nat" lnil (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil)))
-   = (ctor-positive/intro ([S] (eforall S ([x] S))) (ctor-spine/arg (strict-pos/head applies-self/refl) ([_y0] (ctor-spine/result applies-self/refl)))).
+%%% HOLE
+Nat_succ/type-wf : defeq (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (esort Nat_succ/type-wf-sort).
+
+%%% HOLE
+Nat_succ/positivity : ctor-positive "Nat" lnil (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))).
 
 Nat_succ/decl : declared "Nat.succ" lnil
    (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil)))
    ctor
    (dkind-ok/ctor Nat_succ/type-wf Nat_succ/positivity).
 
-%% inductive recursor Nat.rec
-Nat_rec/type-wf :
-   {u : lvl} defeq (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (esort (limax (limax (lsucc lzero) (lsucc u)) (limax u (limax (limax (lsucc lzero) (limax u u)) (limax (lsucc lzero) u)))))
-   = [u] (defeq/forall (defeq/forall (defeq/const Nat/decl) ([x] [y] (defeq/sort-refl-at u))) ([x] [y] (defeq/forall (defeq/app y (defeq/const Nat_zero/decl)) ([z] [w] (defeq/forall (defeq/forall (defeq/const Nat/decl) ([x1] [y1] (defeq/forall (defeq/app y y1) ([z1] [w1] (defeq/app y (defeq/app (defeq/const Nat_succ/decl) y1)))))) ([x1] [y1] (defeq/forall (defeq/const Nat/decl) ([z1] [w1] (defeq/app y w1))))))))).
+%% recursor Nat.rec
+%%% HOLE
+Nat_rec/type-wf-sort : {u : lvl} lvl.
+
+%%% HOLE
+Nat_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (esort (Nat_rec/type-wf-sort u)).
 
 Nat_rec/decl : {u : lvl} declared "Nat.rec" (lcons u lnil)
    (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w)))))))))
@@ -61,38 +61,41 @@ Nat_rec/decl : {u : lvl} declared "Nat.rec" (lcons u lnil)
    (dkind-ok/irec (Nat_rec/type-wf u)).
 
 %% inductive reflOccLeft
-reflOccLeft/type-wf :
-   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
-   = (defeq/sort-refl-at (lsucc lzero)).
+%%% HOLE
+reflOccLeft/type-wf-sort : lvl.
 
-reflOccLeft/ends-in-sort :
-   ends-in-sort (esort (lsucc lzero))
-   = ends-in-sort/sort.
+%%% HOLE
+reflOccLeft/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort reflOccLeft/type-wf-sort).
+
+%%% HOLE
+reflOccLeft/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
 reflOccLeft/decl : declared "reflOccLeft" lnil
    (esort (lsucc lzero))
    indt
    (dkind-ok/indt reflOccLeft/type-wf reflOccLeft/ends-in-sort).
 
-%% inductive ctor reflOccLeft.mk
-reflOccLeft_mk/type-wf :
-   defeq (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil))) (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil))) (esort (limax (limax (lsucc lzero) (limax (lsucc lzero) (lsucc lzero))) (lsucc lzero)))
-   = (defeq/forall (defeq/forall (defeq/const Nat/decl) ([x] [y] (defeq/forall (defeq/const reflOccLeft/decl) ([z] [w] (defeq/const Nat/decl))))) ([x] [y] (defeq/const reflOccLeft/decl))).
+%% ctor reflOccLeft.mk (of reflOccLeft)
+%%% HOLE
+reflOccLeft_mk/type-wf-sort : lvl.
 
-%% HOLE/ctor-positive: reflOccLeft.mk — strict positivity in reflOccLeft not witnessable by current encoding (likely field-position negative occurrence)
-reflOccLeft_mk/positivity :
-   ctor-positive "reflOccLeft" lnil (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil)))
-   = (hole/ctor-positive "reflOccLeft" lnil (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil)))).
+%%% HOLE
+reflOccLeft_mk/type-wf : defeq (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil))) (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil))) (esort reflOccLeft_mk/type-wf-sort).
+
+%%% HOLE
+reflOccLeft_mk/positivity : ctor-positive "reflOccLeft" lnil (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil))).
 
 reflOccLeft_mk/decl : declared "reflOccLeft.mk" lnil
    (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil)))
    ctor
    (dkind-ok/ctor reflOccLeft_mk/type-wf reflOccLeft_mk/positivity).
 
-%% inductive recursor reflOccLeft.rec
-reflOccLeft_rec/type-wf :
-   defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
-   = (defeq/sort-refl-at lzero).
+%% recursor reflOccLeft.rec
+%%% HOLE
+reflOccLeft_rec/type-wf-sort : lvl.
+
+%%% HOLE
+reflOccLeft_rec/type-wf : defeq (esort lzero) (esort lzero) (esort reflOccLeft_rec/type-wf-sort).
 
 reflOccLeft_rec/decl : declared "reflOccLeft.rec" lnil
    (esort lzero)

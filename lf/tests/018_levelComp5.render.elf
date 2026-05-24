@@ -1,8 +1,17 @@
 %%% Render-only view of: 018_levelComp5
 %%% Some level computation
 %% def levelComp5
-levelComp5/render-type : {u : lvl} expr =
-   [u] (esort (lsucc u)).
-levelComp5/render-value : {u : lvl} expr =
-   [u] (esort u).
+%%% HOLE
+levelComp5/type-wf-sort : {u : lvl} lvl.
+
+%%% HOLE
+levelComp5/type-wf : {u : lvl} defeq (esort (lsucc u)) (esort (lsucc u)) (esort (levelComp5/type-wf-sort u)).
+
+%%% HOLE
+levelComp5/value-typed : {u : lvl} defeq (esort u) (esort u) (esort (lsucc u)).
+
+levelComp5/decl : {u : lvl} declared "levelComp5" (lcons u lnil)
+   (esort (lsucc u))
+   (defn (esort u))
+   (dkind-ok/defn (levelComp5/type-wf u) (levelComp5/value-typed u)).
 

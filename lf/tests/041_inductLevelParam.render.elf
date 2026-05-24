@@ -1,6 +1,17 @@
 %%% Render-only view of: 041_inductLevelParam
 %%% An inductive with duplicate level params
-%% inductive inductLevelParam (numParams=0, numIndices=0)
-inductLevelParam/render-type : {u : lvl} {u : lvl} expr =
-   [u] [u] (esort (lsucc lzero)).
+%% inductive inductLevelParam
+%%% HOLE
+inductLevelParam/type-wf-sort : {u : lvl} {u : lvl} lvl.
+
+%%% HOLE
+inductLevelParam/type-wf : {u : lvl} {u : lvl} defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (inductLevelParam/type-wf-sort u u)).
+
+%%% HOLE
+inductLevelParam/ends-in-sort : {u : lvl} {u : lvl} ends-in-sort (esort (lsucc lzero)).
+
+inductLevelParam/decl : {u : lvl} {u : lvl} declared "inductLevelParam" (lcons u (lcons u lnil))
+   (esort (lsucc lzero))
+   indt
+   (dkind-ok/indt (inductLevelParam/type-wf u u) (inductLevelParam/ends-in-sort u u)).
 

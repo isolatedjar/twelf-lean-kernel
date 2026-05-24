@@ -1,55 +1,53 @@
 %%% Expected outcome: reject
 %%% Eta should not identify functions with different bodies.
 %% inductive Eq
-Eq/type-wf :
-   {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (esort (limax (lsucc u_1) (limax u_1 (limax u_1 (lsucc lzero)))))
-   = [u_1] (defeq/forall (defeq/sort-refl-at u_1) ([x] [y] (defeq/forall y ([z] [w] (defeq/forall y ([x1] [y1] (defeq/sort-refl-at lzero))))))).
+%%% HOLE
+Eq/type-wf-sort : {u_1 : lvl} lvl.
 
-Eq/ends-in-sort :
-   {u_1 : lvl} ends-in-sort (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero)))))))
-   = [u_1] (ends-in-sort/forall ([x] (ends-in-sort/forall ([y] (ends-in-sort/forall ([z] ends-in-sort/sort)))))).
+%%% HOLE
+Eq/type-wf : {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (esort (Eq/type-wf-sort u_1)).
+
+%%% HOLE
+Eq/ends-in-sort : {u_1 : lvl} ends-in-sort (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))).
 
 Eq/decl : {u_1 : lvl} declared "Eq" (lcons u_1 lnil)
    (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero)))))))
    indt
    (dkind-ok/indt (Eq/type-wf u_1) (Eq/ends-in-sort u_1)).
 
-%% inductive ctor Eq.refl
-Eq_refl/type-wf :
-   {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))) (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))) (esort (limax (lsucc u_1) (limax u_1 lzero)))
-   = [u_1] (defeq/forall (defeq/sort-refl-at u_1) ([x] [y] (defeq/forall y ([z] [w] (defeq/app (defeq/app (defeq/app (defeq/const (Eq/decl u_1)) y) w) w))))).
+%% ctor Eq.refl (of Eq)
+%%% HOLE
+Eq_refl/type-wf-sort : {u_1 : lvl} lvl.
 
-Eq_refl/positivity :
-   {u_1 : lvl} ctor-positive "Eq" (lcons u_1 lnil) (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y)))))
-   = [u_1] (ctor-positive/intro ([S] (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp S x) y) y)))))) (ctor-spine/arg (strict-pos/no-occur (esort u_1)) ([_y0] (ctor-spine/arg (strict-pos/no-occur _y0) ([_y1] (ctor-spine/result (applies-self/app (applies-self/app (applies-self/app applies-self/refl))))))))).
+%%% HOLE
+Eq_refl/type-wf : {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))) (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))) (esort (Eq_refl/type-wf-sort u_1)).
+
+%%% HOLE
+Eq_refl/positivity : {u_1 : lvl} ctor-positive "Eq" (lcons u_1 lnil) (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))).
 
 Eq_refl/decl : {u_1 : lvl} declared "Eq.refl" (lcons u_1 lnil)
    (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y)))))
    ctor
    (dkind-ok/ctor (Eq_refl/type-wf u_1) (Eq_refl/positivity u_1)).
 
-%% inductive recursor Eq.rec
-Eq_rec/type-wf :
-   {u : lvl} {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort (limax (lsucc u_1) (limax u_1 (limax (limax u_1 (limax lzero (lsucc u))) (limax u (limax u_1 (limax lzero u)))))))
-   = [u] [u_1] (defeq/forall (defeq/sort-refl-at u_1) ([x] [y] (defeq/forall y ([z] [w] (defeq/forall (defeq/forall y ([x1] [y1] (defeq/forall (defeq/app (defeq/app (defeq/app (defeq/const (Eq/decl u_1)) y) w) y1) ([z1] [w1] (defeq/sort-refl-at u))))) ([x1] [y1] (defeq/forall (defeq/app (defeq/app y1 w) (defeq/app (defeq/app (defeq/const (Eq_refl/decl u_1)) y) w)) ([z1] [w1] (defeq/forall y ([x2] [y2] (defeq/forall (defeq/app (defeq/app (defeq/app (defeq/const (Eq/decl u_1)) y) w) y2) ([z2] [w2] (defeq/app (defeq/app y1 y2) w2))))))))))))).
+%% recursor Eq.rec
+%%% HOLE
+Eq_rec/type-wf-sort : {u : lvl} {u_1 : lvl} lvl.
+
+%%% HOLE
+Eq_rec/type-wf : {u : lvl} {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort (Eq_rec/type-wf-sort u u_1)).
 
 Eq_rec/decl : {u : lvl} {u_1 : lvl} declared "Eq.rec" (lcons u (lcons u_1 lnil))
    (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1)))))))))))))
    irec
    (dkind-ok/irec (Eq_rec/type-wf u u_1)).
 
-%% TRANSLATOR: could not bridge inferred type to declared type
-%%   inferred type kind: forallE
-%%   declared type kind: forallE
-%%   emitting valTy.proof; Twelf will likely reject.
 %% thm funEtaBad
-funEtaBad/type-wf :
-   defeq (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (eforall (eforall x ([z] x)) ([z] (eforall (eforall x ([w] y)) ([w] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eforall x ([x1] y))) (elam x ([x1] (eapp w (eapp z x1))))) w))))))))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (eforall (eforall x ([z] x)) ([z] (eforall (eforall x ([w] y)) ([w] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eforall x ([x1] y))) (elam x ([x1] (eapp w (eapp z x1))))) w))))))))) (esort (limax (lsucc (lsucc lzero)) (limax (lsucc (lsucc lzero)) (limax (limax (lsucc lzero) (lsucc lzero)) (limax (limax (lsucc lzero) (lsucc lzero)) lzero)))))
-   = (defeq/forall (defeq/sort-refl-at (lsucc lzero)) ([x] [y] (defeq/forall (defeq/sort-refl-at (lsucc lzero)) ([z] [w] (defeq/forall (defeq/forall y ([x1] [y1] y)) ([x1] [y1] (defeq/forall (defeq/forall y ([z1] [w1] w)) ([z1] [w1] (defeq/app (defeq/app (defeq/app (defeq/const (Eq/decl (lsucc lzero))) (defeq/conv (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-succ (lvl-eq/trans lvl-eq/max-idem lvl-eq/refl))) (defeq/forall y ([x2] [y2] w)))) (defeq/lam y ([x2] [y2] (defeq/app w1 (defeq/app y1 y2))))) w1))))))))).
+%%% HOLE
+funEtaBad/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (eforall (eforall x ([z] x)) ([z] (eforall (eforall x ([w] y)) ([w] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eforall x ([x1] y))) (elam x ([x1] (eapp w (eapp z x1))))) w))))))))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (eforall (eforall x ([z] x)) ([z] (eforall (eforall x ([w] y)) ([w] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eforall x ([x1] y))) (elam x ([x1] (eapp w (eapp z x1))))) w))))))))) (esort lzero).
 
-funEtaBad/value-typed :
-   defeq (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] (elam (eforall x ([z] x)) ([z] (elam (eforall x ([w] y)) ([w] (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (eforall x ([x1] y))) w))))))))) (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] (elam (eforall x ([z] x)) ([z] (elam (eforall x ([w] y)) ([w] (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (eforall x ([x1] y))) w))))))))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (eforall (eforall x ([z] x)) ([z] (eforall (eforall x ([w] y)) ([w] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eforall x ([x1] y))) (elam x ([x1] (eapp w (eapp z x1))))) w)))))))))
-   = (defeq/lam (defeq/sort-refl-at (lsucc lzero)) ([x] [y] (defeq/lam (defeq/sort-refl-at (lsucc lzero)) ([z] [w] (defeq/lam (defeq/forall y ([x1] [y1] y)) ([x1] [y1] (defeq/lam (defeq/forall y ([z1] [w1] w)) ([z1] [w1] (defeq/app (defeq/app (defeq/const (Eq_refl/decl (lsucc lzero))) (defeq/conv (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-succ (lvl-eq/trans lvl-eq/max-idem lvl-eq/refl))) (defeq/forall y ([x2] [y2] w)))) w1))))))))).
+%%% HOLE
+funEtaBad/value-typed : defeq (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] (elam (eforall x ([z] x)) ([z] (elam (eforall x ([w] y)) ([w] (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (eforall x ([x1] y))) w))))))))) (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] (elam (eforall x ([z] x)) ([z] (elam (eforall x ([w] y)) ([w] (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (eforall x ([x1] y))) w))))))))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (eforall (eforall x ([z] x)) ([z] (eforall (eforall x ([w] y)) ([w] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eforall x ([x1] y))) (elam x ([x1] (eapp w (eapp z x1))))) w))))))))).
 
 funEtaBad/decl : declared "funEtaBad" lnil
    (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (eforall (eforall x ([z] x)) ([z] (eforall (eforall x ([w] y)) ([w] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eforall x ([x1] y))) (elam x ([x1] (eapp w (eapp z x1))))) w)))))))))

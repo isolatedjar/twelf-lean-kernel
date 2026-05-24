@@ -1,13 +1,14 @@
 %%% Expected outcome: reject
 %%% A definition and a constructor with the same name
 %% def dup_ctor_def.mk
-dup_ctor_def_mk/type-wf :
-   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
-   = (defeq/sort-refl-at (lsucc lzero)).
+%%% HOLE
+dup_ctor_def_mk/type-wf-sort : lvl.
 
-dup_ctor_def_mk/value-typed :
-   defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
-   = (defeq/sort-refl-at lzero).
+%%% HOLE
+dup_ctor_def_mk/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort dup_ctor_def_mk/type-wf-sort).
+
+%%% HOLE
+dup_ctor_def_mk/value-typed : defeq (esort lzero) (esort lzero) (esort (lsucc lzero)).
 
 dup_ctor_def_mk/decl : declared "dup_ctor_def.mk" lnil
    (esort (lsucc lzero))
@@ -15,47 +16,44 @@ dup_ctor_def_mk/decl : declared "dup_ctor_def.mk" lnil
    (dkind-ok/defn dup_ctor_def_mk/type-wf dup_ctor_def_mk/value-typed).
 
 %% inductive dup_ctor_def
-dup_ctor_def/type-wf :
-   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
-   = (defeq/sort-refl-at (lsucc lzero)).
+%%% HOLE
+dup_ctor_def/type-wf-sort : lvl.
 
-dup_ctor_def/ends-in-sort :
-   ends-in-sort (esort (lsucc lzero))
-   = ends-in-sort/sort.
+%%% HOLE
+dup_ctor_def/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort dup_ctor_def/type-wf-sort).
+
+%%% HOLE
+dup_ctor_def/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
 dup_ctor_def/decl : declared "dup_ctor_def" lnil
    (esort (lsucc lzero))
    indt
    (dkind-ok/indt dup_ctor_def/type-wf dup_ctor_def/ends-in-sort).
 
-%% inductive ctor dup_ctor_def.mk
-dup_ctor_def_mk__dup1/type-wf :
-   defeq (econst "dup_ctor_def" lnil) (econst "dup_ctor_def" lnil) (esort (lsucc lzero))
-   = (defeq/const dup_ctor_def/decl).
+%% ctor dup_ctor_def.mk (of dup_ctor_def)
+%%% HOLE
+dup_ctor_def_mk/type-wf-sort : lvl.
 
-dup_ctor_def_mk__dup1/positivity :
-   ctor-positive "dup_ctor_def" lnil (econst "dup_ctor_def" lnil)
-   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
+%%% HOLE
+dup_ctor_def_mk/type-wf : defeq (econst "dup_ctor_def" lnil) (econst "dup_ctor_def" lnil) (esort dup_ctor_def_mk/type-wf-sort).
 
-dup_ctor_def_mk__dup1/decl : declared "dup_ctor_def.mk" lnil
+%%% HOLE
+dup_ctor_def_mk/positivity : ctor-positive "dup_ctor_def" lnil (econst "dup_ctor_def" lnil).
+
+dup_ctor_def_mk/decl : declared "dup_ctor_def.mk" lnil
    (econst "dup_ctor_def" lnil)
    ctor
-   (dkind-ok/ctor dup_ctor_def_mk__dup1/type-wf dup_ctor_def_mk__dup1/positivity).
+   (dkind-ok/ctor dup_ctor_def_mk/type-wf dup_ctor_def_mk/positivity).
 
-%% (declined to emit inductive recursor dup_ctor_def.rec: app: cannot bridge arg type to function domain)
-%% This file already has a duplicate-name violation that %unique on `declared` will catch; downstream synth fallout doesn't need its own SKIP.
+%% recursor dup_ctor_def.rec
+%%% HOLE
+dup_ctor_def_rec/type-wf-sort : {u : lvl} lvl.
 
-%% stage-1 enum iota helpers: dup_ctor_def
-dup_ctor_def/as-enum : {u : lvl}
-   enum-rec-type
-      (eforall (eforall (econst "dup_ctor_def" lnil) ([x] (esort u))) ([M] (eforall (eapp M (econst "dup_ctor_def.mk" lnil)) ([x] (eforall (econst "dup_ctor_def" lnil) ([t] (eapp M t)))))))
-      "dup_ctor_def" lnil (ccons "dup_ctor_def.mk" cnil) u
-   = [u] enum-rec-type/intro ([M] [hM] (enum-rec-body/minor ([m1] [hm1] enum-rec-body/done))).
+%%% HOLE
+dup_ctor_def_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "dup_ctor_def" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ctor_def.mk" lnil)) ([y] (eforall (econst "dup_ctor_def" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "dup_ctor_def" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ctor_def.mk" lnil)) ([y] (eforall (econst "dup_ctor_def" lnil) ([z] (eapp x z))))))) (esort (dup_ctor_def_rec/type-wf-sort u)).
 
-dup_ctor_def_mk/iota : {u : lvl}
-   defeq M M (eforall (econst "dup_ctor_def" lnil) ([x] (esort u)))
-   -> defeq Mp1 Mp1 (eapp M (econst "dup_ctor_def.mk" lnil))
-   -> defeq (eapp (eapp (eapp (econst "dup_ctor_def.rec" (lcons u lnil)) M) Mp1) (econst "dup_ctor_def.mk" lnil)) Mp1 (eapp M (econst "dup_ctor_def.mk" lnil))
-   = [u] [hM] [hMp1]
-     defeq/extra (defeq/iota-enum-1 (dup_ctor_def_rec/decl u) dup_ctor_def_mk/decl (dup_ctor_def/as-enum u) hM hMp1).
+dup_ctor_def_rec/decl : {u : lvl} declared "dup_ctor_def.rec" (lcons u lnil)
+   (eforall (eforall (econst "dup_ctor_def" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ctor_def.mk" lnil)) ([y] (eforall (econst "dup_ctor_def" lnil) ([z] (eapp x z)))))))
+   irec
+   (dkind-ok/irec (dup_ctor_def_rec/type-wf u)).
 

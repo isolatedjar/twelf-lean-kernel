@@ -1,8 +1,17 @@
 %%% Render-only view of: 021_inferVar
 %%% Type inference of local variables
 %% def inferVar
-inferVar/render-type : expr =
-   (eforall (esort lzero) ([x] (eforall x ([y] x)))).
-inferVar/render-value : expr =
-   (elam (esort lzero) ([x] (elam x ([y] y)))).
+%%% HOLE
+inferVar/type-wf-sort : lvl.
+
+%%% HOLE
+inferVar/type-wf : defeq (eforall (esort lzero) ([x] (eforall x ([y] x)))) (eforall (esort lzero) ([x] (eforall x ([y] x)))) (esort inferVar/type-wf-sort).
+
+%%% HOLE
+inferVar/value-typed : defeq (elam (esort lzero) ([x] (elam x ([y] y)))) (elam (esort lzero) ([x] (elam x ([y] y)))) (eforall (esort lzero) ([x] (eforall x ([y] x)))).
+
+inferVar/decl : declared "inferVar" lnil
+   (eforall (esort lzero) ([x] (eforall x ([y] x))))
+   (defn (elam (esort lzero) ([x] (elam x ([y] y)))))
+   (dkind-ok/defn inferVar/type-wf inferVar/value-typed).
 

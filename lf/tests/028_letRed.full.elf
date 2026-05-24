@@ -1,9 +1,11 @@
 %%% Expected outcome: accept
 %%% Reducing a let
 %% axiom aProp
-aProp/type-wf :
-   defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
-   = (defeq/sort-refl-at lzero).
+%%% HOLE
+aProp/type-wf-sort : lvl.
+
+%%% HOLE
+aProp/type-wf : defeq (esort lzero) (esort lzero) (esort aProp/type-wf-sort).
 
 aProp/decl : declared "aProp" lnil
    (esort lzero)
@@ -11,13 +13,14 @@ aProp/decl : declared "aProp" lnil
    (dkind-ok/ax aProp/type-wf).
 
 %% def letRed
-letRed/type-wf :
-   defeq (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (esort (lsucc lzero))
-   = (defeq/app (defeq/lam (defeq/sort-refl-at (lsucc lzero)) ([x] [y] y)) (defeq/sort-refl-at lzero)).
+%%% HOLE
+letRed/type-wf-sort : lvl.
 
-letRed/value-typed :
-   defeq (econst "aProp" lnil) (econst "aProp" lnil) (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero))
-   = (defeq/conv (defeq/symm (defeq/beta ([x] [y] y) (defeq/sort-refl-at lzero))) (defeq/const aProp/decl)).
+%%% HOLE
+letRed/type-wf : defeq (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (esort letRed/type-wf-sort).
+
+%%% HOLE
+letRed/value-typed : defeq (econst "aProp" lnil) (econst "aProp" lnil) (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)).
 
 letRed/decl : declared "letRed" lnil
    (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero))

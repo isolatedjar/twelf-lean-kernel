@@ -3,24 +3,71 @@
 %%% further than head normal form. Recursive occurrences nested inside the head normal form are considered
 %%% negative occurrences, even if they could be reduced to disappear.
 %% def constType
-constType/render-type : expr =
-   (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))).
-constType/render-value : expr =
-   (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))).
+%%% HOLE
+constType/type-wf-sort : lvl.
+
+%%% HOLE
+constType/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort constType/type-wf-sort).
+
+%%% HOLE
+constType/value-typed : defeq (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))).
+
+constType/decl : declared "constType" lnil
+   (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero))))))
+   (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))
+   (dkind-ok/defn constType/type-wf constType/value-typed).
 
 %% axiom aType
-aType/render-type : expr =
-   (esort (lsucc lzero)).
+%%% HOLE
+aType/type-wf-sort : lvl.
 
-%% inductive indNegReducible (numParams=0, numIndices=0)
-indNegReducible/render-type : expr =
-   (esort (lsucc lzero)).
+%%% HOLE
+aType/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort aType/type-wf-sort).
 
-%% ctor indNegReducible.mk (induct=indNegReducible, numFields=1)
-indNegReducible_mk/render-type : expr =
-   (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil))).
+aType/decl : declared "aType" lnil
+   (esort (lsucc lzero))
+   ax
+   (dkind-ok/ax aType/type-wf).
 
-%% recursor indNegReducible.rec (numMotives=0, numMinors=0, k=false)
-indNegReducible_rec/render-type : expr =
-   (esort lzero).
+%% inductive indNegReducible
+%%% HOLE
+indNegReducible/type-wf-sort : lvl.
+
+%%% HOLE
+indNegReducible/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort indNegReducible/type-wf-sort).
+
+%%% HOLE
+indNegReducible/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
+
+indNegReducible/decl : declared "indNegReducible" lnil
+   (esort (lsucc lzero))
+   indt
+   (dkind-ok/indt indNegReducible/type-wf indNegReducible/ends-in-sort).
+
+%% ctor indNegReducible.mk (of indNegReducible)
+%%% HOLE
+indNegReducible_mk/type-wf-sort : lvl.
+
+%%% HOLE
+indNegReducible_mk/type-wf : defeq (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil))) (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil))) (esort indNegReducible_mk/type-wf-sort).
+
+%%% HOLE
+indNegReducible_mk/positivity : ctor-positive "indNegReducible" lnil (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil))).
+
+indNegReducible_mk/decl : declared "indNegReducible.mk" lnil
+   (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil)))
+   ctor
+   (dkind-ok/ctor indNegReducible_mk/type-wf indNegReducible_mk/positivity).
+
+%% recursor indNegReducible.rec
+%%% HOLE
+indNegReducible_rec/type-wf-sort : lvl.
+
+%%% HOLE
+indNegReducible_rec/type-wf : defeq (esort lzero) (esort lzero) (esort indNegReducible_rec/type-wf-sort).
+
+indNegReducible_rec/decl : declared "indNegReducible.rec" lnil
+   (esort lzero)
+   irec
+   (dkind-ok/irec indNegReducible_rec/type-wf).
 

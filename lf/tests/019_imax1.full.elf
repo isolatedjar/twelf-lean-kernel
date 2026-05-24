@@ -1,13 +1,14 @@
 %%% Expected outcome: accept
 %%% Type inference for forall using imax
 %% def imax1
-imax1/type-wf :
-   defeq (eforall (esort lzero) ([x] (esort lzero))) (eforall (esort lzero) ([x] (esort lzero))) (esort (limax (lsucc lzero) (lsucc lzero)))
-   = (defeq/forall (defeq/sort-refl-at lzero) ([x] [y] (defeq/sort-refl-at lzero))).
+%%% HOLE
+imax1/type-wf-sort : lvl.
 
-imax1/value-typed :
-   defeq (elam (esort lzero) ([x] (eforall (esort (lsucc lzero)) ([y] x)))) (elam (esort lzero) ([x] (eforall (esort (lsucc lzero)) ([y] x)))) (eforall (esort lzero) ([x] (esort lzero)))
-   = (defeq/conv (defeq/forall defeq/sort-refl ([x] [y] (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-zero lvl-eq/refl)))) (defeq/lam (defeq/sort-refl-at lzero) ([x] [y] (defeq/forall (defeq/sort-refl-at (lsucc lzero)) ([z] [w] y))))).
+%%% HOLE
+imax1/type-wf : defeq (eforall (esort lzero) ([x] (esort lzero))) (eforall (esort lzero) ([x] (esort lzero))) (esort imax1/type-wf-sort).
+
+%%% HOLE
+imax1/value-typed : defeq (elam (esort lzero) ([x] (eforall (esort (lsucc lzero)) ([y] x)))) (elam (esort lzero) ([x] (eforall (esort (lsucc lzero)) ([y] x)))) (eforall (esort lzero) ([x] (esort lzero))).
 
 imax1/decl : declared "imax1" lnil
    (eforall (esort lzero) ([x] (esort lzero)))

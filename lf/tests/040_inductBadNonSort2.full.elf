@@ -1,9 +1,11 @@
 %%% Expected outcome: reject
 %%% Another inductive type with a non-sort type
 %% axiom aType
-aType/type-wf :
-   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
-   = (defeq/sort-refl-at (lsucc lzero)).
+%%% HOLE
+aType/type-wf-sort : lvl.
+
+%%% HOLE
+aType/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort aType/type-wf-sort).
 
 aType/decl : declared "aType" lnil
    (esort (lsucc lzero))
@@ -11,13 +13,14 @@ aType/decl : declared "aType" lnil
    (dkind-ok/ax aType/type-wf).
 
 %% inductive inductBadNonSort2
-inductBadNonSort2/type-wf :
-   defeq (econst "aType" lnil) (econst "aType" lnil) (esort (lsucc lzero))
-   = (defeq/const aType/decl).
+%%% HOLE
+inductBadNonSort2/type-wf-sort : lvl.
 
-%% Translator can't construct ends-in-sort for "inductBadNonSort2";
-%% deferring to Twelf — %solve ABORTs if no proof exists.
-%solve inductBadNonSort2/ends-in-sort : ends-in-sort (econst "aType" lnil).
+%%% HOLE
+inductBadNonSort2/type-wf : defeq (econst "aType" lnil) (econst "aType" lnil) (esort inductBadNonSort2/type-wf-sort).
+
+%%% HOLE
+inductBadNonSort2/ends-in-sort : ends-in-sort (econst "aType" lnil).
 
 inductBadNonSort2/decl : declared "inductBadNonSort2" lnil
    (econst "aType" lnil)

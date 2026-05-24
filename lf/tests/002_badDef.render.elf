@@ -1,8 +1,17 @@
 %%% Render-only view of: 002_badDef
 %%% Mismatched types
 %% def badDef
-badDef/render-type : expr =
-   (esort lzero).
-badDef/render-value : expr =
-   (esort (lsucc lzero)).
+%%% HOLE
+badDef/type-wf-sort : lvl.
+
+%%% HOLE
+badDef/type-wf : defeq (esort lzero) (esort lzero) (esort badDef/type-wf-sort).
+
+%%% HOLE
+badDef/value-typed : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero).
+
+badDef/decl : declared "badDef" lnil
+   (esort lzero)
+   (defn (esort (lsucc lzero)))
+   (dkind-ok/defn badDef/type-wf badDef/value-typed).
 

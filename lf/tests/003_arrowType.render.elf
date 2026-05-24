@@ -1,8 +1,17 @@
 %%% Render-only view of: 003_arrowType
 %%% Arrow type (function type)
 %% def arrowType
-arrowType/render-type : expr =
-   (esort (lsucc lzero)).
-arrowType/render-value : expr =
-   (eforall (esort lzero) ([x] (esort lzero))).
+%%% HOLE
+arrowType/type-wf-sort : lvl.
+
+%%% HOLE
+arrowType/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort arrowType/type-wf-sort).
+
+%%% HOLE
+arrowType/value-typed : defeq (eforall (esort lzero) ([x] (esort lzero))) (eforall (esort lzero) ([x] (esort lzero))) (esort (lsucc lzero)).
+
+arrowType/decl : declared "arrowType" lnil
+   (esort (lsucc lzero))
+   (defn (eforall (esort lzero) ([x] (esort lzero))))
+   (dkind-ok/defn arrowType/type-wf arrowType/value-typed).
 

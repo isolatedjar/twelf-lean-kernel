@@ -1,10 +1,29 @@
 %%% Render-only view of: 040_inductBadNonSort2
 %%% Another inductive type with a non-sort type
 %% axiom aType
-aType/render-type : expr =
-   (esort (lsucc lzero)).
+%%% HOLE
+aType/type-wf-sort : lvl.
 
-%% inductive inductBadNonSort2 (numParams=0, numIndices=0)
-inductBadNonSort2/render-type : expr =
-   (econst "aType" lnil).
+%%% HOLE
+aType/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort aType/type-wf-sort).
+
+aType/decl : declared "aType" lnil
+   (esort (lsucc lzero))
+   ax
+   (dkind-ok/ax aType/type-wf).
+
+%% inductive inductBadNonSort2
+%%% HOLE
+inductBadNonSort2/type-wf-sort : lvl.
+
+%%% HOLE
+inductBadNonSort2/type-wf : defeq (econst "aType" lnil) (econst "aType" lnil) (esort inductBadNonSort2/type-wf-sort).
+
+%%% HOLE
+inductBadNonSort2/ends-in-sort : ends-in-sort (econst "aType" lnil).
+
+inductBadNonSort2/decl : declared "inductBadNonSort2" lnil
+   (econst "aType" lnil)
+   indt
+   (dkind-ok/indt inductBadNonSort2/type-wf inductBadNonSort2/ends-in-sort).
 

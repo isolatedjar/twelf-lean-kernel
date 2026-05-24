@@ -1,13 +1,14 @@
 %%% Expected outcome: accept
 %%% Type inference of local variables
 %% def inferVar
-inferVar/type-wf :
-   defeq (eforall (esort lzero) ([x] (eforall x ([y] x)))) (eforall (esort lzero) ([x] (eforall x ([y] x)))) (esort (limax (lsucc lzero) (limax lzero lzero)))
-   = (defeq/forall (defeq/sort-refl-at lzero) ([x] [y] (defeq/forall y ([z] [w] y)))).
+%%% HOLE
+inferVar/type-wf-sort : lvl.
 
-inferVar/value-typed :
-   defeq (elam (esort lzero) ([x] (elam x ([y] y)))) (elam (esort lzero) ([x] (elam x ([y] y)))) (eforall (esort lzero) ([x] (eforall x ([y] x))))
-   = (defeq/lam (defeq/sort-refl-at lzero) ([x] [y] (defeq/lam y ([z] [w] w)))).
+%%% HOLE
+inferVar/type-wf : defeq (eforall (esort lzero) ([x] (eforall x ([y] x)))) (eforall (esort lzero) ([x] (eforall x ([y] x)))) (esort inferVar/type-wf-sort).
+
+%%% HOLE
+inferVar/value-typed : defeq (elam (esort lzero) ([x] (elam x ([y] y)))) (elam (esort lzero) ([x] (elam x ([y] y)))) (eforall (esort lzero) ([x] (eforall x ([y] x)))).
 
 inferVar/decl : declared "inferVar" lnil
    (eforall (esort lzero) ([x] (eforall x ([y] x))))

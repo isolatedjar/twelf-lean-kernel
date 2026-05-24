@@ -1,44 +1,41 @@
 %%% Expected outcome: accept
 %%% A simple empty inductive type
 %% inductive Empty
-Empty/type-wf :
-   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
-   = (defeq/sort-refl-at (lsucc lzero)).
+%%% HOLE
+Empty/type-wf-sort : lvl.
 
-Empty/ends-in-sort :
-   ends-in-sort (esort (lsucc lzero))
-   = ends-in-sort/sort.
+%%% HOLE
+Empty/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort Empty/type-wf-sort).
+
+%%% HOLE
+Empty/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
 Empty/decl : declared "Empty" lnil
    (esort (lsucc lzero))
    indt
    (dkind-ok/indt Empty/type-wf Empty/ends-in-sort).
 
-%% inductive recursor Empty.rec
-Empty_rec/type-wf :
-   {u : lvl} defeq (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (esort (limax (limax (lsucc lzero) (lsucc u)) (limax (lsucc lzero) u)))
-   = [u] (defeq/forall (defeq/forall (defeq/const Empty/decl) ([x] [y] (defeq/sort-refl-at u))) ([x] [y] (defeq/forall (defeq/const Empty/decl) ([z] [w] (defeq/app y w))))).
+%% recursor Empty.rec
+%%% HOLE
+Empty_rec/type-wf-sort : {u : lvl} lvl.
+
+%%% HOLE
+Empty_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (esort (Empty_rec/type-wf-sort u)).
 
 Empty_rec/decl : {u : lvl} declared "Empty.rec" (lcons u lnil)
    (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y)))))
    irec
    (dkind-ok/irec (Empty_rec/type-wf u)).
 
-%% stage-1 enum iota helpers: Empty
-Empty/as-enum : {u : lvl}
-   enum-rec-type
-      (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([M] (eforall (econst "Empty" lnil) ([t] (eapp M t)))))
-      "Empty" lnil cnil u
-   = [u] enum-rec-type/intro ([M] [hM] enum-rec-body/done).
-
 %% def empty
-empty/type-wf :
-   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
-   = (defeq/sort-refl-at (lsucc lzero)).
+%%% HOLE
+empty/type-wf-sort : lvl.
 
-empty/value-typed :
-   defeq (econst "Empty" lnil) (econst "Empty" lnil) (esort (lsucc lzero))
-   = (defeq/const Empty/decl).
+%%% HOLE
+empty/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort empty/type-wf-sort).
+
+%%% HOLE
+empty/value-typed : defeq (econst "Empty" lnil) (econst "Empty" lnil) (esort (lsucc lzero)).
 
 empty/decl : declared "empty" lnil
    (esort (lsucc lzero))

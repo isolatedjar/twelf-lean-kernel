@@ -1,8 +1,17 @@
 %%% Render-only view of: 001_basicDef
 %%% Basic definition
 %% def basicDef
-basicDef/render-type : expr =
-   (esort (lsucc lzero)).
-basicDef/render-value : expr =
-   (esort lzero).
+%%% HOLE
+basicDef/type-wf-sort : lvl.
+
+%%% HOLE
+basicDef/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort basicDef/type-wf-sort).
+
+%%% HOLE
+basicDef/value-typed : defeq (esort lzero) (esort lzero) (esort (lsucc lzero)).
+
+basicDef/decl : declared "basicDef" lnil
+   (esort (lsucc lzero))
+   (defn (esort lzero))
+   (dkind-ok/defn basicDef/type-wf basicDef/value-typed).
 

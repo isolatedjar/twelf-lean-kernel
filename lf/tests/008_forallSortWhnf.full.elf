@@ -1,18 +1,14 @@
 %%% Expected outcome: accept
 %%% The binding domain of a forall may need to be reduce before it is a sort
-%% This file contains 1 hole tag(s):
-%%   - hole/defeq (count: see HOLE/defeq markers below)
-%% Files with any hole/<tag> use are NOT Twelf-verified.
-hole/defeq : {E1 : expr} {E2 : expr} {T : expr} defeq E1 E2 T.
-
 %% def id
-id/type-wf :
-   {u : lvl} defeq (eforall (esort u) ([x] (eforall x ([y] x)))) (eforall (esort u) ([x] (eforall x ([y] x)))) (esort (limax (lsucc u) (limax u u)))
-   = [u] (defeq/forall (defeq/sort-refl-at u) ([x] [y] (defeq/forall y ([z] [w] y)))).
+%%% HOLE
+id/type-wf-sort : {u : lvl} lvl.
 
-id/value-typed :
-   {u : lvl} defeq (elam (esort u) ([x] (elam x ([y] y)))) (elam (esort u) ([x] (elam x ([y] y)))) (eforall (esort u) ([x] (eforall x ([y] x))))
-   = [u] (defeq/lam (defeq/sort-refl-at u) ([x] [y] (defeq/lam y ([z] [w] w)))).
+%%% HOLE
+id/type-wf : {u : lvl} defeq (eforall (esort u) ([x] (eforall x ([y] x)))) (eforall (esort u) ([x] (eforall x ([y] x)))) (esort (id/type-wf-sort u)).
+
+%%% HOLE
+id/value-typed : {u : lvl} defeq (elam (esort u) ([x] (elam x ([y] y)))) (elam (esort u) ([x] (elam x ([y] y)))) (eforall (esort u) ([x] (eforall x ([y] x)))).
 
 id/decl : {u : lvl} declared "id" (lcons u lnil)
    (eforall (esort u) ([x] (eforall x ([y] x))))
@@ -20,14 +16,14 @@ id/decl : {u : lvl} declared "id" (lcons u lnil)
    (dkind-ok/defn (id/type-wf u) (id/value-typed u)).
 
 %% def forallSortWhnf
-forallSortWhnf/type-wf :
-   defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
-   = (defeq/sort-refl-at lzero).
+%%% HOLE
+forallSortWhnf/type-wf-sort : lvl.
 
-%% HOLE/defeq: value-typed for forallSortWhnf — forallE: binder type does not have a sort type (got app)
-forallSortWhnf/value-typed :
-   defeq (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] x)))) (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] x)))) (esort lzero)
-   = (hole/defeq (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] x)))) (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] x)))) (esort lzero)).
+%%% HOLE
+forallSortWhnf/type-wf : defeq (esort lzero) (esort lzero) (esort forallSortWhnf/type-wf-sort).
+
+%%% HOLE
+forallSortWhnf/value-typed : defeq (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] x)))) (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] x)))) (esort lzero).
 
 forallSortWhnf/decl : declared "forallSortWhnf" lnil
    (esort lzero)

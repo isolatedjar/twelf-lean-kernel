@@ -1,29 +1,68 @@
 %%% Render-only view of: 074_And.right
 %%% Type-checking simple projection functions
-%% inductive And (numParams=2, numIndices=0)
-And/render-type : expr =
-   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))).
+%% inductive And
+%%% HOLE
+And/type-wf-sort : lvl.
 
-%% ctor And.intro (induct=And, numFields=2)
-And_intro/render-type : expr =
-   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))).
+%%% HOLE
+And/type-wf : defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (esort And/type-wf-sort).
 
-%% recursor And.rec (numMotives=1, numMinors=1, k=false)
-And_rec/render-type : {u : lvl} expr =
-   [u] (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] (esort u))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "And.intro" lnil) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "And" lnil) x) y) ([x1] (eapp z x1))))))))))).
-%%   rec-rule for And.intro (nfields=2)
-And_rec/render-rule0-rhs : {u : lvl} expr =
-   [u] (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] (esort u))) ([z] (elam (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "And.intro" lnil) x) y) w) x1)))))) ([w] (elam x ([x1] (elam y ([y1] (eapp (eapp w x1) y1))))))))))))).
+%%% HOLE
+And/ends-in-sort : ends-in-sort (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))).
+
+And/decl : declared "And" lnil
+   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero)))))
+   indt
+   (dkind-ok/indt And/type-wf And/ends-in-sort).
+
+%% ctor And.intro (of And)
+%%% HOLE
+And_intro/type-wf-sort : lvl.
+
+%%% HOLE
+And_intro/type-wf : defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) (esort And_intro/type-wf-sort).
+
+%%% HOLE
+And_intro/positivity : ctor-positive "And" lnil (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))).
+
+And_intro/decl : declared "And.intro" lnil
+   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y)))))))))
+   ctor
+   (dkind-ok/ctor And_intro/type-wf And_intro/positivity).
+
+%% recursor And.rec
+%%% HOLE
+And_rec/type-wf-sort : {u : lvl} lvl.
+
+%%% HOLE
+And_rec/type-wf : {u : lvl} defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] (esort u))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "And.intro" lnil) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "And" lnil) x) y) ([x1] (eapp z x1))))))))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] (esort u))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "And.intro" lnil) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "And" lnil) x) y) ([x1] (eapp z x1))))))))))) (esort (And_rec/type-wf-sort u)).
+
+And_rec/decl : {u : lvl} declared "And.rec" (lcons u lnil)
+   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] (esort u))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "And.intro" lnil) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "And" lnil) x) y) ([x1] (eapp z x1)))))))))))
+   irec
+   (dkind-ok/irec (And_rec/type-wf u)).
 
 %% thm And.left
-And_left/render-type : expr =
-   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] x)))))).
-And_left/render-value : expr =
-   (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 0 z))))))).
+%%% HOLE
+And_left/type-wf : defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] x)))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] x)))))) (esort lzero).
+
+%%% HOLE
+And_left/value-typed : defeq (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 0 z))))))) (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 0 z))))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] x)))))).
+
+And_left/decl : declared "And.left" lnil
+   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] x))))))
+   (thm (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 0 z))))))))
+   (dkind-ok/thm And_left/type-wf And_left/value-typed).
 
 %% thm And.right
-And_right/render-type : expr =
-   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] y)))))).
-And_right/render-value : expr =
-   (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 1 z))))))).
+%%% HOLE
+And_right/type-wf : defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] y)))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] y)))))) (esort lzero).
+
+%%% HOLE
+And_right/value-typed : defeq (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 1 z))))))) (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 1 z))))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] y)))))).
+
+And_right/decl : declared "And.right" lnil
+   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] y))))))
+   (thm (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 1 z))))))))
+   (dkind-ok/thm And_right/type-wf And_right/value-typed).
 

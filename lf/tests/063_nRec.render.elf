@@ -1,30 +1,74 @@
 %%% Render-only view of: 063_nRec
 %%% Asserting the type of the generated recursor
-%% inductive N (numParams=0, numIndices=0)
-N/render-type : expr =
-   (esort (lsucc lzero)).
+%% inductive N
+%%% HOLE
+N/type-wf-sort : lvl.
 
-%% ctor N.zero (induct=N, numFields=0)
-N_zero/render-type : expr =
-   (econst "N" lnil).
+%%% HOLE
+N/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort N/type-wf-sort).
 
-%% ctor N.succ (induct=N, numFields=1)
-N_succ/render-type : expr =
-   (eforall (econst "N" lnil) ([x] (econst "N" lnil))).
+%%% HOLE
+N/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
-%% recursor N.rec (numMotives=1, numMinors=2, k=false)
-N_rec/render-type : {u : lvl} expr =
-   [u] (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))).
-%%   rec-rule for N.zero (nfields=0)
-N_rec/render-rule0-rhs : {u : lvl} expr =
-   [u] (elam (eforall (econst "N" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "N.zero" lnil)) ([y] (elam (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] y)))))).
-%%   rec-rule for N.succ (nfields=1)
-N_rec/render-rule1-rhs : {u : lvl} expr =
-   [u] (elam (eforall (econst "N" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "N.zero" lnil)) ([y] (elam (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (elam (econst "N" lnil) ([w] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "N.rec" (lcons u lnil)) x) y) z) w)))))))))).
+N/decl : declared "N" lnil
+   (esort (lsucc lzero))
+   indt
+   (dkind-ok/indt N/type-wf N/ends-in-sort).
+
+%% ctor N.zero (of N)
+%%% HOLE
+N_zero/type-wf-sort : lvl.
+
+%%% HOLE
+N_zero/type-wf : defeq (econst "N" lnil) (econst "N" lnil) (esort N_zero/type-wf-sort).
+
+%%% HOLE
+N_zero/positivity : ctor-positive "N" lnil (econst "N" lnil).
+
+N_zero/decl : declared "N.zero" lnil
+   (econst "N" lnil)
+   ctor
+   (dkind-ok/ctor N_zero/type-wf N_zero/positivity).
+
+%% ctor N.succ (of N)
+%%% HOLE
+N_succ/type-wf-sort : lvl.
+
+%%% HOLE
+N_succ/type-wf : defeq (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (esort N_succ/type-wf-sort).
+
+%%% HOLE
+N_succ/positivity : ctor-positive "N" lnil (eforall (econst "N" lnil) ([x] (econst "N" lnil))).
+
+N_succ/decl : declared "N.succ" lnil
+   (eforall (econst "N" lnil) ([x] (econst "N" lnil)))
+   ctor
+   (dkind-ok/ctor N_succ/type-wf N_succ/positivity).
+
+%% recursor N.rec
+%%% HOLE
+N_rec/type-wf-sort : {u : lvl} lvl.
+
+%%% HOLE
+N_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) (esort (N_rec/type-wf-sort u)).
+
+N_rec/decl : {u : lvl} declared "N.rec" (lcons u lnil)
+   (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w)))))))))
+   irec
+   (dkind-ok/irec (N_rec/type-wf u)).
 
 %% def nRec
-nRec/render-type : {u : lvl} expr =
-   [u] (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))).
-nRec/render-value : {u : lvl} expr =
-   [u] (econst "N.rec" (lcons u lnil)).
+%%% HOLE
+nRec/type-wf-sort : {u : lvl} lvl.
+
+%%% HOLE
+nRec/type-wf : {u : lvl} defeq (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) (esort (nRec/type-wf-sort u)).
+
+%%% HOLE
+nRec/value-typed : {u : lvl} defeq (econst "N.rec" (lcons u lnil)) (econst "N.rec" (lcons u lnil)) (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))).
+
+nRec/decl : {u : lvl} declared "nRec" (lcons u lnil)
+   (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w)))))))))
+   (defn (econst "N.rec" (lcons u lnil)))
+   (dkind-ok/defn (nRec/type-wf u) (nRec/value-typed u)).
 

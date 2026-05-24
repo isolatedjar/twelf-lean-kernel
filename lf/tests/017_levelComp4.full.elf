@@ -1,13 +1,14 @@
 %%% Expected outcome: accept
 %%% Some level computation
 %% def levelComp4
-%abbrev levelComp4/type-wf :
-   {u : lvl} defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
-   = [u] (defeq/sort-refl-at (lsucc lzero)).
+%%% HOLE
+levelComp4/type-wf-sort : {u : lvl} lvl.
 
-%abbrev levelComp4/value-typed :
-   {u : lvl} defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
-   = [u] (defeq/sort-refl-at lzero).
+%%% HOLE
+levelComp4/type-wf : {u : lvl} defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (levelComp4/type-wf-sort u)).
+
+%%% HOLE
+levelComp4/value-typed : {u : lvl} defeq (esort lzero) (esort lzero) (esort (lsucc lzero)).
 
 levelComp4/decl : {u : lvl} declared "levelComp4" (lcons u lnil)
    (esort (lsucc lzero))

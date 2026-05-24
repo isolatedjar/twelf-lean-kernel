@@ -1,9 +1,11 @@
 %%% Expected outcome: accept
 %%% Type checking a dependent let
 %% axiom aDepProp
-aDepProp/type-wf :
-   defeq (eforall (esort (lsucc lzero)) ([x] (esort lzero))) (eforall (esort (lsucc lzero)) ([x] (esort lzero))) (esort (limax (lsucc (lsucc lzero)) (lsucc lzero)))
-   = (defeq/forall (defeq/sort-refl-at (lsucc lzero)) ([x] [y] (defeq/sort-refl-at lzero))).
+%%% HOLE
+aDepProp/type-wf-sort : lvl.
+
+%%% HOLE
+aDepProp/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (esort lzero))) (eforall (esort (lsucc lzero)) ([x] (esort lzero))) (esort aDepProp/type-wf-sort).
 
 aDepProp/decl : declared "aDepProp" lnil
    (eforall (esort (lsucc lzero)) ([x] (esort lzero)))
@@ -11,9 +13,11 @@ aDepProp/decl : declared "aDepProp" lnil
    (dkind-ok/ax aDepProp/type-wf).
 
 %% axiom mkADepProp
-mkADepProp/type-wf :
-   defeq (eforall (esort (lsucc lzero)) ([x] (eapp (econst "aDepProp" lnil) x))) (eforall (esort (lsucc lzero)) ([x] (eapp (econst "aDepProp" lnil) x))) (esort (limax (lsucc (lsucc lzero)) lzero))
-   = (defeq/forall (defeq/sort-refl-at (lsucc lzero)) ([x] [y] (defeq/app (defeq/const aDepProp/decl) y))).
+%%% HOLE
+mkADepProp/type-wf-sort : lvl.
+
+%%% HOLE
+mkADepProp/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (eapp (econst "aDepProp" lnil) x))) (eforall (esort (lsucc lzero)) ([x] (eapp (econst "aDepProp" lnil) x))) (esort mkADepProp/type-wf-sort).
 
 mkADepProp/decl : declared "mkADepProp" lnil
    (eforall (esort (lsucc lzero)) ([x] (eapp (econst "aDepProp" lnil) x)))
@@ -21,13 +25,14 @@ mkADepProp/decl : declared "mkADepProp" lnil
    (dkind-ok/ax mkADepProp/type-wf).
 
 %% def letTypeDep
-letTypeDep/type-wf :
-   defeq (eapp (econst "aDepProp" lnil) (esort lzero)) (eapp (econst "aDepProp" lnil) (esort lzero)) (esort lzero)
-   = (defeq/app (defeq/const aDepProp/decl) (defeq/sort-refl-at lzero)).
+%%% HOLE
+letTypeDep/type-wf-sort : lvl.
 
-letTypeDep/value-typed :
-   defeq (eapp (elam (esort (lsucc lzero)) ([x] (eapp (econst "mkADepProp" lnil) x))) (esort lzero)) (eapp (elam (esort (lsucc lzero)) ([x] (eapp (econst "mkADepProp" lnil) x))) (esort lzero)) (eapp (econst "aDepProp" lnil) (esort lzero))
-   = (defeq/app (defeq/lam (defeq/sort-refl-at (lsucc lzero)) ([x] [y] (defeq/app (defeq/const mkADepProp/decl) y))) (defeq/sort-refl-at lzero)).
+%%% HOLE
+letTypeDep/type-wf : defeq (eapp (econst "aDepProp" lnil) (esort lzero)) (eapp (econst "aDepProp" lnil) (esort lzero)) (esort letTypeDep/type-wf-sort).
+
+%%% HOLE
+letTypeDep/value-typed : defeq (eapp (elam (esort (lsucc lzero)) ([x] (eapp (econst "mkADepProp" lnil) x))) (esort lzero)) (eapp (elam (esort (lsucc lzero)) ([x] (eapp (econst "mkADepProp" lnil) x))) (esort lzero)) (eapp (econst "aDepProp" lnil) (esort lzero)).
 
 letTypeDep/decl : declared "letTypeDep" lnil
    (eapp (econst "aDepProp" lnil) (esort lzero))

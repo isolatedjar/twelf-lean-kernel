@@ -1,23 +1,59 @@
 %%% Render-only view of: 035_pUnitType
 %%% Level-polymorphic unit type
-%% inductive PUnit (numParams=0, numIndices=0)
-PUnit/render-type : {u : lvl} expr =
-   [u] (esort u).
+%% inductive PUnit
+%%% HOLE
+PUnit/type-wf-sort : {u : lvl} lvl.
 
-%% ctor PUnit.unit (induct=PUnit, numFields=0)
-PUnit_unit/render-type : {u : lvl} expr =
-   [u] (econst "PUnit" (lcons u lnil)).
+%%% HOLE
+PUnit/type-wf : {u : lvl} defeq (esort u) (esort u) (esort (PUnit/type-wf-sort u)).
 
-%% recursor PUnit.rec (numMotives=1, numMinors=1, k=false)
-PUnit_rec/render-type : {u_1 : lvl} {u : lvl} expr =
-   [u_1] [u] (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))).
-%%   rec-rule for PUnit.unit (nfields=0)
-PUnit_rec/render-rule0-rhs : {u_1 : lvl} {u : lvl} expr =
-   [u_1] [u] (elam (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort u_1))) ([x] (elam (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] y)))).
+%%% HOLE
+PUnit/ends-in-sort : {u : lvl} ends-in-sort (esort u).
+
+PUnit/decl : {u : lvl} declared "PUnit" (lcons u lnil)
+   (esort u)
+   indt
+   (dkind-ok/indt (PUnit/type-wf u) (PUnit/ends-in-sort u)).
+
+%% ctor PUnit.unit (of PUnit)
+%%% HOLE
+PUnit_unit/type-wf-sort : {u : lvl} lvl.
+
+%%% HOLE
+PUnit_unit/type-wf : {u : lvl} defeq (econst "PUnit" (lcons u lnil)) (econst "PUnit" (lcons u lnil)) (esort (PUnit_unit/type-wf-sort u)).
+
+%%% HOLE
+PUnit_unit/positivity : {u : lvl} ctor-positive "PUnit" (lcons u lnil) (econst "PUnit" (lcons u lnil)).
+
+PUnit_unit/decl : {u : lvl} declared "PUnit.unit" (lcons u lnil)
+   (econst "PUnit" (lcons u lnil))
+   ctor
+   (dkind-ok/ctor (PUnit_unit/type-wf u) (PUnit_unit/positivity u)).
+
+%% recursor PUnit.rec
+%%% HOLE
+PUnit_rec/type-wf-sort : {u_1 : lvl} {u : lvl} lvl.
+
+%%% HOLE
+PUnit_rec/type-wf : {u_1 : lvl} {u : lvl} defeq (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))) (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))) (esort (PUnit_rec/type-wf-sort u_1 u)).
+
+PUnit_rec/decl : {u_1 : lvl} {u : lvl} declared "PUnit.rec" (lcons u_1 (lcons u lnil))
+   (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z)))))))
+   irec
+   (dkind-ok/irec (PUnit_rec/type-wf u_1 u)).
 
 %% def pUnitType
-pUnitType/render-type : expr =
-   (esort (lsucc lzero)).
-pUnitType/render-value : expr =
-   (econst "PUnit" (lcons (lsucc lzero) lnil)).
+%%% HOLE
+pUnitType/type-wf-sort : lvl.
+
+%%% HOLE
+pUnitType/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort pUnitType/type-wf-sort).
+
+%%% HOLE
+pUnitType/value-typed : defeq (econst "PUnit" (lcons (lsucc lzero) lnil)) (econst "PUnit" (lcons (lsucc lzero) lnil)) (esort (lsucc lzero)).
+
+pUnitType/decl : declared "pUnitType" lnil
+   (esort (lsucc lzero))
+   (defn (econst "PUnit" (lcons (lsucc lzero) lnil)))
+   (dkind-ok/defn pUnitType/type-wf pUnitType/value-typed).
 

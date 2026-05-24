@@ -1,77 +1,59 @@
 %%% Expected outcome: reject
 %%% An inductive with two constructors with the same name
 %% inductive DupConCon
-DupConCon/type-wf :
-   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
-   = (defeq/sort-refl-at (lsucc lzero)).
+%%% HOLE
+DupConCon/type-wf-sort : lvl.
 
-DupConCon/ends-in-sort :
-   ends-in-sort (esort (lsucc lzero))
-   = ends-in-sort/sort.
+%%% HOLE
+DupConCon/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort DupConCon/type-wf-sort).
+
+%%% HOLE
+DupConCon/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
 DupConCon/decl : declared "DupConCon" lnil
    (esort (lsucc lzero))
    indt
    (dkind-ok/indt DupConCon/type-wf DupConCon/ends-in-sort).
 
-%% inductive ctor dup_ind_con_con.mk
-dup_ind_con_con_mk/type-wf :
-   defeq (econst "DupConCon" lnil) (econst "DupConCon" lnil) (esort (lsucc lzero))
-   = (defeq/const DupConCon/decl).
+%% ctor dup_ind_con_con.mk (of DupConCon)
+%%% HOLE
+dup_ind_con_con_mk/type-wf-sort : lvl.
 
-dup_ind_con_con_mk/positivity :
-   ctor-positive "DupConCon" lnil (econst "DupConCon" lnil)
-   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
+%%% HOLE
+dup_ind_con_con_mk/type-wf : defeq (econst "DupConCon" lnil) (econst "DupConCon" lnil) (esort dup_ind_con_con_mk/type-wf-sort).
+
+%%% HOLE
+dup_ind_con_con_mk/positivity : ctor-positive "DupConCon" lnil (econst "DupConCon" lnil).
 
 dup_ind_con_con_mk/decl : declared "dup_ind_con_con.mk" lnil
    (econst "DupConCon" lnil)
    ctor
    (dkind-ok/ctor dup_ind_con_con_mk/type-wf dup_ind_con_con_mk/positivity).
 
-%% inductive ctor dup_ind_con_con.mk
-dup_ind_con_con_mk__dup1/type-wf :
-   defeq (econst "DupConCon" lnil) (econst "DupConCon" lnil) (esort (lsucc lzero))
-   = (defeq/const DupConCon/decl).
+%% ctor dup_ind_con_con.mk (of DupConCon)
+%%% HOLE
+dup_ind_con_con_mk/type-wf-sort : lvl.
 
-dup_ind_con_con_mk__dup1/positivity :
-   ctor-positive "DupConCon" lnil (econst "DupConCon" lnil)
-   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
+%%% HOLE
+dup_ind_con_con_mk/type-wf : defeq (econst "DupConCon" lnil) (econst "DupConCon" lnil) (esort dup_ind_con_con_mk/type-wf-sort).
 
-dup_ind_con_con_mk__dup1/decl : declared "dup_ind_con_con.mk" lnil
+%%% HOLE
+dup_ind_con_con_mk/positivity : ctor-positive "DupConCon" lnil (econst "DupConCon" lnil).
+
+dup_ind_con_con_mk/decl : declared "dup_ind_con_con.mk" lnil
    (econst "DupConCon" lnil)
    ctor
-   (dkind-ok/ctor dup_ind_con_con_mk__dup1/type-wf dup_ind_con_con_mk__dup1/positivity).
+   (dkind-ok/ctor dup_ind_con_con_mk/type-wf dup_ind_con_con_mk/positivity).
 
-%% inductive recursor DupConCon.rec
-DupConCon_rec/type-wf :
-   {u : lvl} defeq (eforall (eforall (econst "DupConCon" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] (eforall (econst "DupConCon" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "DupConCon" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] (eforall (econst "DupConCon" lnil) ([w] (eapp x w))))))))) (esort (limax (limax (lsucc lzero) (lsucc u)) (limax u (limax u (limax (lsucc lzero) u)))))
-   = [u] (defeq/forall (defeq/forall (defeq/const DupConCon/decl) ([x] [y] (defeq/sort-refl-at u))) ([x] [y] (defeq/forall (defeq/app y (defeq/const dup_ind_con_con_mk/decl)) ([z] [w] (defeq/forall (defeq/app y (defeq/const dup_ind_con_con_mk/decl)) ([x1] [y1] (defeq/forall (defeq/const DupConCon/decl) ([z1] [w1] (defeq/app y w1))))))))).
+%% recursor DupConCon.rec
+%%% HOLE
+DupConCon_rec/type-wf-sort : {u : lvl} lvl.
+
+%%% HOLE
+DupConCon_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "DupConCon" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] (eforall (econst "DupConCon" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "DupConCon" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] (eforall (econst "DupConCon" lnil) ([w] (eapp x w))))))))) (esort (DupConCon_rec/type-wf-sort u)).
 
 DupConCon_rec/decl : {u : lvl} declared "DupConCon.rec" (lcons u lnil)
    (eforall (eforall (econst "DupConCon" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] (eforall (econst "DupConCon" lnil) ([w] (eapp x w)))))))))
    irec
    (dkind-ok/irec (DupConCon_rec/type-wf u)).
-
-%% stage-1 enum iota helpers: DupConCon
-DupConCon/as-enum : {u : lvl}
-   enum-rec-type
-      (eforall (eforall (econst "DupConCon" lnil) ([x] (esort u))) ([M] (eforall (eapp M (econst "dup_ind_con_con.mk" lnil)) ([x] (eforall (eapp M (econst "dup_ind_con_con.mk" lnil)) ([x] (eforall (econst "DupConCon" lnil) ([t] (eapp M t)))))))))
-      "DupConCon" lnil (ccons "dup_ind_con_con.mk" (ccons "dup_ind_con_con.mk" cnil)) u
-   = [u] enum-rec-type/intro ([M] [hM] (enum-rec-body/minor ([m1] [hm1] (enum-rec-body/minor ([m2] [hm2] enum-rec-body/done))))).
-
-dup_ind_con_con_mk/iota : {u : lvl}
-   defeq M M (eforall (econst "DupConCon" lnil) ([x] (esort u)))
-   -> defeq Mp1 Mp1 (eapp M (econst "dup_ind_con_con.mk" lnil))
-   -> defeq Mp2 Mp2 (eapp M (econst "dup_ind_con_con.mk" lnil))
-   -> defeq (eapp (eapp (eapp (eapp (econst "DupConCon.rec" (lcons u lnil)) M) Mp1) Mp2) (econst "dup_ind_con_con.mk" lnil)) Mp1 (eapp M (econst "dup_ind_con_con.mk" lnil))
-   = [u] [hM] [hMp1] [hMp2]
-     defeq/extra (defeq/iota-enum-2-first (DupConCon_rec/decl u) dup_ind_con_con_mk/decl dup_ind_con_con_mk/decl (DupConCon/as-enum u) hM hMp1 hMp2).
-
-dup_ind_con_con_mk/iota : {u : lvl}
-   defeq M M (eforall (econst "DupConCon" lnil) ([x] (esort u)))
-   -> defeq Mp1 Mp1 (eapp M (econst "dup_ind_con_con.mk" lnil))
-   -> defeq Mp2 Mp2 (eapp M (econst "dup_ind_con_con.mk" lnil))
-   -> defeq (eapp (eapp (eapp (eapp (econst "DupConCon.rec" (lcons u lnil)) M) Mp1) Mp2) (econst "dup_ind_con_con.mk" lnil)) Mp2 (eapp M (econst "dup_ind_con_con.mk" lnil))
-   = [u] [hM] [hMp1] [hMp2]
-     defeq/extra (defeq/iota-enum-2-second (DupConCon_rec/decl u) dup_ind_con_con_mk/decl dup_ind_con_con_mk/decl (DupConCon/as-enum u) hM hMp1 hMp2).
 

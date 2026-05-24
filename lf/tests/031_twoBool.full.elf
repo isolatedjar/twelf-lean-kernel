@@ -1,112 +1,98 @@
 %%% Expected outcome: accept
 %%% A simple product type
 %% inductive Bool
-Bool/type-wf :
-   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
-   = (defeq/sort-refl-at (lsucc lzero)).
+%%% HOLE
+Bool/type-wf-sort : lvl.
 
-Bool/ends-in-sort :
-   ends-in-sort (esort (lsucc lzero))
-   = ends-in-sort/sort.
+%%% HOLE
+Bool/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort Bool/type-wf-sort).
+
+%%% HOLE
+Bool/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
 Bool/decl : declared "Bool" lnil
    (esort (lsucc lzero))
    indt
    (dkind-ok/indt Bool/type-wf Bool/ends-in-sort).
 
-%% inductive ctor Bool.false
-Bool_false/type-wf :
-   defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort (lsucc lzero))
-   = (defeq/const Bool/decl).
+%% ctor Bool.false (of Bool)
+%%% HOLE
+Bool_false/type-wf-sort : lvl.
 
-Bool_false/positivity :
-   ctor-positive "Bool" lnil (econst "Bool" lnil)
-   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
+%%% HOLE
+Bool_false/type-wf : defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort Bool_false/type-wf-sort).
+
+%%% HOLE
+Bool_false/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil).
 
 Bool_false/decl : declared "Bool.false" lnil
    (econst "Bool" lnil)
    ctor
    (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity).
 
-%% inductive ctor Bool.true
-Bool_true/type-wf :
-   defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort (lsucc lzero))
-   = (defeq/const Bool/decl).
+%% ctor Bool.true (of Bool)
+%%% HOLE
+Bool_true/type-wf-sort : lvl.
 
-Bool_true/positivity :
-   ctor-positive "Bool" lnil (econst "Bool" lnil)
-   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
+%%% HOLE
+Bool_true/type-wf : defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort Bool_true/type-wf-sort).
+
+%%% HOLE
+Bool_true/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil).
 
 Bool_true/decl : declared "Bool.true" lnil
    (econst "Bool" lnil)
    ctor
    (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity).
 
-%% inductive recursor Bool.rec
-Bool_rec/type-wf :
-   {u : lvl} defeq (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort (limax (limax (lsucc lzero) (lsucc u)) (limax u (limax u (limax (lsucc lzero) u)))))
-   = [u] (defeq/forall (defeq/forall (defeq/const Bool/decl) ([x] [y] (defeq/sort-refl-at u))) ([x] [y] (defeq/forall (defeq/app y (defeq/const Bool_false/decl)) ([z] [w] (defeq/forall (defeq/app y (defeq/const Bool_true/decl)) ([x1] [y1] (defeq/forall (defeq/const Bool/decl) ([z1] [w1] (defeq/app y w1))))))))).
+%% recursor Bool.rec
+%%% HOLE
+Bool_rec/type-wf-sort : {u : lvl} lvl.
+
+%%% HOLE
+Bool_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort (Bool_rec/type-wf-sort u)).
 
 Bool_rec/decl : {u : lvl} declared "Bool.rec" (lcons u lnil)
    (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w)))))))))
    irec
    (dkind-ok/irec (Bool_rec/type-wf u)).
 
-%% stage-1 enum iota helpers: Bool
-Bool/as-enum : {u : lvl}
-   enum-rec-type
-      (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([M] (eforall (eapp M (econst "Bool.false" lnil)) ([x] (eforall (eapp M (econst "Bool.true" lnil)) ([x] (eforall (econst "Bool" lnil) ([t] (eapp M t)))))))))
-      "Bool" lnil (ccons "Bool.false" (ccons "Bool.true" cnil)) u
-   = [u] enum-rec-type/intro ([M] [hM] (enum-rec-body/minor ([m1] [hm1] (enum-rec-body/minor ([m2] [hm2] enum-rec-body/done))))).
-
-Bool_false/iota : {u : lvl}
-   defeq M M (eforall (econst "Bool" lnil) ([x] (esort u)))
-   -> defeq Mp1 Mp1 (eapp M (econst "Bool.false" lnil))
-   -> defeq Mp2 Mp2 (eapp M (econst "Bool.true" lnil))
-   -> defeq (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons u lnil)) M) Mp1) Mp2) (econst "Bool.false" lnil)) Mp1 (eapp M (econst "Bool.false" lnil))
-   = [u] [hM] [hMp1] [hMp2]
-     defeq/extra (defeq/iota-enum-2-first (Bool_rec/decl u) Bool_false/decl Bool_true/decl (Bool/as-enum u) hM hMp1 hMp2).
-
-Bool_true/iota : {u : lvl}
-   defeq M M (eforall (econst "Bool" lnil) ([x] (esort u)))
-   -> defeq Mp1 Mp1 (eapp M (econst "Bool.false" lnil))
-   -> defeq Mp2 Mp2 (eapp M (econst "Bool.true" lnil))
-   -> defeq (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons u lnil)) M) Mp1) Mp2) (econst "Bool.true" lnil)) Mp2 (eapp M (econst "Bool.true" lnil))
-   = [u] [hM] [hMp1] [hMp2]
-     defeq/extra (defeq/iota-enum-2-second (Bool_rec/decl u) Bool_false/decl Bool_true/decl (Bool/as-enum u) hM hMp1 hMp2).
-
 %% inductive TwoBool
-TwoBool/type-wf :
-   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
-   = (defeq/sort-refl-at (lsucc lzero)).
+%%% HOLE
+TwoBool/type-wf-sort : lvl.
 
-TwoBool/ends-in-sort :
-   ends-in-sort (esort (lsucc lzero))
-   = ends-in-sort/sort.
+%%% HOLE
+TwoBool/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort TwoBool/type-wf-sort).
+
+%%% HOLE
+TwoBool/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
 TwoBool/decl : declared "TwoBool" lnil
    (esort (lsucc lzero))
    indt
    (dkind-ok/indt TwoBool/type-wf TwoBool/ends-in-sort).
 
-%% inductive ctor TwoBool.mk
-TwoBool_mk/type-wf :
-   defeq (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (econst "TwoBool" lnil))))) (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (econst "TwoBool" lnil))))) (esort (limax (lsucc lzero) (limax (lsucc lzero) (lsucc lzero))))
-   = (defeq/forall (defeq/const Bool/decl) ([x] [y] (defeq/forall (defeq/const Bool/decl) ([z] [w] (defeq/const TwoBool/decl))))).
+%% ctor TwoBool.mk (of TwoBool)
+%%% HOLE
+TwoBool_mk/type-wf-sort : lvl.
 
-TwoBool_mk/positivity :
-   ctor-positive "TwoBool" lnil (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (econst "TwoBool" lnil)))))
-   = (ctor-positive/intro ([S] (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] S))))) (ctor-spine/arg (strict-pos/no-occur (econst "Bool" lnil)) ([_y0] (ctor-spine/arg (strict-pos/no-occur (econst "Bool" lnil)) ([_y1] (ctor-spine/result applies-self/refl)))))).
+%%% HOLE
+TwoBool_mk/type-wf : defeq (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (econst "TwoBool" lnil))))) (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (econst "TwoBool" lnil))))) (esort TwoBool_mk/type-wf-sort).
+
+%%% HOLE
+TwoBool_mk/positivity : ctor-positive "TwoBool" lnil (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (econst "TwoBool" lnil))))).
 
 TwoBool_mk/decl : declared "TwoBool.mk" lnil
    (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (econst "TwoBool" lnil)))))
    ctor
    (dkind-ok/ctor TwoBool_mk/type-wf TwoBool_mk/positivity).
 
-%% inductive recursor TwoBool.rec
-TwoBool_rec/type-wf :
-   {u : lvl} defeq (eforall (eforall (econst "TwoBool" lnil) ([x] (esort u))) ([x] (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp x (eapp (eapp (econst "TwoBool.mk" lnil) y) z)))))) ([y] (eforall (econst "TwoBool" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "TwoBool" lnil) ([x] (esort u))) ([x] (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp x (eapp (eapp (econst "TwoBool.mk" lnil) y) z)))))) ([y] (eforall (econst "TwoBool" lnil) ([z] (eapp x z))))))) (esort (limax (limax (lsucc lzero) (lsucc u)) (limax (limax (lsucc lzero) (limax (lsucc lzero) u)) (limax (lsucc lzero) u))))
-   = [u] (defeq/forall (defeq/forall (defeq/const TwoBool/decl) ([x] [y] (defeq/sort-refl-at u))) ([x] [y] (defeq/forall (defeq/forall (defeq/const Bool/decl) ([z] [w] (defeq/forall (defeq/const Bool/decl) ([x1] [y1] (defeq/app y (defeq/app (defeq/app (defeq/const TwoBool_mk/decl) w) y1)))))) ([z] [w] (defeq/forall (defeq/const TwoBool/decl) ([x1] [y1] (defeq/app y y1))))))).
+%% recursor TwoBool.rec
+%%% HOLE
+TwoBool_rec/type-wf-sort : {u : lvl} lvl.
+
+%%% HOLE
+TwoBool_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "TwoBool" lnil) ([x] (esort u))) ([x] (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp x (eapp (eapp (econst "TwoBool.mk" lnil) y) z)))))) ([y] (eforall (econst "TwoBool" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "TwoBool" lnil) ([x] (esort u))) ([x] (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp x (eapp (eapp (econst "TwoBool.mk" lnil) y) z)))))) ([y] (eforall (econst "TwoBool" lnil) ([z] (eapp x z))))))) (esort (TwoBool_rec/type-wf-sort u)).
 
 TwoBool_rec/decl : {u : lvl} declared "TwoBool.rec" (lcons u lnil)
    (eforall (eforall (econst "TwoBool" lnil) ([x] (esort u))) ([x] (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp x (eapp (eapp (econst "TwoBool.mk" lnil) y) z)))))) ([y] (eforall (econst "TwoBool" lnil) ([z] (eapp x z)))))))
@@ -114,13 +100,14 @@ TwoBool_rec/decl : {u : lvl} declared "TwoBool.rec" (lcons u lnil)
    (dkind-ok/irec (TwoBool_rec/type-wf u)).
 
 %% def twoBool
-twoBool/type-wf :
-   defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
-   = (defeq/sort-refl-at (lsucc lzero)).
+%%% HOLE
+twoBool/type-wf-sort : lvl.
 
-twoBool/value-typed :
-   defeq (econst "TwoBool" lnil) (econst "TwoBool" lnil) (esort (lsucc lzero))
-   = (defeq/const TwoBool/decl).
+%%% HOLE
+twoBool/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort twoBool/type-wf-sort).
+
+%%% HOLE
+twoBool/value-typed : defeq (econst "TwoBool" lnil) (econst "TwoBool" lnil) (esort (lsucc lzero)).
 
 twoBool/decl : declared "twoBool" lnil
    (esort (lsucc lzero))
