@@ -96,17 +96,12 @@ lcons : lvl -> lvls -> lvls.
 
 %abbrev name = string.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Deliberate-failure marker
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Uninhabited type.  When the generator's Prover decides a mandatory
-%%% proof obligation is provably impossible, the generated file emits
-%%%   %solve - : fail-on-purpose.
-%%% which Twelf reports as "No solution to %solve found" → ABORT, in both
-%%% the with-freeze and without-freeze loads.  This is how a checker
-%%% *rejects* an environment (as opposed to declining it via %%% SKIP).
-
-fail-on-purpose : type.
+%%% Note: a Prover rejects an environment by returning the `Fmt` atom
+%%% `fail-on-purpose` as its "proof".  The generator emits it verbatim
+%%% (`<const> : <obligation> = fail-on-purpose.`) and Twelf rejects it as an
+%%% *undeclared identifier* → ABORT in both the with- and without-freeze
+%%% loads.  `fail-on-purpose` is therefore deliberately NOT declared anywhere
+%%% in the TCB; its undefinedness is exactly what makes the term ill-typed.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Expressions
