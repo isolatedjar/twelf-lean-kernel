@@ -10,9 +10,12 @@ Bool/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort Bool/typ
 %%% HOLE
 Bool/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
+Bool/name : name "Bool" (is-decl lnil (esort (lsucc lzero)) indt).
+
 Bool/decl : declared "Bool" lnil
    (esort (lsucc lzero))
    indt
+   Bool/name
    (dkind-ok/indt Bool/type-wf Bool/ends-in-sort).
 
 %% ctor Bool.false (of Bool)
@@ -25,9 +28,12 @@ Bool_false/type-wf : defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort Bool
 %%% HOLE
 Bool_false/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil).
 
+Bool_false/name : name "Bool.false" (is-decl lnil (econst "Bool" lnil) ctor).
+
 Bool_false/decl : declared "Bool.false" lnil
    (econst "Bool" lnil)
    ctor
+   Bool_false/name
    (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity).
 
 %% ctor Bool.true (of Bool)
@@ -40,9 +46,12 @@ Bool_true/type-wf : defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort Bool_
 %%% HOLE
 Bool_true/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil).
 
+Bool_true/name : name "Bool.true" (is-decl lnil (econst "Bool" lnil) ctor).
+
 Bool_true/decl : declared "Bool.true" lnil
    (econst "Bool" lnil)
    ctor
+   Bool_true/name
    (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity).
 
 %% recursor Bool.rec
@@ -52,9 +61,12 @@ Bool_rec/type-wf-sort : {u : lvl} lvl.
 %%% HOLE
 Bool_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort (Bool_rec/type-wf-sort u)).
 
+Bool_rec/name : {u : lvl} name "Bool.rec" (is-decl (lcons u lnil) (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) irec).
+
 Bool_rec/decl : {u : lvl} declared "Bool.rec" (lcons u lnil)
    (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w)))))))))
    irec
+   (Bool_rec/name u)
    (dkind-ok/irec (Bool_rec/type-wf u)).
 
 %% def boolType
@@ -67,8 +79,11 @@ boolType/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort bool
 %%% HOLE
 boolType/value-typed : defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort (lsucc lzero)).
 
+boolType/name : name "boolType" (is-decl lnil (esort (lsucc lzero)) (defn (econst "Bool" lnil))).
+
 boolType/decl : declared "boolType" lnil
    (esort (lsucc lzero))
    (defn (econst "Bool" lnil))
+   boolType/name
    (dkind-ok/defn boolType/type-wf boolType/value-typed).
 

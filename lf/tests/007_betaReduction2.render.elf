@@ -10,9 +10,12 @@ constType/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (eforall (esort (l
 %%% HOLE
 constType/value-typed : defeq (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))).
 
+constType/name : name "constType" (is-decl lnil (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))).
+
 constType/decl : declared "constType" lnil
    (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero))))))
    (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))
+   constType/name
    (dkind-ok/defn constType/type-wf constType/value-typed).
 
 %% def betaReduction2
@@ -25,8 +28,11 @@ betaReduction2/type-wf : defeq (eforall (esort lzero) ([x] (eapp (eapp (econst "
 %%% HOLE
 betaReduction2/value-typed : defeq (elam (esort lzero) ([x] x)) (elam (esort lzero) ([x] x)) (eforall (esort lzero) ([x] (eapp (eapp (econst "constType" lnil) (esort lzero)) (eforall (esort lzero) ([y] (esort lzero)))))).
 
+betaReduction2/name : name "betaReduction2" (is-decl lnil (eforall (esort lzero) ([x] (eapp (eapp (econst "constType" lnil) (esort lzero)) (eforall (esort lzero) ([y] (esort lzero)))))) (defn (elam (esort lzero) ([x] x)))).
+
 betaReduction2/decl : declared "betaReduction2" lnil
    (eforall (esort lzero) ([x] (eapp (eapp (econst "constType" lnil) (esort lzero)) (eforall (esort lzero) ([y] (esort lzero))))))
    (defn (elam (esort lzero) ([x] x)))
+   betaReduction2/name
    (dkind-ok/defn betaReduction2/type-wf betaReduction2/value-typed).
 

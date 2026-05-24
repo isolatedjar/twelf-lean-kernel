@@ -7,8 +7,11 @@ nonPropThm/type-wf : defeq (esort lzero) (esort lzero) (esort lzero).
 %%% HOLE
 nonPropThm/value-typed : defeq (eforall (esort lzero) ([x] x)) (eforall (esort lzero) ([x] x)) (esort lzero).
 
+nonPropThm/name : name "nonPropThm" (is-decl lnil (esort lzero) (thm (eforall (esort lzero) ([x] x)))).
+
 nonPropThm/decl : declared "nonPropThm" lnil
    (esort lzero)
    (thm (eforall (esort lzero) ([x] x)))
+   nonPropThm/name
    (dkind-ok/thm nonPropThm/type-wf nonPropThm/value-typed).
 

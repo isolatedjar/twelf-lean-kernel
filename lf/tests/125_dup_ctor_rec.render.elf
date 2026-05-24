@@ -10,9 +10,12 @@ dup_ctor_rec/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort 
 %%% HOLE
 dup_ctor_rec/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
+dup_ctor_rec/name : name "dup_ctor_rec" (is-decl lnil (esort (lsucc lzero)) indt).
+
 dup_ctor_rec/decl : declared "dup_ctor_rec" lnil
    (esort (lsucc lzero))
    indt
+   dup_ctor_rec/name
    (dkind-ok/indt dup_ctor_rec/type-wf dup_ctor_rec/ends-in-sort).
 
 %% ctor dup_ctor_rec.rec (of dup_ctor_rec)
@@ -25,9 +28,12 @@ dup_ctor_rec_rec/type-wf : defeq (econst "dup_ctor_rec" lnil) (econst "dup_ctor_
 %%% HOLE
 dup_ctor_rec_rec/positivity : ctor-positive "dup_ctor_rec" lnil (econst "dup_ctor_rec" lnil).
 
+dup_ctor_rec_rec/name : name "dup_ctor_rec.rec" (is-decl lnil (econst "dup_ctor_rec" lnil) ctor).
+
 dup_ctor_rec_rec/decl : declared "dup_ctor_rec.rec" lnil
    (econst "dup_ctor_rec" lnil)
    ctor
+   dup_ctor_rec_rec/name
    (dkind-ok/ctor dup_ctor_rec_rec/type-wf dup_ctor_rec_rec/positivity).
 
 %% recursor dup_ctor_rec.rec
@@ -37,8 +43,11 @@ dup_ctor_rec_rec/type-wf-sort : {u : lvl} lvl.
 %%% HOLE
 dup_ctor_rec_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z))))))) (esort (dup_ctor_rec_rec/type-wf-sort u)).
 
+dup_ctor_rec_rec/name : {u : lvl} name "dup_ctor_rec.rec" (is-decl (lcons u lnil) (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z))))))) irec).
+
 dup_ctor_rec_rec/decl : {u : lvl} declared "dup_ctor_rec.rec" (lcons u lnil)
    (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z)))))))
    irec
+   (dup_ctor_rec_rec/name u)
    (dkind-ok/irec (dup_ctor_rec_rec/type-wf u)).
 

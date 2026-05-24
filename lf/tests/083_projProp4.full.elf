@@ -12,9 +12,12 @@ PUnit/type-wf : {u : lvl} defeq (esort u) (esort u) (esort (PUnit/type-wf-sort u
 %%% HOLE
 PUnit/ends-in-sort : {u : lvl} ends-in-sort (esort u).
 
+PUnit/name : {u : lvl} name "PUnit" (is-decl (lcons u lnil) (esort u) indt).
+
 PUnit/decl : {u : lvl} declared "PUnit" (lcons u lnil)
    (esort u)
    indt
+   (PUnit/name u)
    (dkind-ok/indt (PUnit/type-wf u) (PUnit/ends-in-sort u)).
 
 %% ctor PUnit.unit (of PUnit)
@@ -27,9 +30,12 @@ PUnit_unit/type-wf : {u : lvl} defeq (econst "PUnit" (lcons u lnil)) (econst "PU
 %%% HOLE
 PUnit_unit/positivity : {u : lvl} ctor-positive "PUnit" (lcons u lnil) (econst "PUnit" (lcons u lnil)).
 
+PUnit_unit/name : {u : lvl} name "PUnit.unit" (is-decl (lcons u lnil) (econst "PUnit" (lcons u lnil)) ctor).
+
 PUnit_unit/decl : {u : lvl} declared "PUnit.unit" (lcons u lnil)
    (econst "PUnit" (lcons u lnil))
    ctor
+   (PUnit_unit/name u)
    (dkind-ok/ctor (PUnit_unit/type-wf u) (PUnit_unit/positivity u)).
 
 %% recursor PUnit.rec
@@ -39,9 +45,12 @@ PUnit_rec/type-wf-sort : {u_1 : lvl} {u : lvl} lvl.
 %%% HOLE
 PUnit_rec/type-wf : {u_1 : lvl} {u : lvl} defeq (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))) (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))) (esort (PUnit_rec/type-wf-sort u_1 u)).
 
+PUnit_rec/name : {u_1 : lvl} {u : lvl} name "PUnit.rec" (is-decl (lcons u_1 (lcons u lnil)) (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))) irec).
+
 PUnit_rec/decl : {u_1 : lvl} {u : lvl} declared "PUnit.rec" (lcons u_1 (lcons u lnil))
    (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z)))))))
    irec
+   (PUnit_rec/name u_1 u)
    (dkind-ok/irec (PUnit_rec/type-wf u_1 u)).
 
 %% inductive Eq
@@ -54,9 +63,12 @@ Eq/type-wf : {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eforal
 %%% HOLE
 Eq/ends-in-sort : {u_1 : lvl} ends-in-sort (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))).
 
+Eq/name : {u_1 : lvl} name "Eq" (is-decl (lcons u_1 lnil) (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) indt).
+
 Eq/decl : {u_1 : lvl} declared "Eq" (lcons u_1 lnil)
    (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero)))))))
    indt
+   (Eq/name u_1)
    (dkind-ok/indt (Eq/type-wf u_1) (Eq/ends-in-sort u_1)).
 
 %% ctor Eq.refl (of Eq)
@@ -69,9 +81,12 @@ Eq_refl/type-wf : {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (e
 %%% HOLE
 Eq_refl/positivity : {u_1 : lvl} ctor-positive "Eq" (lcons u_1 lnil) (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))).
 
+Eq_refl/name : {u_1 : lvl} name "Eq.refl" (is-decl (lcons u_1 lnil) (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))) ctor).
+
 Eq_refl/decl : {u_1 : lvl} declared "Eq.refl" (lcons u_1 lnil)
    (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y)))))
    ctor
+   (Eq_refl/name u_1)
    (dkind-ok/ctor (Eq_refl/type-wf u_1) (Eq_refl/positivity u_1)).
 
 %% recursor Eq.rec
@@ -81,9 +96,12 @@ Eq_rec/type-wf-sort : {u : lvl} {u_1 : lvl} lvl.
 %%% HOLE
 Eq_rec/type-wf : {u : lvl} {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort (Eq_rec/type-wf-sort u u_1)).
 
+Eq_rec/name : {u : lvl} {u_1 : lvl} name "Eq.rec" (is-decl (lcons u (lcons u_1 lnil)) (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) irec).
+
 Eq_rec/decl : {u : lvl} {u_1 : lvl} declared "Eq.rec" (lcons u (lcons u_1 lnil))
    (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1)))))))))))))
    irec
+   (Eq_rec/name u u_1)
    (dkind-ok/irec (Eq_rec/type-wf u u_1)).
 
 %% inductive PropStructure
@@ -96,9 +114,12 @@ PropStructure/type-wf : {u : lvl} {v : lvl} defeq (esort lzero) (esort lzero) (e
 %%% HOLE
 PropStructure/ends-in-sort : {u : lvl} {v : lvl} ends-in-sort (esort lzero).
 
+PropStructure/name : {u : lvl} {v : lvl} name "PropStructure" (is-decl (lcons u (lcons v lnil)) (esort lzero) indt).
+
 PropStructure/decl : {u : lvl} {v : lvl} declared "PropStructure" (lcons u (lcons v lnil))
    (esort lzero)
    indt
+   (PropStructure/name u v)
    (dkind-ok/indt (PropStructure/type-wf u v) (PropStructure/ends-in-sort u v)).
 
 %% ctor PropStructure.mk (of PropStructure)
@@ -111,9 +132,12 @@ PropStructure_mk/type-wf : {u : lvl} {v : lvl} defeq (eforall (econst "PUnit" (l
 %%% HOLE
 PropStructure_mk/positivity : {u : lvl} {v : lvl} ctor-positive "PropStructure" (lcons u (lcons v lnil)) (eforall (econst "PUnit" (lcons u lnil)) ([x] (eforall (econst "PUnit" (lcons v lnil)) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eforall (econst "PUnit" (lcons v lnil)) ([w] (eforall (eapp (eapp (eapp (econst "Eq" (lcons v lnil)) (econst "PUnit" (lcons v lnil))) w) w) ([x1] (eforall (econst "PUnit" (lcons u lnil)) ([y1] (econst "PropStructure" (lcons u (lcons v lnil))))))))))))))).
 
+PropStructure_mk/name : {u : lvl} {v : lvl} name "PropStructure.mk" (is-decl (lcons u (lcons v lnil)) (eforall (econst "PUnit" (lcons u lnil)) ([x] (eforall (econst "PUnit" (lcons v lnil)) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eforall (econst "PUnit" (lcons v lnil)) ([w] (eforall (eapp (eapp (eapp (econst "Eq" (lcons v lnil)) (econst "PUnit" (lcons v lnil))) w) w) ([x1] (eforall (econst "PUnit" (lcons u lnil)) ([y1] (econst "PropStructure" (lcons u (lcons v lnil))))))))))))))) ctor).
+
 PropStructure_mk/decl : {u : lvl} {v : lvl} declared "PropStructure.mk" (lcons u (lcons v lnil))
    (eforall (econst "PUnit" (lcons u lnil)) ([x] (eforall (econst "PUnit" (lcons v lnil)) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eforall (econst "PUnit" (lcons v lnil)) ([w] (eforall (eapp (eapp (eapp (econst "Eq" (lcons v lnil)) (econst "PUnit" (lcons v lnil))) w) w) ([x1] (eforall (econst "PUnit" (lcons u lnil)) ([y1] (econst "PropStructure" (lcons u (lcons v lnil)))))))))))))))
    ctor
+   (PropStructure_mk/name u v)
    (dkind-ok/ctor (PropStructure_mk/type-wf u v) (PropStructure_mk/positivity u v)).
 
 %% recursor PropStructure.rec
@@ -123,9 +147,12 @@ PropStructure_rec/type-wf-sort : {u : lvl} {v : lvl} lvl.
 %%% HOLE
 PropStructure_rec/type-wf : {u : lvl} {v : lvl} defeq (eforall (eforall (econst "PropStructure" (lcons u (lcons v lnil))) ([x] (esort lzero))) ([x] (eforall (eforall (econst "PUnit" (lcons u lnil)) ([y] (eforall (econst "PUnit" (lcons v lnil)) ([z] (eforall (econst "PUnit" (lcons u lnil)) ([w] (eforall (econst "PUnit" (lcons v lnil)) ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons v lnil)) (econst "PUnit" (lcons v lnil))) x1) x1) ([y1] (eforall (econst "PUnit" (lcons u lnil)) ([z1] (eapp x (eapp (eapp (eapp (eapp (eapp (eapp (econst "PropStructure.mk" (lcons u (lcons v lnil))) y) z) w) x1) y1) z1)))))))))))))) ([y] (eforall (econst "PropStructure" (lcons u (lcons v lnil))) ([z] (eapp x z))))))) (eforall (eforall (econst "PropStructure" (lcons u (lcons v lnil))) ([x] (esort lzero))) ([x] (eforall (eforall (econst "PUnit" (lcons u lnil)) ([y] (eforall (econst "PUnit" (lcons v lnil)) ([z] (eforall (econst "PUnit" (lcons u lnil)) ([w] (eforall (econst "PUnit" (lcons v lnil)) ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons v lnil)) (econst "PUnit" (lcons v lnil))) x1) x1) ([y1] (eforall (econst "PUnit" (lcons u lnil)) ([z1] (eapp x (eapp (eapp (eapp (eapp (eapp (eapp (econst "PropStructure.mk" (lcons u (lcons v lnil))) y) z) w) x1) y1) z1)))))))))))))) ([y] (eforall (econst "PropStructure" (lcons u (lcons v lnil))) ([z] (eapp x z))))))) (esort (PropStructure_rec/type-wf-sort u v)).
 
+PropStructure_rec/name : {u : lvl} {v : lvl} name "PropStructure.rec" (is-decl (lcons u (lcons v lnil)) (eforall (eforall (econst "PropStructure" (lcons u (lcons v lnil))) ([x] (esort lzero))) ([x] (eforall (eforall (econst "PUnit" (lcons u lnil)) ([y] (eforall (econst "PUnit" (lcons v lnil)) ([z] (eforall (econst "PUnit" (lcons u lnil)) ([w] (eforall (econst "PUnit" (lcons v lnil)) ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons v lnil)) (econst "PUnit" (lcons v lnil))) x1) x1) ([y1] (eforall (econst "PUnit" (lcons u lnil)) ([z1] (eapp x (eapp (eapp (eapp (eapp (eapp (eapp (econst "PropStructure.mk" (lcons u (lcons v lnil))) y) z) w) x1) y1) z1)))))))))))))) ([y] (eforall (econst "PropStructure" (lcons u (lcons v lnil))) ([z] (eapp x z))))))) irec).
+
 PropStructure_rec/decl : {u : lvl} {v : lvl} declared "PropStructure.rec" (lcons u (lcons v lnil))
    (eforall (eforall (econst "PropStructure" (lcons u (lcons v lnil))) ([x] (esort lzero))) ([x] (eforall (eforall (econst "PUnit" (lcons u lnil)) ([y] (eforall (econst "PUnit" (lcons v lnil)) ([z] (eforall (econst "PUnit" (lcons u lnil)) ([w] (eforall (econst "PUnit" (lcons v lnil)) ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons v lnil)) (econst "PUnit" (lcons v lnil))) x1) x1) ([y1] (eforall (econst "PUnit" (lcons u lnil)) ([z1] (eapp x (eapp (eapp (eapp (eapp (eapp (eapp (econst "PropStructure.mk" (lcons u (lcons v lnil))) y) z) w) x1) y1) z1)))))))))))))) ([y] (eforall (econst "PropStructure" (lcons u (lcons v lnil))) ([z] (eapp x z)))))))
    irec
+   (PropStructure_rec/name u v)
    (dkind-ok/irec (PropStructure_rec/type-wf u v)).
 
 %% def projProp4
@@ -138,8 +165,11 @@ projProp4/type-wf : defeq (eforall (econst "PropStructure" (lcons lzero (lcons (
 %%% HOLE
 projProp4/value-typed : defeq (elam (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (eproj "PropStructure" 3 x))) (elam (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (eproj "PropStructure" 3 x))) (eforall (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (econst "PUnit" (lcons (lsucc lzero) lnil)))).
 
+projProp4/name : name "projProp4" (is-decl lnil (eforall (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (econst "PUnit" (lcons (lsucc lzero) lnil)))) (defn (elam (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (eproj "PropStructure" 3 x))))).
+
 projProp4/decl : declared "projProp4" lnil
    (eforall (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (econst "PUnit" (lcons (lsucc lzero) lnil))))
    (defn (elam (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (eproj "PropStructure" 3 x))))
+   projProp4/name
    (dkind-ok/defn projProp4/type-wf projProp4/value-typed).
 

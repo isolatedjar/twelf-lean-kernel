@@ -10,8 +10,11 @@ imax2/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc l
 %%% HOLE
 imax2/value-typed : defeq (elam (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] x)))) (elam (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] x)))) (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc lzero))))).
 
+imax2/name : name "imax2" (is-decl lnil (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc lzero))))) (defn (elam (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] x)))))).
+
 imax2/decl : declared "imax2" lnil
    (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc lzero)))))
    (defn (elam (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] x)))))
+   imax2/name
    (dkind-ok/defn imax2/type-wf imax2/value-typed).
 

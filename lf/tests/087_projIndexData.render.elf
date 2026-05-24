@@ -11,9 +11,12 @@ N/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort N/type-wf-s
 %%% HOLE
 N/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
+N/name : name "N" (is-decl lnil (esort (lsucc lzero)) indt).
+
 N/decl : declared "N" lnil
    (esort (lsucc lzero))
    indt
+   N/name
    (dkind-ok/indt N/type-wf N/ends-in-sort).
 
 %% ctor N.zero (of N)
@@ -26,9 +29,12 @@ N_zero/type-wf : defeq (econst "N" lnil) (econst "N" lnil) (esort N_zero/type-wf
 %%% HOLE
 N_zero/positivity : ctor-positive "N" lnil (econst "N" lnil).
 
+N_zero/name : name "N.zero" (is-decl lnil (econst "N" lnil) ctor).
+
 N_zero/decl : declared "N.zero" lnil
    (econst "N" lnil)
    ctor
+   N_zero/name
    (dkind-ok/ctor N_zero/type-wf N_zero/positivity).
 
 %% ctor N.succ (of N)
@@ -41,9 +47,12 @@ N_succ/type-wf : defeq (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (efor
 %%% HOLE
 N_succ/positivity : ctor-positive "N" lnil (eforall (econst "N" lnil) ([x] (econst "N" lnil))).
 
+N_succ/name : name "N.succ" (is-decl lnil (eforall (econst "N" lnil) ([x] (econst "N" lnil))) ctor).
+
 N_succ/decl : declared "N.succ" lnil
    (eforall (econst "N" lnil) ([x] (econst "N" lnil)))
    ctor
+   N_succ/name
    (dkind-ok/ctor N_succ/type-wf N_succ/positivity).
 
 %% recursor N.rec
@@ -53,9 +62,12 @@ N_rec/type-wf-sort : {u : lvl} lvl.
 %%% HOLE
 N_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) (esort (N_rec/type-wf-sort u)).
 
+N_rec/name : {u : lvl} name "N.rec" (is-decl (lcons u lnil) (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) irec).
+
 N_rec/decl : {u : lvl} declared "N.rec" (lcons u lnil)
    (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w)))))))))
    irec
+   (N_rec/name u)
    (dkind-ok/irec (N_rec/type-wf u)).
 
 %% inductive True
@@ -68,9 +80,12 @@ True/type-wf : defeq (esort lzero) (esort lzero) (esort True/type-wf-sort).
 %%% HOLE
 True/ends-in-sort : ends-in-sort (esort lzero).
 
+True/name : name "True" (is-decl lnil (esort lzero) indt).
+
 True/decl : declared "True" lnil
    (esort lzero)
    indt
+   True/name
    (dkind-ok/indt True/type-wf True/ends-in-sort).
 
 %% ctor True.intro (of True)
@@ -83,9 +98,12 @@ True_intro/type-wf : defeq (econst "True" lnil) (econst "True" lnil) (esort True
 %%% HOLE
 True_intro/positivity : ctor-positive "True" lnil (econst "True" lnil).
 
+True_intro/name : name "True.intro" (is-decl lnil (econst "True" lnil) ctor).
+
 True_intro/decl : declared "True.intro" lnil
    (econst "True" lnil)
    ctor
+   True_intro/name
    (dkind-ok/ctor True_intro/type-wf True_intro/positivity).
 
 %% recursor True.rec
@@ -95,9 +113,12 @@ True_rec/type-wf-sort : {u : lvl} lvl.
 %%% HOLE
 True_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "True" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "True" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) (esort (True_rec/type-wf-sort u)).
 
+True_rec/name : {u : lvl} name "True.rec" (is-decl (lcons u lnil) (eforall (eforall (econst "True" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) irec).
+
 True_rec/decl : {u : lvl} declared "True.rec" (lcons u lnil)
    (eforall (eforall (econst "True" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z)))))))
    irec
+   (True_rec/name u)
    (dkind-ok/irec (True_rec/type-wf u)).
 
 %% inductive ProjDataIndex
@@ -110,9 +131,12 @@ ProjDataIndex/type-wf : defeq (eforall (econst "N" lnil) ([x] (esort lzero))) (e
 %%% HOLE
 ProjDataIndex/ends-in-sort : ends-in-sort (eforall (econst "N" lnil) ([x] (esort lzero))).
 
+ProjDataIndex/name : name "ProjDataIndex" (is-decl lnil (eforall (econst "N" lnil) ([x] (esort lzero))) indt).
+
 ProjDataIndex/decl : declared "ProjDataIndex" lnil
    (eforall (econst "N" lnil) ([x] (esort lzero)))
    indt
+   ProjDataIndex/name
    (dkind-ok/indt ProjDataIndex/type-wf ProjDataIndex/ends-in-sort).
 
 %% ctor ProjDataIndex.mk (of ProjDataIndex)
@@ -125,9 +149,12 @@ ProjDataIndex_mk/type-wf : defeq (eforall (econst "N" lnil) ([x] (eforall (econs
 %%% HOLE
 ProjDataIndex_mk/positivity : ctor-positive "ProjDataIndex" lnil (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp (econst "ProjDataIndex" lnil) x))))).
 
+ProjDataIndex_mk/name : name "ProjDataIndex.mk" (is-decl lnil (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp (econst "ProjDataIndex" lnil) x))))) ctor).
+
 ProjDataIndex_mk/decl : declared "ProjDataIndex.mk" lnil
    (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp (econst "ProjDataIndex" lnil) x)))))
    ctor
+   ProjDataIndex_mk/name
    (dkind-ok/ctor ProjDataIndex_mk/type-wf ProjDataIndex_mk/positivity).
 
 %% recursor ProjDataIndex.rec
@@ -137,9 +164,12 @@ ProjDataIndex_rec/type-wf-sort : {u : lvl} lvl.
 %%% HOLE
 ProjDataIndex_rec/type-wf : {u : lvl} defeq (eforall (econst "N" lnil) ([x] (eforall (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (esort u))) ([y] (eforall (eforall (econst "True" lnil) ([z] (eapp y (eapp (eapp (econst "ProjDataIndex.mk" lnil) x) z)))) ([z] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([w] (eapp y w))))))))) (eforall (econst "N" lnil) ([x] (eforall (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (esort u))) ([y] (eforall (eforall (econst "True" lnil) ([z] (eapp y (eapp (eapp (econst "ProjDataIndex.mk" lnil) x) z)))) ([z] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([w] (eapp y w))))))))) (esort (ProjDataIndex_rec/type-wf-sort u)).
 
+ProjDataIndex_rec/name : {u : lvl} name "ProjDataIndex.rec" (is-decl (lcons u lnil) (eforall (econst "N" lnil) ([x] (eforall (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (esort u))) ([y] (eforall (eforall (econst "True" lnil) ([z] (eapp y (eapp (eapp (econst "ProjDataIndex.mk" lnil) x) z)))) ([z] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([w] (eapp y w))))))))) irec).
+
 ProjDataIndex_rec/decl : {u : lvl} declared "ProjDataIndex.rec" (lcons u lnil)
    (eforall (econst "N" lnil) ([x] (eforall (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (esort u))) ([y] (eforall (eforall (econst "True" lnil) ([z] (eapp y (eapp (eapp (econst "ProjDataIndex.mk" lnil) x) z)))) ([z] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([w] (eapp y w)))))))))
    irec
+   (ProjDataIndex_rec/name u)
    (dkind-ok/irec (ProjDataIndex_rec/type-wf u)).
 
 %% def projIndexData
@@ -152,8 +182,11 @@ projIndexData/type-wf : defeq (eforall (econst "N" lnil) ([x] (eforall (eapp (ec
 %%% HOLE
 projIndexData/value-typed : defeq (elam (econst "N" lnil) ([x] (elam (eapp (econst "ProjDataIndex" lnil) x) ([y] (eproj "PropStructure" 0 y))))) (elam (econst "N" lnil) ([x] (elam (eapp (econst "ProjDataIndex" lnil) x) ([y] (eproj "PropStructure" 0 y))))) (eforall (econst "N" lnil) ([x] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (econst "N" lnil))))).
 
+projIndexData/name : name "projIndexData" (is-decl lnil (eforall (econst "N" lnil) ([x] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (econst "N" lnil))))) (defn (elam (econst "N" lnil) ([x] (elam (eapp (econst "ProjDataIndex" lnil) x) ([y] (eproj "PropStructure" 0 y))))))).
+
 projIndexData/decl : declared "projIndexData" lnil
    (eforall (econst "N" lnil) ([x] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (econst "N" lnil)))))
    (defn (elam (econst "N" lnil) ([x] (elam (eapp (econst "ProjDataIndex" lnil) x) ([y] (eproj "PropStructure" 0 y))))))
+   projIndexData/name
    (dkind-ok/defn projIndexData/type-wf projIndexData/value-typed).
 

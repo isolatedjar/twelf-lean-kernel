@@ -10,9 +10,12 @@ inductWrongCtorResParams/type-wf : defeq (eforall (esort lzero) ([x] (eforall (e
 %%% HOLE
 inductWrongCtorResParams/ends-in-sort : ends-in-sort (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))).
 
+inductWrongCtorResParams/name : name "inductWrongCtorResParams" (is-decl lnil (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) indt).
+
 inductWrongCtorResParams/decl : declared "inductWrongCtorResParams" lnil
    (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero))))))
    indt
+   inductWrongCtorResParams/name
    (dkind-ok/indt inductWrongCtorResParams/type-wf inductWrongCtorResParams/ends-in-sort).
 
 %% ctor inductWrongCtorResParams.mk (of inductWrongCtorResParams)
@@ -25,9 +28,12 @@ inductWrongCtorResParams_mk/type-wf : defeq (eforall (esort lzero) ([x] (eforall
 %%% HOLE
 inductWrongCtorResParams_mk/positivity : ctor-positive "inductWrongCtorResParams" lnil (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResParams" lnil) y) x))))).
 
+inductWrongCtorResParams_mk/name : name "inductWrongCtorResParams.mk" (is-decl lnil (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResParams" lnil) y) x))))) ctor).
+
 inductWrongCtorResParams_mk/decl : declared "inductWrongCtorResParams.mk" lnil
    (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResParams" lnil) y) x)))))
    ctor
+   inductWrongCtorResParams_mk/name
    (dkind-ok/ctor inductWrongCtorResParams_mk/type-wf inductWrongCtorResParams_mk/positivity).
 
 %% recursor inductWrongCtorResParams.rec
@@ -37,8 +43,11 @@ inductWrongCtorResParams_rec/type-wf-sort : lvl.
 %%% HOLE
 inductWrongCtorResParams_rec/type-wf : defeq (esort lzero) (esort lzero) (esort inductWrongCtorResParams_rec/type-wf-sort).
 
+inductWrongCtorResParams_rec/name : name "inductWrongCtorResParams.rec" (is-decl lnil (esort lzero) irec).
+
 inductWrongCtorResParams_rec/decl : declared "inductWrongCtorResParams.rec" lnil
    (esort lzero)
    irec
+   inductWrongCtorResParams_rec/name
    (dkind-ok/irec inductWrongCtorResParams_rec/type-wf).
 

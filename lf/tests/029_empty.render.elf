@@ -10,9 +10,12 @@ Empty/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort Empty/t
 %%% HOLE
 Empty/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
+Empty/name : name "Empty" (is-decl lnil (esort (lsucc lzero)) indt).
+
 Empty/decl : declared "Empty" lnil
    (esort (lsucc lzero))
    indt
+   Empty/name
    (dkind-ok/indt Empty/type-wf Empty/ends-in-sort).
 
 %% recursor Empty.rec
@@ -22,9 +25,12 @@ Empty_rec/type-wf-sort : {u : lvl} lvl.
 %%% HOLE
 Empty_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (esort (Empty_rec/type-wf-sort u)).
 
+Empty_rec/name : {u : lvl} name "Empty.rec" (is-decl (lcons u lnil) (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) irec).
+
 Empty_rec/decl : {u : lvl} declared "Empty.rec" (lcons u lnil)
    (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y)))))
    irec
+   (Empty_rec/name u)
    (dkind-ok/irec (Empty_rec/type-wf u)).
 
 %% def empty
@@ -37,8 +43,11 @@ empty/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort empty/t
 %%% HOLE
 empty/value-typed : defeq (econst "Empty" lnil) (econst "Empty" lnil) (esort (lsucc lzero)).
 
+empty/name : name "empty" (is-decl lnil (esort (lsucc lzero)) (defn (econst "Empty" lnil))).
+
 empty/decl : declared "empty" lnil
    (esort (lsucc lzero))
    (defn (econst "Empty" lnil))
+   empty/name
    (dkind-ok/defn empty/type-wf empty/value-typed).
 

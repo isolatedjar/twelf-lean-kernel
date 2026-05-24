@@ -13,13 +13,15 @@
 %%% here applies uniformly without touching the translator.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%mode declared +N +LS -T -DK -W.
-%worlds () (declared _ _ _ _ _).
+%mode declared +N +LS -T -DK -WN -W.
+%worlds () (declared _ _ _ _ _ _).
 
 %%% Uniqueness seal: for monomorphic decls, this catches duplicate
 %%% names (LS=lnil twice with different T or DK).  For polymorphic
 %%% decls, LS varies per instantiation, so we make it an input
 %%% position too: given (N, LS), T/DK are uniquely determined.
 %%% Duplicate polymorphic declarations would also collide on the
-%%% LF identifier `<mangle>/decl` independently.
-%unique declared +N +LS -1T -1DK *W.
+%%% LF identifier `<mangle>/decl` independently.  WN (the name
+%%% reservation) and W (the dkind-ok witness) are proof-irrelevant
+%%% for uniqueness (`*`).
+%unique declared +N +LS -1T -1DK *WN *W.

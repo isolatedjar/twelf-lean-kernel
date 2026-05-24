@@ -10,8 +10,11 @@ inductLevelParam/type-wf : {u : lvl} {u : lvl} defeq (esort (lsucc lzero)) (esor
 %%% HOLE
 inductLevelParam/ends-in-sort : {u : lvl} {u : lvl} ends-in-sort (esort (lsucc lzero)).
 
+inductLevelParam/name : {u : lvl} {u : lvl} name "inductLevelParam" (is-decl (lcons u (lcons u lnil)) (esort (lsucc lzero)) indt).
+
 inductLevelParam/decl : {u : lvl} {u : lvl} declared "inductLevelParam" (lcons u (lcons u lnil))
    (esort (lsucc lzero))
    indt
+   (inductLevelParam/name u u)
    (dkind-ok/indt (inductLevelParam/type-wf u u) (inductLevelParam/ends-in-sort u u)).
 

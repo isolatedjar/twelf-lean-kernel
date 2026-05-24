@@ -10,9 +10,12 @@ Acc/type-wf : {u : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (
 %%% HOLE
 Acc/ends-in-sort : {u : lvl} ends-in-sort (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (esort lzero))))))).
 
+Acc/name : {u : lvl} name "Acc" (is-decl (lcons u lnil) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (esort lzero))))))) indt).
+
 Acc/decl : {u : lvl} declared "Acc" (lcons u lnil)
    (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (esort lzero)))))))
    indt
+   (Acc/name u)
    (dkind-ok/indt (Acc/type-wf u) (Acc/ends-in-sort u)).
 
 %% ctor Acc.intro (of Acc)
@@ -25,9 +28,12 @@ Acc_intro/type-wf : {u : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x 
 %%% HOLE
 Acc_intro/positivity : {u : lvl} ctor-positive "Acc" (lcons u lnil) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eforall (eforall x ([w] (eforall (eapp (eapp y w) z) ([x1] (eapp (eapp (eapp (econst "Acc" (lcons u lnil)) x) y) w))))) ([w] (eapp (eapp (eapp (econst "Acc" (lcons u lnil)) x) y) z))))))))).
 
+Acc_intro/name : {u : lvl} name "Acc.intro" (is-decl (lcons u lnil) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eforall (eforall x ([w] (eforall (eapp (eapp y w) z) ([x1] (eapp (eapp (eapp (econst "Acc" (lcons u lnil)) x) y) w))))) ([w] (eapp (eapp (eapp (econst "Acc" (lcons u lnil)) x) y) z))))))))) ctor).
+
 Acc_intro/decl : {u : lvl} declared "Acc.intro" (lcons u lnil)
    (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eforall (eforall x ([w] (eforall (eapp (eapp y w) z) ([x1] (eapp (eapp (eapp (econst "Acc" (lcons u lnil)) x) y) w))))) ([w] (eapp (eapp (eapp (econst "Acc" (lcons u lnil)) x) y) z)))))))))
    ctor
+   (Acc_intro/name u)
    (dkind-ok/ctor (Acc_intro/type-wf u) (Acc_intro/positivity u)).
 
 %% recursor Acc.rec
@@ -37,9 +43,12 @@ Acc_rec/type-wf-sort : {u_1 : lvl} {u : lvl} lvl.
 %%% HOLE
 Acc_rec/type-wf : {u_1 : lvl} {u : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Acc" (lcons u lnil)) x) y) z) ([w] (esort u_1))))) ([z] (eforall (eforall x ([w] (eforall (eforall x ([x1] (eforall (eapp (eapp y x1) w) ([y1] (eapp (eapp (eapp (econst "Acc" (lcons u lnil)) x) y) x1))))) ([x1] (eforall (eforall x ([y1] (eforall (eapp (eapp y y1) w) ([z1] (eapp (eapp z y1) (eapp (eapp x1 y1) z1)))))) ([y1] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "Acc.intro" (lcons u lnil)) x) y) w) x1)))))))) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Acc" (lcons u lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Acc" (lcons u lnil)) x) y) z) ([w] (esort u_1))))) ([z] (eforall (eforall x ([w] (eforall (eforall x ([x1] (eforall (eapp (eapp y x1) w) ([y1] (eapp (eapp (eapp (econst "Acc" (lcons u lnil)) x) y) x1))))) ([x1] (eforall (eforall x ([y1] (eforall (eapp (eapp y y1) w) ([z1] (eapp (eapp z y1) (eapp (eapp x1 y1) z1)))))) ([y1] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "Acc.intro" (lcons u lnil)) x) y) w) x1)))))))) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Acc" (lcons u lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort (Acc_rec/type-wf-sort u_1 u)).
 
+Acc_rec/name : {u_1 : lvl} {u : lvl} name "Acc.rec" (is-decl (lcons u_1 (lcons u lnil)) (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Acc" (lcons u lnil)) x) y) z) ([w] (esort u_1))))) ([z] (eforall (eforall x ([w] (eforall (eforall x ([x1] (eforall (eapp (eapp y x1) w) ([y1] (eapp (eapp (eapp (econst "Acc" (lcons u lnil)) x) y) x1))))) ([x1] (eforall (eforall x ([y1] (eforall (eapp (eapp y y1) w) ([z1] (eapp (eapp z y1) (eapp (eapp x1 y1) z1)))))) ([y1] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "Acc.intro" (lcons u lnil)) x) y) w) x1)))))))) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Acc" (lcons u lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) irec).
+
 Acc_rec/decl : {u_1 : lvl} {u : lvl} declared "Acc.rec" (lcons u_1 (lcons u lnil))
    (eforall (esort u) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Acc" (lcons u lnil)) x) y) z) ([w] (esort u_1))))) ([z] (eforall (eforall x ([w] (eforall (eforall x ([x1] (eforall (eapp (eapp y x1) w) ([y1] (eapp (eapp (eapp (econst "Acc" (lcons u lnil)) x) y) x1))))) ([x1] (eforall (eforall x ([y1] (eforall (eapp (eapp y y1) w) ([z1] (eapp (eapp z y1) (eapp (eapp x1 y1) z1)))))) ([y1] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "Acc.intro" (lcons u lnil)) x) y) w) x1)))))))) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Acc" (lcons u lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1)))))))))))))
    irec
+   (Acc_rec/name u_1 u)
    (dkind-ok/irec (Acc_rec/type-wf u_1 u)).
 
 %% def accRecType
@@ -52,8 +61,11 @@ accRecType/type-wf : {u_1 : lvl} {u_2 : lvl} defeq (eforall (esort u_1) ([x] (ef
 %%% HOLE
 accRecType/value-typed : {u_1 : lvl} {u_2 : lvl} defeq (econst "Acc.rec" (lcons u_2 (lcons u_1 lnil))) (econst "Acc.rec" (lcons u_2 (lcons u_1 lnil))) (eforall (esort u_1) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Acc" (lcons u_1 lnil)) x) y) z) ([w] (esort u_2))))) ([z] (eforall (eforall x ([w] (eforall (eforall x ([x1] (eforall (eapp (eapp y x1) w) ([y1] (eapp (eapp (eapp (econst "Acc" (lcons u_1 lnil)) x) y) x1))))) ([x1] (eforall (eforall x ([y1] (eforall (eapp (eapp y y1) w) ([z1] (eapp (eapp z y1) (eapp (eapp x1 y1) z1)))))) ([y1] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "Acc.intro" (lcons u_1 lnil)) x) y) w) x1)))))))) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Acc" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))).
 
+accRecType/name : {u_1 : lvl} {u_2 : lvl} name "accRecType" (is-decl (lcons u_1 (lcons u_2 lnil)) (eforall (esort u_1) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Acc" (lcons u_1 lnil)) x) y) z) ([w] (esort u_2))))) ([z] (eforall (eforall x ([w] (eforall (eforall x ([x1] (eforall (eapp (eapp y x1) w) ([y1] (eapp (eapp (eapp (econst "Acc" (lcons u_1 lnil)) x) y) x1))))) ([x1] (eforall (eforall x ([y1] (eforall (eapp (eapp y y1) w) ([z1] (eapp (eapp z y1) (eapp (eapp x1 y1) z1)))))) ([y1] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "Acc.intro" (lcons u_1 lnil)) x) y) w) x1)))))))) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Acc" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (defn (econst "Acc.rec" (lcons u_2 (lcons u_1 lnil))))).
+
 accRecType/decl : {u_1 : lvl} {u_2 : lvl} declared "accRecType" (lcons u_1 (lcons u_2 lnil))
    (eforall (esort u_1) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Acc" (lcons u_1 lnil)) x) y) z) ([w] (esort u_2))))) ([z] (eforall (eforall x ([w] (eforall (eforall x ([x1] (eforall (eapp (eapp y x1) w) ([y1] (eapp (eapp (eapp (econst "Acc" (lcons u_1 lnil)) x) y) x1))))) ([x1] (eforall (eforall x ([y1] (eforall (eapp (eapp y y1) w) ([z1] (eapp (eapp z y1) (eapp (eapp x1 y1) z1)))))) ([y1] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "Acc.intro" (lcons u_1 lnil)) x) y) w) x1)))))))) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Acc" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1)))))))))))))
    (defn (econst "Acc.rec" (lcons u_2 (lcons u_1 lnil))))
+   (accRecType/name u_1 u_2)
    (dkind-ok/defn (accRecType/type-wf u_1 u_2) (accRecType/value-typed u_1 u_2)).
 

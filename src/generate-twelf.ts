@@ -172,6 +172,26 @@ function emitTypeWf(
   );
 }
 
+// Emit the name reservation `name "<declName>" (is-decl LS T K)` and return a
+// reference to it for the `declared` witness.  `name` is an *open* family
+// (`%thaw name` in freeze.elf), so this bare declaration is not a HOLE — it
+// records that the string `declName` is used as a declaration of the given
+// kind.  `%unique name` in final-checks.elf then rejects any string reserved
+// twice with conflicting interpretations (i.e. duplicate declarations).
+function emitNameResv(
+  mn: string,
+  declName: string,
+  lfNames: string[],
+  T: string,
+  kExpr: string,
+): string {
+  emit(
+    `${mn}/name : ${lvlBinders(lfNames)}name "${declName}" (is-decl ${lvlsExpr(lfNames)} ${T} ${kExpr}).`,
+  );
+  emit(``);
+  return obRef(`${mn}/name`, lfNames);
+}
+
 function skip(reason: string): void {
   emit(`%%% SKIP: ${reason}`);
   emit(``);
@@ -241,9 +261,11 @@ function generateValDecl(prover: Prover, d: Decl & { kind: "def" | "opaque" | "t
     const dkindCtor = d.kind === "def" ? "defn" : d.kind === "opaque" ? "opq" : "thm";
     const okCtor =
       d.kind === "def" ? "dkind-ok/defn" : d.kind === "opaque" ? "dkind-ok/opq" : "dkind-ok/thm";
+    const nm = emitNameResv(mn, declName, lfNames, T, `(${dkindCtor} ${V})`);
     emit(`${mn}/decl : ${lvlBinders(lfNames)}declared "${declName}" ${lvlsExpr(lfNames)}`);
     emit(`   ${T}`);
     emit(`   (${dkindCtor} ${V})`);
+    emit(`   ${nm}`);
     emit(`   (${okCtor} ${tw} ${vt}).`);
     emit(``);
   });
@@ -266,9 +288,11 @@ function generateAxiom(prover: Prover, d: Decl & { kind: "axiom" }): void {
       T,
       false,
     );
+    const nm = emitNameResv(mn, declName, lfNames, T, `ax`);
     emit(`${mn}/decl : ${lvlBinders(lfNames)}declared "${declName}" ${lvlsExpr(lfNames)}`);
     emit(`   ${T}`);
     emit(`   ax`);
+    emit(`   ${nm}`);
     emit(`   (dkind-ok/ax ${tw}).`);
     emit(``);
   });
@@ -310,9 +334,11 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
         lfNames,
         `ctor-positive "${indName}" ${lvlsExpr(lfNames)} ${T}`,
       );
+      const nm = emitNameResv(mn, declName, lfNames, T, `ctor`);
       emit(`${mn}/decl : ${lvlBinders(lfNames)}declared "${declName}" ${lvlsExpr(lfNames)}`);
       emit(`   ${T}`);
       emit(`   ctor`);
+      emit(`   ${nm}`);
       emit(`   (dkind-ok/ctor ${tw} ${cp}).`);
       emit(``);
     });
@@ -335,9 +361,11 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
         T,
         false,
       );
+      const nm = emitNameResv(mn, declName, lfNames, T, `irec`);
       emit(`${mn}/decl : ${lvlBinders(lfNames)}declared "${declName}" ${lvlsExpr(lfNames)}`);
       emit(`   ${T}`);
       emit(`   irec`);
+      emit(`   ${nm}`);
       emit(`   (dkind-ok/irec ${tw}).`);
       emit(``);
     });
@@ -367,9 +395,11 @@ function generateIndType(prover: Prover, t: IndType): void {
       lfNames,
       `ends-in-sort ${T}`,
     );
+    const nm = emitNameResv(mn, declName, lfNames, T, `indt`);
     emit(`${mn}/decl : ${lvlBinders(lfNames)}declared "${declName}" ${lvlsExpr(lfNames)}`);
     emit(`   ${T}`);
     emit(`   indt`);
+    emit(`   ${nm}`);
     emit(`   (dkind-ok/indt ${tw} ${eis}).`);
     emit(``);
   });

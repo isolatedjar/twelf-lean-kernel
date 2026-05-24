@@ -10,9 +10,12 @@ TypeWithTypeField/type-wf : defeq (esort (lsucc (lsucc lzero))) (esort (lsucc (l
 %%% HOLE
 TypeWithTypeField/ends-in-sort : ends-in-sort (esort (lsucc (lsucc lzero))).
 
+TypeWithTypeField/name : name "TypeWithTypeField" (is-decl lnil (esort (lsucc (lsucc lzero))) indt).
+
 TypeWithTypeField/decl : declared "TypeWithTypeField" lnil
    (esort (lsucc (lsucc lzero)))
    indt
+   TypeWithTypeField/name
    (dkind-ok/indt TypeWithTypeField/type-wf TypeWithTypeField/ends-in-sort).
 
 %% ctor TypeWithTypeField.mk (of TypeWithTypeField)
@@ -25,9 +28,12 @@ TypeWithTypeField_mk/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (econst
 %%% HOLE
 TypeWithTypeField_mk/positivity : ctor-positive "TypeWithTypeField" lnil (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil))).
 
+TypeWithTypeField_mk/name : name "TypeWithTypeField.mk" (is-decl lnil (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil))) ctor).
+
 TypeWithTypeField_mk/decl : declared "TypeWithTypeField.mk" lnil
    (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil)))
    ctor
+   TypeWithTypeField_mk/name
    (dkind-ok/ctor TypeWithTypeField_mk/type-wf TypeWithTypeField_mk/positivity).
 
 %% recursor TypeWithTypeField.rec
@@ -37,9 +43,12 @@ TypeWithTypeField_rec/type-wf-sort : {u : lvl} lvl.
 %%% HOLE
 TypeWithTypeField_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "TypeWithTypeField" lnil) ([x] (esort u))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "TypeWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "TypeWithTypeField" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "TypeWithTypeField" lnil) ([x] (esort u))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "TypeWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "TypeWithTypeField" lnil) ([z] (eapp x z))))))) (esort (TypeWithTypeField_rec/type-wf-sort u)).
 
+TypeWithTypeField_rec/name : {u : lvl} name "TypeWithTypeField.rec" (is-decl (lcons u lnil) (eforall (eforall (econst "TypeWithTypeField" lnil) ([x] (esort u))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "TypeWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "TypeWithTypeField" lnil) ([z] (eapp x z))))))) irec).
+
 TypeWithTypeField_rec/decl : {u : lvl} declared "TypeWithTypeField.rec" (lcons u lnil)
    (eforall (eforall (econst "TypeWithTypeField" lnil) ([x] (esort u))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "TypeWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "TypeWithTypeField" lnil) ([z] (eapp x z)))))))
    irec
+   (TypeWithTypeField_rec/name u)
    (dkind-ok/irec (TypeWithTypeField_rec/type-wf u)).
 
 %% def typeWithTypeField
@@ -52,8 +61,11 @@ typeWithTypeField/type-wf : defeq (esort (lsucc (lsucc lzero))) (esort (lsucc (l
 %%% HOLE
 typeWithTypeField/value-typed : defeq (econst "TypeWithTypeField" lnil) (econst "TypeWithTypeField" lnil) (esort (lsucc (lsucc lzero))).
 
+typeWithTypeField/name : name "typeWithTypeField" (is-decl lnil (esort (lsucc (lsucc lzero))) (defn (econst "TypeWithTypeField" lnil))).
+
 typeWithTypeField/decl : declared "typeWithTypeField" lnil
    (esort (lsucc (lsucc lzero)))
    (defn (econst "TypeWithTypeField" lnil))
+   typeWithTypeField/name
    (dkind-ok/defn typeWithTypeField/type-wf typeWithTypeField/value-typed).
 

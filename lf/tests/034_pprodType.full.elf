@@ -10,9 +10,12 @@ PProd/type-wf : {u : lvl} {v : lvl} defeq (eforall (esort u) ([x] (eforall (esor
 %%% HOLE
 PProd/ends-in-sort : {u : lvl} {v : lvl} ends-in-sort (eforall (esort u) ([x] (eforall (esort v) ([y] (esort (lmax (lmax (lsucc lzero) u) v)))))).
 
+PProd/name : {u : lvl} {v : lvl} name "PProd" (is-decl (lcons u (lcons v lnil)) (eforall (esort u) ([x] (eforall (esort v) ([y] (esort (lmax (lmax (lsucc lzero) u) v)))))) indt).
+
 PProd/decl : {u : lvl} {v : lvl} declared "PProd" (lcons u (lcons v lnil))
    (eforall (esort u) ([x] (eforall (esort v) ([y] (esort (lmax (lmax (lsucc lzero) u) v))))))
    indt
+   (PProd/name u v)
    (dkind-ok/indt (PProd/type-wf u v) (PProd/ends-in-sort u v)).
 
 %% ctor PProd.mk (of PProd)
@@ -25,9 +28,12 @@ PProd_mk/type-wf : {u : lvl} {v : lvl} defeq (eforall (esort u) ([x] (eforall (e
 %%% HOLE
 PProd_mk/positivity : {u : lvl} {v : lvl} ctor-positive "PProd" (lcons u (lcons v lnil)) (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y))))))))).
 
+PProd_mk/name : {u : lvl} {v : lvl} name "PProd.mk" (is-decl (lcons u (lcons v lnil)) (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y))))))))) ctor).
+
 PProd_mk/decl : {u : lvl} {v : lvl} declared "PProd.mk" (lcons u (lcons v lnil))
    (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y)))))))))
    ctor
+   (PProd_mk/name u v)
    (dkind-ok/ctor (PProd_mk/type-wf u v) (PProd_mk/positivity u v)).
 
 %% recursor PProd.rec
@@ -37,9 +43,12 @@ PProd_rec/type-wf-sort : {u_1 : lvl} {u : lvl} {v : lvl} lvl.
 %%% HOLE
 PProd_rec/type-wf : {u_1 : lvl} {u : lvl} {v : lvl} defeq (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (esort u_1))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PProd.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([x1] (eapp z x1))))))))))) (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (esort u_1))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PProd.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([x1] (eapp z x1))))))))))) (esort (PProd_rec/type-wf-sort u_1 u v)).
 
+PProd_rec/name : {u_1 : lvl} {u : lvl} {v : lvl} name "PProd.rec" (is-decl (lcons u_1 (lcons u (lcons v lnil))) (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (esort u_1))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PProd.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([x1] (eapp z x1))))))))))) irec).
+
 PProd_rec/decl : {u_1 : lvl} {u : lvl} {v : lvl} declared "PProd.rec" (lcons u_1 (lcons u (lcons v lnil)))
    (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (esort u_1))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PProd.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([x1] (eapp z x1)))))))))))
    irec
+   (PProd_rec/name u_1 u v)
    (dkind-ok/irec (PProd_rec/type-wf u_1 u v)).
 
 %% def pprodType
@@ -52,8 +61,11 @@ pprodType/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (eforall (esort (l
 %%% HOLE
 pprodType/value-typed : defeq (econst "PProd" (lcons (lsucc lzero) (lcons (lsucc lzero) lnil))) (econst "PProd" (lcons (lsucc lzero) (lcons (lsucc lzero) lnil))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))).
 
+pprodType/name : name "pprodType" (is-decl lnil (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (defn (econst "PProd" (lcons (lsucc lzero) (lcons (lsucc lzero) lnil))))).
+
 pprodType/decl : declared "pprodType" lnil
    (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero))))))
    (defn (econst "PProd" (lcons (lsucc lzero) (lcons (lsucc lzero) lnil))))
+   pprodType/name
    (dkind-ok/defn pprodType/type-wf pprodType/value-typed).
 

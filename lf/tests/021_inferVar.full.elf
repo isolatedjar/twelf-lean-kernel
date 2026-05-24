@@ -10,8 +10,11 @@ inferVar/type-wf : defeq (eforall (esort lzero) ([x] (eforall x ([y] x)))) (efor
 %%% HOLE
 inferVar/value-typed : defeq (elam (esort lzero) ([x] (elam x ([y] y)))) (elam (esort lzero) ([x] (elam x ([y] y)))) (eforall (esort lzero) ([x] (eforall x ([y] x)))).
 
+inferVar/name : name "inferVar" (is-decl lnil (eforall (esort lzero) ([x] (eforall x ([y] x)))) (defn (elam (esort lzero) ([x] (elam x ([y] y)))))).
+
 inferVar/decl : declared "inferVar" lnil
    (eforall (esort lzero) ([x] (eforall x ([y] x))))
    (defn (elam (esort lzero) ([x] (elam x ([y] y)))))
+   inferVar/name
    (dkind-ok/defn inferVar/type-wf inferVar/value-typed).
 

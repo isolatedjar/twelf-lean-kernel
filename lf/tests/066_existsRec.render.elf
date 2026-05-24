@@ -10,9 +10,12 @@ Exists/type-wf : {u : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x ([y
 %%% HOLE
 Exists/ends-in-sort : {u : lvl} ends-in-sort (eforall (esort u) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (esort lzero))))).
 
+Exists/name : {u : lvl} name "Exists" (is-decl (lcons u lnil) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (esort lzero))))) indt).
+
 Exists/decl : {u : lvl} declared "Exists" (lcons u lnil)
    (eforall (esort u) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (esort lzero)))))
    indt
+   (Exists/name u)
    (dkind-ok/indt (Exists/type-wf u) (Exists/ends-in-sort u)).
 
 %% ctor Exists.intro (of Exists)
@@ -25,9 +28,12 @@ Exists_intro/type-wf : {u : lvl} defeq (eforall (esort u) ([x] (eforall (eforall
 %%% HOLE
 Exists_intro/positivity : {u : lvl} ctor-positive "Exists" (lcons u lnil) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "Exists" (lcons u lnil)) x) y))))))))).
 
+Exists_intro/name : {u : lvl} name "Exists.intro" (is-decl (lcons u lnil) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "Exists" (lcons u lnil)) x) y))))))))) ctor).
+
 Exists_intro/decl : {u : lvl} declared "Exists.intro" (lcons u lnil)
    (eforall (esort u) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "Exists" (lcons u lnil)) x) y)))))))))
    ctor
+   (Exists_intro/name u)
    (dkind-ok/ctor (Exists_intro/type-wf u) (Exists_intro/positivity u)).
 
 %% recursor Exists.rec
@@ -37,9 +43,12 @@ Exists_rec/type-wf-sort : {u : lvl} lvl.
 %%% HOLE
 Exists_rec/type-wf : {u : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall (eforall (eapp (eapp (econst "Exists" (lcons u lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Exists.intro" (lcons u lnil)) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "Exists" (lcons u lnil)) x) y) ([x1] (eapp z x1))))))))))) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall (eforall (eapp (eapp (econst "Exists" (lcons u lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Exists.intro" (lcons u lnil)) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "Exists" (lcons u lnil)) x) y) ([x1] (eapp z x1))))))))))) (esort (Exists_rec/type-wf-sort u)).
 
+Exists_rec/name : {u : lvl} name "Exists.rec" (is-decl (lcons u lnil) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall (eforall (eapp (eapp (econst "Exists" (lcons u lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Exists.intro" (lcons u lnil)) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "Exists" (lcons u lnil)) x) y) ([x1] (eapp z x1))))))))))) irec).
+
 Exists_rec/decl : {u : lvl} declared "Exists.rec" (lcons u lnil)
    (eforall (esort u) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall (eforall (eapp (eapp (econst "Exists" (lcons u lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Exists.intro" (lcons u lnil)) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "Exists" (lcons u lnil)) x) y) ([x1] (eapp z x1)))))))))))
    irec
+   (Exists_rec/name u)
    (dkind-ok/irec (Exists_rec/type-wf u)).
 
 %% def existsRec
@@ -52,8 +61,11 @@ existsRec/type-wf : {u : lvl} defeq (eforall (esort u) ([x] (eforall (eforall x 
 %%% HOLE
 existsRec/value-typed : {u : lvl} defeq (econst "Exists.rec" (lcons u lnil)) (econst "Exists.rec" (lcons u lnil)) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall (eforall (eapp (eapp (econst "Exists" (lcons u lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Exists.intro" (lcons u lnil)) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "Exists" (lcons u lnil)) x) y) ([x1] (eapp z x1))))))))))).
 
+existsRec/name : {u : lvl} name "existsRec" (is-decl (lcons u lnil) (eforall (esort u) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall (eforall (eapp (eapp (econst "Exists" (lcons u lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Exists.intro" (lcons u lnil)) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "Exists" (lcons u lnil)) x) y) ([x1] (eapp z x1))))))))))) (defn (econst "Exists.rec" (lcons u lnil)))).
+
 existsRec/decl : {u : lvl} declared "existsRec" (lcons u lnil)
    (eforall (esort u) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall (eforall (eapp (eapp (econst "Exists" (lcons u lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Exists.intro" (lcons u lnil)) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "Exists" (lcons u lnil)) x) y) ([x1] (eapp z x1)))))))))))
    (defn (econst "Exists.rec" (lcons u lnil)))
+   (existsRec/name u)
    (dkind-ok/defn (existsRec/type-wf u) (existsRec/value-typed u)).
 

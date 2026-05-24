@@ -10,9 +10,12 @@ PUnit/type-wf : {u : lvl} defeq (esort u) (esort u) (esort (PUnit/type-wf-sort u
 %%% HOLE
 PUnit/ends-in-sort : {u : lvl} ends-in-sort (esort u).
 
+PUnit/name : {u : lvl} name "PUnit" (is-decl (lcons u lnil) (esort u) indt).
+
 PUnit/decl : {u : lvl} declared "PUnit" (lcons u lnil)
    (esort u)
    indt
+   (PUnit/name u)
    (dkind-ok/indt (PUnit/type-wf u) (PUnit/ends-in-sort u)).
 
 %% ctor PUnit.unit (of PUnit)
@@ -25,9 +28,12 @@ PUnit_unit/type-wf : {u : lvl} defeq (econst "PUnit" (lcons u lnil)) (econst "PU
 %%% HOLE
 PUnit_unit/positivity : {u : lvl} ctor-positive "PUnit" (lcons u lnil) (econst "PUnit" (lcons u lnil)).
 
+PUnit_unit/name : {u : lvl} name "PUnit.unit" (is-decl (lcons u lnil) (econst "PUnit" (lcons u lnil)) ctor).
+
 PUnit_unit/decl : {u : lvl} declared "PUnit.unit" (lcons u lnil)
    (econst "PUnit" (lcons u lnil))
    ctor
+   (PUnit_unit/name u)
    (dkind-ok/ctor (PUnit_unit/type-wf u) (PUnit_unit/positivity u)).
 
 %% recursor PUnit.rec
@@ -37,9 +43,12 @@ PUnit_rec/type-wf-sort : {u_1 : lvl} {u : lvl} lvl.
 %%% HOLE
 PUnit_rec/type-wf : {u_1 : lvl} {u : lvl} defeq (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))) (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))) (esort (PUnit_rec/type-wf-sort u_1 u)).
 
+PUnit_rec/name : {u_1 : lvl} {u : lvl} name "PUnit.rec" (is-decl (lcons u_1 (lcons u lnil)) (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))) irec).
+
 PUnit_rec/decl : {u_1 : lvl} {u : lvl} declared "PUnit.rec" (lcons u_1 (lcons u lnil))
    (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z)))))))
    irec
+   (PUnit_rec/name u_1 u)
    (dkind-ok/irec (PUnit_rec/type-wf u_1 u)).
 
 %% def punitRec
@@ -52,8 +61,11 @@ punitRec/type-wf : {u : lvl} {lv_w : lvl} defeq (eforall (eforall (econst "PUnit
 %%% HOLE
 punitRec/value-typed : {u : lvl} {lv_w : lvl} defeq (econst "PUnit.rec" (lcons lv_w (lcons u lnil))) (econst "PUnit.rec" (lcons lv_w (lcons u lnil))) (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort lv_w))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))).
 
+punitRec/name : {u : lvl} {lv_w : lvl} name "punitRec" (is-decl (lcons u (lcons lv_w lnil)) (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort lv_w))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))) (defn (econst "PUnit.rec" (lcons lv_w (lcons u lnil))))).
+
 punitRec/decl : {u : lvl} {lv_w : lvl} declared "punitRec" (lcons u (lcons lv_w lnil))
    (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort lv_w))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z)))))))
    (defn (econst "PUnit.rec" (lcons lv_w (lcons u lnil))))
+   (punitRec/name u lv_w)
    (dkind-ok/defn (punitRec/type-wf u lv_w) (punitRec/value-typed u lv_w)).
 

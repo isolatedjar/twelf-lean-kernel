@@ -10,8 +10,11 @@ dependentType/type-wf : defeq (esort lzero) (esort lzero) (esort dependentType/t
 %%% HOLE
 dependentType/value-typed : defeq (eforall (esort lzero) ([x] x)) (eforall (esort lzero) ([x] x)) (esort lzero).
 
+dependentType/name : name "dependentType" (is-decl lnil (esort lzero) (defn (eforall (esort lzero) ([x] x)))).
+
 dependentType/decl : declared "dependentType" lnil
    (esort lzero)
    (defn (eforall (esort lzero) ([x] x)))
+   dependentType/name
    (dkind-ok/defn dependentType/type-wf dependentType/value-typed).
 
