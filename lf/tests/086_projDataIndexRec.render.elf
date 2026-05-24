@@ -2,7 +2,10 @@
 %%% The recursor for `ProjDataIndex` allows elimination into sort.
 %% inductive N
 %%% HOLE
-N/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero).
+N/type-wf-sort : lvl.
+
+%%% HOLE
+N/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort N/type-wf-sort).
 
 %%% HOLE
 N/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
@@ -14,7 +17,10 @@ N/decl : declared "N" lnil
 
 %% ctor N.zero (of N)
 %%% HOLE
-N_zero/type-wf : defeq (econst "N" lnil) (econst "N" lnil) (esort lzero).
+N_zero/type-wf-sort : lvl.
+
+%%% HOLE
+N_zero/type-wf : defeq (econst "N" lnil) (econst "N" lnil) (esort N_zero/type-wf-sort).
 
 %%% HOLE
 N_zero/positivity : ctor-positive "N" lnil (econst "N" lnil).
@@ -26,7 +32,10 @@ N_zero/decl : declared "N.zero" lnil
 
 %% ctor N.succ (of N)
 %%% HOLE
-N_succ/type-wf : defeq (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (esort lzero).
+N_succ/type-wf-sort : lvl.
+
+%%% HOLE
+N_succ/type-wf : defeq (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (esort N_succ/type-wf-sort).
 
 %%% HOLE
 N_succ/positivity : ctor-positive "N" lnil (eforall (econst "N" lnil) ([x] (econst "N" lnil))).
@@ -38,7 +47,10 @@ N_succ/decl : declared "N.succ" lnil
 
 %% recursor N.rec
 %%% HOLE
-N_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) (esort lzero).
+N_rec/type-wf-sort : {u : lvl} lvl.
+
+%%% HOLE
+N_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) (esort (N_rec/type-wf-sort u)).
 
 N_rec/decl : {u : lvl} declared "N.rec" (lcons u lnil)
    (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w)))))))))
@@ -47,7 +59,10 @@ N_rec/decl : {u : lvl} declared "N.rec" (lcons u lnil)
 
 %% inductive True
 %%% HOLE
-True/type-wf : defeq (esort lzero) (esort lzero) (esort lzero).
+True/type-wf-sort : lvl.
+
+%%% HOLE
+True/type-wf : defeq (esort lzero) (esort lzero) (esort True/type-wf-sort).
 
 %%% HOLE
 True/ends-in-sort : ends-in-sort (esort lzero).
@@ -59,7 +74,10 @@ True/decl : declared "True" lnil
 
 %% ctor True.intro (of True)
 %%% HOLE
-True_intro/type-wf : defeq (econst "True" lnil) (econst "True" lnil) (esort lzero).
+True_intro/type-wf-sort : lvl.
+
+%%% HOLE
+True_intro/type-wf : defeq (econst "True" lnil) (econst "True" lnil) (esort True_intro/type-wf-sort).
 
 %%% HOLE
 True_intro/positivity : ctor-positive "True" lnil (econst "True" lnil).
@@ -71,7 +89,10 @@ True_intro/decl : declared "True.intro" lnil
 
 %% recursor True.rec
 %%% HOLE
-True_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "True" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "True" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) (esort lzero).
+True_rec/type-wf-sort : {u : lvl} lvl.
+
+%%% HOLE
+True_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "True" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "True" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) (esort (True_rec/type-wf-sort u)).
 
 True_rec/decl : {u : lvl} declared "True.rec" (lcons u lnil)
    (eforall (eforall (econst "True" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z)))))))
@@ -80,7 +101,10 @@ True_rec/decl : {u : lvl} declared "True.rec" (lcons u lnil)
 
 %% inductive ProjDataIndex
 %%% HOLE
-ProjDataIndex/type-wf : defeq (eforall (econst "N" lnil) ([x] (esort lzero))) (eforall (econst "N" lnil) ([x] (esort lzero))) (esort lzero).
+ProjDataIndex/type-wf-sort : lvl.
+
+%%% HOLE
+ProjDataIndex/type-wf : defeq (eforall (econst "N" lnil) ([x] (esort lzero))) (eforall (econst "N" lnil) ([x] (esort lzero))) (esort ProjDataIndex/type-wf-sort).
 
 %%% HOLE
 ProjDataIndex/ends-in-sort : ends-in-sort (eforall (econst "N" lnil) ([x] (esort lzero))).
@@ -92,7 +116,10 @@ ProjDataIndex/decl : declared "ProjDataIndex" lnil
 
 %% ctor ProjDataIndex.mk (of ProjDataIndex)
 %%% HOLE
-ProjDataIndex_mk/type-wf : defeq (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp (econst "ProjDataIndex" lnil) x))))) (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp (econst "ProjDataIndex" lnil) x))))) (esort lzero).
+ProjDataIndex_mk/type-wf-sort : lvl.
+
+%%% HOLE
+ProjDataIndex_mk/type-wf : defeq (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp (econst "ProjDataIndex" lnil) x))))) (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp (econst "ProjDataIndex" lnil) x))))) (esort ProjDataIndex_mk/type-wf-sort).
 
 %%% HOLE
 ProjDataIndex_mk/positivity : ctor-positive "ProjDataIndex" lnil (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp (econst "ProjDataIndex" lnil) x))))).
@@ -104,7 +131,10 @@ ProjDataIndex_mk/decl : declared "ProjDataIndex.mk" lnil
 
 %% recursor ProjDataIndex.rec
 %%% HOLE
-ProjDataIndex_rec/type-wf : {u : lvl} defeq (eforall (econst "N" lnil) ([x] (eforall (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (esort u))) ([y] (eforall (eforall (econst "True" lnil) ([z] (eapp y (eapp (eapp (econst "ProjDataIndex.mk" lnil) x) z)))) ([z] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([w] (eapp y w))))))))) (eforall (econst "N" lnil) ([x] (eforall (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (esort u))) ([y] (eforall (eforall (econst "True" lnil) ([z] (eapp y (eapp (eapp (econst "ProjDataIndex.mk" lnil) x) z)))) ([z] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([w] (eapp y w))))))))) (esort lzero).
+ProjDataIndex_rec/type-wf-sort : {u : lvl} lvl.
+
+%%% HOLE
+ProjDataIndex_rec/type-wf : {u : lvl} defeq (eforall (econst "N" lnil) ([x] (eforall (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (esort u))) ([y] (eforall (eforall (econst "True" lnil) ([z] (eapp y (eapp (eapp (econst "ProjDataIndex.mk" lnil) x) z)))) ([z] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([w] (eapp y w))))))))) (eforall (econst "N" lnil) ([x] (eforall (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (esort u))) ([y] (eforall (eforall (econst "True" lnil) ([z] (eapp y (eapp (eapp (econst "ProjDataIndex.mk" lnil) x) z)))) ([z] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([w] (eapp y w))))))))) (esort (ProjDataIndex_rec/type-wf-sort u)).
 
 ProjDataIndex_rec/decl : {u : lvl} declared "ProjDataIndex.rec" (lcons u lnil)
    (eforall (econst "N" lnil) ([x] (eforall (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (esort u))) ([y] (eforall (eforall (econst "True" lnil) ([z] (eapp y (eapp (eapp (econst "ProjDataIndex.mk" lnil) x) z)))) ([z] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([w] (eapp y w)))))))))
@@ -113,7 +143,10 @@ ProjDataIndex_rec/decl : {u : lvl} declared "ProjDataIndex.rec" (lcons u lnil)
 
 %% def projDataIndexRec
 %%% HOLE
-projDataIndexRec/type-wf : {u_1 : lvl} defeq (eforall (econst "N" lnil) ([x] (eforall (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (esort u_1))) ([y] (eforall (eforall (econst "True" lnil) ([z] (eapp y (eapp (eapp (econst "ProjDataIndex.mk" lnil) x) z)))) ([z] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([w] (eapp y w))))))))) (eforall (econst "N" lnil) ([x] (eforall (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (esort u_1))) ([y] (eforall (eforall (econst "True" lnil) ([z] (eapp y (eapp (eapp (econst "ProjDataIndex.mk" lnil) x) z)))) ([z] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([w] (eapp y w))))))))) (esort lzero).
+projDataIndexRec/type-wf-sort : {u_1 : lvl} lvl.
+
+%%% HOLE
+projDataIndexRec/type-wf : {u_1 : lvl} defeq (eforall (econst "N" lnil) ([x] (eforall (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (esort u_1))) ([y] (eforall (eforall (econst "True" lnil) ([z] (eapp y (eapp (eapp (econst "ProjDataIndex.mk" lnil) x) z)))) ([z] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([w] (eapp y w))))))))) (eforall (econst "N" lnil) ([x] (eforall (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (esort u_1))) ([y] (eforall (eforall (econst "True" lnil) ([z] (eapp y (eapp (eapp (econst "ProjDataIndex.mk" lnil) x) z)))) ([z] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([w] (eapp y w))))))))) (esort (projDataIndexRec/type-wf-sort u_1)).
 
 %%% HOLE
 projDataIndexRec/value-typed : {u_1 : lvl} defeq (econst "ProjDataIndex.rec" (lcons u_1 lnil)) (econst "ProjDataIndex.rec" (lcons u_1 lnil)) (eforall (econst "N" lnil) ([x] (eforall (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (esort u_1))) ([y] (eforall (eforall (econst "True" lnil) ([z] (eapp y (eapp (eapp (econst "ProjDataIndex.mk" lnil) x) z)))) ([z] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([w] (eapp y w))))))))).

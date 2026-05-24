@@ -2,7 +2,10 @@
 %%% Another inductive type with a non-sort type
 %% axiom aType
 %%% HOLE
-aType/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero).
+aType/type-wf-sort : lvl.
+
+%%% HOLE
+aType/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort aType/type-wf-sort).
 
 aType/decl : declared "aType" lnil
    (esort (lsucc lzero))
@@ -11,7 +14,10 @@ aType/decl : declared "aType" lnil
 
 %% inductive inductBadNonSort2
 %%% HOLE
-inductBadNonSort2/type-wf : defeq (econst "aType" lnil) (econst "aType" lnil) (esort lzero).
+inductBadNonSort2/type-wf-sort : lvl.
+
+%%% HOLE
+inductBadNonSort2/type-wf : defeq (econst "aType" lnil) (econst "aType" lnil) (esort inductBadNonSort2/type-wf-sort).
 
 %%% HOLE
 inductBadNonSort2/ends-in-sort : ends-in-sort (econst "aType" lnil).

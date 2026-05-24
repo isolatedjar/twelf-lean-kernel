@@ -2,7 +2,10 @@
 %%% An inductive with a constructor with wrong parameters
 %% axiom aProp
 %%% HOLE
-aProp/type-wf : defeq (esort lzero) (esort lzero) (esort lzero).
+aProp/type-wf-sort : lvl.
+
+%%% HOLE
+aProp/type-wf : defeq (esort lzero) (esort lzero) (esort aProp/type-wf-sort).
 
 aProp/decl : declared "aProp" lnil
    (esort lzero)
@@ -11,7 +14,10 @@ aProp/decl : declared "aProp" lnil
 
 %% inductive inductWrongCtorParams
 %%% HOLE
-inductWrongCtorParams/type-wf : defeq (eforall (esort lzero) ([x] (esort (lsucc lzero)))) (eforall (esort lzero) ([x] (esort (lsucc lzero)))) (esort lzero).
+inductWrongCtorParams/type-wf-sort : lvl.
+
+%%% HOLE
+inductWrongCtorParams/type-wf : defeq (eforall (esort lzero) ([x] (esort (lsucc lzero)))) (eforall (esort lzero) ([x] (esort (lsucc lzero)))) (esort inductWrongCtorParams/type-wf-sort).
 
 %%% HOLE
 inductWrongCtorParams/ends-in-sort : ends-in-sort (eforall (esort lzero) ([x] (esort (lsucc lzero)))).
@@ -23,7 +29,10 @@ inductWrongCtorParams/decl : declared "inductWrongCtorParams" lnil
 
 %% ctor inductWrongCtorParams.mk (of inductWrongCtorParams)
 %%% HOLE
-inductWrongCtorParams_mk/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (eapp (econst "inductWrongCtorParams" lnil) (econst "aProp" lnil)))) (eforall (esort (lsucc lzero)) ([x] (eapp (econst "inductWrongCtorParams" lnil) (econst "aProp" lnil)))) (esort lzero).
+inductWrongCtorParams_mk/type-wf-sort : lvl.
+
+%%% HOLE
+inductWrongCtorParams_mk/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (eapp (econst "inductWrongCtorParams" lnil) (econst "aProp" lnil)))) (eforall (esort (lsucc lzero)) ([x] (eapp (econst "inductWrongCtorParams" lnil) (econst "aProp" lnil)))) (esort inductWrongCtorParams_mk/type-wf-sort).
 
 %%% HOLE
 inductWrongCtorParams_mk/positivity : ctor-positive "inductWrongCtorParams" lnil (eforall (esort (lsucc lzero)) ([x] (eapp (econst "inductWrongCtorParams" lnil) (econst "aProp" lnil)))).
@@ -35,7 +44,10 @@ inductWrongCtorParams_mk/decl : declared "inductWrongCtorParams.mk" lnil
 
 %% recursor inductWrongCtorParams.rec
 %%% HOLE
-inductWrongCtorParams_rec/type-wf : defeq (esort lzero) (esort lzero) (esort lzero).
+inductWrongCtorParams_rec/type-wf-sort : lvl.
+
+%%% HOLE
+inductWrongCtorParams_rec/type-wf : defeq (esort lzero) (esort lzero) (esort inductWrongCtorParams_rec/type-wf-sort).
 
 inductWrongCtorParams_rec/decl : declared "inductWrongCtorParams.rec" lnil
    (esort lzero)

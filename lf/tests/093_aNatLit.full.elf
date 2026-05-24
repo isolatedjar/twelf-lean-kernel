@@ -4,7 +4,10 @@
 
 %% inductive Nat
 %%% HOLE
-Nat/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero).
+Nat/type-wf-sort : lvl.
+
+%%% HOLE
+Nat/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort Nat/type-wf-sort).
 
 %%% HOLE
 Nat/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
@@ -16,7 +19,10 @@ Nat/decl : declared "Nat" lnil
 
 %% ctor Nat.zero (of Nat)
 %%% HOLE
-Nat_zero/type-wf : defeq (econst "Nat" lnil) (econst "Nat" lnil) (esort lzero).
+Nat_zero/type-wf-sort : lvl.
+
+%%% HOLE
+Nat_zero/type-wf : defeq (econst "Nat" lnil) (econst "Nat" lnil) (esort Nat_zero/type-wf-sort).
 
 %%% HOLE
 Nat_zero/positivity : ctor-positive "Nat" lnil (econst "Nat" lnil).
@@ -28,7 +34,10 @@ Nat_zero/decl : declared "Nat.zero" lnil
 
 %% ctor Nat.succ (of Nat)
 %%% HOLE
-Nat_succ/type-wf : defeq (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (esort lzero).
+Nat_succ/type-wf-sort : lvl.
+
+%%% HOLE
+Nat_succ/type-wf : defeq (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (esort Nat_succ/type-wf-sort).
 
 %%% HOLE
 Nat_succ/positivity : ctor-positive "Nat" lnil (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))).
@@ -40,7 +49,10 @@ Nat_succ/decl : declared "Nat.succ" lnil
 
 %% recursor Nat.rec
 %%% HOLE
-Nat_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (esort lzero).
+Nat_rec/type-wf-sort : {u : lvl} lvl.
+
+%%% HOLE
+Nat_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (esort (Nat_rec/type-wf-sort u)).
 
 Nat_rec/decl : {u : lvl} declared "Nat.rec" (lcons u lnil)
    (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w)))))))))
@@ -49,7 +61,10 @@ Nat_rec/decl : {u : lvl} declared "Nat.rec" (lcons u lnil)
 
 %% def aNatLit
 %%% HOLE
-aNatLit/type-wf : defeq (econst "Nat" lnil) (econst "Nat" lnil) (esort lzero).
+aNatLit/type-wf-sort : lvl.
+
+%%% HOLE
+aNatLit/type-wf : defeq (econst "Nat" lnil) (econst "Nat" lnil) (esort aNatLit/type-wf-sort).
 
 %%% HOLE
 aNatLit/value-typed : defeq (enatlit 0 nonneg_0) (enatlit 0 nonneg_0) (econst "Nat" lnil).

@@ -20,7 +20,17 @@
 
 import { NullProver, RealProver } from "./prover.ts";
 import { levelParamBindings, lfExpr, mangle, nameToLfLevelVar, natLiteralsSeen } from "./render.ts";
-import type { Decl, Expr, Fmt, IndType, Level, Name, ParsedEnv, Prover } from "./shared.ts";
+import type {
+  Decl,
+  Expr,
+  Fmt,
+  IndType,
+  Level,
+  Name,
+  ParsedEnv,
+  Prover,
+  TypeWfResult,
+} from "./shared.ts";
 import { nameToString, transformNamesFromJSON } from "./shared.ts";
 
 // =====================================================================
@@ -82,20 +92,6 @@ function obRef(constName: string, lfNames: string[]): string {
   return lfNames.length === 0 ? constName : `(${constName} ${lfNames.join(" ")})`;
 }
 
-// Placeholder sort for type-wf obligations.  We use a GROUND sort
-// (`esort lzero`) rather than a free implicit `U`: a free `U` leaves the
-// universe undetermined, which makes the `declared` witness non-ground and
-// trips final-checks' `%mode declared +N +LS -T -DK -W` ("variable … in
-// output not necessarily ground").  `lzero` is a deliberate lie for a HOLE
-// (the type need not live at Sort 0) — but a HOLE is admitted-by-fiat and
-// freeze-rejected anyway, so only its groundness matters here.
-//
-// ⚠️ REVISIT (flagged in the plan): once the RealProver discharges type-wf,
-// the obligation's sort must be the *actual* universe the proof targets,
-// not this placeholder.  That requires the prover to communicate the sort
-// (or the generator to compute it).  Out of scope for step 1.
-const TYPE_WF_SORT = "(esort lzero)";
-
 // =====================================================================
 // Obligation emission
 // =====================================================================
@@ -123,6 +119,41 @@ function emitObligation(
   }
   emit(``);
   return { ref: obRef(constName, lfNames) };
+}
+
+// Emit the type-wf obligation `defeq T T (esort U)`.
+//
+// For `thm` the kernel forces U = lzero (the type must be a Prop), so we emit
+// the literal and no universe obligation.  Otherwise U is *synthesized* (the
+// Sort that T inhabits — not in the NDJSON), so we emit it as its own
+// obligation on `lvl`: `lvl` is freezable and independent of `declared`, so
+// (a) the type-wf witness stays ground (no implicit-var reconstruction, no
+// `%mode declared` violation) and (b) the universe HOLE is itself detectable.
+function emitTypeWf(
+  result: TypeWfResult,
+  mn: string,
+  lfNames: string[],
+  T: string,
+  isThm: boolean,
+): ObResult {
+  if (result === "fail-on-purpose") return { fail: true };
+  if (isThm) {
+    const proof = result === null ? null : result.proof;
+    return emitObligation(proof, `${mn}/type-wf`, lfNames, `defeq ${T} ${T} (esort lzero)`);
+  }
+  const sortOb = emitObligation(
+    result === null ? null : result.sort,
+    `${mn}/type-wf-sort`,
+    lfNames,
+    `lvl`,
+  );
+  if ("fail" in sortOb) return { fail: true };
+  return emitObligation(
+    result === null ? null : result.proof,
+    `${mn}/type-wf`,
+    lfNames,
+    `defeq ${T} ${T} (esort ${sortOb.ref})`,
+  );
 }
 
 function emitFail(reason: string): void {
@@ -183,13 +214,12 @@ function generateValDecl(prover: Prover, d: Decl & { kind: "def" | "opaque" | "t
     }
     emit(`%% ${d.kind} ${declName}`);
 
-    // type-wf:  thm requires Prop (esort lzero); def/opq allow any sort.
-    const sort = TYPE_WF_SORT;
-    const tw = emitObligation(
+    const tw = emitTypeWf(
       prover.typeWellFormed({ type: d.type, levelParams: d.levelParams }),
-      `${mn}/type-wf`,
+      mn,
       lfNames,
-      `defeq ${T} ${T} ${sort}`,
+      T,
+      d.kind === "thm",
     );
     if ("fail" in tw) {
       emitFail(`type-wf for ${declName}`);
@@ -228,11 +258,12 @@ function generateAxiom(prover: Prover, d: Decl & { kind: "axiom" }): void {
       return;
     }
     emit(`%% axiom ${declName}`);
-    const tw = emitObligation(
+    const tw = emitTypeWf(
       prover.typeWellFormed({ type: d.type, levelParams: d.levelParams }),
-      `${mn}/type-wf`,
+      mn,
       lfNames,
-      `defeq ${T} ${T} ${TYPE_WF_SORT}`,
+      T,
+      false,
     );
     if ("fail" in tw) {
       emitFail(`type-wf for ${declName}`);
@@ -264,11 +295,12 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
       }
       const indLevels: Level[] = c.levelParams.map((name) => ({ kind: "param", name }));
       emit(`%% ctor ${declName} (of ${indName})`);
-      const tw = emitObligation(
+      const tw = emitTypeWf(
         prover.typeWellFormed({ type: c.type, levelParams: c.levelParams }),
-        `${mn}/type-wf`,
+        mn,
         lfNames,
-        `defeq ${T} ${T} ${TYPE_WF_SORT}`,
+        T,
+        false,
       );
       if ("fail" in tw) {
         emitFail(`type-wf for ${declName}`);
@@ -307,11 +339,12 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
         return;
       }
       emit(`%% recursor ${declName}`);
-      const tw = emitObligation(
+      const tw = emitTypeWf(
         prover.typeWellFormed({ type: r.type, levelParams: r.levelParams }),
-        `${mn}/type-wf`,
+        mn,
         lfNames,
-        `defeq ${T} ${T} ${TYPE_WF_SORT}`,
+        T,
+        false,
       );
       if ("fail" in tw) {
         emitFail(`type-wf for ${declName}`);
@@ -336,11 +369,12 @@ function generateIndType(prover: Prover, t: IndType): void {
       return;
     }
     emit(`%% inductive ${declName}`);
-    const tw = emitObligation(
+    const tw = emitTypeWf(
       prover.typeWellFormed({ type: t.type, levelParams: t.levelParams }),
-      `${mn}/type-wf`,
+      mn,
       lfNames,
-      `defeq ${T} ${T} ${TYPE_WF_SORT}`,
+      T,
+      false,
     );
     if ("fail" in tw) {
       emitFail(`type-wf for ${declName}`);

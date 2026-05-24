@@ -2,7 +2,10 @@
 %%% The binding domain of a forall has to be a sort
 %% def id
 %%% HOLE
-id/type-wf : {u : lvl} defeq (eforall (esort u) ([x] (eforall x ([y] x)))) (eforall (esort u) ([x] (eforall x ([y] x)))) (esort lzero).
+id/type-wf-sort : {u : lvl} lvl.
+
+%%% HOLE
+id/type-wf : {u : lvl} defeq (eforall (esort u) ([x] (eforall x ([y] x)))) (eforall (esort u) ([x] (eforall x ([y] x)))) (esort (id/type-wf-sort u)).
 
 %%% HOLE
 id/value-typed : {u : lvl} defeq (elam (esort u) ([x] (elam x ([y] y)))) (elam (esort u) ([x] (elam x ([y] y)))) (eforall (esort u) ([x] (eforall x ([y] x)))).
@@ -14,7 +17,10 @@ id/decl : {u : lvl} declared "id" (lcons u lnil)
 
 %% def forallSortBad
 %%% HOLE
-forallSortBad/type-wf : defeq (esort lzero) (esort lzero) (esort lzero).
+forallSortBad/type-wf-sort : lvl.
+
+%%% HOLE
+forallSortBad/type-wf : defeq (esort lzero) (esort lzero) (esort forallSortBad/type-wf-sort).
 
 %%% HOLE
 forallSortBad/value-typed : defeq (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] (eforall y ([z] y)))))) (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] (eforall y ([z] y)))))) (esort lzero).

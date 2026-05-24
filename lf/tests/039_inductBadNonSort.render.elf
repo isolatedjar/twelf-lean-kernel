@@ -2,7 +2,10 @@
 %%% An inductive type with a non-sort type
 %% def constType
 %%% HOLE
-constType/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort lzero).
+constType/type-wf-sort : lvl.
+
+%%% HOLE
+constType/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort constType/type-wf-sort).
 
 %%% HOLE
 constType/value-typed : defeq (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))).
@@ -14,7 +17,10 @@ constType/decl : declared "constType" lnil
 
 %% inductive inductBadNonSort
 %%% HOLE
-inductBadNonSort/type-wf : defeq (econst "constType" lnil) (econst "constType" lnil) (esort lzero).
+inductBadNonSort/type-wf-sort : lvl.
+
+%%% HOLE
+inductBadNonSort/type-wf : defeq (econst "constType" lnil) (econst "constType" lnil) (esort inductBadNonSort/type-wf-sort).
 
 %%% HOLE
 inductBadNonSort/ends-in-sort : ends-in-sort (econst "constType" lnil).

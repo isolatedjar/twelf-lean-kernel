@@ -4,13 +4,13 @@
 // values returned here; nothing in this file is part of the trusted base.
 // See plugin-refactor.md and the `Prover` interface in shared.ts.
 
-import type { ProofResult, Prover } from "./shared.ts";
+import type { ProofResult, Prover, TypeWfResult } from "./shared.ts";
 
 // NullProver discharges nothing: every obligation becomes a HOLE. Running
 // the generator with this prover produces the `.render.elf` view — the
 // declaration skeleton with every proof obligation declared by fiat.
 export const NullProver: Prover = {
-  typeWellFormed(): ProofResult {
+  typeWellFormed(): TypeWfResult {
     return null;
   },
   valueHasType(): ProofResult {

@@ -2,7 +2,10 @@
 %%% An inductive with two constructors with the same name
 %% inductive DupConCon
 %%% HOLE
-DupConCon/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero).
+DupConCon/type-wf-sort : lvl.
+
+%%% HOLE
+DupConCon/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort DupConCon/type-wf-sort).
 
 %%% HOLE
 DupConCon/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
@@ -14,7 +17,10 @@ DupConCon/decl : declared "DupConCon" lnil
 
 %% ctor dup_ind_con_con.mk (of DupConCon)
 %%% HOLE
-dup_ind_con_con_mk/type-wf : defeq (econst "DupConCon" lnil) (econst "DupConCon" lnil) (esort lzero).
+dup_ind_con_con_mk/type-wf-sort : lvl.
+
+%%% HOLE
+dup_ind_con_con_mk/type-wf : defeq (econst "DupConCon" lnil) (econst "DupConCon" lnil) (esort dup_ind_con_con_mk/type-wf-sort).
 
 %%% HOLE
 dup_ind_con_con_mk/positivity : ctor-positive "DupConCon" lnil (econst "DupConCon" lnil).
@@ -26,7 +32,10 @@ dup_ind_con_con_mk/decl : declared "dup_ind_con_con.mk" lnil
 
 %% ctor dup_ind_con_con.mk (of DupConCon)
 %%% HOLE
-dup_ind_con_con_mk/type-wf : defeq (econst "DupConCon" lnil) (econst "DupConCon" lnil) (esort lzero).
+dup_ind_con_con_mk/type-wf-sort : lvl.
+
+%%% HOLE
+dup_ind_con_con_mk/type-wf : defeq (econst "DupConCon" lnil) (econst "DupConCon" lnil) (esort dup_ind_con_con_mk/type-wf-sort).
 
 %%% HOLE
 dup_ind_con_con_mk/positivity : ctor-positive "DupConCon" lnil (econst "DupConCon" lnil).
@@ -38,7 +47,10 @@ dup_ind_con_con_mk/decl : declared "dup_ind_con_con.mk" lnil
 
 %% recursor DupConCon.rec
 %%% HOLE
-DupConCon_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "DupConCon" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] (eforall (econst "DupConCon" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "DupConCon" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] (eforall (econst "DupConCon" lnil) ([w] (eapp x w))))))))) (esort lzero).
+DupConCon_rec/type-wf-sort : {u : lvl} lvl.
+
+%%% HOLE
+DupConCon_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "DupConCon" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] (eforall (econst "DupConCon" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "DupConCon" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] (eforall (econst "DupConCon" lnil) ([w] (eapp x w))))))))) (esort (DupConCon_rec/type-wf-sort u)).
 
 DupConCon_rec/decl : {u : lvl} declared "DupConCon.rec" (lcons u lnil)
    (eforall (eforall (econst "DupConCon" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] (eforall (econst "DupConCon" lnil) ([w] (eapp x w)))))))))

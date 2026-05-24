@@ -2,7 +2,10 @@
 %%% An inductive type can have fields of level up to that of the inductive.
 %% inductive TypeWithTypeField
 %%% HOLE
-TypeWithTypeField/type-wf : defeq (esort (lsucc (lsucc lzero))) (esort (lsucc (lsucc lzero))) (esort lzero).
+TypeWithTypeField/type-wf-sort : lvl.
+
+%%% HOLE
+TypeWithTypeField/type-wf : defeq (esort (lsucc (lsucc lzero))) (esort (lsucc (lsucc lzero))) (esort TypeWithTypeField/type-wf-sort).
 
 %%% HOLE
 TypeWithTypeField/ends-in-sort : ends-in-sort (esort (lsucc (lsucc lzero))).
@@ -14,7 +17,10 @@ TypeWithTypeField/decl : declared "TypeWithTypeField" lnil
 
 %% ctor TypeWithTypeField.mk (of TypeWithTypeField)
 %%% HOLE
-TypeWithTypeField_mk/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil))) (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil))) (esort lzero).
+TypeWithTypeField_mk/type-wf-sort : lvl.
+
+%%% HOLE
+TypeWithTypeField_mk/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil))) (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil))) (esort TypeWithTypeField_mk/type-wf-sort).
 
 %%% HOLE
 TypeWithTypeField_mk/positivity : ctor-positive "TypeWithTypeField" lnil (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil))).
@@ -26,7 +32,10 @@ TypeWithTypeField_mk/decl : declared "TypeWithTypeField.mk" lnil
 
 %% recursor TypeWithTypeField.rec
 %%% HOLE
-TypeWithTypeField_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "TypeWithTypeField" lnil) ([x] (esort u))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "TypeWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "TypeWithTypeField" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "TypeWithTypeField" lnil) ([x] (esort u))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "TypeWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "TypeWithTypeField" lnil) ([z] (eapp x z))))))) (esort lzero).
+TypeWithTypeField_rec/type-wf-sort : {u : lvl} lvl.
+
+%%% HOLE
+TypeWithTypeField_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "TypeWithTypeField" lnil) ([x] (esort u))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "TypeWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "TypeWithTypeField" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "TypeWithTypeField" lnil) ([x] (esort u))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "TypeWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "TypeWithTypeField" lnil) ([z] (eapp x z))))))) (esort (TypeWithTypeField_rec/type-wf-sort u)).
 
 TypeWithTypeField_rec/decl : {u : lvl} declared "TypeWithTypeField.rec" (lcons u lnil)
    (eforall (eforall (econst "TypeWithTypeField" lnil) ([x] (esort u))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "TypeWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "TypeWithTypeField" lnil) ([z] (eapp x z)))))))
@@ -35,7 +44,10 @@ TypeWithTypeField_rec/decl : {u : lvl} declared "TypeWithTypeField.rec" (lcons u
 
 %% def typeWithTypeField
 %%% HOLE
-typeWithTypeField/type-wf : defeq (esort (lsucc (lsucc lzero))) (esort (lsucc (lsucc lzero))) (esort lzero).
+typeWithTypeField/type-wf-sort : lvl.
+
+%%% HOLE
+typeWithTypeField/type-wf : defeq (esort (lsucc (lsucc lzero))) (esort (lsucc (lsucc lzero))) (esort typeWithTypeField/type-wf-sort).
 
 %%% HOLE
 typeWithTypeField/value-typed : defeq (econst "TypeWithTypeField" lnil) (econst "TypeWithTypeField" lnil) (esort (lsucc (lsucc lzero))).

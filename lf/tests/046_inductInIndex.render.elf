@@ -2,7 +2,10 @@
 %%% A constructor with an unexpected occurrence of the type in index position of a return type.
 %% axiom aProp
 %%% HOLE
-aProp/type-wf : defeq (esort lzero) (esort lzero) (esort lzero).
+aProp/type-wf-sort : lvl.
+
+%%% HOLE
+aProp/type-wf : defeq (esort lzero) (esort lzero) (esort aProp/type-wf-sort).
 
 aProp/decl : declared "aProp" lnil
    (esort lzero)
@@ -11,7 +14,10 @@ aProp/decl : declared "aProp" lnil
 
 %% inductive inductInIndex
 %%% HOLE
-inductInIndex/type-wf : defeq (eforall (esort lzero) ([x] (esort lzero))) (eforall (esort lzero) ([x] (esort lzero))) (esort lzero).
+inductInIndex/type-wf-sort : lvl.
+
+%%% HOLE
+inductInIndex/type-wf : defeq (eforall (esort lzero) ([x] (esort lzero))) (eforall (esort lzero) ([x] (esort lzero))) (esort inductInIndex/type-wf-sort).
 
 %%% HOLE
 inductInIndex/ends-in-sort : ends-in-sort (eforall (esort lzero) ([x] (esort lzero))).
@@ -23,7 +29,10 @@ inductInIndex/decl : declared "inductInIndex" lnil
 
 %% ctor inductInIndex.mk (of inductInIndex)
 %%% HOLE
-inductInIndex_mk/type-wf : defeq (eapp (econst "inductInIndex" lnil) (eapp (econst "inductInIndex" lnil) (econst "aProp" lnil))) (eapp (econst "inductInIndex" lnil) (eapp (econst "inductInIndex" lnil) (econst "aProp" lnil))) (esort lzero).
+inductInIndex_mk/type-wf-sort : lvl.
+
+%%% HOLE
+inductInIndex_mk/type-wf : defeq (eapp (econst "inductInIndex" lnil) (eapp (econst "inductInIndex" lnil) (econst "aProp" lnil))) (eapp (econst "inductInIndex" lnil) (eapp (econst "inductInIndex" lnil) (econst "aProp" lnil))) (esort inductInIndex_mk/type-wf-sort).
 
 %%% HOLE
 inductInIndex_mk/positivity : ctor-positive "inductInIndex" lnil (eapp (econst "inductInIndex" lnil) (eapp (econst "inductInIndex" lnil) (econst "aProp" lnil))).
@@ -35,7 +44,10 @@ inductInIndex_mk/decl : declared "inductInIndex.mk" lnil
 
 %% recursor inductInIndex.rec
 %%% HOLE
-inductInIndex_rec/type-wf : defeq (esort lzero) (esort lzero) (esort lzero).
+inductInIndex_rec/type-wf-sort : lvl.
+
+%%% HOLE
+inductInIndex_rec/type-wf : defeq (esort lzero) (esort lzero) (esort inductInIndex_rec/type-wf-sort).
 
 inductInIndex_rec/decl : declared "inductInIndex.rec" lnil
    (esort lzero)

@@ -234,12 +234,20 @@ export function app(fn: Fmt, ...args: Fmt[]): Fmt {
 //                           signature to fail.
 export type ProofResult = Fmt | null | "fail-on-purpose";
 
+// type-wf is special: the obligation is `defeq T T (esort U)`, and the
+// universe `U` is itself synthesized (it's the Sort that T inhabits — not
+// given in the NDJSON).  The prover returns BOTH the synthesized sort (a
+// `lvl` term) and the proof, so the generator can emit the universe as its
+// own obligation on the freezable, declared-independent `lvl` family rather
+// than relying on a placeholder or on Twelf reconstructing an implicit var.
+export type TypeWfResult = { sort: Fmt; proof: Fmt } | null | "fail-on-purpose";
+
 // One method per proof-obligation shape the generator can raise.  Each gets
 // the relevant IR context; the generator owns rendering the obligation's
 // *type*, the prover only supplies the *proof*.
 export interface Prover {
-  // defeq T T (esort U) — T is a well-formed type.
-  typeWellFormed(ctx: { type: Expr; levelParams: Name[] }): ProofResult;
+  // defeq T T (esort U) — T is a well-formed type; U is its (synthesized) sort.
+  typeWellFormed(ctx: { type: Expr; levelParams: Name[] }): TypeWfResult;
   // defeq V V T — value V has type T.
   valueHasType(ctx: { value: Expr; type: Expr; levelParams: Name[] }): ProofResult;
   // ends-in-sort T — T is a Π-chain ending in a sort (inductive type formers).

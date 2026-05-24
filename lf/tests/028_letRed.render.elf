@@ -2,7 +2,10 @@
 %%% Reducing a let
 %% axiom aProp
 %%% HOLE
-aProp/type-wf : defeq (esort lzero) (esort lzero) (esort lzero).
+aProp/type-wf-sort : lvl.
+
+%%% HOLE
+aProp/type-wf : defeq (esort lzero) (esort lzero) (esort aProp/type-wf-sort).
 
 aProp/decl : declared "aProp" lnil
    (esort lzero)
@@ -11,7 +14,10 @@ aProp/decl : declared "aProp" lnil
 
 %% def letRed
 %%% HOLE
-letRed/type-wf : defeq (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (esort lzero).
+letRed/type-wf-sort : lvl.
+
+%%% HOLE
+letRed/type-wf : defeq (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (esort letRed/type-wf-sort).
 
 %%% HOLE
 letRed/value-typed : defeq (econst "aProp" lnil) (econst "aProp" lnil) (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)).

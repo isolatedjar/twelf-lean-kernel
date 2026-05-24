@@ -4,7 +4,10 @@
 %%% be rejected by the checker.
 %% def dup_rec_def2.rec
 %%% HOLE
-dup_rec_def2_rec/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero).
+dup_rec_def2_rec/type-wf-sort : lvl.
+
+%%% HOLE
+dup_rec_def2_rec/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort dup_rec_def2_rec/type-wf-sort).
 
 %%% HOLE
 dup_rec_def2_rec/value-typed : defeq (esort lzero) (esort lzero) (esort (lsucc lzero)).
@@ -16,7 +19,10 @@ dup_rec_def2_rec/decl : declared "dup_rec_def2.rec" lnil
 
 %% inductive dup_rec_def2
 %%% HOLE
-dup_rec_def2/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero).
+dup_rec_def2/type-wf-sort : lvl.
+
+%%% HOLE
+dup_rec_def2/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort dup_rec_def2/type-wf-sort).
 
 %%% HOLE
 dup_rec_def2/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
@@ -28,7 +34,10 @@ dup_rec_def2/decl : declared "dup_rec_def2" lnil
 
 %% ctor dup_rec_def2.mk (of dup_rec_def2)
 %%% HOLE
-dup_rec_def2_mk/type-wf : defeq (econst "dup_rec_def2" lnil) (econst "dup_rec_def2" lnil) (esort lzero).
+dup_rec_def2_mk/type-wf-sort : lvl.
+
+%%% HOLE
+dup_rec_def2_mk/type-wf : defeq (econst "dup_rec_def2" lnil) (econst "dup_rec_def2" lnil) (esort dup_rec_def2_mk/type-wf-sort).
 
 %%% HOLE
 dup_rec_def2_mk/positivity : ctor-positive "dup_rec_def2" lnil (econst "dup_rec_def2" lnil).
@@ -40,7 +49,10 @@ dup_rec_def2_mk/decl : declared "dup_rec_def2.mk" lnil
 
 %% recursor dup_rec_def2.original_rec
 %%% HOLE
-dup_rec_def2_original_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "dup_rec_def2" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_rec_def2.mk" lnil)) ([y] (eforall (econst "dup_rec_def2" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "dup_rec_def2" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_rec_def2.mk" lnil)) ([y] (eforall (econst "dup_rec_def2" lnil) ([z] (eapp x z))))))) (esort lzero).
+dup_rec_def2_original_rec/type-wf-sort : {u : lvl} lvl.
+
+%%% HOLE
+dup_rec_def2_original_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "dup_rec_def2" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_rec_def2.mk" lnil)) ([y] (eforall (econst "dup_rec_def2" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "dup_rec_def2" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_rec_def2.mk" lnil)) ([y] (eforall (econst "dup_rec_def2" lnil) ([z] (eapp x z))))))) (esort (dup_rec_def2_original_rec/type-wf-sort u)).
 
 dup_rec_def2_original_rec/decl : {u : lvl} declared "dup_rec_def2.original_rec" (lcons u lnil)
    (eforall (eforall (econst "dup_rec_def2" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_rec_def2.mk" lnil)) ([y] (eforall (econst "dup_rec_def2" lnil) ([z] (eapp x z)))))))

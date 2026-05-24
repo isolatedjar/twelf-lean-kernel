@@ -2,7 +2,10 @@
 %%% Peano arithmetic: 2 * 2 = 4
 %% def PN
 %%% HOLE
-PN/type-wf : {u_1 : lvl} defeq (esort (limax (lsucc u_1) u_1)) (esort (limax (lsucc u_1) u_1)) (esort lzero).
+PN/type-wf-sort : {u_1 : lvl} lvl.
+
+%%% HOLE
+PN/type-wf : {u_1 : lvl} defeq (esort (limax (lsucc u_1) u_1)) (esort (limax (lsucc u_1) u_1)) (esort (PN/type-wf-sort u_1)).
 
 %%% HOLE
 PN/value-typed : {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall (eforall x ([y] x)) ([y] (eforall x ([z] x)))))) (eforall (esort u_1) ([x] (eforall (eforall x ([y] x)) ([y] (eforall x ([z] x)))))) (esort (limax (lsucc u_1) u_1)).
@@ -14,7 +17,10 @@ PN/decl : {u_1 : lvl} declared "PN" (lcons u_1 lnil)
 
 %% def PN.succ
 %%% HOLE
-PN_succ/type-wf : {u_1 : lvl} defeq (eforall (econst "PN" (lcons u_1 lnil)) ([x] (econst "PN" (lcons u_1 lnil)))) (eforall (econst "PN" (lcons u_1 lnil)) ([x] (econst "PN" (lcons u_1 lnil)))) (esort lzero).
+PN_succ/type-wf-sort : {u_1 : lvl} lvl.
+
+%%% HOLE
+PN_succ/type-wf : {u_1 : lvl} defeq (eforall (econst "PN" (lcons u_1 lnil)) ([x] (econst "PN" (lcons u_1 lnil)))) (eforall (econst "PN" (lcons u_1 lnil)) ([x] (econst "PN" (lcons u_1 lnil)))) (esort (PN_succ/type-wf-sort u_1)).
 
 %%% HOLE
 PN_succ/value-typed : {u_1 : lvl} defeq (elam (econst "PN" (lcons u_1 lnil)) ([x] (elam (esort u_1) ([y] (elam (eforall y ([z] y)) ([z] (elam y ([w] (eapp z (eapp (eapp (eapp x y) z) w)))))))))) (elam (econst "PN" (lcons u_1 lnil)) ([x] (elam (esort u_1) ([y] (elam (eforall y ([z] y)) ([z] (elam y ([w] (eapp z (eapp (eapp (eapp x y) z) w)))))))))) (eforall (econst "PN" (lcons u_1 lnil)) ([x] (econst "PN" (lcons u_1 lnil)))).
@@ -26,7 +32,10 @@ PN_succ/decl : {u_1 : lvl} declared "PN.succ" (lcons u_1 lnil)
 
 %% def PN.zero
 %%% HOLE
-PN_zero/type-wf : {u_1 : lvl} defeq (econst "PN" (lcons u_1 lnil)) (econst "PN" (lcons u_1 lnil)) (esort lzero).
+PN_zero/type-wf-sort : {u_1 : lvl} lvl.
+
+%%% HOLE
+PN_zero/type-wf : {u_1 : lvl} defeq (econst "PN" (lcons u_1 lnil)) (econst "PN" (lcons u_1 lnil)) (esort (PN_zero/type-wf-sort u_1)).
 
 %%% HOLE
 PN_zero/value-typed : {u_1 : lvl} defeq (elam (esort u_1) ([x] (elam (eforall x ([y] x)) ([y] (elam x ([z] z)))))) (elam (esort u_1) ([x] (elam (eforall x ([y] x)) ([y] (elam x ([z] z)))))) (econst "PN" (lcons u_1 lnil)).
@@ -38,7 +47,10 @@ PN_zero/decl : {u_1 : lvl} declared "PN.zero" (lcons u_1 lnil)
 
 %% def PN.lit0
 %%% HOLE
-PN_lit0/type-wf : {u_1 : lvl} defeq (econst "PN" (lcons u_1 lnil)) (econst "PN" (lcons u_1 lnil)) (esort lzero).
+PN_lit0/type-wf-sort : {u_1 : lvl} lvl.
+
+%%% HOLE
+PN_lit0/type-wf : {u_1 : lvl} defeq (econst "PN" (lcons u_1 lnil)) (econst "PN" (lcons u_1 lnil)) (esort (PN_lit0/type-wf-sort u_1)).
 
 %%% HOLE
 PN_lit0/value-typed : {u_1 : lvl} defeq (econst "PN.zero" (lcons u_1 lnil)) (econst "PN.zero" (lcons u_1 lnil)) (econst "PN" (lcons u_1 lnil)).
@@ -50,7 +62,10 @@ PN_lit0/decl : {u_1 : lvl} declared "PN.lit0" (lcons u_1 lnil)
 
 %% def PN.lit1
 %%% HOLE
-PN_lit1/type-wf : {u_1 : lvl} defeq (econst "PN" (lcons u_1 lnil)) (econst "PN" (lcons u_1 lnil)) (esort lzero).
+PN_lit1/type-wf-sort : {u_1 : lvl} lvl.
+
+%%% HOLE
+PN_lit1/type-wf : {u_1 : lvl} defeq (econst "PN" (lcons u_1 lnil)) (econst "PN" (lcons u_1 lnil)) (esort (PN_lit1/type-wf-sort u_1)).
 
 %%% HOLE
 PN_lit1/value-typed : {u_1 : lvl} defeq (eapp (econst "PN.succ" (lcons u_1 lnil)) (econst "PN.lit0" (lcons u_1 lnil))) (eapp (econst "PN.succ" (lcons u_1 lnil)) (econst "PN.lit0" (lcons u_1 lnil))) (econst "PN" (lcons u_1 lnil)).
@@ -62,7 +77,10 @@ PN_lit1/decl : {u_1 : lvl} declared "PN.lit1" (lcons u_1 lnil)
 
 %% def PN.lit2
 %%% HOLE
-PN_lit2/type-wf : {u_1 : lvl} defeq (econst "PN" (lcons u_1 lnil)) (econst "PN" (lcons u_1 lnil)) (esort lzero).
+PN_lit2/type-wf-sort : {u_1 : lvl} lvl.
+
+%%% HOLE
+PN_lit2/type-wf : {u_1 : lvl} defeq (econst "PN" (lcons u_1 lnil)) (econst "PN" (lcons u_1 lnil)) (esort (PN_lit2/type-wf-sort u_1)).
 
 %%% HOLE
 PN_lit2/value-typed : {u_1 : lvl} defeq (eapp (econst "PN.succ" (lcons u_1 lnil)) (econst "PN.lit1" (lcons u_1 lnil))) (eapp (econst "PN.succ" (lcons u_1 lnil)) (econst "PN.lit1" (lcons u_1 lnil))) (econst "PN" (lcons u_1 lnil)).
@@ -74,7 +92,10 @@ PN_lit2/decl : {u_1 : lvl} declared "PN.lit2" (lcons u_1 lnil)
 
 %% def PN.lit3
 %%% HOLE
-PN_lit3/type-wf : {u_1 : lvl} defeq (econst "PN" (lcons u_1 lnil)) (econst "PN" (lcons u_1 lnil)) (esort lzero).
+PN_lit3/type-wf-sort : {u_1 : lvl} lvl.
+
+%%% HOLE
+PN_lit3/type-wf : {u_1 : lvl} defeq (econst "PN" (lcons u_1 lnil)) (econst "PN" (lcons u_1 lnil)) (esort (PN_lit3/type-wf-sort u_1)).
 
 %%% HOLE
 PN_lit3/value-typed : {u_1 : lvl} defeq (eapp (econst "PN.succ" (lcons u_1 lnil)) (econst "PN.lit2" (lcons u_1 lnil))) (eapp (econst "PN.succ" (lcons u_1 lnil)) (econst "PN.lit2" (lcons u_1 lnil))) (econst "PN" (lcons u_1 lnil)).
@@ -86,7 +107,10 @@ PN_lit3/decl : {u_1 : lvl} declared "PN.lit3" (lcons u_1 lnil)
 
 %% def PN.lit4
 %%% HOLE
-PN_lit4/type-wf : {u_1 : lvl} defeq (econst "PN" (lcons u_1 lnil)) (econst "PN" (lcons u_1 lnil)) (esort lzero).
+PN_lit4/type-wf-sort : {u_1 : lvl} lvl.
+
+%%% HOLE
+PN_lit4/type-wf : {u_1 : lvl} defeq (econst "PN" (lcons u_1 lnil)) (econst "PN" (lcons u_1 lnil)) (esort (PN_lit4/type-wf-sort u_1)).
 
 %%% HOLE
 PN_lit4/value-typed : {u_1 : lvl} defeq (eapp (econst "PN.succ" (lcons u_1 lnil)) (econst "PN.lit3" (lcons u_1 lnil))) (eapp (econst "PN.succ" (lcons u_1 lnil)) (econst "PN.lit3" (lcons u_1 lnil))) (econst "PN" (lcons u_1 lnil)).
@@ -98,7 +122,10 @@ PN_lit4/decl : {u_1 : lvl} declared "PN.lit4" (lcons u_1 lnil)
 
 %% def PN.mul
 %%% HOLE
-PN_mul/type-wf : {u_1 : lvl} defeq (eforall (econst "PN" (lcons u_1 lnil)) ([x] (eforall (econst "PN" (lcons u_1 lnil)) ([y] (econst "PN" (lcons u_1 lnil)))))) (eforall (econst "PN" (lcons u_1 lnil)) ([x] (eforall (econst "PN" (lcons u_1 lnil)) ([y] (econst "PN" (lcons u_1 lnil)))))) (esort lzero).
+PN_mul/type-wf-sort : {u_1 : lvl} lvl.
+
+%%% HOLE
+PN_mul/type-wf : {u_1 : lvl} defeq (eforall (econst "PN" (lcons u_1 lnil)) ([x] (eforall (econst "PN" (lcons u_1 lnil)) ([y] (econst "PN" (lcons u_1 lnil)))))) (eforall (econst "PN" (lcons u_1 lnil)) ([x] (eforall (econst "PN" (lcons u_1 lnil)) ([y] (econst "PN" (lcons u_1 lnil)))))) (esort (PN_mul/type-wf-sort u_1)).
 
 %%% HOLE
 PN_mul/value-typed : {u_1 : lvl} defeq (elam (econst "PN" (lcons u_1 lnil)) ([x] (elam (econst "PN" (lcons u_1 lnil)) ([y] (elam (esort u_1) ([z] (elam (eforall z ([w] z)) ([w] (elam z ([x1] (eapp (eapp (eapp x z) (eapp (eapp y z) w)) x1))))))))))) (elam (econst "PN" (lcons u_1 lnil)) ([x] (elam (econst "PN" (lcons u_1 lnil)) ([y] (elam (esort u_1) ([z] (elam (eforall z ([w] z)) ([w] (elam z ([x1] (eapp (eapp (eapp x z) (eapp (eapp y z) w)) x1))))))))))) (eforall (econst "PN" (lcons u_1 lnil)) ([x] (eforall (econst "PN" (lcons u_1 lnil)) ([y] (econst "PN" (lcons u_1 lnil)))))).

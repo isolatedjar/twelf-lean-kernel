@@ -2,7 +2,10 @@
 %%% The type of a declaration has to be a type, not some other expression
 %% def constType
 %%% HOLE
-constType/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort lzero).
+constType/type-wf-sort : lvl.
+
+%%% HOLE
+constType/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort constType/type-wf-sort).
 
 %%% HOLE
 constType/value-typed : defeq (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))).
@@ -14,7 +17,10 @@ constType/decl : declared "constType" lnil
 
 %% def nonTypeType
 %%% HOLE
-nonTypeType/type-wf : defeq (econst "constType" lnil) (econst "constType" lnil) (esort lzero).
+nonTypeType/type-wf-sort : lvl.
+
+%%% HOLE
+nonTypeType/type-wf : defeq (econst "constType" lnil) (econst "constType" lnil) (esort nonTypeType/type-wf-sort).
 
 %%% HOLE
 nonTypeType/value-typed : defeq (esort lzero) (esort lzero) (econst "constType" lnil).

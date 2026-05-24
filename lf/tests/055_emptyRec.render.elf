@@ -2,7 +2,10 @@
 %%% Asserting the type of the generated recursor
 %% inductive Empty
 %%% HOLE
-Empty/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero).
+Empty/type-wf-sort : lvl.
+
+%%% HOLE
+Empty/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort Empty/type-wf-sort).
 
 %%% HOLE
 Empty/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
@@ -14,7 +17,10 @@ Empty/decl : declared "Empty" lnil
 
 %% recursor Empty.rec
 %%% HOLE
-Empty_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (esort lzero).
+Empty_rec/type-wf-sort : {u : lvl} lvl.
+
+%%% HOLE
+Empty_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (esort (Empty_rec/type-wf-sort u)).
 
 Empty_rec/decl : {u : lvl} declared "Empty.rec" (lcons u lnil)
    (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y)))))
@@ -23,7 +29,10 @@ Empty_rec/decl : {u : lvl} declared "Empty.rec" (lcons u lnil)
 
 %% def emptyRec
 %%% HOLE
-emptyRec/type-wf : {u : lvl} defeq (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (esort lzero).
+emptyRec/type-wf-sort : {u : lvl} lvl.
+
+%%% HOLE
+emptyRec/type-wf : {u : lvl} defeq (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (esort (emptyRec/type-wf-sort u)).
 
 %%% HOLE
 emptyRec/value-typed : {u : lvl} defeq (econst "Empty.rec" (lcons u lnil)) (econst "Empty.rec" (lcons u lnil)) (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))).

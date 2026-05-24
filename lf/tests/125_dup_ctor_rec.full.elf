@@ -2,7 +2,10 @@
 %%% A constructor and a recursor with the same name
 %% inductive dup_ctor_rec
 %%% HOLE
-dup_ctor_rec/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort lzero).
+dup_ctor_rec/type-wf-sort : lvl.
+
+%%% HOLE
+dup_ctor_rec/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort dup_ctor_rec/type-wf-sort).
 
 %%% HOLE
 dup_ctor_rec/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
@@ -14,7 +17,10 @@ dup_ctor_rec/decl : declared "dup_ctor_rec" lnil
 
 %% ctor dup_ctor_rec.rec (of dup_ctor_rec)
 %%% HOLE
-dup_ctor_rec_rec/type-wf : defeq (econst "dup_ctor_rec" lnil) (econst "dup_ctor_rec" lnil) (esort lzero).
+dup_ctor_rec_rec/type-wf-sort : lvl.
+
+%%% HOLE
+dup_ctor_rec_rec/type-wf : defeq (econst "dup_ctor_rec" lnil) (econst "dup_ctor_rec" lnil) (esort dup_ctor_rec_rec/type-wf-sort).
 
 %%% HOLE
 dup_ctor_rec_rec/positivity : ctor-positive "dup_ctor_rec" lnil (econst "dup_ctor_rec" lnil).
@@ -26,7 +32,10 @@ dup_ctor_rec_rec/decl : declared "dup_ctor_rec.rec" lnil
 
 %% recursor dup_ctor_rec.rec
 %%% HOLE
-dup_ctor_rec_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z))))))) (esort lzero).
+dup_ctor_rec_rec/type-wf-sort : {u : lvl} lvl.
+
+%%% HOLE
+dup_ctor_rec_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z))))))) (esort (dup_ctor_rec_rec/type-wf-sort u)).
 
 dup_ctor_rec_rec/decl : {u : lvl} declared "dup_ctor_rec.rec" (lcons u lnil)
    (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z)))))))
