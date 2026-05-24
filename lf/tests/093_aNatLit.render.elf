@@ -14,11 +14,8 @@ Nat/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
 Nat/name : name "Nat" (is-decl lnil (esort (lsucc lzero)) indt).
 
-Nat/decl : declared "Nat" lnil
-   (esort (lsucc lzero))
-   indt
-   Nat/name
-   (dkind-ok/indt Nat/type-wf Nat/ends-in-sort).
+Nat/decl : declared "Nat" lnil (esort (lsucc lzero)) indt
+   = declared/ok Nat/name (dkind-ok/indt Nat/type-wf Nat/ends-in-sort).
 
 %% ctor Nat.zero (of Nat)
 %%% HOLE
@@ -32,11 +29,8 @@ Nat_zero/positivity : ctor-positive "Nat" lnil (econst "Nat" lnil).
 
 Nat_zero/name : name "Nat.zero" (is-decl lnil (econst "Nat" lnil) ctor).
 
-Nat_zero/decl : declared "Nat.zero" lnil
-   (econst "Nat" lnil)
-   ctor
-   Nat_zero/name
-   (dkind-ok/ctor Nat_zero/type-wf Nat_zero/positivity).
+Nat_zero/decl : declared "Nat.zero" lnil (econst "Nat" lnil) ctor
+   = declared/ok Nat_zero/name (dkind-ok/ctor Nat_zero/type-wf Nat_zero/positivity).
 
 %% ctor Nat.succ (of Nat)
 %%% HOLE
@@ -50,11 +44,8 @@ Nat_succ/positivity : ctor-positive "Nat" lnil (eforall (econst "Nat" lnil) ([x]
 
 Nat_succ/name : name "Nat.succ" (is-decl lnil (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) ctor).
 
-Nat_succ/decl : declared "Nat.succ" lnil
-   (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil)))
-   ctor
-   Nat_succ/name
-   (dkind-ok/ctor Nat_succ/type-wf Nat_succ/positivity).
+Nat_succ/decl : declared "Nat.succ" lnil (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) ctor
+   = declared/ok Nat_succ/name (dkind-ok/ctor Nat_succ/type-wf Nat_succ/positivity).
 
 %% recursor Nat.rec
 %%% HOLE
@@ -65,11 +56,8 @@ Nat_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "Nat" lnil) ([x] (es
 
 Nat_rec/name : {u : lvl} name "Nat.rec" (is-decl (lcons u lnil) (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) irec).
 
-Nat_rec/decl : {u : lvl} declared "Nat.rec" (lcons u lnil)
-   (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w)))))))))
-   irec
-   (Nat_rec/name u)
-   (dkind-ok/irec (Nat_rec/type-wf u)).
+Nat_rec/decl : {u : lvl} declared "Nat.rec" (lcons u lnil) (eforall (eforall (econst "Nat" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) irec
+   = [u] declared/ok (Nat_rec/name u) (dkind-ok/irec (Nat_rec/type-wf u)).
 
 %% def aNatLit
 %%% HOLE
@@ -83,9 +71,6 @@ aNatLit/value-typed : defeq (enatlit 0 nonneg_0) (enatlit 0 nonneg_0) (econst "N
 
 aNatLit/name : name "aNatLit" (is-decl lnil (econst "Nat" lnil) (defn (enatlit 0 nonneg_0))).
 
-aNatLit/decl : declared "aNatLit" lnil
-   (econst "Nat" lnil)
-   (defn (enatlit 0 nonneg_0))
-   aNatLit/name
-   (dkind-ok/defn aNatLit/type-wf aNatLit/value-typed).
+aNatLit/decl : declared "aNatLit" lnil (econst "Nat" lnil) (defn (enatlit 0 nonneg_0))
+   = declared/ok aNatLit/name (dkind-ok/defn aNatLit/type-wf aNatLit/value-typed).
 

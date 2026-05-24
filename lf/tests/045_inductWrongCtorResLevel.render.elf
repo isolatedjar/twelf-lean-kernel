@@ -12,11 +12,8 @@ inductWrongCtorResLevel/ends-in-sort : {u1 : lvl} {u2 : lvl} ends-in-sort (efora
 
 inductWrongCtorResLevel/name : {u1 : lvl} {u2 : lvl} name "inductWrongCtorResLevel" (is-decl (lcons u1 (lcons u2 lnil)) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) indt).
 
-inductWrongCtorResLevel/decl : {u1 : lvl} {u2 : lvl} declared "inductWrongCtorResLevel" (lcons u1 (lcons u2 lnil))
-   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero))))))
-   indt
-   (inductWrongCtorResLevel/name u1 u2)
-   (dkind-ok/indt (inductWrongCtorResLevel/type-wf u1 u2) (inductWrongCtorResLevel/ends-in-sort u1 u2)).
+inductWrongCtorResLevel/decl : {u1 : lvl} {u2 : lvl} declared "inductWrongCtorResLevel" (lcons u1 (lcons u2 lnil)) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) indt
+   = [u1] [u2] declared/ok (inductWrongCtorResLevel/name u1 u2) (dkind-ok/indt (inductWrongCtorResLevel/type-wf u1 u2) (inductWrongCtorResLevel/ends-in-sort u1 u2)).
 
 %% ctor inductWrongCtorResLevel.mk (of inductWrongCtorResLevel)
 %%% HOLE
@@ -30,11 +27,8 @@ inductWrongCtorResLevel_mk/positivity : {u1 : lvl} {u2 : lvl} ctor-positive "ind
 
 inductWrongCtorResLevel_mk/name : {u1 : lvl} {u2 : lvl} name "inductWrongCtorResLevel.mk" (is-decl (lcons u1 (lcons u2 lnil)) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResLevel" (lcons u2 (lcons u1 lnil))) x) y))))) ctor).
 
-inductWrongCtorResLevel_mk/decl : {u1 : lvl} {u2 : lvl} declared "inductWrongCtorResLevel.mk" (lcons u1 (lcons u2 lnil))
-   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResLevel" (lcons u2 (lcons u1 lnil))) x) y)))))
-   ctor
-   (inductWrongCtorResLevel_mk/name u1 u2)
-   (dkind-ok/ctor (inductWrongCtorResLevel_mk/type-wf u1 u2) (inductWrongCtorResLevel_mk/positivity u1 u2)).
+inductWrongCtorResLevel_mk/decl : {u1 : lvl} {u2 : lvl} declared "inductWrongCtorResLevel.mk" (lcons u1 (lcons u2 lnil)) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResLevel" (lcons u2 (lcons u1 lnil))) x) y))))) ctor
+   = [u1] [u2] declared/ok (inductWrongCtorResLevel_mk/name u1 u2) (dkind-ok/ctor (inductWrongCtorResLevel_mk/type-wf u1 u2) (inductWrongCtorResLevel_mk/positivity u1 u2)).
 
 %% recursor inductWrongCtorResLevel.rec
 %%% HOLE
@@ -45,9 +39,6 @@ inductWrongCtorResLevel_rec/type-wf : defeq (esort lzero) (esort lzero) (esort i
 
 inductWrongCtorResLevel_rec/name : name "inductWrongCtorResLevel.rec" (is-decl lnil (esort lzero) irec).
 
-inductWrongCtorResLevel_rec/decl : declared "inductWrongCtorResLevel.rec" lnil
-   (esort lzero)
-   irec
-   inductWrongCtorResLevel_rec/name
-   (dkind-ok/irec inductWrongCtorResLevel_rec/type-wf).
+inductWrongCtorResLevel_rec/decl : declared "inductWrongCtorResLevel.rec" lnil (esort lzero) irec
+   = declared/ok inductWrongCtorResLevel_rec/name (dkind-ok/irec inductWrongCtorResLevel_rec/type-wf).
 

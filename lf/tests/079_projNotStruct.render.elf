@@ -12,11 +12,8 @@ N/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
 N/name : name "N" (is-decl lnil (esort (lsucc lzero)) indt).
 
-N/decl : declared "N" lnil
-   (esort (lsucc lzero))
-   indt
-   N/name
-   (dkind-ok/indt N/type-wf N/ends-in-sort).
+N/decl : declared "N" lnil (esort (lsucc lzero)) indt
+   = declared/ok N/name (dkind-ok/indt N/type-wf N/ends-in-sort).
 
 %% ctor N.zero (of N)
 %%% HOLE
@@ -30,11 +27,8 @@ N_zero/positivity : ctor-positive "N" lnil (econst "N" lnil).
 
 N_zero/name : name "N.zero" (is-decl lnil (econst "N" lnil) ctor).
 
-N_zero/decl : declared "N.zero" lnil
-   (econst "N" lnil)
-   ctor
-   N_zero/name
-   (dkind-ok/ctor N_zero/type-wf N_zero/positivity).
+N_zero/decl : declared "N.zero" lnil (econst "N" lnil) ctor
+   = declared/ok N_zero/name (dkind-ok/ctor N_zero/type-wf N_zero/positivity).
 
 %% ctor N.succ (of N)
 %%% HOLE
@@ -48,11 +42,8 @@ N_succ/positivity : ctor-positive "N" lnil (eforall (econst "N" lnil) ([x] (econ
 
 N_succ/name : name "N.succ" (is-decl lnil (eforall (econst "N" lnil) ([x] (econst "N" lnil))) ctor).
 
-N_succ/decl : declared "N.succ" lnil
-   (eforall (econst "N" lnil) ([x] (econst "N" lnil)))
-   ctor
-   N_succ/name
-   (dkind-ok/ctor N_succ/type-wf N_succ/positivity).
+N_succ/decl : declared "N.succ" lnil (eforall (econst "N" lnil) ([x] (econst "N" lnil))) ctor
+   = declared/ok N_succ/name (dkind-ok/ctor N_succ/type-wf N_succ/positivity).
 
 %% recursor N.rec
 %%% HOLE
@@ -63,11 +54,8 @@ N_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "N" lnil) ([x] (esort 
 
 N_rec/name : {u : lvl} name "N.rec" (is-decl (lcons u lnil) (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) irec).
 
-N_rec/decl : {u : lvl} declared "N.rec" (lcons u lnil)
-   (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w)))))))))
-   irec
-   (N_rec/name u)
-   (dkind-ok/irec (N_rec/type-wf u)).
+N_rec/decl : {u : lvl} declared "N.rec" (lcons u lnil) (eforall (eforall (econst "N" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) irec
+   = [u] declared/ok (N_rec/name u) (dkind-ok/irec (N_rec/type-wf u)).
 
 %% def projNotStruct
 %%% HOLE
@@ -81,9 +69,6 @@ projNotStruct/value-typed : defeq (elam (econst "N" lnil) ([x] (eproj "N" 0 x)))
 
 projNotStruct/name : name "projNotStruct" (is-decl lnil (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (defn (elam (econst "N" lnil) ([x] (eproj "N" 0 x))))).
 
-projNotStruct/decl : declared "projNotStruct" lnil
-   (eforall (econst "N" lnil) ([x] (econst "N" lnil)))
-   (defn (elam (econst "N" lnil) ([x] (eproj "N" 0 x))))
-   projNotStruct/name
-   (dkind-ok/defn projNotStruct/type-wf projNotStruct/value-typed).
+projNotStruct/decl : declared "projNotStruct" lnil (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (defn (elam (econst "N" lnil) ([x] (eproj "N" 0 x))))
+   = declared/ok projNotStruct/name (dkind-ok/defn projNotStruct/type-wf projNotStruct/value-typed).
 

@@ -12,11 +12,8 @@ TypeWithTypeFieldPoly/ends-in-sort : {u : lvl} ends-in-sort (esort (lsucc (lsucc
 
 TypeWithTypeFieldPoly/name : {u : lvl} name "TypeWithTypeFieldPoly" (is-decl (lcons u lnil) (esort (lsucc (lsucc u))) indt).
 
-TypeWithTypeFieldPoly/decl : {u : lvl} declared "TypeWithTypeFieldPoly" (lcons u lnil)
-   (esort (lsucc (lsucc u)))
-   indt
-   (TypeWithTypeFieldPoly/name u)
-   (dkind-ok/indt (TypeWithTypeFieldPoly/type-wf u) (TypeWithTypeFieldPoly/ends-in-sort u)).
+TypeWithTypeFieldPoly/decl : {u : lvl} declared "TypeWithTypeFieldPoly" (lcons u lnil) (esort (lsucc (lsucc u))) indt
+   = [u] declared/ok (TypeWithTypeFieldPoly/name u) (dkind-ok/indt (TypeWithTypeFieldPoly/type-wf u) (TypeWithTypeFieldPoly/ends-in-sort u)).
 
 %% ctor TypeWithTypeFieldPoly.mk (of TypeWithTypeFieldPoly)
 %%% HOLE
@@ -30,11 +27,8 @@ TypeWithTypeFieldPoly_mk/positivity : {u : lvl} ctor-positive "TypeWithTypeField
 
 TypeWithTypeFieldPoly_mk/name : {u : lvl} name "TypeWithTypeFieldPoly.mk" (is-decl (lcons u lnil) (eforall (esort (lsucc u)) ([x] (econst "TypeWithTypeFieldPoly" (lcons u lnil)))) ctor).
 
-TypeWithTypeFieldPoly_mk/decl : {u : lvl} declared "TypeWithTypeFieldPoly.mk" (lcons u lnil)
-   (eforall (esort (lsucc u)) ([x] (econst "TypeWithTypeFieldPoly" (lcons u lnil))))
-   ctor
-   (TypeWithTypeFieldPoly_mk/name u)
-   (dkind-ok/ctor (TypeWithTypeFieldPoly_mk/type-wf u) (TypeWithTypeFieldPoly_mk/positivity u)).
+TypeWithTypeFieldPoly_mk/decl : {u : lvl} declared "TypeWithTypeFieldPoly.mk" (lcons u lnil) (eforall (esort (lsucc u)) ([x] (econst "TypeWithTypeFieldPoly" (lcons u lnil)))) ctor
+   = [u] declared/ok (TypeWithTypeFieldPoly_mk/name u) (dkind-ok/ctor (TypeWithTypeFieldPoly_mk/type-wf u) (TypeWithTypeFieldPoly_mk/positivity u)).
 
 %% recursor TypeWithTypeFieldPoly.rec
 %%% HOLE
@@ -45,11 +39,8 @@ TypeWithTypeFieldPoly_rec/type-wf : {u_1 : lvl} {u : lvl} defeq (eforall (eforal
 
 TypeWithTypeFieldPoly_rec/name : {u_1 : lvl} {u : lvl} name "TypeWithTypeFieldPoly.rec" (is-decl (lcons u_1 (lcons u lnil)) (eforall (eforall (econst "TypeWithTypeFieldPoly" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eforall (esort (lsucc u)) ([y] (eapp x (eapp (econst "TypeWithTypeFieldPoly.mk" (lcons u lnil)) y)))) ([y] (eforall (econst "TypeWithTypeFieldPoly" (lcons u lnil)) ([z] (eapp x z))))))) irec).
 
-TypeWithTypeFieldPoly_rec/decl : {u_1 : lvl} {u : lvl} declared "TypeWithTypeFieldPoly.rec" (lcons u_1 (lcons u lnil))
-   (eforall (eforall (econst "TypeWithTypeFieldPoly" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eforall (esort (lsucc u)) ([y] (eapp x (eapp (econst "TypeWithTypeFieldPoly.mk" (lcons u lnil)) y)))) ([y] (eforall (econst "TypeWithTypeFieldPoly" (lcons u lnil)) ([z] (eapp x z)))))))
-   irec
-   (TypeWithTypeFieldPoly_rec/name u_1 u)
-   (dkind-ok/irec (TypeWithTypeFieldPoly_rec/type-wf u_1 u)).
+TypeWithTypeFieldPoly_rec/decl : {u_1 : lvl} {u : lvl} declared "TypeWithTypeFieldPoly.rec" (lcons u_1 (lcons u lnil)) (eforall (eforall (econst "TypeWithTypeFieldPoly" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eforall (esort (lsucc u)) ([y] (eapp x (eapp (econst "TypeWithTypeFieldPoly.mk" (lcons u lnil)) y)))) ([y] (eforall (econst "TypeWithTypeFieldPoly" (lcons u lnil)) ([z] (eapp x z))))))) irec
+   = [u_1] [u] declared/ok (TypeWithTypeFieldPoly_rec/name u_1 u) (dkind-ok/irec (TypeWithTypeFieldPoly_rec/type-wf u_1 u)).
 
 %% def typeWithTypeFieldPoly
 %%% HOLE
@@ -63,9 +54,6 @@ typeWithTypeFieldPoly/value-typed : {u : lvl} defeq (econst "TypeWithTypeFieldPo
 
 typeWithTypeFieldPoly/name : {u : lvl} name "typeWithTypeFieldPoly" (is-decl (lcons u lnil) (esort (lsucc (lsucc u))) (defn (econst "TypeWithTypeFieldPoly" (lcons u lnil)))).
 
-typeWithTypeFieldPoly/decl : {u : lvl} declared "typeWithTypeFieldPoly" (lcons u lnil)
-   (esort (lsucc (lsucc u)))
-   (defn (econst "TypeWithTypeFieldPoly" (lcons u lnil)))
-   (typeWithTypeFieldPoly/name u)
-   (dkind-ok/defn (typeWithTypeFieldPoly/type-wf u) (typeWithTypeFieldPoly/value-typed u)).
+typeWithTypeFieldPoly/decl : {u : lvl} declared "typeWithTypeFieldPoly" (lcons u lnil) (esort (lsucc (lsucc u))) (defn (econst "TypeWithTypeFieldPoly" (lcons u lnil)))
+   = [u] declared/ok (typeWithTypeFieldPoly/name u) (dkind-ok/defn (typeWithTypeFieldPoly/type-wf u) (typeWithTypeFieldPoly/value-typed u)).
 

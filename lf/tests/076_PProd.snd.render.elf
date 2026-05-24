@@ -12,11 +12,8 @@ PProd/ends-in-sort : {u : lvl} {v : lvl} ends-in-sort (eforall (esort u) ([x] (e
 
 PProd/name : {u : lvl} {v : lvl} name "PProd" (is-decl (lcons u (lcons v lnil)) (eforall (esort u) ([x] (eforall (esort v) ([y] (esort (lmax (lmax (lsucc lzero) u) v)))))) indt).
 
-PProd/decl : {u : lvl} {v : lvl} declared "PProd" (lcons u (lcons v lnil))
-   (eforall (esort u) ([x] (eforall (esort v) ([y] (esort (lmax (lmax (lsucc lzero) u) v))))))
-   indt
-   (PProd/name u v)
-   (dkind-ok/indt (PProd/type-wf u v) (PProd/ends-in-sort u v)).
+PProd/decl : {u : lvl} {v : lvl} declared "PProd" (lcons u (lcons v lnil)) (eforall (esort u) ([x] (eforall (esort v) ([y] (esort (lmax (lmax (lsucc lzero) u) v)))))) indt
+   = [u] [v] declared/ok (PProd/name u v) (dkind-ok/indt (PProd/type-wf u v) (PProd/ends-in-sort u v)).
 
 %% ctor PProd.mk (of PProd)
 %%% HOLE
@@ -30,11 +27,8 @@ PProd_mk/positivity : {u : lvl} {v : lvl} ctor-positive "PProd" (lcons u (lcons 
 
 PProd_mk/name : {u : lvl} {v : lvl} name "PProd.mk" (is-decl (lcons u (lcons v lnil)) (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y))))))))) ctor).
 
-PProd_mk/decl : {u : lvl} {v : lvl} declared "PProd.mk" (lcons u (lcons v lnil))
-   (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y)))))))))
-   ctor
-   (PProd_mk/name u v)
-   (dkind-ok/ctor (PProd_mk/type-wf u v) (PProd_mk/positivity u v)).
+PProd_mk/decl : {u : lvl} {v : lvl} declared "PProd.mk" (lcons u (lcons v lnil)) (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y))))))))) ctor
+   = [u] [v] declared/ok (PProd_mk/name u v) (dkind-ok/ctor (PProd_mk/type-wf u v) (PProd_mk/positivity u v)).
 
 %% recursor PProd.rec
 %%% HOLE
@@ -45,11 +39,8 @@ PProd_rec/type-wf : {u_1 : lvl} {u : lvl} {v : lvl} defeq (eforall (esort u) ([x
 
 PProd_rec/name : {u_1 : lvl} {u : lvl} {v : lvl} name "PProd.rec" (is-decl (lcons u_1 (lcons u (lcons v lnil))) (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (esort u_1))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PProd.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([x1] (eapp z x1))))))))))) irec).
 
-PProd_rec/decl : {u_1 : lvl} {u : lvl} {v : lvl} declared "PProd.rec" (lcons u_1 (lcons u (lcons v lnil)))
-   (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (esort u_1))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PProd.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([x1] (eapp z x1)))))))))))
-   irec
-   (PProd_rec/name u_1 u v)
-   (dkind-ok/irec (PProd_rec/type-wf u_1 u v)).
+PProd_rec/decl : {u_1 : lvl} {u : lvl} {v : lvl} declared "PProd.rec" (lcons u_1 (lcons u (lcons v lnil))) (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (esort u_1))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PProd.mk" (lcons u (lcons v lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([x1] (eapp z x1))))))))))) irec
+   = [u_1] [u] [v] declared/ok (PProd_rec/name u_1 u v) (dkind-ok/irec (PProd_rec/type-wf u_1 u v)).
 
 %% def PProd.fst
 %%% HOLE
@@ -63,11 +54,8 @@ PProd_fst/value-typed : {u : lvl} {v : lvl} defeq (elam (esort u) ([x] (elam (es
 
 PProd_fst/name : {u : lvl} {v : lvl} name "PProd.fst" (is-decl (lcons u (lcons v lnil)) (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] x)))))) (defn (elam (esort u) ([x] (elam (esort v) ([y] (elam (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PProd" 0 z))))))))).
 
-PProd_fst/decl : {u : lvl} {v : lvl} declared "PProd.fst" (lcons u (lcons v lnil))
-   (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] x))))))
-   (defn (elam (esort u) ([x] (elam (esort v) ([y] (elam (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PProd" 0 z))))))))
-   (PProd_fst/name u v)
-   (dkind-ok/defn (PProd_fst/type-wf u v) (PProd_fst/value-typed u v)).
+PProd_fst/decl : {u : lvl} {v : lvl} declared "PProd.fst" (lcons u (lcons v lnil)) (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] x)))))) (defn (elam (esort u) ([x] (elam (esort v) ([y] (elam (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PProd" 0 z))))))))
+   = [u] [v] declared/ok (PProd_fst/name u v) (dkind-ok/defn (PProd_fst/type-wf u v) (PProd_fst/value-typed u v)).
 
 %% def PProd.snd
 %%% HOLE
@@ -81,9 +69,6 @@ PProd_snd/value-typed : {u : lvl} {v : lvl} defeq (elam (esort u) ([x] (elam (es
 
 PProd_snd/name : {u : lvl} {v : lvl} name "PProd.snd" (is-decl (lcons u (lcons v lnil)) (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] y)))))) (defn (elam (esort u) ([x] (elam (esort v) ([y] (elam (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PProd" 1 z))))))))).
 
-PProd_snd/decl : {u : lvl} {v : lvl} declared "PProd.snd" (lcons u (lcons v lnil))
-   (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] y))))))
-   (defn (elam (esort u) ([x] (elam (esort v) ([y] (elam (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PProd" 1 z))))))))
-   (PProd_snd/name u v)
-   (dkind-ok/defn (PProd_snd/type-wf u v) (PProd_snd/value-typed u v)).
+PProd_snd/decl : {u : lvl} {v : lvl} declared "PProd.snd" (lcons u (lcons v lnil)) (eforall (esort u) ([x] (eforall (esort v) ([y] (eforall (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] y)))))) (defn (elam (esort u) ([x] (elam (esort v) ([y] (elam (eapp (eapp (econst "PProd" (lcons u (lcons v lnil))) x) y) ([z] (eproj "PProd" 1 z))))))))
+   = [u] [v] declared/ok (PProd_snd/name u v) (dkind-ok/defn (PProd_snd/type-wf u v) (PProd_snd/value-typed u v)).
 

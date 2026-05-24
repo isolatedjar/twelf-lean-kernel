@@ -13,11 +13,8 @@ id/value-typed : {u : lvl} defeq (elam (esort u) ([x] (elam x ([y] y)))) (elam (
 
 id/name : {u : lvl} name "id" (is-decl (lcons u lnil) (eforall (esort u) ([x] (eforall x ([y] x)))) (defn (elam (esort u) ([x] (elam x ([y] y)))))).
 
-id/decl : {u : lvl} declared "id" (lcons u lnil)
-   (eforall (esort u) ([x] (eforall x ([y] x))))
-   (defn (elam (esort u) ([x] (elam x ([y] y)))))
-   (id/name u)
-   (dkind-ok/defn (id/type-wf u) (id/value-typed u)).
+id/decl : {u : lvl} declared "id" (lcons u lnil) (eforall (esort u) ([x] (eforall x ([y] x)))) (defn (elam (esort u) ([x] (elam x ([y] y)))))
+   = [u] declared/ok (id/name u) (dkind-ok/defn (id/type-wf u) (id/value-typed u)).
 
 %% inductive reduceCtorType
 %%% HOLE
@@ -31,11 +28,8 @@ reduceCtorType/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
 reduceCtorType/name : name "reduceCtorType" (is-decl lnil (esort (lsucc lzero)) indt).
 
-reduceCtorType/decl : declared "reduceCtorType" lnil
-   (esort (lsucc lzero))
-   indt
-   reduceCtorType/name
-   (dkind-ok/indt reduceCtorType/type-wf reduceCtorType/ends-in-sort).
+reduceCtorType/decl : declared "reduceCtorType" lnil (esort (lsucc lzero)) indt
+   = declared/ok reduceCtorType/name (dkind-ok/indt reduceCtorType/type-wf reduceCtorType/ends-in-sort).
 
 %% ctor reduceCtorType.mk (of reduceCtorType)
 %%% HOLE
@@ -49,11 +43,8 @@ reduceCtorType_mk/positivity : ctor-positive "reduceCtorType" lnil (eapp (eapp (
 
 reduceCtorType_mk/name : name "reduceCtorType.mk" (is-decl lnil (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil)) ctor).
 
-reduceCtorType_mk/decl : declared "reduceCtorType.mk" lnil
-   (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil))
-   ctor
-   reduceCtorType_mk/name
-   (dkind-ok/ctor reduceCtorType_mk/type-wf reduceCtorType_mk/positivity).
+reduceCtorType_mk/decl : declared "reduceCtorType.mk" lnil (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil)) ctor
+   = declared/ok reduceCtorType_mk/name (dkind-ok/ctor reduceCtorType_mk/type-wf reduceCtorType_mk/positivity).
 
 %% recursor reduceCtorType.rec
 %%% HOLE
@@ -64,9 +55,6 @@ reduceCtorType_rec/type-wf : defeq (esort lzero) (esort lzero) (esort reduceCtor
 
 reduceCtorType_rec/name : name "reduceCtorType.rec" (is-decl lnil (esort lzero) irec).
 
-reduceCtorType_rec/decl : declared "reduceCtorType.rec" lnil
-   (esort lzero)
-   irec
-   reduceCtorType_rec/name
-   (dkind-ok/irec reduceCtorType_rec/type-wf).
+reduceCtorType_rec/decl : declared "reduceCtorType.rec" lnil (esort lzero) irec
+   = declared/ok reduceCtorType_rec/name (dkind-ok/irec reduceCtorType_rec/type-wf).
 

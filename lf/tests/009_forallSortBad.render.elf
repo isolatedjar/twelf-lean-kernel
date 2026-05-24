@@ -12,11 +12,8 @@ id/value-typed : {u : lvl} defeq (elam (esort u) ([x] (elam x ([y] y)))) (elam (
 
 id/name : {u : lvl} name "id" (is-decl (lcons u lnil) (eforall (esort u) ([x] (eforall x ([y] x)))) (defn (elam (esort u) ([x] (elam x ([y] y)))))).
 
-id/decl : {u : lvl} declared "id" (lcons u lnil)
-   (eforall (esort u) ([x] (eforall x ([y] x))))
-   (defn (elam (esort u) ([x] (elam x ([y] y)))))
-   (id/name u)
-   (dkind-ok/defn (id/type-wf u) (id/value-typed u)).
+id/decl : {u : lvl} declared "id" (lcons u lnil) (eforall (esort u) ([x] (eforall x ([y] x)))) (defn (elam (esort u) ([x] (elam x ([y] y)))))
+   = [u] declared/ok (id/name u) (dkind-ok/defn (id/type-wf u) (id/value-typed u)).
 
 %% def forallSortBad
 %%% HOLE
@@ -30,9 +27,6 @@ forallSortBad/value-typed : defeq (eforall (eapp (eapp (econst "id" (lcons (lsuc
 
 forallSortBad/name : name "forallSortBad" (is-decl lnil (esort lzero) (defn (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] (eforall y ([z] y)))))))).
 
-forallSortBad/decl : declared "forallSortBad" lnil
-   (esort lzero)
-   (defn (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] (eforall y ([z] y)))))))
-   forallSortBad/name
-   (dkind-ok/defn forallSortBad/type-wf forallSortBad/value-typed).
+forallSortBad/decl : declared "forallSortBad" lnil (esort lzero) (defn (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] (eforall y ([z] y)))))))
+   = declared/ok forallSortBad/name (dkind-ok/defn forallSortBad/type-wf forallSortBad/value-typed).
 

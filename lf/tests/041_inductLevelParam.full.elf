@@ -12,9 +12,6 @@ inductLevelParam/ends-in-sort : {u : lvl} {u : lvl} ends-in-sort (esort (lsucc l
 
 inductLevelParam/name : {u : lvl} {u : lvl} name "inductLevelParam" (is-decl (lcons u (lcons u lnil)) (esort (lsucc lzero)) indt).
 
-inductLevelParam/decl : {u : lvl} {u : lvl} declared "inductLevelParam" (lcons u (lcons u lnil))
-   (esort (lsucc lzero))
-   indt
-   (inductLevelParam/name u u)
-   (dkind-ok/indt (inductLevelParam/type-wf u u) (inductLevelParam/ends-in-sort u u)).
+inductLevelParam/decl : {u : lvl} {u : lvl} declared "inductLevelParam" (lcons u (lcons u lnil)) (esort (lsucc lzero)) indt
+   = [u] [u] declared/ok (inductLevelParam/name u u) (dkind-ok/indt (inductLevelParam/type-wf u u) (inductLevelParam/ends-in-sort u u)).
 

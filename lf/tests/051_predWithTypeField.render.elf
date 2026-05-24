@@ -12,11 +12,8 @@ PredWithTypeField/ends-in-sort : ends-in-sort (esort lzero).
 
 PredWithTypeField/name : name "PredWithTypeField" (is-decl lnil (esort lzero) indt).
 
-PredWithTypeField/decl : declared "PredWithTypeField" lnil
-   (esort lzero)
-   indt
-   PredWithTypeField/name
-   (dkind-ok/indt PredWithTypeField/type-wf PredWithTypeField/ends-in-sort).
+PredWithTypeField/decl : declared "PredWithTypeField" lnil (esort lzero) indt
+   = declared/ok PredWithTypeField/name (dkind-ok/indt PredWithTypeField/type-wf PredWithTypeField/ends-in-sort).
 
 %% ctor PredWithTypeField.mk (of PredWithTypeField)
 %%% HOLE
@@ -30,11 +27,8 @@ PredWithTypeField_mk/positivity : ctor-positive "PredWithTypeField" lnil (eforal
 
 PredWithTypeField_mk/name : name "PredWithTypeField.mk" (is-decl lnil (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil))) ctor).
 
-PredWithTypeField_mk/decl : declared "PredWithTypeField.mk" lnil
-   (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil)))
-   ctor
-   PredWithTypeField_mk/name
-   (dkind-ok/ctor PredWithTypeField_mk/type-wf PredWithTypeField_mk/positivity).
+PredWithTypeField_mk/decl : declared "PredWithTypeField.mk" lnil (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil))) ctor
+   = declared/ok PredWithTypeField_mk/name (dkind-ok/ctor PredWithTypeField_mk/type-wf PredWithTypeField_mk/positivity).
 
 %% recursor PredWithTypeField.rec
 %%% HOLE
@@ -45,11 +39,8 @@ PredWithTypeField_rec/type-wf : defeq (eforall (eforall (econst "PredWithTypeFie
 
 PredWithTypeField_rec/name : name "PredWithTypeField.rec" (is-decl lnil (eforall (eforall (econst "PredWithTypeField" lnil) ([x] (esort lzero))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "PredWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "PredWithTypeField" lnil) ([z] (eapp x z))))))) irec).
 
-PredWithTypeField_rec/decl : declared "PredWithTypeField.rec" lnil
-   (eforall (eforall (econst "PredWithTypeField" lnil) ([x] (esort lzero))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "PredWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "PredWithTypeField" lnil) ([z] (eapp x z)))))))
-   irec
-   PredWithTypeField_rec/name
-   (dkind-ok/irec PredWithTypeField_rec/type-wf).
+PredWithTypeField_rec/decl : declared "PredWithTypeField.rec" lnil (eforall (eforall (econst "PredWithTypeField" lnil) ([x] (esort lzero))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "PredWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "PredWithTypeField" lnil) ([z] (eapp x z))))))) irec
+   = declared/ok PredWithTypeField_rec/name (dkind-ok/irec PredWithTypeField_rec/type-wf).
 
 %% def predWithTypeField
 %%% HOLE
@@ -63,9 +54,6 @@ predWithTypeField/value-typed : defeq (econst "PredWithTypeField" lnil) (econst 
 
 predWithTypeField/name : name "predWithTypeField" (is-decl lnil (esort lzero) (defn (econst "PredWithTypeField" lnil))).
 
-predWithTypeField/decl : declared "predWithTypeField" lnil
-   (esort lzero)
-   (defn (econst "PredWithTypeField" lnil))
-   predWithTypeField/name
-   (dkind-ok/defn predWithTypeField/type-wf predWithTypeField/value-typed).
+predWithTypeField/decl : declared "predWithTypeField" lnil (esort lzero) (defn (econst "PredWithTypeField" lnil))
+   = declared/ok predWithTypeField/name (dkind-ok/defn predWithTypeField/type-wf predWithTypeField/value-typed).
 

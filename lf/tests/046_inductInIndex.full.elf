@@ -9,11 +9,8 @@ aProp/type-wf : defeq (esort lzero) (esort lzero) (esort aProp/type-wf-sort).
 
 aProp/name : name "aProp" (is-decl lnil (esort lzero) ax).
 
-aProp/decl : declared "aProp" lnil
-   (esort lzero)
-   ax
-   aProp/name
-   (dkind-ok/ax aProp/type-wf).
+aProp/decl : declared "aProp" lnil (esort lzero) ax
+   = declared/ok aProp/name (dkind-ok/ax aProp/type-wf).
 
 %% inductive inductInIndex
 %%% HOLE
@@ -27,11 +24,8 @@ inductInIndex/ends-in-sort : ends-in-sort (eforall (esort lzero) ([x] (esort lze
 
 inductInIndex/name : name "inductInIndex" (is-decl lnil (eforall (esort lzero) ([x] (esort lzero))) indt).
 
-inductInIndex/decl : declared "inductInIndex" lnil
-   (eforall (esort lzero) ([x] (esort lzero)))
-   indt
-   inductInIndex/name
-   (dkind-ok/indt inductInIndex/type-wf inductInIndex/ends-in-sort).
+inductInIndex/decl : declared "inductInIndex" lnil (eforall (esort lzero) ([x] (esort lzero))) indt
+   = declared/ok inductInIndex/name (dkind-ok/indt inductInIndex/type-wf inductInIndex/ends-in-sort).
 
 %% ctor inductInIndex.mk (of inductInIndex)
 %%% HOLE
@@ -45,11 +39,8 @@ inductInIndex_mk/positivity : ctor-positive "inductInIndex" lnil (eapp (econst "
 
 inductInIndex_mk/name : name "inductInIndex.mk" (is-decl lnil (eapp (econst "inductInIndex" lnil) (eapp (econst "inductInIndex" lnil) (econst "aProp" lnil))) ctor).
 
-inductInIndex_mk/decl : declared "inductInIndex.mk" lnil
-   (eapp (econst "inductInIndex" lnil) (eapp (econst "inductInIndex" lnil) (econst "aProp" lnil)))
-   ctor
-   inductInIndex_mk/name
-   (dkind-ok/ctor inductInIndex_mk/type-wf inductInIndex_mk/positivity).
+inductInIndex_mk/decl : declared "inductInIndex.mk" lnil (eapp (econst "inductInIndex" lnil) (eapp (econst "inductInIndex" lnil) (econst "aProp" lnil))) ctor
+   = declared/ok inductInIndex_mk/name (dkind-ok/ctor inductInIndex_mk/type-wf inductInIndex_mk/positivity).
 
 %% recursor inductInIndex.rec
 %%% HOLE
@@ -60,9 +51,6 @@ inductInIndex_rec/type-wf : defeq (esort lzero) (esort lzero) (esort inductInInd
 
 inductInIndex_rec/name : name "inductInIndex.rec" (is-decl lnil (esort lzero) irec).
 
-inductInIndex_rec/decl : declared "inductInIndex.rec" lnil
-   (esort lzero)
-   irec
-   inductInIndex_rec/name
-   (dkind-ok/irec inductInIndex_rec/type-wf).
+inductInIndex_rec/decl : declared "inductInIndex.rec" lnil (esort lzero) irec
+   = declared/ok inductInIndex_rec/name (dkind-ok/irec inductInIndex_rec/type-wf).
 

@@ -12,9 +12,6 @@ levelComp5/value-typed : {u : lvl} defeq (esort u) (esort u) (esort (lsucc u)).
 
 levelComp5/name : {u : lvl} name "levelComp5" (is-decl (lcons u lnil) (esort (lsucc u)) (defn (esort u))).
 
-levelComp5/decl : {u : lvl} declared "levelComp5" (lcons u lnil)
-   (esort (lsucc u))
-   (defn (esort u))
-   (levelComp5/name u)
-   (dkind-ok/defn (levelComp5/type-wf u) (levelComp5/value-typed u)).
+levelComp5/decl : {u : lvl} declared "levelComp5" (lcons u lnil) (esort (lsucc u)) (defn (esort u))
+   = [u] declared/ok (levelComp5/name u) (dkind-ok/defn (levelComp5/type-wf u) (levelComp5/value-typed u)).
 

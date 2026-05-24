@@ -12,11 +12,8 @@ BoolProp/ends-in-sort : ends-in-sort (esort lzero).
 
 BoolProp/name : name "BoolProp" (is-decl lnil (esort lzero) indt).
 
-BoolProp/decl : declared "BoolProp" lnil
-   (esort lzero)
-   indt
-   BoolProp/name
-   (dkind-ok/indt BoolProp/type-wf BoolProp/ends-in-sort).
+BoolProp/decl : declared "BoolProp" lnil (esort lzero) indt
+   = declared/ok BoolProp/name (dkind-ok/indt BoolProp/type-wf BoolProp/ends-in-sort).
 
 %% ctor BoolProp.a (of BoolProp)
 %%% HOLE
@@ -30,11 +27,8 @@ BoolProp_a/positivity : ctor-positive "BoolProp" lnil (econst "BoolProp" lnil).
 
 BoolProp_a/name : name "BoolProp.a" (is-decl lnil (econst "BoolProp" lnil) ctor).
 
-BoolProp_a/decl : declared "BoolProp.a" lnil
-   (econst "BoolProp" lnil)
-   ctor
-   BoolProp_a/name
-   (dkind-ok/ctor BoolProp_a/type-wf BoolProp_a/positivity).
+BoolProp_a/decl : declared "BoolProp.a" lnil (econst "BoolProp" lnil) ctor
+   = declared/ok BoolProp_a/name (dkind-ok/ctor BoolProp_a/type-wf BoolProp_a/positivity).
 
 %% ctor BoolProp.b (of BoolProp)
 %%% HOLE
@@ -48,11 +42,8 @@ BoolProp_b/positivity : ctor-positive "BoolProp" lnil (econst "BoolProp" lnil).
 
 BoolProp_b/name : name "BoolProp.b" (is-decl lnil (econst "BoolProp" lnil) ctor).
 
-BoolProp_b/decl : declared "BoolProp.b" lnil
-   (econst "BoolProp" lnil)
-   ctor
-   BoolProp_b/name
-   (dkind-ok/ctor BoolProp_b/type-wf BoolProp_b/positivity).
+BoolProp_b/decl : declared "BoolProp.b" lnil (econst "BoolProp" lnil) ctor
+   = declared/ok BoolProp_b/name (dkind-ok/ctor BoolProp_b/type-wf BoolProp_b/positivity).
 
 %% recursor BoolProp.rec
 %%% HOLE
@@ -63,11 +54,8 @@ BoolProp_rec/type-wf : defeq (eforall (eforall (econst "BoolProp" lnil) ([x] (es
 
 BoolProp_rec/name : name "BoolProp.rec" (is-decl lnil (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "BoolProp.a" lnil)) ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w))))))))) irec).
 
-BoolProp_rec/decl : declared "BoolProp.rec" lnil
-   (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "BoolProp.a" lnil)) ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w)))))))))
-   irec
-   BoolProp_rec/name
-   (dkind-ok/irec BoolProp_rec/type-wf).
+BoolProp_rec/decl : declared "BoolProp.rec" lnil (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "BoolProp.a" lnil)) ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w))))))))) irec
+   = declared/ok BoolProp_rec/name (dkind-ok/irec BoolProp_rec/type-wf).
 
 %% def boolPropRec
 %%% HOLE
@@ -81,9 +69,6 @@ boolPropRec/value-typed : defeq (econst "BoolProp.rec" lnil) (econst "BoolProp.r
 
 boolPropRec/name : name "boolPropRec" (is-decl lnil (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "BoolProp.a" lnil)) ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w))))))))) (defn (econst "BoolProp.rec" lnil))).
 
-boolPropRec/decl : declared "boolPropRec" lnil
-   (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "BoolProp.a" lnil)) ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w)))))))))
-   (defn (econst "BoolProp.rec" lnil))
-   boolPropRec/name
-   (dkind-ok/defn boolPropRec/type-wf boolPropRec/value-typed).
+boolPropRec/decl : declared "boolPropRec" lnil (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "BoolProp.a" lnil)) ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w))))))))) (defn (econst "BoolProp.rec" lnil))
+   = declared/ok boolPropRec/name (dkind-ok/defn boolPropRec/type-wf boolPropRec/value-typed).
 

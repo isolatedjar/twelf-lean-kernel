@@ -12,9 +12,6 @@ letType/value-typed : defeq (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lz
 
 letType/name : name "letType" (is-decl lnil (esort (lsucc lzero)) (defn (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)))).
 
-letType/decl : declared "letType" lnil
-   (esort (lsucc lzero))
-   (defn (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)))
-   letType/name
-   (dkind-ok/defn letType/type-wf letType/value-typed).
+letType/decl : declared "letType" lnil (esort (lsucc lzero)) (defn (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)))
+   = declared/ok letType/name (dkind-ok/defn letType/type-wf letType/value-typed).
 

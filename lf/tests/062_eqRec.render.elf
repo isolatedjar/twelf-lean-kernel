@@ -12,11 +12,8 @@ Eq/ends-in-sort : {u_1 : lvl} ends-in-sort (eforall (esort u_1) ([x] (eforall x 
 
 Eq/name : {u_1 : lvl} name "Eq" (is-decl (lcons u_1 lnil) (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) indt).
 
-Eq/decl : {u_1 : lvl} declared "Eq" (lcons u_1 lnil)
-   (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero)))))))
-   indt
-   (Eq/name u_1)
-   (dkind-ok/indt (Eq/type-wf u_1) (Eq/ends-in-sort u_1)).
+Eq/decl : {u_1 : lvl} declared "Eq" (lcons u_1 lnil) (eforall (esort u_1) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) indt
+   = [u_1] declared/ok (Eq/name u_1) (dkind-ok/indt (Eq/type-wf u_1) (Eq/ends-in-sort u_1)).
 
 %% ctor Eq.refl (of Eq)
 %%% HOLE
@@ -30,11 +27,8 @@ Eq_refl/positivity : {u_1 : lvl} ctor-positive "Eq" (lcons u_1 lnil) (eforall (e
 
 Eq_refl/name : {u_1 : lvl} name "Eq.refl" (is-decl (lcons u_1 lnil) (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))) ctor).
 
-Eq_refl/decl : {u_1 : lvl} declared "Eq.refl" (lcons u_1 lnil)
-   (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y)))))
-   ctor
-   (Eq_refl/name u_1)
-   (dkind-ok/ctor (Eq_refl/type-wf u_1) (Eq_refl/positivity u_1)).
+Eq_refl/decl : {u_1 : lvl} declared "Eq.refl" (lcons u_1 lnil) (eforall (esort u_1) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) y))))) ctor
+   = [u_1] declared/ok (Eq_refl/name u_1) (dkind-ok/ctor (Eq_refl/type-wf u_1) (Eq_refl/positivity u_1)).
 
 %% recursor Eq.rec
 %%% HOLE
@@ -45,11 +39,8 @@ Eq_rec/type-wf : {u : lvl} {u_1 : lvl} defeq (eforall (esort u_1) ([x] (eforall 
 
 Eq_rec/name : {u : lvl} {u_1 : lvl} name "Eq.rec" (is-decl (lcons u (lcons u_1 lnil)) (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) irec).
 
-Eq_rec/decl : {u : lvl} {u_1 : lvl} declared "Eq.rec" (lcons u (lcons u_1 lnil))
-   (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1)))))))))))))
-   irec
-   (Eq_rec/name u u_1)
-   (dkind-ok/irec (Eq_rec/type-wf u u_1)).
+Eq_rec/decl : {u : lvl} {u_1 : lvl} declared "Eq.rec" (lcons u (lcons u_1 lnil)) (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) irec
+   = [u] [u_1] declared/ok (Eq_rec/name u u_1) (dkind-ok/irec (Eq_rec/type-wf u u_1)).
 
 %% def eqRec
 %%% HOLE
@@ -63,9 +54,6 @@ eqRec/value-typed : {u : lvl} {u_1 : lvl} defeq (econst "Eq.rec" (lcons u (lcons
 
 eqRec/name : {u : lvl} {u_1 : lvl} name "eqRec" (is-decl (lcons u (lcons u_1 lnil)) (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (defn (econst "Eq.rec" (lcons u (lcons u_1 lnil))))).
 
-eqRec/decl : {u : lvl} {u_1 : lvl} declared "eqRec" (lcons u (lcons u_1 lnil))
-   (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1)))))))))))))
-   (defn (econst "Eq.rec" (lcons u (lcons u_1 lnil))))
-   (eqRec/name u u_1)
-   (dkind-ok/defn (eqRec/type-wf u u_1) (eqRec/value-typed u u_1)).
+eqRec/decl : {u : lvl} {u_1 : lvl} declared "eqRec" (lcons u (lcons u_1 lnil)) (eforall (esort u_1) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) z) ([w] (esort u))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons u_1 lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons u_1 lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (defn (econst "Eq.rec" (lcons u (lcons u_1 lnil))))
+   = [u] [u_1] declared/ok (eqRec/name u u_1) (dkind-ok/defn (eqRec/type-wf u u_1) (eqRec/value-typed u u_1)).
 
