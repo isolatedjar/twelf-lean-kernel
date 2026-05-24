@@ -2,18 +2,18 @@
 %%% The binding domain of a forall has to be a sort
 %% def id
 %%% HOLE
-id/type-wf-sort : {u : lvl} lvl.
+id/type-wf-sort : lvl.
 
 %%% HOLE
-id/type-wf : {u : lvl} defeq (eforall (esort u) ([x] (eforall x ([y] x)))) (eforall (esort u) ([x] (eforall x ([y] x)))) (esort (id/type-wf-sort u)).
+id/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall x ([y] x)))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] x)))) (esort id/type-wf-sort).
 
 %%% HOLE
-id/value-typed : {u : lvl} defeq (elam (esort u) ([x] (elam x ([y] y)))) (elam (esort u) ([x] (elam x ([y] y)))) (eforall (esort u) ([x] (eforall x ([y] x)))).
+id/value-typed : defeq (elam (esort (lvar liz)) ([x] (elam x ([y] y)))) (elam (esort (lvar liz)) ([x] (elam x ([y] y)))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] x)))).
 
-id/name : {u : lvl} name "id" (is-decl (lcons u lnil) (eforall (esort u) ([x] (eforall x ([y] x)))) (defn (elam (esort u) ([x] (elam x ([y] y)))))).
+id/name : name "id" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] x)))) (defn (elam (esort (lvar liz)) ([x] (elam x ([y] y)))))).
 
-id/decl : {u : lvl} declared "id" (lcons u lnil) (eforall (esort u) ([x] (eforall x ([y] x)))) (defn (elam (esort u) ([x] (elam x ([y] y)))))
-   = [u] declared/ok (id/name u) (dkind-ok/defn (id/type-wf u) (id/value-typed u)).
+id/decl : declared "id" (eforall (esort (lvar liz)) ([x] (eforall x ([y] x)))) (defn (elam (esort (lvar liz)) ([x] (elam x ([y] y)))))
+   = declared/ok id/name (dkind-ok/defn id/type-wf id/value-typed).
 
 %% def forallSortBad
 %%% HOLE
@@ -25,8 +25,8 @@ forallSortBad/type-wf : defeq (esort lzero) (esort lzero) (esort forallSortBad/t
 %%% HOLE
 forallSortBad/value-typed : defeq (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] (eforall y ([z] y)))))) (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] (eforall y ([z] y)))))) (esort lzero).
 
-forallSortBad/name : name "forallSortBad" (is-decl lnil (esort lzero) (defn (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] (eforall y ([z] y)))))))).
+forallSortBad/name : name "forallSortBad" (is-decl (esort lzero) (defn (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] (eforall y ([z] y)))))))).
 
-forallSortBad/decl : declared "forallSortBad" lnil (esort lzero) (defn (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] (eforall y ([z] y)))))))
+forallSortBad/decl : declared "forallSortBad" (esort lzero) (defn (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] (eforall y ([z] y)))))))
    = declared/ok forallSortBad/name (dkind-ok/defn forallSortBad/type-wf forallSortBad/value-typed).
 

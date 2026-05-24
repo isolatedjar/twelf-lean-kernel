@@ -7,9 +7,9 @@ aProp/type-wf-sort : lvl.
 %%% HOLE
 aProp/type-wf : defeq (esort lzero) (esort lzero) (esort aProp/type-wf-sort).
 
-aProp/name : name "aProp" (is-decl lnil (esort lzero) ax).
+aProp/name : name "aProp" (is-decl (esort lzero) ax).
 
-aProp/decl : declared "aProp" lnil (esort lzero) ax
+aProp/decl : declared "aProp" (esort lzero) ax
    = declared/ok aProp/name (dkind-ok/ax aProp/type-wf).
 
 %% inductive inductWrongCtorParams
@@ -22,9 +22,9 @@ inductWrongCtorParams/type-wf : defeq (eforall (esort lzero) ([x] (esort (lsucc 
 %%% HOLE
 inductWrongCtorParams/ends-in-sort : ends-in-sort (eforall (esort lzero) ([x] (esort (lsucc lzero)))).
 
-inductWrongCtorParams/name : name "inductWrongCtorParams" (is-decl lnil (eforall (esort lzero) ([x] (esort (lsucc lzero)))) indt).
+inductWrongCtorParams/name : name "inductWrongCtorParams" (is-decl (eforall (esort lzero) ([x] (esort (lsucc lzero)))) indt).
 
-inductWrongCtorParams/decl : declared "inductWrongCtorParams" lnil (eforall (esort lzero) ([x] (esort (lsucc lzero)))) indt
+inductWrongCtorParams/decl : declared "inductWrongCtorParams" (eforall (esort lzero) ([x] (esort (lsucc lzero)))) indt
    = declared/ok inductWrongCtorParams/name (dkind-ok/indt inductWrongCtorParams/type-wf inductWrongCtorParams/ends-in-sort).
 
 %% ctor inductWrongCtorParams.mk (of inductWrongCtorParams)
@@ -37,9 +37,9 @@ inductWrongCtorParams_mk/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (ea
 %%% HOLE
 inductWrongCtorParams_mk/positivity : ctor-positive "inductWrongCtorParams" lnil (eforall (esort (lsucc lzero)) ([x] (eapp (econst "inductWrongCtorParams" lnil) (econst "aProp" lnil)))).
 
-inductWrongCtorParams_mk/name : name "inductWrongCtorParams.mk" (is-decl lnil (eforall (esort (lsucc lzero)) ([x] (eapp (econst "inductWrongCtorParams" lnil) (econst "aProp" lnil)))) ctor).
+inductWrongCtorParams_mk/name : name "inductWrongCtorParams.mk" (is-decl (eforall (esort (lsucc lzero)) ([x] (eapp (econst "inductWrongCtorParams" lnil) (econst "aProp" lnil)))) ctor).
 
-inductWrongCtorParams_mk/decl : declared "inductWrongCtorParams.mk" lnil (eforall (esort (lsucc lzero)) ([x] (eapp (econst "inductWrongCtorParams" lnil) (econst "aProp" lnil)))) ctor
+inductWrongCtorParams_mk/decl : declared "inductWrongCtorParams.mk" (eforall (esort (lsucc lzero)) ([x] (eapp (econst "inductWrongCtorParams" lnil) (econst "aProp" lnil)))) ctor
    = declared/ok inductWrongCtorParams_mk/name (dkind-ok/ctor inductWrongCtorParams_mk/type-wf inductWrongCtorParams_mk/positivity).
 
 %% recursor inductWrongCtorParams.rec
@@ -49,8 +49,8 @@ inductWrongCtorParams_rec/type-wf-sort : lvl.
 %%% HOLE
 inductWrongCtorParams_rec/type-wf : defeq (esort lzero) (esort lzero) (esort inductWrongCtorParams_rec/type-wf-sort).
 
-inductWrongCtorParams_rec/name : name "inductWrongCtorParams.rec" (is-decl lnil (esort lzero) irec).
+inductWrongCtorParams_rec/name : name "inductWrongCtorParams.rec" (is-decl (esort lzero) irec).
 
-inductWrongCtorParams_rec/decl : declared "inductWrongCtorParams.rec" lnil (esort lzero) irec
+inductWrongCtorParams_rec/decl : declared "inductWrongCtorParams.rec" (esort lzero) irec
    = declared/ok inductWrongCtorParams_rec/name (dkind-ok/irec inductWrongCtorParams_rec/type-wf).
 

@@ -2,58 +2,58 @@
 %%% Asserting the type of the generated recursor
 %% inductive PUnit
 %%% HOLE
-PUnit/type-wf-sort : {u : lvl} lvl.
+PUnit/type-wf-sort : lvl.
 
 %%% HOLE
-PUnit/type-wf : {u : lvl} defeq (esort u) (esort u) (esort (PUnit/type-wf-sort u)).
+PUnit/type-wf : defeq (esort (lvar liz)) (esort (lvar liz)) (esort PUnit/type-wf-sort).
 
 %%% HOLE
-PUnit/ends-in-sort : {u : lvl} ends-in-sort (esort u).
+PUnit/ends-in-sort : ends-in-sort (esort (lvar liz)).
 
-PUnit/name : {u : lvl} name "PUnit" (is-decl (lcons u lnil) (esort u) indt).
+PUnit/name : name "PUnit" (is-decl (esort (lvar liz)) indt).
 
-PUnit/decl : {u : lvl} declared "PUnit" (lcons u lnil) (esort u) indt
-   = [u] declared/ok (PUnit/name u) (dkind-ok/indt (PUnit/type-wf u) (PUnit/ends-in-sort u)).
+PUnit/decl : declared "PUnit" (esort (lvar liz)) indt
+   = declared/ok PUnit/name (dkind-ok/indt PUnit/type-wf PUnit/ends-in-sort).
 
 %% ctor PUnit.unit (of PUnit)
 %%% HOLE
-PUnit_unit/type-wf-sort : {u : lvl} lvl.
+PUnit_unit/type-wf-sort : lvl.
 
 %%% HOLE
-PUnit_unit/type-wf : {u : lvl} defeq (econst "PUnit" (lcons u lnil)) (econst "PUnit" (lcons u lnil)) (esort (PUnit_unit/type-wf-sort u)).
+PUnit_unit/type-wf : defeq (econst "PUnit" (lcons (lvar liz) lnil)) (econst "PUnit" (lcons (lvar liz) lnil)) (esort PUnit_unit/type-wf-sort).
 
 %%% HOLE
-PUnit_unit/positivity : {u : lvl} ctor-positive "PUnit" (lcons u lnil) (econst "PUnit" (lcons u lnil)).
+PUnit_unit/positivity : ctor-positive "PUnit" (lcons (lvar liz) lnil) (econst "PUnit" (lcons (lvar liz) lnil)).
 
-PUnit_unit/name : {u : lvl} name "PUnit.unit" (is-decl (lcons u lnil) (econst "PUnit" (lcons u lnil)) ctor).
+PUnit_unit/name : name "PUnit.unit" (is-decl (econst "PUnit" (lcons (lvar liz) lnil)) ctor).
 
-PUnit_unit/decl : {u : lvl} declared "PUnit.unit" (lcons u lnil) (econst "PUnit" (lcons u lnil)) ctor
-   = [u] declared/ok (PUnit_unit/name u) (dkind-ok/ctor (PUnit_unit/type-wf u) (PUnit_unit/positivity u)).
+PUnit_unit/decl : declared "PUnit.unit" (econst "PUnit" (lcons (lvar liz) lnil)) ctor
+   = declared/ok PUnit_unit/name (dkind-ok/ctor PUnit_unit/type-wf PUnit_unit/positivity).
 
 %% recursor PUnit.rec
 %%% HOLE
-PUnit_rec/type-wf-sort : {u_1 : lvl} {u : lvl} lvl.
+PUnit_rec/type-wf-sort : lvl.
 
 %%% HOLE
-PUnit_rec/type-wf : {u_1 : lvl} {u : lvl} defeq (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))) (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))) (esort (PUnit_rec/type-wf-sort u_1 u)).
+PUnit_rec/type-wf : defeq (eforall (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z))))))) (eforall (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z))))))) (esort PUnit_rec/type-wf-sort).
 
-PUnit_rec/name : {u_1 : lvl} {u : lvl} name "PUnit.rec" (is-decl (lcons u_1 (lcons u lnil)) (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))) irec).
+PUnit_rec/name : name "PUnit.rec" (is-decl (eforall (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z))))))) irec).
 
-PUnit_rec/decl : {u_1 : lvl} {u : lvl} declared "PUnit.rec" (lcons u_1 (lcons u lnil)) (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort u_1))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))) irec
-   = [u_1] [u] declared/ok (PUnit_rec/name u_1 u) (dkind-ok/irec (PUnit_rec/type-wf u_1 u)).
+PUnit_rec/decl : declared "PUnit.rec" (eforall (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z))))))) irec
+   = declared/ok PUnit_rec/name (dkind-ok/irec PUnit_rec/type-wf).
 
 %% def punitRec
 %%% HOLE
-punitRec/type-wf-sort : {u : lvl} {lv_w : lvl} lvl.
+punitRec/type-wf-sort : lvl.
 
 %%% HOLE
-punitRec/type-wf : {u : lvl} {lv_w : lvl} defeq (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort lv_w))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))) (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort lv_w))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))) (esort (punitRec/type-wf-sort u lv_w)).
+punitRec/type-wf : defeq (eforall (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([x] (esort (lvar (lis liz))))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar liz) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([z] (eapp x z))))))) (eforall (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([x] (esort (lvar (lis liz))))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar liz) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([z] (eapp x z))))))) (esort punitRec/type-wf-sort).
 
 %%% HOLE
-punitRec/value-typed : {u : lvl} {lv_w : lvl} defeq (econst "PUnit.rec" (lcons lv_w (lcons u lnil))) (econst "PUnit.rec" (lcons lv_w (lcons u lnil))) (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort lv_w))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))).
+punitRec/value-typed : defeq (econst "PUnit.rec" (lcons (lvar (lis liz)) (lcons (lvar liz) lnil))) (econst "PUnit.rec" (lcons (lvar (lis liz)) (lcons (lvar liz) lnil))) (eforall (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([x] (esort (lvar (lis liz))))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar liz) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([z] (eapp x z))))))).
 
-punitRec/name : {u : lvl} {lv_w : lvl} name "punitRec" (is-decl (lcons u (lcons lv_w lnil)) (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort lv_w))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))) (defn (econst "PUnit.rec" (lcons lv_w (lcons u lnil))))).
+punitRec/name : name "punitRec" (is-decl (eforall (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([x] (esort (lvar (lis liz))))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar liz) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([z] (eapp x z))))))) (defn (econst "PUnit.rec" (lcons (lvar (lis liz)) (lcons (lvar liz) lnil))))).
 
-punitRec/decl : {u : lvl} {lv_w : lvl} declared "punitRec" (lcons u (lcons lv_w lnil)) (eforall (eforall (econst "PUnit" (lcons u lnil)) ([x] (esort lv_w))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons u lnil))) ([y] (eforall (econst "PUnit" (lcons u lnil)) ([z] (eapp x z))))))) (defn (econst "PUnit.rec" (lcons lv_w (lcons u lnil))))
-   = [u] [lv_w] declared/ok (punitRec/name u lv_w) (dkind-ok/defn (punitRec/type-wf u lv_w) (punitRec/value-typed u lv_w)).
+punitRec/decl : declared "punitRec" (eforall (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([x] (esort (lvar (lis liz))))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar liz) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([z] (eapp x z))))))) (defn (econst "PUnit.rec" (lcons (lvar (lis liz)) (lcons (lvar liz) lnil))))
+   = declared/ok punitRec/name (dkind-ok/defn punitRec/type-wf punitRec/value-typed).
 

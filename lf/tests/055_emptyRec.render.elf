@@ -10,35 +10,35 @@ Empty/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort Empty/t
 %%% HOLE
 Empty/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
-Empty/name : name "Empty" (is-decl lnil (esort (lsucc lzero)) indt).
+Empty/name : name "Empty" (is-decl (esort (lsucc lzero)) indt).
 
-Empty/decl : declared "Empty" lnil (esort (lsucc lzero)) indt
+Empty/decl : declared "Empty" (esort (lsucc lzero)) indt
    = declared/ok Empty/name (dkind-ok/indt Empty/type-wf Empty/ends-in-sort).
 
 %% recursor Empty.rec
 %%% HOLE
-Empty_rec/type-wf-sort : {u : lvl} lvl.
+Empty_rec/type-wf-sort : lvl.
 
 %%% HOLE
-Empty_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (esort (Empty_rec/type-wf-sort u)).
+Empty_rec/type-wf : defeq (eforall (eforall (econst "Empty" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (eforall (eforall (econst "Empty" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (esort Empty_rec/type-wf-sort).
 
-Empty_rec/name : {u : lvl} name "Empty.rec" (is-decl (lcons u lnil) (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) irec).
+Empty_rec/name : name "Empty.rec" (is-decl (eforall (eforall (econst "Empty" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) irec).
 
-Empty_rec/decl : {u : lvl} declared "Empty.rec" (lcons u lnil) (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) irec
-   = [u] declared/ok (Empty_rec/name u) (dkind-ok/irec (Empty_rec/type-wf u)).
+Empty_rec/decl : declared "Empty.rec" (eforall (eforall (econst "Empty" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) irec
+   = declared/ok Empty_rec/name (dkind-ok/irec Empty_rec/type-wf).
 
 %% def emptyRec
 %%% HOLE
-emptyRec/type-wf-sort : {u : lvl} lvl.
+emptyRec/type-wf-sort : lvl.
 
 %%% HOLE
-emptyRec/type-wf : {u : lvl} defeq (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (esort (emptyRec/type-wf-sort u)).
+emptyRec/type-wf : defeq (eforall (eforall (econst "Empty" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (eforall (eforall (econst "Empty" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (esort emptyRec/type-wf-sort).
 
 %%% HOLE
-emptyRec/value-typed : {u : lvl} defeq (econst "Empty.rec" (lcons u lnil)) (econst "Empty.rec" (lcons u lnil)) (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))).
+emptyRec/value-typed : defeq (econst "Empty.rec" (lcons (lvar liz) lnil)) (econst "Empty.rec" (lcons (lvar liz) lnil)) (eforall (eforall (econst "Empty" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))).
 
-emptyRec/name : {u : lvl} name "emptyRec" (is-decl (lcons u lnil) (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (defn (econst "Empty.rec" (lcons u lnil)))).
+emptyRec/name : name "emptyRec" (is-decl (eforall (eforall (econst "Empty" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (defn (econst "Empty.rec" (lcons (lvar liz) lnil)))).
 
-emptyRec/decl : {u : lvl} declared "emptyRec" (lcons u lnil) (eforall (eforall (econst "Empty" lnil) ([x] (esort u))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (defn (econst "Empty.rec" (lcons u lnil)))
-   = [u] declared/ok (emptyRec/name u) (dkind-ok/defn (emptyRec/type-wf u) (emptyRec/value-typed u)).
+emptyRec/decl : declared "emptyRec" (eforall (eforall (econst "Empty" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (defn (econst "Empty.rec" (lcons (lvar liz) lnil)))
+   = declared/ok emptyRec/name (dkind-ok/defn emptyRec/type-wf emptyRec/value-typed).
 

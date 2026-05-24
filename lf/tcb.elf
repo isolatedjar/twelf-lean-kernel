@@ -33,6 +33,20 @@ lsucc : lvl -> lvl.
 lmax  : lvl -> lvl -> lvl.
 limax : lvl -> lvl -> lvl.
 
+%%% Formal universe parameters of a (polymorphic) declaration, as de Bruijn
+%%% indices.  A declaration's stored type/value is a *schema* over these:
+%%% `lvar liz` is the 0th universe parameter, `lvar (lis liz)` the 1st, etc.
+%%% At a use site `econst N LS`, the schema is instantiated by replacing each
+%%% `lvar i` with the i-th element of `LS` (see `inst-expr` below).  This keeps
+%%% every stored declaration a *ground* term, so the name→definition map has a
+%%% ground codomain and can be sealed with `%unique name +N -K`.
+
+lidx : type.   %name lidx I.
+liz : lidx.
+lis : lidx -> lidx.
+
+lvar : lidx -> lvl.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Level equivalence   ℓ ≈ ℓ'
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -106,6 +120,52 @@ eforall : expr -> (expr -> expr) -> expr.
 eproj   : string -> integer -> expr -> expr. %% field projection: struct type name, field index, struct
 enatlit : {n : integer} n >= 0 -> expr.      %% Lean Expr.lit (Literal.natVal n)
 estrlit : string  -> expr.                   %% Lean Expr.lit (Literal.strVal s)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Universe-level instantiation (substituting LS for the lvar schema)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% A polymorphic declaration's type/value is stored as a schema over the
+%%% formal parameters `lvar liz`, `lvar (lis liz)`, …  Using it at a concrete
+%%% level instantiation `LS` means replacing each `lvar i` with the i-th
+%%% element of `LS`.  `inst-expr E LS E'` is the (total, deterministic)
+%%% substitution; it leaves term structure and HOAS binders untouched —
+%%% levels and term variables are disjoint, so under a binder we just thread
+%%% the reflexive hypothesis `inst-expr x LS x`, mirroring the `defeq` rules.
+
+%%% `lvl-nth LS I L` : L is the I-th element of LS (0-based).
+lvl-nth : lvls -> lidx -> lvl -> type.   %name lvl-nth NTH.
+lvl-nth/zero : lvl-nth (lcons L _) liz L.
+lvl-nth/succ : lvl-nth Rest I L -> lvl-nth (lcons _ Rest) (lis I) L.
+
+lvl-inst : lvl -> lvls -> lvl -> type.   %name lvl-inst LI.
+lvl-inst/zero : lvl-inst lzero LS lzero.
+lvl-inst/succ : lvl-inst L LS L' -> lvl-inst (lsucc L) LS (lsucc L').
+lvl-inst/max  : lvl-inst L1 LS L1' -> lvl-inst L2 LS L2'
+             -> lvl-inst (lmax L1 L2) LS (lmax L1' L2').
+lvl-inst/imax : lvl-inst L1 LS L1' -> lvl-inst L2 LS L2'
+             -> lvl-inst (limax L1 L2) LS (limax L1' L2').
+lvl-inst/var  : lvl-nth LS I L -> lvl-inst (lvar I) LS L.
+
+lvls-inst : lvls -> lvls -> lvls -> type.   %name lvls-inst LSI.
+lvls-inst/nil  : lvls-inst lnil LS lnil.
+lvls-inst/cons : lvl-inst L LS L' -> lvls-inst Rest LS Rest'
+              -> lvls-inst (lcons L Rest) LS (lcons L' Rest').
+
+inst-expr : expr -> lvls -> expr -> type.   %name inst-expr IE.
+inst-expr/sort   : lvl-inst L LS L' -> inst-expr (esort L) LS (esort L').
+inst-expr/const  : lvls-inst LSi LS LSi'
+                -> inst-expr (econst N LSi) LS (econst N LSi').
+inst-expr/app    : inst-expr F LS F' -> inst-expr A LS A'
+                -> inst-expr (eapp F A) LS (eapp F' A').
+inst-expr/lam    : inst-expr A LS A'
+                -> ({x} inst-expr x LS x -> inst-expr (Bo x) LS (Bo' x))
+                -> inst-expr (elam A Bo) LS (elam A' Bo').
+inst-expr/forall : inst-expr A LS A'
+                -> ({x} inst-expr x LS x -> inst-expr (Bo x) LS (Bo' x))
+                -> inst-expr (eforall A Bo) LS (eforall A' Bo').
+inst-expr/proj   : inst-expr S LS S' -> inst-expr (eproj N I S) LS (eproj N I S').
+inst-expr/natlit : inst-expr (enatlit N P) LS (enatlit N P).
+inst-expr/strlit : inst-expr (estrlit S) LS (estrlit S).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Definitional equality   Γ ⊢ e₁ ≡ e₂ : A
@@ -224,8 +284,12 @@ quot : dkind.
 %%% A %unique declaration in final-checks.elf ensures each string is given
 %%% a `name` interpretation at most once.
 
+%%% The meaning a name is given.  Because the declaration's type/value are
+%%% schemas over `lvar` (not LF-bound level variables), `is-decl T K` is a
+%%% *ground* term — so `name`'s codomain is ground and the map can be sealed
+%%% with `%unique name +N -K` (each string given at most one meaning).
 nkind : type.
-is-decl : lvls -> expr -> dkind -> nkind.
+is-decl : expr -> dkind -> nkind.
 %%% Todo: other things (recursors? constructors?) that we need to not conflict with declared names?
 
 name : string -> nkind -> type.
@@ -482,26 +546,33 @@ dkind-ok/irec :
 dkind-ok/quot :
    defeq T T (esort U) -> dkind-ok quot T.
 
-%%% `declared N LS T K W` is a well-formed declaration of name N at level
-%%% instantiation LS, type T, payload kind K, witnessed by W : dkind-ok K T.
+%%% `declared N Ts K` is a well-formed declaration of name N whose type
+%%% *schema* is Ts (over `lvar`) and whose payload kind is K, reserved as a
+%%% name and witnessed by a `dkind-ok` derivation.  There is no level slot:
+%%% the polymorphism lives in the schema, instantiated at each use site.
 
-declared : string -> lvls -> expr -> dkind -> type.
+declared : string -> expr -> dkind -> type.
 
-declared/ok : 
-   name N (is-decl LS T K)
+declared/ok :
+   name N (is-decl T K)
    -> dkind-ok K T
-   -> declared N LS T K.
+   -> declared N T K.
 
-%%% defeq facts earned by a well-formed declaration.
+%%% defeq facts earned by a well-formed declaration.  A use `econst N LS`
+%%% instantiates the stored schema Ts at LS to get the use-site type T.
 
 defeq/const :
-   declared N LS T DK
+   declared N Ts DK
+   -> inst-expr Ts LS T
    -> defeq (econst N LS) (econst N LS) T.
 
-%%% δ-reduction is restricted to `defn` payloads.
+%%% δ-reduction is restricted to `defn` payloads; both the type and the
+%%% value schema are instantiated at the use site's levels.
 
 defeq/delta :
-   declared N LS T (defn V)
+   declared N Ts (defn Vs)
+   -> inst-expr Ts LS T
+   -> inst-expr Vs LS V
    -> defeq (econst N LS) V T.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -595,8 +666,9 @@ defeq/extra : defeq-extra E1 E2 A -> defeq E1 E2 A.
 %%% Foo.rec.{u} M m_1 Foo.c_1 ≡ m_1 : M Foo.c_1.
 
 defeq/iota-enum-1 :
-   declared RecName (lcons U lnil) RecType irec
-   -> declared C1 lnil (econst FooName lnil) ctor
+   declared RecName RecSchema irec
+   -> inst-expr RecSchema (lcons U lnil) RecType
+   -> declared C1 (econst FooName lnil) ctor
    -> enum-rec-type RecType FooName lnil (ccons C1 cnil) U
    -> defeq M M (eforall (econst FooName lnil) ([_] esort U))
    -> defeq Mp1 Mp1 (eapp M (econst C1 lnil))
@@ -610,9 +682,10 @@ defeq/iota-enum-1 :
 %%% Foo.rec.{u} M m_1 m_2 Foo.c_i ≡ m_i, for i ∈ {1, 2}.
 
 defeq/iota-enum-2-first :
-   declared RecName (lcons U lnil) RecType irec
-   -> declared C1 lnil (econst FooName lnil) ctor
-   -> declared C2 lnil (econst FooName lnil) ctor
+   declared RecName RecSchema irec
+   -> inst-expr RecSchema (lcons U lnil) RecType
+   -> declared C1 (econst FooName lnil) ctor
+   -> declared C2 (econst FooName lnil) ctor
    -> enum-rec-type RecType FooName lnil (ccons C1 (ccons C2 cnil)) U
    -> defeq M M (eforall (econst FooName lnil) ([_] esort U))
    -> defeq Mp1 Mp1 (eapp M (econst C1 lnil))
@@ -624,9 +697,10 @@ defeq/iota-enum-2-first :
         (eapp M (econst C1 lnil)).
 
 defeq/iota-enum-2-second :
-   declared RecName (lcons U lnil) RecType irec
-   -> declared C1 lnil (econst FooName lnil) ctor
-   -> declared C2 lnil (econst FooName lnil) ctor
+   declared RecName RecSchema irec
+   -> inst-expr RecSchema (lcons U lnil) RecType
+   -> declared C1 (econst FooName lnil) ctor
+   -> declared C2 (econst FooName lnil) ctor
    -> enum-rec-type RecType FooName lnil (ccons C1 (ccons C2 cnil)) U
    -> defeq M M (eforall (econst FooName lnil) ([_] esort U))
    -> defeq Mp1 Mp1 (eapp M (econst C1 lnil))
@@ -640,10 +714,11 @@ defeq/iota-enum-2-second :
 %%% --- Iota for 3-ctor enums.
 
 defeq/iota-enum-3-first :
-   declared RecName (lcons U lnil) RecType irec
-   -> declared C1 lnil (econst FooName lnil) ctor
-   -> declared C2 lnil (econst FooName lnil) ctor
-   -> declared C3 lnil (econst FooName lnil) ctor
+   declared RecName RecSchema irec
+   -> inst-expr RecSchema (lcons U lnil) RecType
+   -> declared C1 (econst FooName lnil) ctor
+   -> declared C2 (econst FooName lnil) ctor
+   -> declared C3 (econst FooName lnil) ctor
    -> enum-rec-type RecType FooName lnil (ccons C1 (ccons C2 (ccons C3 cnil))) U
    -> defeq M M (eforall (econst FooName lnil) ([_] esort U))
    -> defeq Mp1 Mp1 (eapp M (econst C1 lnil))
@@ -656,10 +731,11 @@ defeq/iota-enum-3-first :
         (eapp M (econst C1 lnil)).
 
 defeq/iota-enum-3-second :
-   declared RecName (lcons U lnil) RecType irec
-   -> declared C1 lnil (econst FooName lnil) ctor
-   -> declared C2 lnil (econst FooName lnil) ctor
-   -> declared C3 lnil (econst FooName lnil) ctor
+   declared RecName RecSchema irec
+   -> inst-expr RecSchema (lcons U lnil) RecType
+   -> declared C1 (econst FooName lnil) ctor
+   -> declared C2 (econst FooName lnil) ctor
+   -> declared C3 (econst FooName lnil) ctor
    -> enum-rec-type RecType FooName lnil (ccons C1 (ccons C2 (ccons C3 cnil))) U
    -> defeq M M (eforall (econst FooName lnil) ([_] esort U))
    -> defeq Mp1 Mp1 (eapp M (econst C1 lnil))
@@ -672,10 +748,11 @@ defeq/iota-enum-3-second :
         (eapp M (econst C2 lnil)).
 
 defeq/iota-enum-3-third :
-   declared RecName (lcons U lnil) RecType irec
-   -> declared C1 lnil (econst FooName lnil) ctor
-   -> declared C2 lnil (econst FooName lnil) ctor
-   -> declared C3 lnil (econst FooName lnil) ctor
+   declared RecName RecSchema irec
+   -> inst-expr RecSchema (lcons U lnil) RecType
+   -> declared C1 (econst FooName lnil) ctor
+   -> declared C2 (econst FooName lnil) ctor
+   -> declared C3 (econst FooName lnil) ctor
    -> enum-rec-type RecType FooName lnil (ccons C1 (ccons C2 (ccons C3 cnil))) U
    -> defeq M M (eforall (econst FooName lnil) ([_] esort U))
    -> defeq Mp1 Mp1 (eapp M (econst C1 lnil))
@@ -705,9 +782,9 @@ defeq/iota-enum-3-third :
 %%% invariant of `defeq` (reflexivity is well-typedness).
 
 defeq/iota-quot-lift :
-   declared "Quot" (lcons U lnil) QuotType quot
-   -> declared "Quot.mk"   (lcons U lnil) QuotMkType quot
-   -> declared "Quot.lift" (lcons U (lcons V lnil)) QuotLiftType quot
+   declared "Quot" QuotType quot
+   -> declared "Quot.mk"   QuotMkType quot
+   -> declared "Quot.lift" QuotLiftType quot
    -> defeq A A (esort U)
    -> defeq R R (eforall A ([_] (eforall A ([_] (esort lzero)))))
    -> defeq B B (esort V)
@@ -731,9 +808,9 @@ defeq/iota-quot-lift :
 %%% soundness premise (proof irrelevance handles equality of proofs).
 
 defeq/iota-quot-ind :
-   declared "Quot" (lcons U lnil) QuotType quot
-   -> declared "Quot.mk" (lcons U lnil) QuotMkType quot
-   -> declared "Quot.ind" (lcons U lnil) QuotIndType quot
+   declared "Quot" QuotType quot
+   -> declared "Quot.mk" QuotMkType quot
+   -> declared "Quot.ind" QuotIndType quot
    -> defeq A A (esort U)
    -> defeq R R (eforall A ([_] (eforall A ([_] (esort lzero)))))
    -> defeq M M (eforall (eapp (eapp (econst "Quot" (lcons U lnil)) A) R) ([_] (esort lzero)))

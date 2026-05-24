@@ -2,16 +2,16 @@
 %%% An inductive with duplicate level params
 %% inductive inductLevelParam
 %%% HOLE
-inductLevelParam/type-wf-sort : {u : lvl} {u : lvl} lvl.
+inductLevelParam/type-wf-sort : lvl.
 
 %%% HOLE
-inductLevelParam/type-wf : {u : lvl} {u : lvl} defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (inductLevelParam/type-wf-sort u u)).
+inductLevelParam/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort inductLevelParam/type-wf-sort).
 
 %%% HOLE
-inductLevelParam/ends-in-sort : {u : lvl} {u : lvl} ends-in-sort (esort (lsucc lzero)).
+inductLevelParam/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
-inductLevelParam/name : {u : lvl} {u : lvl} name "inductLevelParam" (is-decl (lcons u (lcons u lnil)) (esort (lsucc lzero)) indt).
+inductLevelParam/name : name "inductLevelParam" (is-decl (esort (lsucc lzero)) indt).
 
-inductLevelParam/decl : {u : lvl} {u : lvl} declared "inductLevelParam" (lcons u (lcons u lnil)) (esort (lsucc lzero)) indt
-   = [u] [u] declared/ok (inductLevelParam/name u u) (dkind-ok/indt (inductLevelParam/type-wf u u) (inductLevelParam/ends-in-sort u u)).
+inductLevelParam/decl : declared "inductLevelParam" (esort (lsucc lzero)) indt
+   = declared/ok inductLevelParam/name (dkind-ok/indt inductLevelParam/type-wf inductLevelParam/ends-in-sort).
 

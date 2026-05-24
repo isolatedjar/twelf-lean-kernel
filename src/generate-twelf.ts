@@ -20,7 +20,7 @@
 // file suffices.
 
 import { NullProver, RealProver } from "./prover.ts";
-import { levelParamBindings, lfExpr, mangle, nameToLfLevelVar, natLiteralsSeen } from "./render.ts";
+import { levelParamBindings, lfExpr, mangle, natLiteralsSeen } from "./render.ts";
 import type {
   Decl,
   Expr,
@@ -32,7 +32,7 @@ import type {
   Prover,
   TypeWfResult,
 } from "./shared.ts";
-import { lam, nameToString, transformNamesFromJSON } from "./shared.ts";
+import { nameToString, transformNamesFromJSON } from "./shared.ts";
 
 // =====================================================================
 // Output + Fmt pretty-printer (trusted, anti-injection)
@@ -73,33 +73,35 @@ function ppFmt(f: Fmt): string {
 // Level-parameter helpers
 // =====================================================================
 
-function withLevelParams<T>(params: Name[], fn: (lfNames: string[]) => T): T {
-  const lfNames: string[] = [];
-  for (const p of params) {
-    const v = nameToLfLevelVar(p);
-    levelParamBindings.set(nameToString(p), v);
-    lfNames.push(v);
-  }
+// A de Bruijn level index as a unary `lidx` literal: liz, (lis liz), ...
+function lidxLit(i: number): string {
+  let acc = "liz";
+  for (let k = 0; k < i; k++) acc = `(lis ${acc})`;
+  return acc;
+}
+
+// The canonical formal level list for an `n`-parameter declaration:
+// `(lcons (lvar liz) (lcons (lvar (lis liz)) ... lnil))`.  Used where a rule
+// still takes an explicit `lvls` of the declaration's own parameters.
+function formalLvls(n: number): string {
+  let acc = "lnil";
+  for (let i = n - 1; i >= 0; i--) acc = `(lcons (lvar ${lidxLit(i)}) ${acc})`;
+  return acc;
+}
+
+// Bind each universe parameter to its de Bruijn level variable `(lvar i)` for
+// the duration of `fn`.  Stored declarations are *schemas* over these `lvar`s
+// (see tcb.elf), so every term the generator emits is ground — there are no
+// `{u:lvl}` LF binders and instantiation happens at use sites in the TCB.
+function withLevelParams<T>(params: Name[], fn: () => T): T {
+  params.forEach((p, i) => {
+    levelParamBindings.set(nameToString(p), `(lvar ${lidxLit(i)})`);
+  });
   try {
-    return fn(lfNames);
+    return fn();
   } finally {
     for (const p of params) levelParamBindings.delete(nameToString(p));
   }
-}
-
-function lvlBinders(lfNames: string[]): string {
-  return lfNames.map((n) => `{${n} : lvl} `).join("");
-}
-
-// `(lcons u1 (lcons u2 lnil))`, or `lnil` for the monomorphic case.
-function lvlsExpr(lfNames: string[]): string {
-  return lfNames.reduceRight((acc, n) => `(lcons ${n} ${acc})`, "lnil");
-}
-
-// How to reference an obligation constant inside a witness: bare when
-// monomorphic, applied to the level args otherwise.
-function obRef(constName: string, lfNames: string[]): string {
-  return lfNames.length === 0 ? constName : `(${constName} ${lfNames.join(" ")})`;
 }
 
 // =====================================================================
@@ -120,23 +122,16 @@ function emitDefn(constName: string, type: string, term: Fmt | null): void {
   emit(``);
 }
 
-// Render a single proof obligation and return a reference to use in the
-// enclosing dkind-ok witness.  `null` → a HOLE (a bare decl rejected by
+// Render a single proof obligation and return a reference to it for the
+// enclosing `dkind-ok` witness.  `null` → a HOLE (a bare decl rejected by
 // %freeze); an `Fmt` → a definition.  A prover that wants to reject the
 // environment supplies the `failOnPurpose` Fmt as its proof; it flows
 // through like any term and Twelf rejects it as an undeclared identifier
-// (no special-casing).  For a polymorphic obligation the type is `{u..} J` and
-// the proof body is wrapped in the matching `[u..]` level-lambdas.
-function emitObligation(
-  result: Fmt | null,
-  constName: string,
-  lfNames: string[],
-  judgmentType: string,
-): string {
-  const type = `${lvlBinders(lfNames)}${judgmentType}`;
-  const body = result === null ? null : lfNames.reduceRight<Fmt>((b, n) => lam(n, b), result);
-  emitDefn(constName, type, body);
-  return obRef(constName, lfNames);
+// (no special-casing).  Everything is ground: the obligation's type is a
+// schema over `lvar`, so there are no level binders or lambdas.
+function emitObligation(result: Fmt | null, constName: string, judgmentType: string): string {
+  emitDefn(constName, judgmentType, result);
+  return constName;
 }
 
 // Emit the type-wf obligation `defeq T T (esort U)`.
@@ -144,30 +139,18 @@ function emitObligation(
 // For `thm` the kernel forces U = lzero (the type must be a Prop), so we emit
 // the literal and no universe obligation.  Otherwise U is *synthesized* (the
 // Sort that T inhabits — not in the NDJSON), so we emit it as its own
-// obligation on `lvl`: `lvl` is freezable and independent of `declared`, so
-// (a) the type-wf witness stays ground (no implicit-var reconstruction, no
-// `%mode declared` violation) and (b) the universe HOLE is itself detectable.
-function emitTypeWf(
-  result: TypeWfResult,
-  mn: string,
-  lfNames: string[],
-  T: string,
-  isThm: boolean,
-): string {
+// obligation on `lvl`: `lvl` is freezable, so the universe HOLE is itself
+// detectable.  (T may mention `lvar` schema variables; the obligation type
+// stays ground because those are data, not LF binders.)
+function emitTypeWf(result: TypeWfResult, mn: string, T: string, isThm: boolean): string {
   if (isThm) {
     const proof = result === null ? null : result.proof;
-    return emitObligation(proof, `${mn}/type-wf`, lfNames, `defeq ${T} ${T} (esort lzero)`);
+    return emitObligation(proof, `${mn}/type-wf`, `defeq ${T} ${T} (esort lzero)`);
   }
-  const sortRef = emitObligation(
-    result === null ? null : result.sort,
-    `${mn}/type-wf-sort`,
-    lfNames,
-    `lvl`,
-  );
+  const sortRef = emitObligation(result === null ? null : result.sort, `${mn}/type-wf-sort`, `lvl`);
   return emitObligation(
     result === null ? null : result.proof,
     `${mn}/type-wf`,
-    lfNames,
     `defeq ${T} ${T} (esort ${sortRef})`,
   );
 }
@@ -175,35 +158,30 @@ function emitTypeWf(
 // Emit a complete declaration: the open `name` reservation plus the closed
 // `declared` definition that consumes it.
 //
-//   <mn>/name : name "<decl>" (is-decl LS T K).            (open family)
-//   <mn>/decl : declared "<decl>" LS T K
-//             = declared/ok <mn>/name <okWitness>.         (frozen family)
+//   <mn>/name : name "<decl>" (is-decl T K).        (open family)
+//   <mn>/decl : declared "<decl>" T K
+//             = declared/ok <mn>/name <okWitness>.  (frozen family)
 //
 // `name` is open (`%thaw name`), so the reservation is a plain constant — not
 // a HOLE — and `%unique name` (final-checks.elf) rejects any string reserved
-// twice with conflicting meanings (duplicate declarations).  `declared` is
-// *closed* with the single constructor `declared/ok`, so `<mn>/decl` must be a
-// definition (allowed on a frozen family); its body bundles the name
-// reservation with the `dkind-ok` well-formedness witness, which is where the
-// proof obligations (and their HOLEs) live.
+// twice with conflicting meanings (duplicate declarations).  Because `T`/`K`
+// are ground schemas over `lvar`, the reservation's codomain is ground and the
+// seal mode-checks.  `declared` is *closed* with the single constructor
+// `declared/ok`, so `<mn>/decl` must be a definition (allowed on a frozen
+// family); its body bundles the name reservation with the `dkind-ok`
+// well-formedness witness, which is where the proof obligations (and their
+// HOLEs) live.
 function emitDeclared(
   mn: string,
   declName: string,
-  lfNames: string[],
   T: string,
   kExpr: string,
   okWitness: string,
 ): void {
-  emit(
-    `${mn}/name : ${lvlBinders(lfNames)}name "${declName}" (is-decl ${lvlsExpr(lfNames)} ${T} ${kExpr}).`,
-  );
+  emit(`${mn}/name : name "${declName}" (is-decl ${T} ${kExpr}).`);
   emit(``);
-  const nameRef = obRef(`${mn}/name`, lfNames);
-  const lamBinders = lfNames.map((n) => `[${n}] `).join("");
-  emit(
-    `${mn}/decl : ${lvlBinders(lfNames)}declared "${declName}" ${lvlsExpr(lfNames)} ${T} ${kExpr}`,
-  );
-  emit(`   = ${lamBinders}declared/ok ${nameRef} ${okWitness}.`);
+  emit(`${mn}/decl : declared "${declName}" ${T} ${kExpr}`);
+  emit(`   = declared/ok ${mn}/name ${okWitness}.`);
   emit(``);
 }
 
@@ -250,7 +228,7 @@ function generateDecl(prover: Prover, d: Decl): void {
 function generateValDecl(prover: Prover, d: Decl & { kind: "def" | "opaque" | "thm" }): void {
   const declName = nameToString(d.name);
   const mn = mangle(d.name);
-  withLevelParams(d.levelParams, (lfNames) => {
+  withLevelParams(d.levelParams, () => {
     const T = tryLf(d.type);
     const V = tryLf(d.value);
     if (T === null || V === null) {
@@ -262,28 +240,26 @@ function generateValDecl(prover: Prover, d: Decl & { kind: "def" | "opaque" | "t
     const tw = emitTypeWf(
       prover.typeWellFormed({ type: d.type, levelParams: d.levelParams }),
       mn,
-      lfNames,
       T,
       d.kind === "thm",
     );
     const vt = emitObligation(
       prover.valueHasType({ value: d.value, type: d.type, levelParams: d.levelParams }),
       `${mn}/value-typed`,
-      lfNames,
       `defeq ${V} ${V} ${T}`,
     );
 
     const dkindCtor = d.kind === "def" ? "defn" : d.kind === "opaque" ? "opq" : "thm";
     const okCtor =
       d.kind === "def" ? "dkind-ok/defn" : d.kind === "opaque" ? "dkind-ok/opq" : "dkind-ok/thm";
-    emitDeclared(mn, declName, lfNames, T, `(${dkindCtor} ${V})`, `(${okCtor} ${tw} ${vt})`);
+    emitDeclared(mn, declName, T, `(${dkindCtor} ${V})`, `(${okCtor} ${tw} ${vt})`);
   });
 }
 
 function generateAxiom(prover: Prover, d: Decl & { kind: "axiom" }): void {
   const declName = nameToString(d.name);
   const mn = mangle(d.name);
-  withLevelParams(d.levelParams, (lfNames) => {
+  withLevelParams(d.levelParams, () => {
     const T = tryLf(d.type);
     if (T === null) {
       skip(`axiom ${declName} — type not representable in LF`);
@@ -293,11 +269,10 @@ function generateAxiom(prover: Prover, d: Decl & { kind: "axiom" }): void {
     const tw = emitTypeWf(
       prover.typeWellFormed({ type: d.type, levelParams: d.levelParams }),
       mn,
-      lfNames,
       T,
       false,
     );
-    emitDeclared(mn, declName, lfNames, T, `ax`, `(dkind-ok/ax ${tw})`);
+    emitDeclared(mn, declName, T, `ax`, `(dkind-ok/ax ${tw})`);
   });
 }
 
@@ -311,7 +286,7 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
     const declName = nameToString(c.name);
     const mn = mangle(c.name);
     const indName = nameToString(c.induct);
-    withLevelParams(c.levelParams, (lfNames) => {
+    withLevelParams(c.levelParams, () => {
       const T = tryLf(c.type);
       if (T === null) {
         skip(`ctor ${declName} — type not representable in LF`);
@@ -322,7 +297,6 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
       const tw = emitTypeWf(
         prover.typeWellFormed({ type: c.type, levelParams: c.levelParams }),
         mn,
-        lfNames,
         T,
         false,
       );
@@ -334,17 +308,16 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
           levelParams: c.levelParams,
         }),
         `${mn}/positivity`,
-        lfNames,
-        `ctor-positive "${indName}" ${lvlsExpr(lfNames)} ${T}`,
+        `ctor-positive "${indName}" ${formalLvls(c.levelParams.length)} ${T}`,
       );
-      emitDeclared(mn, declName, lfNames, T, `ctor`, `(dkind-ok/ctor ${tw} ${cp})`);
+      emitDeclared(mn, declName, T, `ctor`, `(dkind-ok/ctor ${tw} ${cp})`);
     });
   }
   // Recursors.
   for (const r of ind.recursors) {
     const declName = nameToString(r.name);
     const mn = mangle(r.name);
-    withLevelParams(r.levelParams, (lfNames) => {
+    withLevelParams(r.levelParams, () => {
       const T = tryLf(r.type);
       if (T === null) {
         skip(`recursor ${declName} — type not representable in LF`);
@@ -354,11 +327,10 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
       const tw = emitTypeWf(
         prover.typeWellFormed({ type: r.type, levelParams: r.levelParams }),
         mn,
-        lfNames,
         T,
         false,
       );
-      emitDeclared(mn, declName, lfNames, T, `irec`, `(dkind-ok/irec ${tw})`);
+      emitDeclared(mn, declName, T, `irec`, `(dkind-ok/irec ${tw})`);
     });
   }
 }
@@ -366,7 +338,7 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
 function generateIndType(prover: Prover, t: IndType): void {
   const declName = nameToString(t.name);
   const mn = mangle(t.name);
-  withLevelParams(t.levelParams, (lfNames) => {
+  withLevelParams(t.levelParams, () => {
     const T = tryLf(t.type);
     if (T === null) {
       skip(`inductive ${declName} — type not representable in LF`);
@@ -376,17 +348,15 @@ function generateIndType(prover: Prover, t: IndType): void {
     const tw = emitTypeWf(
       prover.typeWellFormed({ type: t.type, levelParams: t.levelParams }),
       mn,
-      lfNames,
       T,
       false,
     );
     const eis = emitObligation(
       prover.endsInSort({ type: t.type, levelParams: t.levelParams }),
       `${mn}/ends-in-sort`,
-      lfNames,
       `ends-in-sort ${T}`,
     );
-    emitDeclared(mn, declName, lfNames, T, `indt`, `(dkind-ok/indt ${tw} ${eis})`);
+    emitDeclared(mn, declName, T, `indt`, `(dkind-ok/indt ${tw} ${eis})`);
   });
 }
 

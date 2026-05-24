@@ -10,8 +10,8 @@ arrowType/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort arr
 %%% HOLE
 arrowType/value-typed : defeq (eforall (esort lzero) ([x] (esort lzero))) (eforall (esort lzero) ([x] (esort lzero))) (esort (lsucc lzero)).
 
-arrowType/name : name "arrowType" (is-decl lnil (esort (lsucc lzero)) (defn (eforall (esort lzero) ([x] (esort lzero))))).
+arrowType/name : name "arrowType" (is-decl (esort (lsucc lzero)) (defn (eforall (esort lzero) ([x] (esort lzero))))).
 
-arrowType/decl : declared "arrowType" lnil (esort (lsucc lzero)) (defn (eforall (esort lzero) ([x] (esort lzero))))
+arrowType/decl : declared "arrowType" (esort (lsucc lzero)) (defn (eforall (esort lzero) ([x] (esort lzero))))
    = declared/ok arrowType/name (dkind-ok/defn arrowType/type-wf arrowType/value-typed).
 

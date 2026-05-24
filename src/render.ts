@@ -47,6 +47,11 @@ export function mangle(n: Name): string {
 
 // Sanitize a Lean level-param name into an LF identifier that won't
 // collide with freshVar's letters (x/y/z/w).
+//
+// NOTE: dead w.r.t. the de Bruijn level scheme used by generate-twelf.ts
+// (level params now render as `(lvar i)` data, not LF variables).  Retained
+// only because the superseded lean2lf.ts / render-cli.ts still import it; it
+// will go when those are deleted in the end-state cleanup.
 export function nameToLfLevelVar(n: Name): string {
   const raw = nameToString(n).replace(/[^A-Za-z0-9_]/g, "_");
   if (raw === "") return "lv_anon";
@@ -127,15 +132,13 @@ export function lfExpr(e: Expr, boundVars: string[]): string {
 export function freshVar(scope: string[]): string {
   // Predictable names: x, y, z, w, x1, y1, ...  Scope must include
   // *every* bound name (vars and hyps both) — they live in the same
-  // LF namespace and would shadow.  We also avoid level-param binder
-  // names, which live in the same LF namespace.
-  const levelNames = Array.from(levelParamBindings.values());
-  const allScope = [...scope, ...levelNames];
+  // LF namespace and would shadow.  Level params are no longer LF
+  // variables (they render as `(lvar i)` data), so they can't collide.
   const letters = ["x", "y", "z", "w"];
   for (let suf = 0; suf < 1000; suf++) {
     for (const l of letters) {
       const v = suf === 0 ? l : `${l}${suf}`;
-      if (!allScope.includes(v)) return v;
+      if (!scope.includes(v)) return v;
     }
   }
   throw new Error("ran out of fresh variable names");

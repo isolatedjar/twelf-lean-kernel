@@ -10,9 +10,9 @@ typeWithTooHighTypeField/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lze
 %%% HOLE
 typeWithTooHighTypeField/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
-typeWithTooHighTypeField/name : name "typeWithTooHighTypeField" (is-decl lnil (esort (lsucc lzero)) indt).
+typeWithTooHighTypeField/name : name "typeWithTooHighTypeField" (is-decl (esort (lsucc lzero)) indt).
 
-typeWithTooHighTypeField/decl : declared "typeWithTooHighTypeField" lnil (esort (lsucc lzero)) indt
+typeWithTooHighTypeField/decl : declared "typeWithTooHighTypeField" (esort (lsucc lzero)) indt
    = declared/ok typeWithTooHighTypeField/name (dkind-ok/indt typeWithTooHighTypeField/type-wf typeWithTooHighTypeField/ends-in-sort).
 
 %% ctor typeWithTooHighTypeField.mk (of typeWithTooHighTypeField)
@@ -25,9 +25,9 @@ typeWithTooHighTypeField_mk/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] 
 %%% HOLE
 typeWithTooHighTypeField_mk/positivity : ctor-positive "typeWithTooHighTypeField" lnil (eforall (esort (lsucc lzero)) ([x] (econst "typeWithTooHighTypeField" lnil))).
 
-typeWithTooHighTypeField_mk/name : name "typeWithTooHighTypeField.mk" (is-decl lnil (eforall (esort (lsucc lzero)) ([x] (econst "typeWithTooHighTypeField" lnil))) ctor).
+typeWithTooHighTypeField_mk/name : name "typeWithTooHighTypeField.mk" (is-decl (eforall (esort (lsucc lzero)) ([x] (econst "typeWithTooHighTypeField" lnil))) ctor).
 
-typeWithTooHighTypeField_mk/decl : declared "typeWithTooHighTypeField.mk" lnil (eforall (esort (lsucc lzero)) ([x] (econst "typeWithTooHighTypeField" lnil))) ctor
+typeWithTooHighTypeField_mk/decl : declared "typeWithTooHighTypeField.mk" (eforall (esort (lsucc lzero)) ([x] (econst "typeWithTooHighTypeField" lnil))) ctor
    = declared/ok typeWithTooHighTypeField_mk/name (dkind-ok/ctor typeWithTooHighTypeField_mk/type-wf typeWithTooHighTypeField_mk/positivity).
 
 %% recursor typeWithTooHighTypeField.rec
@@ -37,8 +37,8 @@ typeWithTooHighTypeField_rec/type-wf-sort : lvl.
 %%% HOLE
 typeWithTooHighTypeField_rec/type-wf : defeq (esort lzero) (esort lzero) (esort typeWithTooHighTypeField_rec/type-wf-sort).
 
-typeWithTooHighTypeField_rec/name : name "typeWithTooHighTypeField.rec" (is-decl lnil (esort lzero) irec).
+typeWithTooHighTypeField_rec/name : name "typeWithTooHighTypeField.rec" (is-decl (esort lzero) irec).
 
-typeWithTooHighTypeField_rec/decl : declared "typeWithTooHighTypeField.rec" lnil (esort lzero) irec
+typeWithTooHighTypeField_rec/decl : declared "typeWithTooHighTypeField.rec" (esort lzero) irec
    = declared/ok typeWithTooHighTypeField_rec/name (dkind-ok/irec typeWithTooHighTypeField_rec/type-wf).
 
