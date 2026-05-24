@@ -90,13 +90,6 @@ lnil  : lvls.
 lcons : lvl -> lvls -> lvls.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Names
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Lean names are string literals — full dotted form, e.g. "List.cons".
-
-%abbrev name = string.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Deliberate-failure marker
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Uninhabited type.  When the generator's Prover decides a mandatory
@@ -115,14 +108,14 @@ fail-on-purpose : type.
 expr : type.   %name expr E.
 
 esort   : lvl -> expr.
-econst  : name -> lvls -> expr.
+econst  : string -> lvls -> expr.
 eapp    : expr -> expr -> expr.
 elam    : expr -> (expr -> expr) -> expr.
 eforall : expr -> (expr -> expr) -> expr.
 
 %% Representation-only constructors — no typing or reduction rules.
 %% integer and string come from the %use declarations above.
-eproj   : name -> integer -> expr -> expr.  %% field projection: struct type name, field index, struct
+eproj   : string -> integer -> expr -> expr. %% field projection: struct type name, field index, struct
 enatlit : {n : integer} n >= 0 -> expr.      %% Lean Expr.lit (Literal.natVal n)
 estrlit : string  -> expr.                   %% Lean Expr.lit (Literal.strVal s)
 
@@ -230,6 +223,28 @@ indt : dkind.
 ctor : dkind.
 irec : dkind.
 quot : dkind.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Name reservation
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% Names are just Twelf strings, and the open family of names maps strings
+%%% to their permitted usage. `name` is an open family — it is unfrozen and 
+%%% can be freely extended by downstream files — but to use names as proper
+%%% constants, they must be 
+%%%
+%%% A %unique declaration in final-checks.elf ensures each string is given
+%%% a `name` interpretation at most once.
+
+nkind : type.
+is-decl : lvls -> expr -> dkind -> nkind.
+%%% Todo: other things (recursors? constructors?) that we need to not conflict with declared names?
+
+name : string -> nkind -> type.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Declaration Well-Formedness
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%% `dkind-ok K T` is the per-kind well-formedness obligation:
 %%%   defn V at T: T is a well-formed type AND V has type T
@@ -429,7 +444,7 @@ ctor-spine/arg :
 %%% (e.g. `Eq.refl : ... → Eq α a a`).  Making it explicit reduces
 %%% the check to β-reduction + syntactic equality, which is total.
 
-ctor-positive : name -> lvls -> expr -> type.   %name ctor-positive CP.
+ctor-positive : string -> lvls -> expr -> type.   %name ctor-positive CP.
 
 ctor-positive/intro :
    {T_HOAS : expr -> expr}
@@ -481,23 +496,22 @@ dkind-ok/quot :
 
 %%% `declared N LS T K W` is a well-formed declaration of name N at level
 %%% instantiation LS, type T, payload kind K, witnessed by W : dkind-ok K T.
-%%% Open family — each (proven) declaration adds one constant.  Because
-%%% W is in the type, inhabitants of `declared` cannot omit the proof.
 
-declared : {N : name} {LS : lvls} {T : expr} {K : dkind}
-           dkind-ok K T
+declared : {N : string} {LS : lvls} {T : expr} {K : dkind}
+           name N (is-decl LS T K)
+           -> dkind-ok K T
            -> type.
 
 %%% defeq facts earned by a well-formed declaration.
 
 defeq/const :
-   declared N LS T DK W
+   declared N LS T DK _ _
    -> defeq (econst N LS) (econst N LS) T.
 
 %%% δ-reduction is restricted to `defn` payloads.
 
 defeq/delta :
-   declared N LS T (defn V) W
+   declared N LS T (defn V) _ _
    -> defeq (econst N LS) V T.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -534,14 +548,14 @@ defeq/delta :
 cnames : type.   %name cnames CN.
 
 cnil  : cnames.
-ccons : name -> cnames -> cnames.
+ccons : string -> cnames -> cnames.
 
 %%% --- `enum-rec-body M Body FooName FooLvls Ctors` :
 %%% Body is the body of an enum recursor's type, under the bound motive
 %%% M.  It must be a chain of (∀ m_i : M c_i) for each ctor in the list,
 %%% terminating in (∀ t : Foo, M t).  Walks the chain structurally.
 
-enum-rec-body : expr -> expr -> name -> lvls -> cnames -> type.
+enum-rec-body : expr -> expr -> string -> lvls -> cnames -> type.
 
 %%% Major premise + result: ∀ t : Foo, M t — the chain's terminator.
 enum-rec-body/done :
@@ -565,7 +579,7 @@ enum-rec-body/minor :
 %%% T is the type of a recursor for an enum FooName with ctors Ctors,
 %%% eliminating into Sort U.  Wraps the motive binder around enum-rec-body.
 
-enum-rec-type : expr -> name -> lvls -> cnames -> lvl -> type.
+enum-rec-type : expr -> string -> lvls -> cnames -> lvl -> type.
 
 enum-rec-type/intro :
    ({M : expr} defeq M M (eforall (econst FooName FooLvls) ([_] esort U))
@@ -591,8 +605,8 @@ defeq/extra : defeq-extra E1 E2 A -> defeq E1 E2 A.
 %%% Foo.rec.{u} M m_1 Foo.c_1 ≡ m_1 : M Foo.c_1.
 
 defeq/iota-enum-1 :
-   declared RecName (lcons U lnil) RecType irec WRec
-   -> declared C1 lnil (econst FooName lnil) ctor WC1
+   declared RecName (lcons U lnil) RecType irec _ _
+   -> declared C1 lnil (econst FooName lnil) ctor _ _
    -> enum-rec-type RecType FooName lnil (ccons C1 cnil) U
    -> defeq M M (eforall (econst FooName lnil) ([_] esort U))
    -> defeq Mp1 Mp1 (eapp M (econst C1 lnil))
@@ -606,9 +620,9 @@ defeq/iota-enum-1 :
 %%% Foo.rec.{u} M m_1 m_2 Foo.c_i ≡ m_i, for i ∈ {1, 2}.
 
 defeq/iota-enum-2-first :
-   declared RecName (lcons U lnil) RecType irec WRec
-   -> declared C1 lnil (econst FooName lnil) ctor WC1
-   -> declared C2 lnil (econst FooName lnil) ctor WC2
+   declared RecName (lcons U lnil) RecType irec _ _
+   -> declared C1 lnil (econst FooName lnil) ctor _ _
+   -> declared C2 lnil (econst FooName lnil) ctor _ _
    -> enum-rec-type RecType FooName lnil (ccons C1 (ccons C2 cnil)) U
    -> defeq M M (eforall (econst FooName lnil) ([_] esort U))
    -> defeq Mp1 Mp1 (eapp M (econst C1 lnil))
@@ -620,9 +634,9 @@ defeq/iota-enum-2-first :
         (eapp M (econst C1 lnil)).
 
 defeq/iota-enum-2-second :
-   declared RecName (lcons U lnil) RecType irec WRec
-   -> declared C1 lnil (econst FooName lnil) ctor WC1
-   -> declared C2 lnil (econst FooName lnil) ctor WC2
+   declared RecName (lcons U lnil) RecType irec _ _
+   -> declared C1 lnil (econst FooName lnil) ctor _ _
+   -> declared C2 lnil (econst FooName lnil) ctor _ _
    -> enum-rec-type RecType FooName lnil (ccons C1 (ccons C2 cnil)) U
    -> defeq M M (eforall (econst FooName lnil) ([_] esort U))
    -> defeq Mp1 Mp1 (eapp M (econst C1 lnil))
@@ -636,10 +650,10 @@ defeq/iota-enum-2-second :
 %%% --- Iota for 3-ctor enums.
 
 defeq/iota-enum-3-first :
-   declared RecName (lcons U lnil) RecType irec WRec
-   -> declared C1 lnil (econst FooName lnil) ctor WC1
-   -> declared C2 lnil (econst FooName lnil) ctor WC2
-   -> declared C3 lnil (econst FooName lnil) ctor WC3
+   declared RecName (lcons U lnil) RecType irec _ _
+   -> declared C1 lnil (econst FooName lnil) ctor _ _
+   -> declared C2 lnil (econst FooName lnil) ctor _ _
+   -> declared C3 lnil (econst FooName lnil) ctor _ _
    -> enum-rec-type RecType FooName lnil (ccons C1 (ccons C2 (ccons C3 cnil))) U
    -> defeq M M (eforall (econst FooName lnil) ([_] esort U))
    -> defeq Mp1 Mp1 (eapp M (econst C1 lnil))
@@ -652,10 +666,10 @@ defeq/iota-enum-3-first :
         (eapp M (econst C1 lnil)).
 
 defeq/iota-enum-3-second :
-   declared RecName (lcons U lnil) RecType irec WRec
-   -> declared C1 lnil (econst FooName lnil) ctor WC1
-   -> declared C2 lnil (econst FooName lnil) ctor WC2
-   -> declared C3 lnil (econst FooName lnil) ctor WC3
+   declared RecName (lcons U lnil) RecType irec _ _
+   -> declared C1 lnil (econst FooName lnil) ctor _ _
+   -> declared C2 lnil (econst FooName lnil) ctor _ _
+   -> declared C3 lnil (econst FooName lnil) ctor _ _
    -> enum-rec-type RecType FooName lnil (ccons C1 (ccons C2 (ccons C3 cnil))) U
    -> defeq M M (eforall (econst FooName lnil) ([_] esort U))
    -> defeq Mp1 Mp1 (eapp M (econst C1 lnil))
@@ -668,10 +682,10 @@ defeq/iota-enum-3-second :
         (eapp M (econst C2 lnil)).
 
 defeq/iota-enum-3-third :
-   declared RecName (lcons U lnil) RecType irec WRec
-   -> declared C1 lnil (econst FooName lnil) ctor WC1
-   -> declared C2 lnil (econst FooName lnil) ctor WC2
-   -> declared C3 lnil (econst FooName lnil) ctor WC3
+   declared RecName (lcons U lnil) RecType irec _ _
+   -> declared C1 lnil (econst FooName lnil) ctor _ _
+   -> declared C2 lnil (econst FooName lnil) ctor _ _
+   -> declared C3 lnil (econst FooName lnil) ctor _ _
    -> enum-rec-type RecType FooName lnil (ccons C1 (ccons C2 (ccons C3 cnil))) U
    -> defeq M M (eforall (econst FooName lnil) ([_] esort U))
    -> defeq Mp1 Mp1 (eapp M (econst C1 lnil))
@@ -701,9 +715,9 @@ defeq/iota-enum-3-third :
 %%% invariant of `defeq` (reflexivity is well-typedness).
 
 defeq/iota-quot-lift :
-   declared "Quot"      (lcons U lnil)              QuotType     quot WQuot
-   -> declared "Quot.mk"   (lcons U lnil)              QuotMkType   quot WQuotMk
-   -> declared "Quot.lift" (lcons U (lcons V lnil))    QuotLiftType quot WQuotLift
+   declared "Quot" (lcons U lnil) QuotType quot _ _
+   -> declared "Quot.mk"   (lcons U lnil) QuotMkType quot _ _
+   -> declared "Quot.lift" (lcons U (lcons V lnil)) QuotLiftType quot _ _
    -> defeq A A (esort U)
    -> defeq R R (eforall A ([_] (eforall A ([_] (esort lzero)))))
    -> defeq B B (esort V)
@@ -727,9 +741,9 @@ defeq/iota-quot-lift :
 %%% soundness premise (proof irrelevance handles equality of proofs).
 
 defeq/iota-quot-ind :
-   declared "Quot"     (lcons U lnil)              QuotType    quot WQuot
-   -> declared "Quot.mk"  (lcons U lnil)              QuotMkType  quot WQuotMk
-   -> declared "Quot.ind" (lcons U lnil)              QuotIndType quot WQuotInd
+   declared "Quot" (lcons U lnil) QuotType quot _ _
+   -> declared "Quot.mk" (lcons U lnil) QuotMkType quot _ _
+   -> declared "Quot.ind" (lcons U lnil) QuotIndType quot _ _
    -> defeq A A (esort U)
    -> defeq R R (eforall A ([_] (eforall A ([_] (esort lzero)))))
    -> defeq M M (eforall (eapp (eapp (econst "Quot" (lcons U lnil)) A) R) ([_] (esort lzero)))
