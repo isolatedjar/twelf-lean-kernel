@@ -230,8 +230,9 @@ export function app(fn: Fmt, ...args: Fmt[]): Fmt {
 //   - `null`              → can't discharge it → generator emits a HOLE
 //                           (`<const> : <type>.`, a bare decl rejected by
 //                           %freeze)
-//   - `"fail-on-purpose"` → provably no proof → generator forces the whole
-//                           signature to fail.
+//   - `"fail-on-purpose"` → provably no proof → generator emits
+//                           `%solve - : fail-on-purpose.`; Twelf ABORTs
+//                           because `fail-on-purpose` is undeclared.
 export type ProofResult = Fmt | null | "fail-on-purpose";
 
 // type-wf is special: the obligation is `defeq T T (esort U)`, and the

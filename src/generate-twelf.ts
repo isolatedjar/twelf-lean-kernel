@@ -8,7 +8,9 @@
 //   - prover returns null → `%%% HOLE` + `<const> : <type>.` (declared by
 //                            fiat; rejected by %freeze in the full load)
 //   - prover returns
-//     "fail-on-purpose"   → `%solve - : fail-on-purpose.`   (reject the env)
+//     "fail-on-purpose"   → `%solve - : fail-on-purpose.`   (reject the env;
+//                            `fail-on-purpose` is deliberately undeclared, so
+//                            Twelf ABORTs on the unknown identifier)
 //
 //   .render.elf = this generator with the NullProver (every obligation a HOLE)
 //   .full.elf   = this generator with the RealProver
