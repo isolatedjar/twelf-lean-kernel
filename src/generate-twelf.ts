@@ -4,11 +4,12 @@
 // Reads a ParsedEnv JSON on stdin, emits a Twelf signature on stdout.
 // Parameterized by a Prover (see shared.ts): for every proof obligation
 // the generator raises, it asks the prover for an `Fmt` proof.
-//   - prover returns Fmt  → `<const> : <type> = <proof>.`   (discharged)
+//   - prover returns Fmt  → `<const> : <type> = <proof>.`   (discharged; if
+//                            the Fmt is `failOnPurpose`, the proof is the
+//                            undeclared atom `fail-on-purpose`, which Twelf
+//                            rejects → the env is rejected on purpose)
 //   - prover returns null → `%%% HOLE` + `<const> : <type>.` (declared by
 //                            fiat; rejected by %freeze in the full load)
-//   - prover returns
-//     "fail-on-purpose"   → `%solve - : fail-on-purpose.`   (reject the env)
 //
 //   .render.elf = this generator with the NullProver (every obligation a HOLE)
 //   .full.elf   = this generator with the RealProver
@@ -123,8 +124,8 @@ function emitDefn(constName: string, type: string, term: Fmt | null): void {
 // enclosing dkind-ok witness.  `null` → a HOLE (a bare decl rejected by
 // %freeze); an `Fmt` → a definition.  A prover that wants to reject the
 // environment supplies the `failOnPurpose` Fmt as its proof; it flows
-// through like any term and Twelf rejects the ill-typed definition (no
-// special-casing).  For a polymorphic obligation the type is `{u..} J` and
+// through like any term and Twelf rejects it as an undeclared identifier
+// (no special-casing).  For a polymorphic obligation the type is `{u..} J` and
 // the proof body is wrapped in the matching `[u..]` level-lambdas.
 function emitObligation(
   result: Fmt | null,

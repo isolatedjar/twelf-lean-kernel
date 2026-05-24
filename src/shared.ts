@@ -235,11 +235,12 @@ export function lam(binder: string, body: Fmt): Fmt {
 }
 
 // To *reject* an environment, a prover returns this as its "proof": the atom
-// `fail-on-purpose`, a term of the dead-end `deliberate-failure` type (see
-// tcb.elf).  The generator emits it like any other proof — `<const> :
-// <obligation> = fail-on-purpose.` — and Twelf rejects it as ill-typed.  No
-// special-casing in the generator: failure is just a (deliberately invalid)
-// `Fmt`, distinct from `null` (a HOLE = "couldn't discharge it").
+// `fail-on-purpose`, which is deliberately NOT declared anywhere in the TCB.
+// The generator emits it like any other proof — `<const> : <obligation> =
+// fail-on-purpose.` — and Twelf rejects it as an undeclared identifier
+// (ABORT, with or without freeze).  No special-casing in the generator:
+// failure is just a (deliberately invalid) `Fmt`, distinct from `null`
+// (a HOLE = "couldn't discharge it").
 export const failOnPurpose: Fmt = atom("fail-on-purpose");
 
 // A prover method returns either:
