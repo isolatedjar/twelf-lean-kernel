@@ -99,14 +99,20 @@ lcons : lvl -> lvls -> lvls.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Deliberate-failure marker
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Uninhabited type.  When the generator's Prover decides a mandatory
-%%% proof obligation is provably impossible, the generated file emits
-%%%   %solve - : fail-on-purpose.
-%%% which Twelf reports as "No solution to %solve found" → ABORT, in both
-%%% the with-freeze and without-freeze loads.  This is how a checker
-%%% *rejects* an environment (as opposed to declining it via %%% SKIP).
+%%% `fail-on-purpose` is a term of a dead-end type that is never an
+%%% obligation type.  A Prover that decides an environment is provably
+%%% invalid returns the `Fmt` atom `fail-on-purpose` as its "proof"; the
+%%% generator emits it verbatim, e.g.
+%%%   <const> : <obligation> = fail-on-purpose.
+%%% which Twelf rejects as ill-typed (its type is `deliberate-failure`, not
+%%% the obligation's `defeq`/`ends-in-sort`/… type) → ABORT in both the
+%%% with-freeze and without-freeze loads.  This is how a checker *rejects*
+%%% an environment, as opposed to declining it via `%%% SKIP`.  Routing it
+%%% through an ordinary `Fmt` keeps the generator's emission uniform: every
+%%% obligation is either a HOLE (null) or a definition (some `Fmt`).
 
-fail-on-purpose : type.
+deliberate-failure : type.
+fail-on-purpose : deliberate-failure.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Expressions

@@ -225,14 +225,20 @@ export function app(fn: Fmt, ...args: Fmt[]): Fmt {
   return args.length === 0 ? fn : { kind: "app", fn, args };
 }
 
-// A prover method returns:
-//   - an `Fmt`            → the generator emits `<const> : <type> = <Fmt>.`
-//   - `null`              → can't discharge it → generator emits a HOLE
-//                           (`<const> : <type>.`, a bare decl rejected by
-//                           %freeze)
-//   - `"fail-on-purpose"` → provably no proof → generator forces the whole
-//                           signature to fail.
-export type ProofResult = Fmt | null | "fail-on-purpose";
+// To *reject* an environment, a prover returns this as its "proof": the atom
+// `fail-on-purpose`, a term of the dead-end `deliberate-failure` type (see
+// tcb.elf).  The generator emits it like any other proof — `<const> :
+// <obligation> = fail-on-purpose.` — and Twelf rejects it as ill-typed.  No
+// special-casing in the generator: failure is just a (deliberately invalid)
+// `Fmt`, distinct from `null` (a HOLE = "couldn't discharge it").
+export const failOnPurpose: Fmt = atom("fail-on-purpose");
+
+// A prover method returns either:
+//   - an `Fmt`  → the generator emits `<const> : <type> = <Fmt>.`  (a real
+//                 proof, or `failOnPurpose` to reject the environment)
+//   - `null`    → can't discharge it → generator emits a HOLE
+//                 (`<const> : <type>.`, a bare decl rejected by %freeze)
+export type ProofResult = Fmt | null;
 
 // type-wf is special: the obligation is `defeq T T (esort U)`, and the
 // universe `U` is itself synthesized (it's the Sort that T inhabits — not
@@ -240,7 +246,8 @@ export type ProofResult = Fmt | null | "fail-on-purpose";
 // `lvl` term) and the proof, so the generator can emit the universe as its
 // own obligation on the freezable, declared-independent `lvl` family rather
 // than relying on a placeholder or on Twelf reconstructing an implicit var.
-export type TypeWfResult = { sort: Fmt; proof: Fmt } | null | "fail-on-purpose";
+// (To reject, set either field to `failOnPurpose`.)
+export type TypeWfResult = { sort: Fmt; proof: Fmt } | null;
 
 // One method per proof-obligation shape the generator can raise.  Each gets
 // the relevant IR context; the generator owns rendering the obligation's

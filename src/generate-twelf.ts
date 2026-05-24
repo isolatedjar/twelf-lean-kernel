@@ -96,18 +96,18 @@ function obRef(constName: string, lfNames: string[]): string {
 // Obligation emission
 // =====================================================================
 
-// Render a single proof obligation.  Returns a reference string to use in
-// the enclosing dkind-ok witness, or { fail: true } if the prover decided
-// the obligation is provably impossible.
-type ObResult = { ref: string } | { fail: true };
-
+// Render a single proof obligation and return a reference to use in the
+// enclosing dkind-ok witness.  `null` → a HOLE (`<const> : <type>.`, a bare
+// decl rejected by %freeze); an `Fmt` → a definition (`<const> : <type> =
+// <proof>.`).  A prover that wants to reject the environment supplies the
+// `failOnPurpose` Fmt as its proof; it flows through here like any term and
+// Twelf rejects the ill-typed definition (no special-casing).
 function emitObligation(
-  result: Fmt | null | "fail-on-purpose",
+  result: Fmt | null,
   constName: string,
   lfNames: string[],
   judgmentType: string,
-): ObResult {
-  if (result === "fail-on-purpose") return { fail: true };
+): string {
   const binders = lvlBinders(lfNames);
   if (result === null) {
     emit(`%%% HOLE`);
@@ -118,7 +118,7 @@ function emitObligation(
     emit(`   = ${lams}${ppFmt(result)}.`);
   }
   emit(``);
-  return { ref: obRef(constName, lfNames) };
+  return obRef(constName, lfNames);
 }
 
 // Emit the type-wf obligation `defeq T T (esort U)`.
@@ -135,31 +135,23 @@ function emitTypeWf(
   lfNames: string[],
   T: string,
   isThm: boolean,
-): ObResult {
-  if (result === "fail-on-purpose") return { fail: true };
+): string {
   if (isThm) {
     const proof = result === null ? null : result.proof;
     return emitObligation(proof, `${mn}/type-wf`, lfNames, `defeq ${T} ${T} (esort lzero)`);
   }
-  const sortOb = emitObligation(
+  const sortRef = emitObligation(
     result === null ? null : result.sort,
     `${mn}/type-wf-sort`,
     lfNames,
     `lvl`,
   );
-  if ("fail" in sortOb) return { fail: true };
   return emitObligation(
     result === null ? null : result.proof,
     `${mn}/type-wf`,
     lfNames,
-    `defeq ${T} ${T} (esort ${sortOb.ref})`,
+    `defeq ${T} ${T} (esort ${sortRef})`,
   );
-}
-
-function emitFail(reason: string): void {
-  emit(`%%% FAIL: ${reason}`);
-  emit(`%solve - : fail-on-purpose.`);
-  emit(``);
 }
 
 function skip(reason: string): void {
@@ -221,21 +213,12 @@ function generateValDecl(prover: Prover, d: Decl & { kind: "def" | "opaque" | "t
       T,
       d.kind === "thm",
     );
-    if ("fail" in tw) {
-      emitFail(`type-wf for ${declName}`);
-      return;
-    }
-
     const vt = emitObligation(
       prover.valueHasType({ value: d.value, type: d.type, levelParams: d.levelParams }),
       `${mn}/value-typed`,
       lfNames,
       `defeq ${V} ${V} ${T}`,
     );
-    if ("fail" in vt) {
-      emitFail(`value-typed for ${declName}`);
-      return;
-    }
 
     const dkindCtor = d.kind === "def" ? "defn" : d.kind === "opaque" ? "opq" : "thm";
     const okCtor =
@@ -243,7 +226,7 @@ function generateValDecl(prover: Prover, d: Decl & { kind: "def" | "opaque" | "t
     emit(`${mn}/decl : ${lvlBinders(lfNames)}declared "${declName}" ${lvlsExpr(lfNames)}`);
     emit(`   ${T}`);
     emit(`   (${dkindCtor} ${V})`);
-    emit(`   (${okCtor} ${tw.ref} ${vt.ref}).`);
+    emit(`   (${okCtor} ${tw} ${vt}).`);
     emit(``);
   });
 }
@@ -265,14 +248,10 @@ function generateAxiom(prover: Prover, d: Decl & { kind: "axiom" }): void {
       T,
       false,
     );
-    if ("fail" in tw) {
-      emitFail(`type-wf for ${declName}`);
-      return;
-    }
     emit(`${mn}/decl : ${lvlBinders(lfNames)}declared "${declName}" ${lvlsExpr(lfNames)}`);
     emit(`   ${T}`);
     emit(`   ax`);
-    emit(`   (dkind-ok/ax ${tw.ref}).`);
+    emit(`   (dkind-ok/ax ${tw}).`);
     emit(``);
   });
 }
@@ -302,10 +281,6 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
         T,
         false,
       );
-      if ("fail" in tw) {
-        emitFail(`type-wf for ${declName}`);
-        return;
-      }
       const cp = emitObligation(
         prover.ctorPositive({
           ctorType: c.type,
@@ -317,14 +292,10 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
         lfNames,
         `ctor-positive "${indName}" ${lvlsExpr(lfNames)} ${T}`,
       );
-      if ("fail" in cp) {
-        emitFail(`ctor-positive for ${declName}`);
-        return;
-      }
       emit(`${mn}/decl : ${lvlBinders(lfNames)}declared "${declName}" ${lvlsExpr(lfNames)}`);
       emit(`   ${T}`);
       emit(`   ctor`);
-      emit(`   (dkind-ok/ctor ${tw.ref} ${cp.ref}).`);
+      emit(`   (dkind-ok/ctor ${tw} ${cp}).`);
       emit(``);
     });
   }
@@ -346,14 +317,10 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
         T,
         false,
       );
-      if ("fail" in tw) {
-        emitFail(`type-wf for ${declName}`);
-        return;
-      }
       emit(`${mn}/decl : ${lvlBinders(lfNames)}declared "${declName}" ${lvlsExpr(lfNames)}`);
       emit(`   ${T}`);
       emit(`   irec`);
-      emit(`   (dkind-ok/irec ${tw.ref}).`);
+      emit(`   (dkind-ok/irec ${tw}).`);
       emit(``);
     });
   }
@@ -376,24 +343,16 @@ function generateIndType(prover: Prover, t: IndType): void {
       T,
       false,
     );
-    if ("fail" in tw) {
-      emitFail(`type-wf for ${declName}`);
-      return;
-    }
     const eis = emitObligation(
       prover.endsInSort({ type: t.type, levelParams: t.levelParams }),
       `${mn}/ends-in-sort`,
       lfNames,
       `ends-in-sort ${T}`,
     );
-    if ("fail" in eis) {
-      emitFail(`ends-in-sort for ${declName}`);
-      return;
-    }
     emit(`${mn}/decl : ${lvlBinders(lfNames)}declared "${declName}" ${lvlsExpr(lfNames)}`);
     emit(`   ${T}`);
     emit(`   indt`);
-    emit(`   (dkind-ok/indt ${tw.ref} ${eis.ref}).`);
+    emit(`   (dkind-ok/indt ${tw} ${eis}).`);
     emit(``);
   });
 }
