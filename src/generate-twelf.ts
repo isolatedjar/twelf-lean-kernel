@@ -8,9 +8,8 @@
 //   - prover returns null → `%%% HOLE` + `<const> : <type>.` (declared by
 //                            fiat; rejected by %freeze in the full load)
 //   - prover returns
-//     "fail-on-purpose"   → `%solve - : fail-on-purpose.`   (reject the env;
-//                            `fail-on-purpose` is deliberately undeclared, so
-//                            Twelf ABORTs on the unknown identifier)
+//     "fail-on-purpose"   → `fail-on-purpose.`              (reject the env;
+//                            undeclared identifier → Twelf ABORTs)
 //
 //   .render.elf = this generator with the NullProver (every obligation a HOLE)
 //   .full.elf   = this generator with the RealProver
@@ -160,7 +159,7 @@ function emitTypeWf(
 
 function emitFail(reason: string): void {
   emit(`%%% FAIL: ${reason}`);
-  emit(`%solve - : fail-on-purpose.`);
+  emit(`fail-on-purpose.`);
   emit(``);
 }
 
