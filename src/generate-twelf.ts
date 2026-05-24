@@ -31,7 +31,7 @@ import type {
   Prover,
   TypeWfResult,
 } from "./shared.ts";
-import { nameToString, transformNamesFromJSON } from "./shared.ts";
+import { lam, nameToString, transformNamesFromJSON } from "./shared.ts";
 
 // =====================================================================
 // Output + Fmt pretty-printer (trusted, anti-injection)
@@ -42,21 +42,30 @@ function emit(s: string): void {
   out.push(s);
 }
 
-// Pretty-print an Fmt proof term.  Validates every atom so an untrusted
-// prover cannot smuggle a declaration terminator (`.`), whitespace, or a
-// newline into the output: atoms are either Twelf identifiers (which use
-// `/`, never `.`) or quoted string literals.
+// Pretty-print an Fmt proof term.  Validates every atom and binder so an
+// untrusted prover cannot smuggle a declaration terminator (`.`), whitespace,
+// or a newline into the output: atoms are either Twelf identifiers (which use
+// `/`, never `.`) or quoted string literals; binders are plain identifiers.
 function ppFmt(f: Fmt): string {
-  if (f.kind === "atom") {
-    const t = f.text;
-    const okIdent = /^[A-Za-z0-9_/+*<>=~^!?-]+$/.test(t);
-    const okString = /^"[^"\\\n]*"$/.test(t);
-    if (!okIdent && !okString) {
-      throw new Error(`Fmt atom rejected (possible injection): ${JSON.stringify(t)}`);
+  switch (f.kind) {
+    case "atom": {
+      const t = f.text;
+      const okIdent = /^[A-Za-z0-9_/+*<>=~^!?-]+$/.test(t);
+      const okString = /^"[^"\\\n]*"$/.test(t);
+      if (!okIdent && !okString) {
+        throw new Error(`Fmt atom rejected (possible injection): ${JSON.stringify(t)}`);
+      }
+      return t;
     }
-    return t;
+    case "app":
+      return `(${ppFmt(f.fn)} ${f.args.map(ppFmt).join(" ")})`;
+    case "lam": {
+      if (!/^[A-Za-z0-9_]+$/.test(f.binder)) {
+        throw new Error(`Fmt binder rejected: ${JSON.stringify(f.binder)}`);
+      }
+      return `([${f.binder}] ${ppFmt(f.body)})`;
+    }
   }
-  return `(${ppFmt(f.fn)} ${f.args.map(ppFmt).join(" ")})`;
 }
 
 // =====================================================================
@@ -96,28 +105,36 @@ function obRef(constName: string, lfNames: string[]): string {
 // Obligation emission
 // =====================================================================
 
+// Emit a Twelf constant: a definition (`<const> : <type> = <term>.`) when
+// `term` is non-null, or a declaration with a HOLE warning (`%%% HOLE` then
+// `<const> : <type>.`) when it is null.
+function emitDefn(constName: string, type: string, term: Fmt | null): void {
+  if (term === null) {
+    emit(`%%% HOLE`);
+    emit(`${constName} : ${type}.`);
+  } else {
+    emit(`${constName} : ${type}`);
+    emit(`   = ${ppFmt(term)}.`);
+  }
+  emit(``);
+}
+
 // Render a single proof obligation and return a reference to use in the
-// enclosing dkind-ok witness.  `null` → a HOLE (`<const> : <type>.`, a bare
-// decl rejected by %freeze); an `Fmt` → a definition (`<const> : <type> =
-// <proof>.`).  A prover that wants to reject the environment supplies the
-// `failOnPurpose` Fmt as its proof; it flows through here like any term and
-// Twelf rejects the ill-typed definition (no special-casing).
+// enclosing dkind-ok witness.  `null` → a HOLE (a bare decl rejected by
+// %freeze); an `Fmt` → a definition.  A prover that wants to reject the
+// environment supplies the `failOnPurpose` Fmt as its proof; it flows
+// through like any term and Twelf rejects the ill-typed definition (no
+// special-casing).  For a polymorphic obligation the type is `{u..} J` and
+// the proof body is wrapped in the matching `[u..]` level-lambdas.
 function emitObligation(
   result: Fmt | null,
   constName: string,
   lfNames: string[],
   judgmentType: string,
 ): string {
-  const binders = lvlBinders(lfNames);
-  if (result === null) {
-    emit(`%%% HOLE`);
-    emit(`${constName} : ${binders}${judgmentType}.`);
-  } else {
-    const lams = lfNames.map((n) => `[${n}] `).join("");
-    emit(`${constName} : ${binders}${judgmentType}`);
-    emit(`   = ${lams}${ppFmt(result)}.`);
-  }
-  emit(``);
+  const type = `${lvlBinders(lfNames)}${judgmentType}`;
+  const body = result === null ? null : lfNames.reduceRight<Fmt>((b, n) => lam(n, b), result);
+  emitDefn(constName, type, body);
   return obRef(constName, lfNames);
 }
 

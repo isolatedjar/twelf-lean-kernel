@@ -209,13 +209,17 @@ export type ParsedEnv = z.infer<typeof ParsedEnvSchema>;
 // terms.  An audit of shared.ts + parse.ts + generate-twelf.ts therefore
 // suffices; prover.ts need not be audited.
 //
-// A `Fmt` is a structured Twelf proof term — atoms and applications only.
-// Because it has no way to express a `.` (declaration terminator) or a raw
-// newline, a prover cannot "smuggle" the end of one declaration and the
-// start of another into a single Fmt (the generator additionally validates
-// atoms; see ppFmt in generate-twelf.ts).
+// A `Fmt` is a structured Twelf proof term — atoms, applications, and
+// `[x] body` abstractions (used for the level-lambdas a polymorphic proof
+// carries).  Because it has no way to express a `.` (declaration terminator)
+// or a raw newline, a prover cannot "smuggle" the end of one declaration and
+// the start of another into a single Fmt (the generator additionally
+// validates atoms and binder names; see ppFmt in generate-twelf.ts).
 
-export type Fmt = { kind: "atom"; text: string } | { kind: "app"; fn: Fmt; args: Fmt[] };
+export type Fmt =
+  | { kind: "atom"; text: string }
+  | { kind: "app"; fn: Fmt; args: Fmt[] }
+  | { kind: "lam"; binder: string; body: Fmt };
 
 export function atom(text: string): Fmt {
   return { kind: "atom", text };
@@ -223,6 +227,11 @@ export function atom(text: string): Fmt {
 
 export function app(fn: Fmt, ...args: Fmt[]): Fmt {
   return args.length === 0 ? fn : { kind: "app", fn, args };
+}
+
+// `[binder] body` — a Twelf abstraction.
+export function lam(binder: string, body: Fmt): Fmt {
+  return { kind: "lam", binder, body };
 }
 
 // To *reject* an environment, a prover returns this as its "proof": the atom
