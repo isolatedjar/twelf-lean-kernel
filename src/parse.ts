@@ -12,8 +12,8 @@
 import * as readline from "node:readline";
 
 import { format, resolveConfig } from "prettier";
-import { z } from "../vendor/zod/index.js";
 
+import { z } from "../vendor/zod/index.js";
 import type {
   Decl,
   Expr,
@@ -76,26 +76,22 @@ const exprSchema = z.union([
   z
     .object({ ie: idx, app: z.object({ fn: idx, arg: idx }) })
     .transform((r) => ({ tag: "app" as const, idx: r.ie, fn: r.app.fn, arg: r.app.arg })),
-  z
-    .object({ ie: idx, lam: binderObj })
-    .transform((r) => ({
-      tag: "lam" as const,
-      idx: r.ie,
-      bi: r.lam.binderInfo,
-      name: r.lam.name,
-      type: r.lam.type,
-      body: r.lam.body,
-    })),
-  z
-    .object({ ie: idx, forallE: binderObj })
-    .transform((r) => ({
-      tag: "forallE" as const,
-      idx: r.ie,
-      bi: r.forallE.binderInfo,
-      name: r.forallE.name,
-      type: r.forallE.type,
-      body: r.forallE.body,
-    })),
+  z.object({ ie: idx, lam: binderObj }).transform((r) => ({
+    tag: "lam" as const,
+    idx: r.ie,
+    bi: r.lam.binderInfo,
+    name: r.lam.name,
+    type: r.lam.type,
+    body: r.lam.body,
+  })),
+  z.object({ ie: idx, forallE: binderObj }).transform((r) => ({
+    tag: "forallE" as const,
+    idx: r.ie,
+    bi: r.forallE.binderInfo,
+    name: r.forallE.name,
+    type: r.forallE.type,
+    body: r.forallE.body,
+  })),
   z
     .object({ ie: idx, letE: z.object({ name: idx, type: idx, value: idx, body: idx }) })
     .transform((r) => ({
@@ -207,7 +203,7 @@ type IndRec = Extract<z.infer<typeof declSchema>, { tag: "inductive" }>;
 // NDJSON line parsing.
 // =====================================================================
 
-function parseLine(line: string): Item | null {
+function (line: string): Item | null {
   try {
     const raw = JSON.parse(line);
     if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return null;
