@@ -12,7 +12,7 @@
 import * as readline from "node:readline";
 
 import { format, resolveConfig } from "prettier";
-import { z } from "zod";
+import { z } from "../vendor/zod/index.js";
 
 import type {
   Decl,
