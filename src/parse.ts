@@ -7,15 +7,14 @@
 // This makes the parsed declarations directly readable by humans;
 // lean2lf.ts consumes it as a precondition without re-validating.
 //
-// If runtime defensiveness is wanted later, the parseLine + Env step
-// can be replaced with a z.discriminatedUnion + z.parse pair.
+// parseLine uses zod schemas to validate and transform each NDJSON record.
 
 import * as readline from "node:readline";
 
 import { format, resolveConfig } from "prettier";
+import { z } from "zod";
 
 import type {
-  BinderInfo,
   Decl,
   Expr,
   IndCtor,
@@ -29,256 +28,199 @@ import type {
 import { transformNamesToJSON } from "./shared.ts";
 
 // =====================================================================
-// NDJSON wire format (internal to parse.ts)
+// NDJSON wire format schemas.
+//
+// Each schema validates one record variant and transforms it into a
+// typed Item.  Grouping by top-level discriminant ("in", "il", "ie",
+// or a decl key) lets parseLine pick the right union immediately.
 // =====================================================================
 
-type NameRec =
-  | { tag: "str"; idx: number; pre: number; str: string }
-  | { tag: "num"; idx: number; pre: number; i: number };
+const idx = z.number().int(); // every cross-reference is a non-negative integer index
+const binderInfo = z.enum(["default", "implicit", "strictImplicit", "instImplicit"]);
+const binderObj = z.object({ binderInfo, name: idx, type: idx, body: idx });
 
-type LevelRec =
-  | { tag: "succ"; idx: number; arg: number }
-  | { tag: "max"; idx: number; l: number; r: number }
-  | { tag: "imax"; idx: number; l: number; r: number }
-  | { tag: "param"; idx: number; name: number };
+const nameSchema = z.union([
+  z
+    .object({ in: idx, str: z.object({ pre: idx, str: z.string() }) })
+    .transform((r) => ({ tag: "str" as const, idx: r.in, pre: r.str.pre, str: r.str.str })),
+  z
+    .object({ in: idx, num: z.object({ pre: idx, i: idx }) })
+    .transform((r) => ({ tag: "num" as const, idx: r.in, pre: r.num.pre, i: r.num.i })),
+]);
 
-type ExprRec =
-  | { tag: "bvar"; idx: number; deBruijn: number }
-  | { tag: "sort"; idx: number; level: number }
-  | { tag: "const"; idx: number; name: number; us: number[] }
-  | { tag: "app"; idx: number; fn: number; arg: number }
-  | { tag: "lam"; idx: number; bi: BinderInfo; name: number; type: number; body: number }
-  | { tag: "forallE"; idx: number; bi: BinderInfo; name: number; type: number; body: number }
-  | { tag: "letE"; idx: number; name: number; type: number; value: number; body: number }
-  | { tag: "proj"; idx: number; typeName: number; pidx: number; struct: number }
-  | { tag: "natLit"; idx: number; value: string }
-  | { tag: "strLit"; idx: number; value: string };
+const levelSchema = z.union([
+  z
+    .object({ il: idx, succ: idx })
+    .transform((r) => ({ tag: "succ" as const, idx: r.il, arg: r.succ })),
+  z
+    .object({ il: idx, max: z.tuple([idx, idx]) })
+    .transform((r) => ({ tag: "max" as const, idx: r.il, l: r.max[0], r: r.max[1] })),
+  z
+    .object({ il: idx, imax: z.tuple([idx, idx]) })
+    .transform((r) => ({ tag: "imax" as const, idx: r.il, l: r.imax[0], r: r.imax[1] })),
+  z
+    .object({ il: idx, param: idx })
+    .transform((r) => ({ tag: "param" as const, idx: r.il, name: r.param })),
+]);
 
-// Decl-bearing records reference numeric indices into the name/expr tables.
-type DefRec = { tag: "def"; name: number; levelParams: number[]; type: number; value: number };
-type ThmRec = { tag: "thm"; name: number; levelParams: number[]; type: number; value: number };
-type AxRec = { tag: "axiom"; name: number; levelParams: number[]; type: number };
-type OpqRec = { tag: "opaque"; name: number; levelParams: number[]; type: number; value: number };
-type QuotRec = {
-  tag: "quot";
-  quotKind: "type" | "ctor" | "lift" | "ind";
-  name: number;
-  levelParams: number[];
-  type: number;
-};
+const exprSchema = z.union([
+  z
+    .object({ ie: idx, bvar: idx })
+    .transform((r) => ({ tag: "bvar" as const, idx: r.ie, deBruijn: r.bvar })),
+  z
+    .object({ ie: idx, sort: idx })
+    .transform((r) => ({ tag: "sort" as const, idx: r.ie, level: r.sort })),
+  z
+    .object({ ie: idx, const: z.object({ name: idx, us: z.array(idx) }) })
+    .transform((r) => ({ tag: "const" as const, idx: r.ie, name: r.const.name, us: r.const.us })),
+  z
+    .object({ ie: idx, app: z.object({ fn: idx, arg: idx }) })
+    .transform((r) => ({ tag: "app" as const, idx: r.ie, fn: r.app.fn, arg: r.app.arg })),
+  z
+    .object({ ie: idx, lam: binderObj })
+    .transform((r) => ({
+      tag: "lam" as const,
+      idx: r.ie,
+      bi: r.lam.binderInfo,
+      name: r.lam.name,
+      type: r.lam.type,
+      body: r.lam.body,
+    })),
+  z
+    .object({ ie: idx, forallE: binderObj })
+    .transform((r) => ({
+      tag: "forallE" as const,
+      idx: r.ie,
+      bi: r.forallE.binderInfo,
+      name: r.forallE.name,
+      type: r.forallE.type,
+      body: r.forallE.body,
+    })),
+  z
+    .object({ ie: idx, letE: z.object({ name: idx, type: idx, value: idx, body: idx }) })
+    .transform((r) => ({
+      tag: "letE" as const,
+      idx: r.ie,
+      name: r.letE.name,
+      type: r.letE.type,
+      value: r.letE.value,
+      body: r.letE.body,
+    })),
+  z
+    .object({ ie: idx, proj: z.object({ typeName: idx, idx: idx, struct: idx }) })
+    .transform((r) => ({
+      tag: "proj" as const,
+      idx: r.ie,
+      typeName: r.proj.typeName,
+      pidx: r.proj.idx,
+      struct: r.proj.struct,
+    })),
+  z
+    .object({ ie: idx, natVal: z.string() })
+    .transform((r) => ({ tag: "natLit" as const, idx: r.ie, value: r.natVal })),
+  z
+    .object({ ie: idx, strVal: z.string() })
+    .transform((r) => ({ tag: "strLit" as const, idx: r.ie, value: r.strVal })),
+]);
 
-// `recs` is the NDJSON field name; we resolve it into `recursors`
-// (matching shared.ts) at decl-resolution time.
-type IndTypeSpec = {
-  name: number;
-  levelParams: number[];
-  numParams: number;
-  numIndices: number;
-  type: number;
-};
-type IndCtorSpec = {
-  name: number;
-  levelParams: number[];
-  type: number;
-  numParams: number;
-  numFields: number;
-  induct: number;
-  cidx?: number;
-};
-type IndRecRuleSpec = { ctor: number; nfields: number; rhs: number };
-type IndRecSpec = {
-  name: number;
-  levelParams: number[];
-  type: number;
-  numParams: number;
-  numIndices: number;
-  numMotives: number;
-  numMinors: number;
-  rules: IndRecRuleSpec[];
-  k: boolean;
-};
+const defLike = z.object({ name: idx, levelParams: z.array(idx), type: idx, value: idx });
+const axiomLike = z.object({ name: idx, levelParams: z.array(idx), type: idx });
+const indTypeSpec = z.object({
+  name: idx,
+  levelParams: z.array(idx),
+  numParams: idx,
+  numIndices: idx,
+  type: idx,
+});
+const indCtorSpec = z.object({
+  name: idx,
+  levelParams: z.array(idx),
+  type: idx,
+  numParams: idx,
+  numFields: idx,
+  induct: idx,
+  cidx: idx.optional(),
+});
+const indRecRuleSpec = z.object({ ctor: idx, nfields: idx, rhs: idx });
+const indRecSpec = z.object({
+  name: idx,
+  levelParams: z.array(idx),
+  type: idx,
+  numParams: idx,
+  numIndices: idx,
+  numMotives: idx,
+  numMinors: idx,
+  rules: z.array(indRecRuleSpec),
+  k: z.boolean(),
+});
 
-type IndRec = {
-  tag: "inductive";
-  types: IndTypeSpec[];
-  ctors: IndCtorSpec[];
-  recs: IndRecSpec[];
-};
-
-type MetaRec = { tag: "meta" };
+const declSchema = z.union([
+  z.object({ def: defLike }).transform((r) => ({ tag: "def" as const, ...r.def })),
+  z.object({ thm: defLike }).transform((r) => ({ tag: "thm" as const, ...r.thm })),
+  z.object({ axiom: axiomLike }).transform((r) => ({ tag: "axiom" as const, ...r.axiom })),
+  z.object({ opaque: defLike }).transform((r) => ({ tag: "opaque" as const, ...r.opaque })),
+  z
+    .object({
+      quot: z.object({
+        kind: z.enum(["type", "ctor", "lift", "ind"]),
+        name: idx,
+        levelParams: z.array(idx),
+        type: idx,
+      }),
+    })
+    .transform((r) => ({
+      tag: "quot" as const,
+      quotKind: r.quot.kind,
+      name: r.quot.name,
+      levelParams: r.quot.levelParams,
+      type: r.quot.type,
+    })),
+  z
+    .object({
+      inductive: z.object({
+        types: z.array(indTypeSpec),
+        ctors: z.array(indCtorSpec),
+        recs: z.array(indRecSpec),
+      }),
+    })
+    .transform((r) => ({
+      tag: "inductive" as const,
+      types: r.inductive.types,
+      ctors: r.inductive.ctors,
+      recs: r.inductive.recs,
+    })),
+  z.object({ meta: z.unknown() }).transform(() => ({ tag: "meta" as const })),
+]);
 
 type Item =
-  | NameRec
-  | LevelRec
-  | ExprRec
-  | DefRec
-  | ThmRec
-  | AxRec
-  | OpqRec
-  | QuotRec
-  | IndRec
-  | MetaRec;
+  | z.infer<typeof nameSchema>
+  | z.infer<typeof levelSchema>
+  | z.infer<typeof exprSchema>
+  | z.infer<typeof declSchema>;
+
+// Convenience aliases for Env method parameters.
+type SimpleDecl = Extract<z.infer<typeof declSchema>, { tag: "def" | "thm" | "axiom" | "opaque" }>;
+type QuotRec = Extract<z.infer<typeof declSchema>, { tag: "quot" }>;
+type IndRec = Extract<z.infer<typeof declSchema>, { tag: "inductive" }>;
 
 // =====================================================================
-// NDJSON line parsing.  Hand-rolled discrimination over field names.
+// NDJSON line parsing.
 // =====================================================================
-
-function asInt(x: unknown): number | null {
-  return typeof x === "number" && Number.isInteger(x) ? x : null;
-}
-function asStr(x: unknown): string | null {
-  return typeof x === "string" ? x : null;
-}
-function asArrayOfInts(x: unknown): number[] | null {
-  if (!Array.isArray(x)) return null;
-  const out: number[] = [];
-  for (const e of x) {
-    const n = asInt(e);
-    if (n === null) return null;
-    out.push(n);
-  }
-  return out;
-}
-
-function sub(obj: Record<string, unknown>, key: string): Record<string, unknown> | null {
-  const v = obj[key];
-  return typeof v === "object" && v !== null && !Array.isArray(v)
-    ? (v as Record<string, unknown>)
-    : null;
-}
 
 function parseLine(line: string): Item | null {
-  let raw: unknown;
   try {
-    raw = JSON.parse(line);
+    const raw = JSON.parse(line);
+    if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return null;
+    const obj = raw as Record<string, unknown>;
+    let result;
+    if ("in" in obj) result = nameSchema.safeParse(obj);
+    else if ("il" in obj) result = levelSchema.safeParse(obj);
+    else if ("ie" in obj) result = exprSchema.safeParse(obj);
+    else result = declSchema.safeParse(obj);
+    return result.success ? result.data : null;
   } catch {
     return null;
   }
-  if (typeof raw !== "object" || raw === null) return null;
-  const obj = raw as Record<string, unknown>;
-
-  // Names: { in: idx, str: { pre, str } } or { in: idx, num: { pre, i } }
-  if ("in" in obj && "str" in obj) {
-    const str = sub(obj, "str");
-    if (!str) return null;
-    return { tag: "str", idx: asInt(obj["in"])!, pre: asInt(str["pre"])!, str: asStr(str["str"])! };
-  }
-  if ("in" in obj && "num" in obj) {
-    const num = sub(obj, "num");
-    if (!num) return null;
-    return { tag: "num", idx: asInt(obj["in"])!, pre: asInt(num["pre"])!, i: asInt(num["i"])! };
-  }
-
-  // Levels: { il: idx, <variant>: ... }
-  if ("il" in obj && "succ" in obj)
-    return { tag: "succ", idx: asInt(obj["il"])!, arg: asInt(obj["succ"])! };
-  if ("il" in obj && "max" in obj) {
-    const max = asArrayOfInts(obj["max"]);
-    if (!max || max[0] === undefined || max[1] === undefined) return null;
-    return { tag: "max", idx: asInt(obj["il"])!, l: max[0], r: max[1] };
-  }
-  if ("il" in obj && "imax" in obj) {
-    const imax = asArrayOfInts(obj["imax"]);
-    if (!imax || imax[0] === undefined || imax[1] === undefined) return null;
-    return { tag: "imax", idx: asInt(obj["il"])!, l: imax[0], r: imax[1] };
-  }
-  if ("il" in obj && "param" in obj)
-    return { tag: "param", idx: asInt(obj["il"])!, name: asInt(obj["param"])! };
-
-  // Expressions: { ie: idx, <variant>: ... }
-  if ("ie" in obj) {
-    const idx = asInt(obj["ie"])!;
-    if ("bvar" in obj) return { tag: "bvar", idx, deBruijn: asInt(obj["bvar"])! };
-    if ("sort" in obj) return { tag: "sort", idx, level: asInt(obj["sort"])! };
-    if ("const" in obj) {
-      const c = sub(obj, "const");
-      if (!c) return null;
-      return { tag: "const", idx, name: asInt(c["name"])!, us: asArrayOfInts(c["us"])! };
-    }
-    if ("app" in obj) {
-      const app = sub(obj, "app");
-      if (!app) return null;
-      return { tag: "app", idx, fn: asInt(app["fn"])!, arg: asInt(app["arg"])! };
-    }
-    if ("lam" in obj) {
-      const lam = sub(obj, "lam");
-      if (!lam) return null;
-      return {
-        tag: "lam",
-        idx,
-        bi: lam["binderInfo"] as BinderInfo,
-        name: asInt(lam["name"])!,
-        type: asInt(lam["type"])!,
-        body: asInt(lam["body"])!,
-      };
-    }
-    if ("forallE" in obj) {
-      const forallE = sub(obj, "forallE");
-      if (!forallE) return null;
-      return {
-        tag: "forallE",
-        idx,
-        bi: forallE["binderInfo"] as BinderInfo,
-        name: asInt(forallE["name"])!,
-        type: asInt(forallE["type"])!,
-        body: asInt(forallE["body"])!,
-      };
-    }
-    if ("letE" in obj) {
-      const letE = sub(obj, "letE");
-      if (!letE) return null;
-      return {
-        tag: "letE",
-        idx,
-        name: asInt(letE["name"])!,
-        type: asInt(letE["type"])!,
-        value: asInt(letE["value"])!,
-        body: asInt(letE["body"])!,
-      };
-    }
-    if ("proj" in obj) {
-      const proj = sub(obj, "proj");
-      if (!proj) return null;
-      return {
-        tag: "proj",
-        idx,
-        typeName: asInt(proj["typeName"])!,
-        pidx: asInt(proj["idx"])!,
-        struct: asInt(proj["struct"])!,
-      };
-    }
-    if ("natVal" in obj) return { tag: "natLit", idx, value: asStr(obj["natVal"])! };
-    if ("strVal" in obj) return { tag: "strLit", idx, value: asStr(obj["strVal"])! };
-    return null;
-  }
-
-  // Top-level items
-  if ("def" in obj) return { tag: "def", ...(sub(obj, "def") ?? {}) } as unknown as DefRec;
-  if ("thm" in obj) return { tag: "thm", ...(sub(obj, "thm") ?? {}) } as unknown as ThmRec;
-  if ("axiom" in obj) return { tag: "axiom", ...(sub(obj, "axiom") ?? {}) } as unknown as AxRec;
-  if ("opaque" in obj) return { tag: "opaque", ...(sub(obj, "opaque") ?? {}) } as unknown as OpqRec;
-  if ("quot" in obj) {
-    const q = sub(obj, "quot");
-    if (!q) return null;
-    return {
-      tag: "quot",
-      quotKind: q["kind"] as "type" | "ctor" | "lift" | "ind",
-      name: asInt(q["name"])!,
-      levelParams: asArrayOfInts(q["levelParams"]) ?? [],
-      type: asInt(q["type"])!,
-    };
-  }
-  if ("inductive" in obj) {
-    const ind = sub(obj, "inductive") ?? {};
-    return {
-      tag: "inductive",
-      types: (ind["types"] ?? []) as IndTypeSpec[],
-      ctors: (ind["ctors"] ?? []) as IndCtorSpec[],
-      recs: (ind["recs"] ?? []) as IndRecSpec[],
-    };
-  }
-  if ("meta" in obj) return { tag: "meta" };
-  return null;
 }
 
 // =====================================================================
@@ -391,7 +333,7 @@ class Env {
 
   // Decl-bearing record → resolved Decl.  letE is desugared at this
   // point so downstream stages never see it.
-  resolveDecl(rec: DefRec | ThmRec | AxRec | OpqRec): Decl {
+  resolveDecl(rec: SimpleDecl): Decl {
     const name = this.names.get(rec.name)!;
     const levelParams = rec.levelParams.map((i) => this.names.get(i)!);
     const type = desugarLetE(this.exprs.get(rec.type)!);
