@@ -4,11 +4,11 @@
 %%% We build an indexed inductive `I : Type → Type` with a constructor argument
 %%% `Nat → I (I α)`, so the recursive occurrence appears as an index argument.
 %% inductive Nat
-%%% HOLE
-Nat/type-wf-sort : lvl.
+Nat/type-wf-sort : lvl
+   = (lsucc (lsucc lzero)).
 
-%%% HOLE
-Nat/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort Nat/type-wf-sort).
+Nat/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort Nat/type-wf-sort)
+   = defeq/sort-refl.
 
 %%% HOLE
 Nat/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
@@ -61,11 +61,11 @@ Nat_rec/decl : declared "Nat.rec" (eforall (eforall (econst "Nat" lnil) ([x] (es
    = declared/ok Nat_rec/name (dkind-ok/irec Nat_rec/type-wf).
 
 %% inductive reflOccInIndex
-%%% HOLE
-reflOccInIndex/type-wf-sort : lvl.
+reflOccInIndex/type-wf-sort : lvl
+   = (limax (lsucc (lsucc lzero)) (lsucc (lsucc lzero))).
 
-%%% HOLE
-reflOccInIndex/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (esort reflOccInIndex/type-wf-sort).
+reflOccInIndex/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (esort reflOccInIndex/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] defeq/sort-refl))).
 
 %%% HOLE
 reflOccInIndex/ends-in-sort : ends-in-sort (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))).
@@ -91,11 +91,11 @@ reflOccInIndex_mk/decl : declared "reflOccInIndex.mk" (eforall (esort (lsucc lze
    = declared/ok reflOccInIndex_mk/name (dkind-ok/ctor reflOccInIndex_mk/type-wf reflOccInIndex_mk/positivity).
 
 %% recursor reflOccInIndex.rec
-%%% HOLE
-reflOccInIndex_rec/type-wf-sort : lvl.
+reflOccInIndex_rec/type-wf-sort : lvl
+   = (lsucc lzero).
 
-%%% HOLE
-reflOccInIndex_rec/type-wf : defeq (esort lzero) (esort lzero) (esort reflOccInIndex_rec/type-wf-sort).
+reflOccInIndex_rec/type-wf : defeq (esort lzero) (esort lzero) (esort reflOccInIndex_rec/type-wf-sort)
+   = defeq/sort-refl.
 
 reflOccInIndex_rec/name : name "reflOccInIndex.rec" (is-decl (esort lzero) irec).
 

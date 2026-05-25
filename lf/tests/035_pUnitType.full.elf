@@ -1,11 +1,11 @@
 %%% Expected outcome: accept
 %%% Level-polymorphic unit type
 %% inductive PUnit
-%%% HOLE
-PUnit/type-wf-sort : lvl.
+PUnit/type-wf-sort : lvl
+   = (lsucc (lvar liz)).
 
-%%% HOLE
-PUnit/type-wf : defeq (esort (lvar liz)) (esort (lvar liz)) (esort PUnit/type-wf-sort).
+PUnit/type-wf : defeq (esort (lvar liz)) (esort (lvar liz)) (esort PUnit/type-wf-sort)
+   = defeq/sort-refl.
 
 %%% HOLE
 PUnit/ends-in-sort : ends-in-sort (esort (lvar liz)).
@@ -43,11 +43,11 @@ PUnit_rec/decl : declared "PUnit.rec" (eforall (eforall (econst "PUnit" (lcons (
    = declared/ok PUnit_rec/name (dkind-ok/irec PUnit_rec/type-wf).
 
 %% def pUnitType
-%%% HOLE
-pUnitType/type-wf-sort : lvl.
+pUnitType/type-wf-sort : lvl
+   = (lsucc (lsucc lzero)).
 
-%%% HOLE
-pUnitType/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort pUnitType/type-wf-sort).
+pUnitType/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort pUnitType/type-wf-sort)
+   = defeq/sort-refl.
 
 %%% HOLE
 pUnitType/value-typed : defeq (econst "PUnit" (lcons (lsucc lzero) lnil)) (econst "PUnit" (lcons (lsucc lzero) lnil)) (esort (lsucc lzero)).

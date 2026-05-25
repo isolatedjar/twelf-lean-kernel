@@ -1,11 +1,11 @@
 %%% Expected outcome: accept
 %%% Type checking a dependent let
 %% axiom aDepProp
-%%% HOLE
-aDepProp/type-wf-sort : lvl.
+aDepProp/type-wf-sort : lvl
+   = (limax (lsucc (lsucc lzero)) (lsucc lzero)).
 
-%%% HOLE
-aDepProp/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (esort lzero))) (eforall (esort (lsucc lzero)) ([x] (esort lzero))) (esort aDepProp/type-wf-sort).
+aDepProp/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (esort lzero))) (eforall (esort (lsucc lzero)) ([x] (esort lzero))) (esort aDepProp/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] defeq/sort-refl))).
 
 aDepProp/name : name "aDepProp" (is-decl (eforall (esort (lsucc lzero)) ([x] (esort lzero))) ax).
 

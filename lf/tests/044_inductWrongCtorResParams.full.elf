@@ -1,11 +1,11 @@
 %%% Expected outcome: reject
 %%% An inductive with a constructor with wrong parameters in result (they are swapped)
 %% inductive inductWrongCtorResParams
-%%% HOLE
-inductWrongCtorResParams/type-wf-sort : lvl.
+inductWrongCtorResParams/type-wf-sort : lvl
+   = (limax (lsucc lzero) (limax (lsucc lzero) (lsucc (lsucc lzero)))).
 
-%%% HOLE
-inductWrongCtorResParams/type-wf : defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) (esort inductWrongCtorResParams/type-wf-sort).
+inductWrongCtorResParams/type-wf : defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) (esort inductWrongCtorResParams/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] defeq/sort-refl)))))).
 
 %%% HOLE
 inductWrongCtorResParams/ends-in-sort : ends-in-sort (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))).
@@ -31,11 +31,11 @@ inductWrongCtorResParams_mk/decl : declared "inductWrongCtorResParams.mk" (efora
    = declared/ok inductWrongCtorResParams_mk/name (dkind-ok/ctor inductWrongCtorResParams_mk/type-wf inductWrongCtorResParams_mk/positivity).
 
 %% recursor inductWrongCtorResParams.rec
-%%% HOLE
-inductWrongCtorResParams_rec/type-wf-sort : lvl.
+inductWrongCtorResParams_rec/type-wf-sort : lvl
+   = (lsucc lzero).
 
-%%% HOLE
-inductWrongCtorResParams_rec/type-wf : defeq (esort lzero) (esort lzero) (esort inductWrongCtorResParams_rec/type-wf-sort).
+inductWrongCtorResParams_rec/type-wf : defeq (esort lzero) (esort lzero) (esort inductWrongCtorResParams_rec/type-wf-sort)
+   = defeq/sort-refl.
 
 inductWrongCtorResParams_rec/name : name "inductWrongCtorResParams.rec" (is-decl (esort lzero) irec).
 

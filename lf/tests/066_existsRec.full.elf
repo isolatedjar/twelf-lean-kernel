@@ -1,11 +1,11 @@
 %%% Expected outcome: accept
 %%% Inductive predicates eliminate into Prop if they have one constructors and it carries data.
 %% inductive Exists
-%%% HOLE
-Exists/type-wf-sort : lvl.
+Exists/type-wf-sort : lvl
+   = (limax (lsucc (lvar liz)) (limax (limax (lvar liz) (lsucc lzero)) (lsucc lzero))).
 
-%%% HOLE
-Exists/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (esort lzero))))) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (esort lzero))))) (esort Exists/type-wf-sort).
+Exists/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (esort lzero))))) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (esort lzero))))) (esort Exists/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall (defeq/forall h ([y] ([h1] defeq/sort-refl))) ([y] ([h1] defeq/sort-refl)))))).
 
 %%% HOLE
 Exists/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (esort lzero))))).

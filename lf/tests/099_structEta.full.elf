@@ -1,11 +1,11 @@
 %%% Expected outcome: accept
 %%% Structure eta
 %% inductive Prod
-%%% HOLE
-Prod/type-wf-sort : lvl.
+Prod/type-wf-sort : lvl
+   = (limax (lsucc (lsucc (lvar liz))) (limax (lsucc (lsucc (lvar (lis liz)))) (lsucc (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz))))))).
 
-%%% HOLE
-Prod/type-wf : defeq (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (esort (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz))))))))) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (esort (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz))))))))) (esort Prod/type-wf-sort).
+Prod/type-wf : defeq (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (esort (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz))))))))) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (esort (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz))))))))) (esort Prod/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] defeq/sort-refl)))))).
 
 %%% HOLE
 Prod/ends-in-sort : ends-in-sort (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (esort (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz))))))))).
@@ -43,11 +43,11 @@ Prod_rec/decl : declared "Prod.rec" (eforall (esort (lsucc (lvar (lis liz)))) ([
    = declared/ok Prod_rec/name (dkind-ok/irec Prod_rec/type-wf).
 
 %% inductive And
-%%% HOLE
-And/type-wf-sort : lvl.
+And/type-wf-sort : lvl
+   = (limax (lsucc lzero) (limax (lsucc lzero) (lsucc lzero))).
 
-%%% HOLE
-And/type-wf : defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (esort And/type-wf-sort).
+And/type-wf : defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (esort And/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] defeq/sort-refl)))))).
 
 %%% HOLE
 And/ends-in-sort : ends-in-sort (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))).
@@ -85,11 +85,11 @@ And_rec/decl : declared "And.rec" (eforall (esort lzero) ([x] (eforall (esort lz
    = declared/ok And_rec/name (dkind-ok/irec And_rec/type-wf).
 
 %% inductive Eq
-%%% HOLE
-Eq/type-wf-sort : lvl.
+Eq/type-wf-sort : lvl
+   = (limax (lsucc (lvar liz)) (limax (lvar liz) (limax (lvar liz) (lsucc lzero)))).
 
-%%% HOLE
-Eq/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (esort Eq/type-wf-sort).
+Eq/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (esort Eq/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall h ([y] ([h1] (defeq/forall h ([z] ([h2] defeq/sort-refl))))))))).
 
 %%% HOLE
 Eq/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))).

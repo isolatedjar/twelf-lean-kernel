@@ -1,11 +1,11 @@
 %%% Expected outcome: accept
 %%% A simple empty inductive type
 %% inductive Empty
-%%% HOLE
-Empty/type-wf-sort : lvl.
+Empty/type-wf-sort : lvl
+   = (lsucc (lsucc lzero)).
 
-%%% HOLE
-Empty/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort Empty/type-wf-sort).
+Empty/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort Empty/type-wf-sort)
+   = defeq/sort-refl.
 
 %%% HOLE
 Empty/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
@@ -28,11 +28,11 @@ Empty_rec/decl : declared "Empty.rec" (eforall (eforall (econst "Empty" lnil) ([
    = declared/ok Empty_rec/name (dkind-ok/irec Empty_rec/type-wf).
 
 %% def empty
-%%% HOLE
-empty/type-wf-sort : lvl.
+empty/type-wf-sort : lvl
+   = (lsucc (lsucc lzero)).
 
-%%% HOLE
-empty/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort empty/type-wf-sort).
+empty/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort empty/type-wf-sort)
+   = defeq/sort-refl.
 
 %%% HOLE
 empty/value-typed : defeq (econst "Empty" lnil) (econst "Empty" lnil) (esort (lsucc lzero)).

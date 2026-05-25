@@ -1,14 +1,14 @@
 %%% Expected outcome: accept
 %%% Dependent type (forall)
 %% def dependentType
-%%% HOLE
-dependentType/type-wf-sort : lvl.
+dependentType/type-wf-sort : lvl
+   = (lsucc lzero).
 
-%%% HOLE
-dependentType/type-wf : defeq (esort lzero) (esort lzero) (esort dependentType/type-wf-sort).
+dependentType/type-wf : defeq (esort lzero) (esort lzero) (esort dependentType/type-wf-sort)
+   = defeq/sort-refl.
 
-%%% HOLE
-dependentType/value-typed : defeq (eforall (esort lzero) ([x] x)) (eforall (esort lzero) ([x] x)) (esort lzero).
+dependentType/value-typed : defeq (eforall (esort lzero) ([x] x)) (eforall (esort lzero) ([x] x)) (esort lzero)
+   = (defeq/conv (defeq/sort-eq lvl-eq/imax-zero) (defeq/forall defeq/sort-refl ([x] ([h] h)))).
 
 dependentType/name : name "dependentType" (is-decl (esort lzero) (defn (eforall (esort lzero) ([x] x)))).
 

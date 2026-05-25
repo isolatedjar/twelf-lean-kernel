@@ -1,11 +1,11 @@
 %%% Expected outcome: accept
 %%% An inductive type can have fields of level up to that of the inductive.
 %% inductive TypeWithTypeField
-%%% HOLE
-TypeWithTypeField/type-wf-sort : lvl.
+TypeWithTypeField/type-wf-sort : lvl
+   = (lsucc (lsucc (lsucc lzero))).
 
-%%% HOLE
-TypeWithTypeField/type-wf : defeq (esort (lsucc (lsucc lzero))) (esort (lsucc (lsucc lzero))) (esort TypeWithTypeField/type-wf-sort).
+TypeWithTypeField/type-wf : defeq (esort (lsucc (lsucc lzero))) (esort (lsucc (lsucc lzero))) (esort TypeWithTypeField/type-wf-sort)
+   = defeq/sort-refl.
 
 %%% HOLE
 TypeWithTypeField/ends-in-sort : ends-in-sort (esort (lsucc (lsucc lzero))).
@@ -43,11 +43,11 @@ TypeWithTypeField_rec/decl : declared "TypeWithTypeField.rec" (eforall (eforall 
    = declared/ok TypeWithTypeField_rec/name (dkind-ok/irec TypeWithTypeField_rec/type-wf).
 
 %% def typeWithTypeField
-%%% HOLE
-typeWithTypeField/type-wf-sort : lvl.
+typeWithTypeField/type-wf-sort : lvl
+   = (lsucc (lsucc (lsucc lzero))).
 
-%%% HOLE
-typeWithTypeField/type-wf : defeq (esort (lsucc (lsucc lzero))) (esort (lsucc (lsucc lzero))) (esort typeWithTypeField/type-wf-sort).
+typeWithTypeField/type-wf : defeq (esort (lsucc (lsucc lzero))) (esort (lsucc (lsucc lzero))) (esort typeWithTypeField/type-wf-sort)
+   = defeq/sort-refl.
 
 %%% HOLE
 typeWithTypeField/value-typed : defeq (econst "TypeWithTypeField" lnil) (econst "TypeWithTypeField" lnil) (esort (lsucc (lsucc lzero))).

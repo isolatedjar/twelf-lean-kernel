@@ -1,11 +1,11 @@
 %%% Expected outcome: reject
 %%% An inductive with too few parameters in the type
 %% inductive inductTooFewParams
-%%% HOLE
-inductTooFewParams/type-wf-sort : lvl.
+inductTooFewParams/type-wf-sort : lvl
+   = (limax (lsucc lzero) (lsucc lzero)).
 
-%%% HOLE
-inductTooFewParams/type-wf : defeq (eforall (esort lzero) ([x] (esort lzero))) (eforall (esort lzero) ([x] (esort lzero))) (esort inductTooFewParams/type-wf-sort).
+inductTooFewParams/type-wf : defeq (eforall (esort lzero) ([x] (esort lzero))) (eforall (esort lzero) ([x] (esort lzero))) (esort inductTooFewParams/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] defeq/sort-refl))).
 
 %%% HOLE
 inductTooFewParams/ends-in-sort : ends-in-sort (eforall (esort lzero) ([x] (esort lzero))).
