@@ -203,17 +203,25 @@ type IndRec = Extract<z.infer<typeof declSchema>, { tag: "inductive" }>;
 // NDJSON line parsing.
 // =====================================================================
 
-function (line: string): Item | null {
+function parseLine(line: string): Item | null {
   try {
-    const raw = JSON.parse(line);
+    const raw = JSON.parse(line) as unknown;
     if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return null;
     const obj = raw as Record<string, unknown>;
-    let result;
-    if ("in" in obj) result = nameSchema.safeParse(obj);
-    else if ("il" in obj) result = levelSchema.safeParse(obj);
-    else if ("ie" in obj) result = exprSchema.safeParse(obj);
-    else result = declSchema.safeParse(obj);
-    return result.success ? result.data : null;
+    if ("in" in obj) {
+      const r = nameSchema.safeParse(obj);
+      return r.success ? r.data : null;
+    }
+    if ("il" in obj) {
+      const r = levelSchema.safeParse(obj);
+      return r.success ? r.data : null;
+    }
+    if ("ie" in obj) {
+      const r = exprSchema.safeParse(obj);
+      return r.success ? r.data : null;
+    }
+    const r = declSchema.safeParse(obj);
+    return r.success ? r.data : null;
   } catch {
     return null;
   }
