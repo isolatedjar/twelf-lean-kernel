@@ -9,10 +9,6 @@
 //   - All cross-references are by-value:  Name, Expr, Level, etc. are
 //     fully resolved trees, not indices into a shared table.  This
 //     is what makes the parsed output human-readable.
-//   - Schemas are exported for optional runtime validation; lean2lf.ts
-//     trusts its input and skips the parse step.
-
-import { z } from "../vendor/zod/index.js";
 
 // --- Name ---
 
@@ -20,14 +16,6 @@ export type Name =
   | { kind: "anon" }
   | { kind: "str"; pre: Name; str: string }
   | { kind: "num"; pre: Name; i: number };
-
-export const NameSchema: z.ZodType<Name> = z.lazy(() =>
-  z.discriminatedUnion("kind", [
-    z.object({ kind: z.literal("anon") }),
-    z.object({ kind: z.literal("str"), pre: NameSchema, str: z.string() }),
-    z.object({ kind: z.literal("num"), pre: NameSchema, i: z.number() }),
-  ]),
-);
 
 // --- Level ---
 
@@ -38,25 +26,9 @@ export type Level =
   | { kind: "imax"; l: Level; r: Level }
   | { kind: "param"; name: Name };
 
-export const LevelSchema: z.ZodType<Level> = z.lazy(() =>
-  z.discriminatedUnion("kind", [
-    z.object({ kind: z.literal("zero") }),
-    z.object({ kind: z.literal("succ"), arg: LevelSchema }),
-    z.object({ kind: z.literal("max"), l: LevelSchema, r: LevelSchema }),
-    z.object({ kind: z.literal("imax"), l: LevelSchema, r: LevelSchema }),
-    z.object({ kind: z.literal("param"), name: NameSchema }),
-  ]),
-);
-
 // --- BinderInfo ---
 
-export const BinderInfoSchema = z.union([
-  z.literal("default"),
-  z.literal("implicit"),
-  z.literal("strictImplicit"),
-  z.literal("instImplicit"),
-]);
-export type BinderInfo = z.infer<typeof BinderInfoSchema>;
+export type BinderInfo = "default" | "implicit" | "strictImplicit" | "instImplicit";
 
 // --- Expr ---
 
@@ -72,133 +44,74 @@ export type Expr =
   | { kind: "natLit"; value: string }
   | { kind: "strLit"; value: string };
 
-export const ExprSchema: z.ZodType<Expr> = z.lazy(() =>
-  z.discriminatedUnion("kind", [
-    z.object({ kind: z.literal("bvar"), deBruijn: z.number() }),
-    z.object({ kind: z.literal("sort"), level: LevelSchema }),
-    z.object({ kind: z.literal("const"), name: NameSchema, us: z.array(LevelSchema) }),
-    z.object({ kind: z.literal("app"), fn: ExprSchema, arg: ExprSchema }),
-    z.object({ kind: z.literal("lam"), name: NameSchema, type: ExprSchema, body: ExprSchema }),
-    z.object({ kind: z.literal("forallE"), name: NameSchema, type: ExprSchema, body: ExprSchema }),
-    z.object({
-      kind: z.literal("letE"),
-      name: NameSchema,
-      type: ExprSchema,
-      value: ExprSchema,
-      body: ExprSchema,
-    }),
-    z.object({
-      kind: z.literal("proj"),
-      typeName: NameSchema,
-      idx: z.number(),
-      struct: ExprSchema,
-    }),
-    z.object({ kind: z.literal("natLit"), value: z.string() }),
-    z.object({ kind: z.literal("strLit"), value: z.string() }),
-  ]),
-);
-
 // --- Inductive blocks ---------------------------------------------------
 // An #IND record in NDJSON declares a mutual-inductive *block*: one or
 // more inductive type formers, all their constructors, and all their
 // recursors.  We package them together so lean2lf.ts has the full block
 // available when emitting any individual piece.
 
-export const IndTypeSchema = z.object({
-  name: NameSchema,
-  levelParams: z.array(NameSchema),
-  type: ExprSchema,
-  numParams: z.number(),
-  numIndices: z.number(),
-});
-export type IndType = z.infer<typeof IndTypeSchema>;
+export type IndType = {
+  name: Name;
+  levelParams: Name[];
+  type: Expr;
+  numParams: number;
+  numIndices: number;
+};
 
-export const IndCtorSchema = z.object({
-  name: NameSchema,
-  levelParams: z.array(NameSchema),
-  type: ExprSchema,
-  numParams: z.number(),
-  numFields: z.number(),
-  induct: NameSchema,
-});
-export type IndCtor = z.infer<typeof IndCtorSchema>;
+export type IndCtor = {
+  name: Name;
+  levelParams: Name[];
+  type: Expr;
+  numParams: number;
+  numFields: number;
+  induct: Name;
+};
 
-export const IndRecRuleSchema = z.object({
-  ctor: NameSchema,
-  nfields: z.number(),
-  rhs: ExprSchema,
-});
-export type IndRecRule = z.infer<typeof IndRecRuleSchema>;
+export type IndRecRule = {
+  ctor: Name;
+  nfields: number;
+  rhs: Expr;
+};
 
-export const IndRecursorSchema = z.object({
-  name: NameSchema,
-  levelParams: z.array(NameSchema),
-  type: ExprSchema,
-  numParams: z.number(),
-  numIndices: z.number(),
-  numMotives: z.number(),
-  numMinors: z.number(),
-  rules: z.array(IndRecRuleSchema),
-  k: z.boolean(),
-});
-export type IndRecursor = z.infer<typeof IndRecursorSchema>;
+export type IndRecursor = {
+  name: Name;
+  levelParams: Name[];
+  type: Expr;
+  numParams: number;
+  numIndices: number;
+  numMotives: number;
+  numMinors: number;
+  rules: IndRecRule[];
+  k: boolean;
+};
 
-export const InductiveSchema = z.object({
-  kind: z.literal("inductive"),
-  types: z.array(IndTypeSchema),
-  ctors: z.array(IndCtorSchema),
-  recursors: z.array(IndRecursorSchema),
-});
-export type Inductive = z.infer<typeof InductiveSchema>;
+export type Inductive = {
+  kind: "inductive";
+  types: IndType[];
+  ctors: IndCtor[];
+  recursors: IndRecursor[];
+};
 
 // --- Top-level declarations ---------------------------------------------
 
-export const DeclSchema = z.discriminatedUnion("kind", [
-  z.object({
-    kind: z.literal("def"),
-    name: NameSchema,
-    levelParams: z.array(NameSchema),
-    type: ExprSchema,
-    value: ExprSchema,
-  }),
-  z.object({
-    kind: z.literal("thm"),
-    name: NameSchema,
-    levelParams: z.array(NameSchema),
-    type: ExprSchema,
-    value: ExprSchema,
-  }),
-  z.object({
-    kind: z.literal("axiom"),
-    name: NameSchema,
-    levelParams: z.array(NameSchema),
-    type: ExprSchema,
-  }),
-  z.object({
-    kind: z.literal("opaque"),
-    name: NameSchema,
-    levelParams: z.array(NameSchema),
-    type: ExprSchema,
-    value: ExprSchema,
-  }),
-  z.object({
-    kind: z.literal("quot"),
-    quotKind: z.union([z.literal("type"), z.literal("ctor"), z.literal("lift"), z.literal("ind")]),
-    name: NameSchema,
-    levelParams: z.array(NameSchema),
-    type: ExprSchema,
-  }),
-  InductiveSchema,
-]);
-export type Decl = z.infer<typeof DeclSchema>;
+export type Decl =
+  | { kind: "def"; name: Name; levelParams: Name[]; type: Expr; value: Expr }
+  | { kind: "thm"; name: Name; levelParams: Name[]; type: Expr; value: Expr }
+  | { kind: "axiom"; name: Name; levelParams: Name[]; type: Expr }
+  | { kind: "opaque"; name: Name; levelParams: Name[]; type: Expr; value: Expr }
+  | {
+      kind: "quot";
+      quotKind: "type" | "ctor" | "lift" | "ind";
+      name: Name;
+      levelParams: Name[];
+      type: Expr;
+    }
+  | Inductive;
 
 // The parsed environment, as emitted by parse.ts:
 //   { decls: Decl[] }
 // declared in the order the NDJSON declared them.
-export const ParsedEnvSchema = z.object({
-  decls: z.array(DeclSchema),
-});
-export type ParsedEnv = z.infer<typeof ParsedEnvSchema>;
+export type ParsedEnv = { decls: Decl[] };
 
 // --- Prover plugin interface --------------------------------------------
 //
