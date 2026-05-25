@@ -7,10 +7,10 @@ aProp/type-wf-sort : lvl.
 %%% HOLE
 aProp/type-wf : defeq (esort lzero) (esort lzero) (esort aProp/type-wf-sort).
 
-aProp/decl : declared "aProp" lnil
-   (esort lzero)
-   ax
-   (dkind-ok/ax aProp/type-wf).
+aProp/name : name "aProp" (is-decl (esort lzero) ax).
+
+aProp/decl : declared "aProp" (esort lzero) ax
+   = declared/ok aProp/name (dkind-ok/ax aProp/type-wf).
 
 %% def letRed
 %%% HOLE
@@ -22,8 +22,8 @@ letRed/type-wf : defeq (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero))
 %%% HOLE
 letRed/value-typed : defeq (econst "aProp" lnil) (econst "aProp" lnil) (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)).
 
-letRed/decl : declared "letRed" lnil
-   (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero))
-   (defn (econst "aProp" lnil))
-   (dkind-ok/defn letRed/type-wf letRed/value-typed).
+letRed/name : name "letRed" (is-decl (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (defn (econst "aProp" lnil))).
+
+letRed/decl : declared "letRed" (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (defn (econst "aProp" lnil))
+   = declared/ok letRed/name (dkind-ok/defn letRed/type-wf letRed/value-typed).
 

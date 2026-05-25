@@ -7,10 +7,10 @@ aType/type-wf-sort : lvl.
 %%% HOLE
 aType/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort aType/type-wf-sort).
 
-aType/decl : declared "aType" lnil
-   (esort (lsucc lzero))
-   ax
-   (dkind-ok/ax aType/type-wf).
+aType/name : name "aType" (is-decl (esort (lsucc lzero)) ax).
+
+aType/decl : declared "aType" (esort (lsucc lzero)) ax
+   = declared/ok aType/name (dkind-ok/ax aType/type-wf).
 
 %% inductive inductBadNonSort2
 %%% HOLE
@@ -22,8 +22,8 @@ inductBadNonSort2/type-wf : defeq (econst "aType" lnil) (econst "aType" lnil) (e
 %%% HOLE
 inductBadNonSort2/ends-in-sort : ends-in-sort (econst "aType" lnil).
 
-inductBadNonSort2/decl : declared "inductBadNonSort2" lnil
-   (econst "aType" lnil)
-   indt
-   (dkind-ok/indt inductBadNonSort2/type-wf inductBadNonSort2/ends-in-sort).
+inductBadNonSort2/name : name "inductBadNonSort2" (is-decl (econst "aType" lnil) indt).
+
+inductBadNonSort2/decl : declared "inductBadNonSort2" (econst "aType" lnil) indt
+   = declared/ok inductBadNonSort2/name (dkind-ok/indt inductBadNonSort2/type-wf inductBadNonSort2/ends-in-sort).
 

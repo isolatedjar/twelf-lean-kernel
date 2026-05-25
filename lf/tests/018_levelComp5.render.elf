@@ -2,16 +2,16 @@
 %%% Some level computation
 %% def levelComp5
 %%% HOLE
-levelComp5/type-wf-sort : {u : lvl} lvl.
+levelComp5/type-wf-sort : lvl.
 
 %%% HOLE
-levelComp5/type-wf : {u : lvl} defeq (esort (lsucc u)) (esort (lsucc u)) (esort (levelComp5/type-wf-sort u)).
+levelComp5/type-wf : defeq (esort (lsucc (lvar liz))) (esort (lsucc (lvar liz))) (esort levelComp5/type-wf-sort).
 
 %%% HOLE
-levelComp5/value-typed : {u : lvl} defeq (esort u) (esort u) (esort (lsucc u)).
+levelComp5/value-typed : defeq (esort (lvar liz)) (esort (lvar liz)) (esort (lsucc (lvar liz))).
 
-levelComp5/decl : {u : lvl} declared "levelComp5" (lcons u lnil)
-   (esort (lsucc u))
-   (defn (esort u))
-   (dkind-ok/defn (levelComp5/type-wf u) (levelComp5/value-typed u)).
+levelComp5/name : name "levelComp5" (is-decl (esort (lsucc (lvar liz))) (defn (esort (lvar liz)))).
+
+levelComp5/decl : declared "levelComp5" (esort (lsucc (lvar liz))) (defn (esort (lvar liz)))
+   = declared/ok levelComp5/name (dkind-ok/defn levelComp5/type-wf levelComp5/value-typed).
 

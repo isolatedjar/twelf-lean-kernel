@@ -10,10 +10,10 @@ Bool/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort Bool/typ
 %%% HOLE
 Bool/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
-Bool/decl : declared "Bool" lnil
-   (esort (lsucc lzero))
-   indt
-   (dkind-ok/indt Bool/type-wf Bool/ends-in-sort).
+Bool/name : name "Bool" (is-decl (esort (lsucc lzero)) indt).
+
+Bool/decl : declared "Bool" (esort (lsucc lzero)) indt
+   = declared/ok Bool/name (dkind-ok/indt Bool/type-wf Bool/ends-in-sort).
 
 %% ctor Bool.false (of Bool)
 %%% HOLE
@@ -25,10 +25,10 @@ Bool_false/type-wf : defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort Bool
 %%% HOLE
 Bool_false/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil).
 
-Bool_false/decl : declared "Bool.false" lnil
-   (econst "Bool" lnil)
-   ctor
-   (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity).
+Bool_false/name : name "Bool.false" (is-decl (econst "Bool" lnil) ctor).
+
+Bool_false/decl : declared "Bool.false" (econst "Bool" lnil) ctor
+   = declared/ok Bool_false/name (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity).
 
 %% ctor Bool.true (of Bool)
 %%% HOLE
@@ -40,35 +40,35 @@ Bool_true/type-wf : defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort Bool_
 %%% HOLE
 Bool_true/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil).
 
-Bool_true/decl : declared "Bool.true" lnil
-   (econst "Bool" lnil)
-   ctor
-   (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity).
+Bool_true/name : name "Bool.true" (is-decl (econst "Bool" lnil) ctor).
+
+Bool_true/decl : declared "Bool.true" (econst "Bool" lnil) ctor
+   = declared/ok Bool_true/name (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity).
 
 %% recursor Bool.rec
 %%% HOLE
-Bool_rec/type-wf-sort : {u : lvl} lvl.
+Bool_rec/type-wf-sort : lvl.
 
 %%% HOLE
-Bool_rec/type-wf : {u : lvl} defeq (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort (Bool_rec/type-wf-sort u)).
+Bool_rec/type-wf : defeq (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort Bool_rec/type-wf-sort).
 
-Bool_rec/decl : {u : lvl} declared "Bool.rec" (lcons u lnil)
-   (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w)))))))))
-   irec
-   (dkind-ok/irec (Bool_rec/type-wf u)).
+Bool_rec/name : name "Bool.rec" (is-decl (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) irec).
+
+Bool_rec/decl : declared "Bool.rec" (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) irec
+   = declared/ok Bool_rec/name (dkind-ok/irec Bool_rec/type-wf).
 
 %% def boolRec
 %%% HOLE
-boolRec/type-wf-sort : {u : lvl} lvl.
+boolRec/type-wf-sort : lvl.
 
 %%% HOLE
-boolRec/type-wf : {u : lvl} defeq (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort (boolRec/type-wf-sort u)).
+boolRec/type-wf : defeq (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort boolRec/type-wf-sort).
 
 %%% HOLE
-boolRec/value-typed : {u : lvl} defeq (elam (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] (elam (econst "Bool" lnil) ([w] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons u lnil)) x) y) z) w))))))))) (elam (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] (elam (econst "Bool" lnil) ([w] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons u lnil)) x) y) z) w))))))))) (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))).
+boolRec/value-typed : defeq (elam (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] (elam (econst "Bool" lnil) ([w] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lvar liz) lnil)) x) y) z) w))))))))) (elam (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] (elam (econst "Bool" lnil) ([w] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lvar liz) lnil)) x) y) z) w))))))))) (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))).
 
-boolRec/decl : {u : lvl} declared "boolRec" (lcons u lnil)
-   (eforall (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w)))))))))
-   (defn (elam (eforall (econst "Bool" lnil) ([x] (esort u))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] (elam (econst "Bool" lnil) ([w] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons u lnil)) x) y) z) w))))))))))
-   (dkind-ok/defn (boolRec/type-wf u) (boolRec/value-typed u)).
+boolRec/name : name "boolRec" (is-decl (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (defn (elam (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] (elam (econst "Bool" lnil) ([w] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lvar liz) lnil)) x) y) z) w))))))))))).
+
+boolRec/decl : declared "boolRec" (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (defn (elam (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] (elam (econst "Bool" lnil) ([w] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lvar liz) lnil)) x) y) z) w))))))))))
+   = declared/ok boolRec/name (dkind-ok/defn boolRec/type-wf boolRec/value-typed).
 

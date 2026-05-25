@@ -10,10 +10,10 @@ indNeg/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort indNeg
 %%% HOLE
 indNeg/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
-indNeg/decl : declared "indNeg" lnil
-   (esort (lsucc lzero))
-   indt
-   (dkind-ok/indt indNeg/type-wf indNeg/ends-in-sort).
+indNeg/name : name "indNeg" (is-decl (esort (lsucc lzero)) indt).
+
+indNeg/decl : declared "indNeg" (esort (lsucc lzero)) indt
+   = declared/ok indNeg/name (dkind-ok/indt indNeg/type-wf indNeg/ends-in-sort).
 
 %% ctor indNeg.mk (of indNeg)
 %%% HOLE
@@ -25,10 +25,10 @@ indNeg_mk/type-wf : defeq (eforall (eforall (econst "indNeg" lnil) ([x] (econst 
 %%% HOLE
 indNeg_mk/positivity : ctor-positive "indNeg" lnil (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))).
 
-indNeg_mk/decl : declared "indNeg.mk" lnil
-   (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil)))
-   ctor
-   (dkind-ok/ctor indNeg_mk/type-wf indNeg_mk/positivity).
+indNeg_mk/name : name "indNeg.mk" (is-decl (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) ctor).
+
+indNeg_mk/decl : declared "indNeg.mk" (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) ctor
+   = declared/ok indNeg_mk/name (dkind-ok/ctor indNeg_mk/type-wf indNeg_mk/positivity).
 
 %% recursor indNeg.rec
 %%% HOLE
@@ -37,8 +37,8 @@ indNeg_rec/type-wf-sort : lvl.
 %%% HOLE
 indNeg_rec/type-wf : defeq (esort lzero) (esort lzero) (esort indNeg_rec/type-wf-sort).
 
-indNeg_rec/decl : declared "indNeg.rec" lnil
-   (esort lzero)
-   irec
-   (dkind-ok/irec indNeg_rec/type-wf).
+indNeg_rec/name : name "indNeg.rec" (is-decl (esort lzero) irec).
+
+indNeg_rec/decl : declared "indNeg.rec" (esort lzero) irec
+   = declared/ok indNeg_rec/name (dkind-ok/irec indNeg_rec/type-wf).
 

@@ -4,22 +4,14 @@
 %%% Loaded last in the chain:
 %%%   tcb.elf  -> derived.elf  -> <environment>.elf  -> final-checks.elf
 %%%
-%%% These directives close the `declared` relation: every declaration
-%%% in the environment must agree on the kernel-checked fields and no
-%%% two declarations may share a (name, level-instantiation) pair.
+%%% These directives ensure that names cannot be used in multiple ways: there
+%%% must be a functional dependency from the name to its declared meaning.
 %%%
-%%% Splitting these out of the per-environment .elf files means every
-%%% generated test gets the same closure check, and adding a check
-%%% here applies uniformly without touching the translator.
+%%% This has to be done at the end because `%unique` freezes the `name`
+%%% family.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%mode declared +N +LS -T -DK -W.
-%worlds () (declared _ _ _ _ _).
+%mode name +N -K.
+%worlds () (name _ _).
+%unique name +N -NK.
 
-%%% Uniqueness seal: for monomorphic decls, this catches duplicate
-%%% names (LS=lnil twice with different T or DK).  For polymorphic
-%%% decls, LS varies per instantiation, so we make it an input
-%%% position too: given (N, LS), T/DK are uniquely determined.
-%%% Duplicate polymorphic declarations would also collide on the
-%%% LF identifier `<mangle>/decl` independently.
-%unique declared +N +LS -1T -1DK *W.

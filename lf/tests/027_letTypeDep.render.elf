@@ -7,10 +7,10 @@ aDepProp/type-wf-sort : lvl.
 %%% HOLE
 aDepProp/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (esort lzero))) (eforall (esort (lsucc lzero)) ([x] (esort lzero))) (esort aDepProp/type-wf-sort).
 
-aDepProp/decl : declared "aDepProp" lnil
-   (eforall (esort (lsucc lzero)) ([x] (esort lzero)))
-   ax
-   (dkind-ok/ax aDepProp/type-wf).
+aDepProp/name : name "aDepProp" (is-decl (eforall (esort (lsucc lzero)) ([x] (esort lzero))) ax).
+
+aDepProp/decl : declared "aDepProp" (eforall (esort (lsucc lzero)) ([x] (esort lzero))) ax
+   = declared/ok aDepProp/name (dkind-ok/ax aDepProp/type-wf).
 
 %% axiom mkADepProp
 %%% HOLE
@@ -19,10 +19,10 @@ mkADepProp/type-wf-sort : lvl.
 %%% HOLE
 mkADepProp/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (eapp (econst "aDepProp" lnil) x))) (eforall (esort (lsucc lzero)) ([x] (eapp (econst "aDepProp" lnil) x))) (esort mkADepProp/type-wf-sort).
 
-mkADepProp/decl : declared "mkADepProp" lnil
-   (eforall (esort (lsucc lzero)) ([x] (eapp (econst "aDepProp" lnil) x)))
-   ax
-   (dkind-ok/ax mkADepProp/type-wf).
+mkADepProp/name : name "mkADepProp" (is-decl (eforall (esort (lsucc lzero)) ([x] (eapp (econst "aDepProp" lnil) x))) ax).
+
+mkADepProp/decl : declared "mkADepProp" (eforall (esort (lsucc lzero)) ([x] (eapp (econst "aDepProp" lnil) x))) ax
+   = declared/ok mkADepProp/name (dkind-ok/ax mkADepProp/type-wf).
 
 %% def letTypeDep
 %%% HOLE
@@ -34,8 +34,8 @@ letTypeDep/type-wf : defeq (eapp (econst "aDepProp" lnil) (esort lzero)) (eapp (
 %%% HOLE
 letTypeDep/value-typed : defeq (eapp (elam (esort (lsucc lzero)) ([x] (eapp (econst "mkADepProp" lnil) x))) (esort lzero)) (eapp (elam (esort (lsucc lzero)) ([x] (eapp (econst "mkADepProp" lnil) x))) (esort lzero)) (eapp (econst "aDepProp" lnil) (esort lzero)).
 
-letTypeDep/decl : declared "letTypeDep" lnil
-   (eapp (econst "aDepProp" lnil) (esort lzero))
-   (defn (eapp (elam (esort (lsucc lzero)) ([x] (eapp (econst "mkADepProp" lnil) x))) (esort lzero)))
-   (dkind-ok/defn letTypeDep/type-wf letTypeDep/value-typed).
+letTypeDep/name : name "letTypeDep" (is-decl (eapp (econst "aDepProp" lnil) (esort lzero)) (defn (eapp (elam (esort (lsucc lzero)) ([x] (eapp (econst "mkADepProp" lnil) x))) (esort lzero)))).
+
+letTypeDep/decl : declared "letTypeDep" (eapp (econst "aDepProp" lnil) (esort lzero)) (defn (eapp (elam (esort (lsucc lzero)) ([x] (eapp (econst "mkADepProp" lnil) x))) (esort lzero)))
+   = declared/ok letTypeDep/name (dkind-ok/defn letTypeDep/type-wf letTypeDep/value-typed).
 

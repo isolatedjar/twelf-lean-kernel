@@ -6,8 +6,13 @@
 %freeze lvl.
 %freeze lvl-eq.
 %freeze lvls.
+%freeze lidx.
+%freeze lvl-nth.
+%freeze lvl-inst.
+%freeze lvls-inst.
 %freeze name.
 %freeze expr.
+%freeze inst-expr.
 %freeze defeq.
 %freeze dkind.
 %freeze ends-in-sort.
@@ -15,29 +20,11 @@
 %freeze strict-pos.
 %freeze ctor-spine.
 %freeze ctor-positive.
+%thaw name.
+%freeze declared.
 %freeze dkind-ok.
 %freeze cnames.
 %freeze enum-rec-body.
 %freeze enum-rec-type.
 %freeze defeq-extra.
-%thaw declared.
 
-% KNOWN LIMITATION — `defeq` / `defeq-extra` HOLEs are NOT caught by freeze.
-%
-% `defeq` and `declared` are *mutually* subordinate: `defeq/const` and
-% `defeq/delta` take a `declared …` premise (defeq depends on declared),
-% while `declared`'s witness is a `dkind-ok` derivation built from `defeq`
-% (declared depends on defeq).  They are one subordination cluster, so you
-% cannot freeze one while the other is open.  `%thaw declared` (which is
-% mandatory — the environment must be able to add declarations) therefore
-% transitively re-opens `defeq` and `defeq-extra`, and re-freezing them here
-% would transitively re-freeze `declared` too (verified: a plain `declared`
-% decl then triggers a freezing violation), breaking the whole pipeline.
-%
-% Consequence (CURRENT, unresolved): bare `defeq …` / `defeq-extra …` HOLE
-% obligations (type-wf, value-typed, iota) slip through the full load, so a
-% test whose only unfilled obligations are defeq-shaped is wrongly scored ✅
-% (good) / 💥 (bad) instead of 🩹.  `ends-in-sort` and `ctor-positive` HOLEs
-% ARE caught (those families don't depend on declared).  Fixing this needs an
-% out-of-band hole signal (the generator already emits `%%% HOLE` markers) or
-% breaking the defeq⟷declared subordination cluster — design decision pending.

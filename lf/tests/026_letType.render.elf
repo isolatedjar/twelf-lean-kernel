@@ -10,8 +10,8 @@ letType/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort letTy
 %%% HOLE
 letType/value-typed : defeq (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (esort (lsucc lzero)).
 
-letType/decl : declared "letType" lnil
-   (esort (lsucc lzero))
-   (defn (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)))
-   (dkind-ok/defn letType/type-wf letType/value-typed).
+letType/name : name "letType" (is-decl (esort (lsucc lzero)) (defn (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)))).
+
+letType/decl : declared "letType" (esort (lsucc lzero)) (defn (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)))
+   = declared/ok letType/name (dkind-ok/defn letType/type-wf letType/value-typed).
 

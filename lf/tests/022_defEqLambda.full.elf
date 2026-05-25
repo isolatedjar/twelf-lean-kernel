@@ -10,8 +10,8 @@ defEqLambda/type-wf : defeq (eforall (eforall (eforall (esort lzero) ([x] (esort
 %%% HOLE
 defEqLambda/value-typed : defeq (elam (eforall (eforall (esort lzero) ([x] (esort lzero))) ([x] (esort lzero))) ([x] (elam (eforall (eforall (esort lzero) ([y] (esort lzero))) ([y] (eapp x y))) ([y] (eapp y (elam (esort lzero) ([z] (eforall z ([w] z))))))))) (elam (eforall (eforall (esort lzero) ([x] (esort lzero))) ([x] (esort lzero))) ([x] (elam (eforall (eforall (esort lzero) ([y] (esort lzero))) ([y] (eapp x y))) ([y] (eapp y (elam (esort lzero) ([z] (eforall z ([w] z))))))))) (eforall (eforall (eforall (esort lzero) ([x] (esort lzero))) ([x] (esort lzero))) ([x] (eforall (eforall (eforall (esort lzero) ([y] (esort lzero))) ([y] (eapp x y))) ([y] (eapp x (elam (esort lzero) ([z] (eforall z ([w] z))))))))).
 
-defEqLambda/decl : declared "defEqLambda" lnil
-   (eforall (eforall (eforall (esort lzero) ([x] (esort lzero))) ([x] (esort lzero))) ([x] (eforall (eforall (eforall (esort lzero) ([y] (esort lzero))) ([y] (eapp x y))) ([y] (eapp x (elam (esort lzero) ([z] (eforall z ([w] z)))))))))
-   (defn (elam (eforall (eforall (esort lzero) ([x] (esort lzero))) ([x] (esort lzero))) ([x] (elam (eforall (eforall (esort lzero) ([y] (esort lzero))) ([y] (eapp x y))) ([y] (eapp y (elam (esort lzero) ([z] (eforall z ([w] z))))))))))
-   (dkind-ok/defn defEqLambda/type-wf defEqLambda/value-typed).
+defEqLambda/name : name "defEqLambda" (is-decl (eforall (eforall (eforall (esort lzero) ([x] (esort lzero))) ([x] (esort lzero))) ([x] (eforall (eforall (eforall (esort lzero) ([y] (esort lzero))) ([y] (eapp x y))) ([y] (eapp x (elam (esort lzero) ([z] (eforall z ([w] z))))))))) (defn (elam (eforall (eforall (esort lzero) ([x] (esort lzero))) ([x] (esort lzero))) ([x] (elam (eforall (eforall (esort lzero) ([y] (esort lzero))) ([y] (eapp x y))) ([y] (eapp y (elam (esort lzero) ([z] (eforall z ([w] z))))))))))).
+
+defEqLambda/decl : declared "defEqLambda" (eforall (eforall (eforall (esort lzero) ([x] (esort lzero))) ([x] (esort lzero))) ([x] (eforall (eforall (eforall (esort lzero) ([y] (esort lzero))) ([y] (eapp x y))) ([y] (eapp x (elam (esort lzero) ([z] (eforall z ([w] z))))))))) (defn (elam (eforall (eforall (esort lzero) ([x] (esort lzero))) ([x] (esort lzero))) ([x] (elam (eforall (eforall (esort lzero) ([y] (esort lzero))) ([y] (eapp x y))) ([y] (eapp y (elam (esort lzero) ([z] (eforall z ([w] z))))))))))
+   = declared/ok defEqLambda/name (dkind-ok/defn defEqLambda/type-wf defEqLambda/value-typed).
 

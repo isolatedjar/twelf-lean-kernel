@@ -10,10 +10,10 @@ constType/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (eforall (esort (l
 %%% HOLE
 constType/value-typed : defeq (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))).
 
-constType/decl : declared "constType" lnil
-   (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero))))))
-   (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))
-   (dkind-ok/defn constType/type-wf constType/value-typed).
+constType/name : name "constType" (is-decl (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))).
+
+constType/decl : declared "constType" (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))
+   = declared/ok constType/name (dkind-ok/defn constType/type-wf constType/value-typed).
 
 %% inductive inductBadNonSort
 %%% HOLE
@@ -25,8 +25,8 @@ inductBadNonSort/type-wf : defeq (econst "constType" lnil) (econst "constType" l
 %%% HOLE
 inductBadNonSort/ends-in-sort : ends-in-sort (econst "constType" lnil).
 
-inductBadNonSort/decl : declared "inductBadNonSort" lnil
-   (econst "constType" lnil)
-   indt
-   (dkind-ok/indt inductBadNonSort/type-wf inductBadNonSort/ends-in-sort).
+inductBadNonSort/name : name "inductBadNonSort" (is-decl (econst "constType" lnil) indt).
+
+inductBadNonSort/decl : declared "inductBadNonSort" (econst "constType" lnil) indt
+   = declared/ok inductBadNonSort/name (dkind-ok/indt inductBadNonSort/type-wf inductBadNonSort/ends-in-sort).
 
