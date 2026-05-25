@@ -188,11 +188,9 @@ const declSchema = z.union([
   z.object({ meta: z.unknown() }).transform(() => ({ tag: "meta" as const })),
 ]);
 
-type Item =
-  | z.infer<typeof nameSchema>
-  | z.infer<typeof levelSchema>
-  | z.infer<typeof exprSchema>
-  | z.infer<typeof declSchema>;
+const itemSchema = z.union([nameSchema, levelSchema, exprSchema, declSchema]);
+
+type Item = z.infer<typeof itemSchema>;
 
 // Convenience aliases for Env method parameters.
 type SimpleDecl = Extract<z.infer<typeof declSchema>, { tag: "def" | "thm" | "axiom" | "opaque" }>;
@@ -205,22 +203,7 @@ type IndRec = Extract<z.infer<typeof declSchema>, { tag: "inductive" }>;
 
 function parseLine(line: string): Item | null {
   try {
-    const raw = JSON.parse(line) as unknown;
-    if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return null;
-    const obj = raw as Record<string, unknown>;
-    if ("in" in obj) {
-      const r = nameSchema.safeParse(obj);
-      return r.success ? r.data : null;
-    }
-    if ("il" in obj) {
-      const r = levelSchema.safeParse(obj);
-      return r.success ? r.data : null;
-    }
-    if ("ie" in obj) {
-      const r = exprSchema.safeParse(obj);
-      return r.success ? r.data : null;
-    }
-    const r = declSchema.safeParse(obj);
+    const r = itemSchema.safeParse(JSON.parse(line) as unknown);
     return r.success ? r.data : null;
   } catch {
     return null;
