@@ -102,7 +102,17 @@ classify() {
     local full="$1" render="$2"
     if grep -q "^%%% SKIP" "$full" 2>/dev/null; then echo "shrug"; return; fi
     [[ "$(load_render_nofreeze "$render")" == "reject" ]] && { echo "red"; return; }
-    [[ "$(load_full_freeze "$full")" == "accept" ]] && { echo "accept"; return; }
+    # %freeze-based HOLE detection is currently unsound: %thaw name transitively
+    # thaws defeq (defeq/const and defeq/delta take a `declared` premise, which
+    # depends on `name`), so the frozen load wrongly accepts type-wf/value-typed
+    # obligations left as HOLEs. Until Twelf's thaw semantics are patched to thaw
+    # only the `name` class, simulate the freeze rejection here: a file with an
+    # unfilled HOLE is treated as if the frozen load rejected it. NOTE: this is a
+    # cooperative stand-in, not a soundness guarantee — an adversarial generator
+    # could emit a proof without the marker. It only unblocks the honest pipeline.
+    if ! grep -q "^%%% HOLE" "$full" 2>/dev/null; then
+        [[ "$(load_full_freeze "$full")" == "accept" ]] && { echo "accept"; return; }
+    fi
     [[ "$(load_full_nofreeze "$full")" == "accept" ]] && { echo "holes"; return; }
     echo "fail"
 }
