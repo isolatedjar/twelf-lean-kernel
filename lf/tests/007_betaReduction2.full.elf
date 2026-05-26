@@ -1,14 +1,14 @@
 %%% Expected outcome: accept
 %%% Lambda reduction under binder
 %% def constType
-%%% HOLE
-constType/type-wf-sort : lvl.
+constType/type-wf-sort : lvl
+   = (limax (lsucc (lsucc lzero)) (limax (lsucc (lsucc lzero)) (lsucc (lsucc lzero)))).
 
-%%% HOLE
-constType/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort constType/type-wf-sort).
+constType/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort constType/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] defeq/sort-refl)))))).
 
-%%% HOLE
-constType/value-typed : defeq (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))).
+constType/value-typed : defeq (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero))))))
+   = (defeq/lam defeq/sort-refl ([x] ([h] (defeq/lam defeq/sort-refl ([y] ([h1] h)))))).
 
 constType/name : name "constType" (is-decl (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))).
 

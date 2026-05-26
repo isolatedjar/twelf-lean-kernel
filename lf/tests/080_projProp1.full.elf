@@ -4,11 +4,11 @@
 %%% The lean kernel allows projections out of propositions if they precede
 %%% all dependent data fields.
 %% inductive PUnit
-%%% HOLE
-PUnit/type-wf-sort : lvl.
+PUnit/type-wf-sort : lvl
+   = (lsucc (lvar liz)).
 
-%%% HOLE
-PUnit/type-wf : defeq (esort (lvar liz)) (esort (lvar liz)) (esort PUnit/type-wf-sort).
+PUnit/type-wf : defeq (esort (lvar liz)) (esort (lvar liz)) (esort PUnit/type-wf-sort)
+   = defeq/sort-refl.
 
 %%% HOLE
 PUnit/ends-in-sort : ends-in-sort (esort (lvar liz)).
@@ -46,11 +46,11 @@ PUnit_rec/decl : declared "PUnit.rec" (eforall (eforall (econst "PUnit" (lcons (
    = declared/ok PUnit_rec/name (dkind-ok/irec PUnit_rec/type-wf).
 
 %% inductive Eq
-%%% HOLE
-Eq/type-wf-sort : lvl.
+Eq/type-wf-sort : lvl
+   = (limax (lsucc (lvar liz)) (limax (lvar liz) (limax (lvar liz) (lsucc lzero)))).
 
-%%% HOLE
-Eq/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (esort Eq/type-wf-sort).
+Eq/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (esort Eq/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall h ([y] ([h1] (defeq/forall h ([z] ([h2] defeq/sort-refl))))))))).
 
 %%% HOLE
 Eq/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))).
@@ -88,11 +88,11 @@ Eq_rec/decl : declared "Eq.rec" (eforall (esort (lvar (lis liz))) ([x] (eforall 
    = declared/ok Eq_rec/name (dkind-ok/irec Eq_rec/type-wf).
 
 %% inductive PropStructure
-%%% HOLE
-PropStructure/type-wf-sort : lvl.
+PropStructure/type-wf-sort : lvl
+   = (lsucc lzero).
 
-%%% HOLE
-PropStructure/type-wf : defeq (esort lzero) (esort lzero) (esort PropStructure/type-wf-sort).
+PropStructure/type-wf : defeq (esort lzero) (esort lzero) (esort PropStructure/type-wf-sort)
+   = defeq/sort-refl.
 
 %%% HOLE
 PropStructure/ends-in-sort : ends-in-sort (esort lzero).

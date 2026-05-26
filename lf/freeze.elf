@@ -20,11 +20,16 @@
 %freeze strict-pos.
 %freeze ctor-spine.
 %freeze ctor-positive.
-%thaw name.
 %freeze declared.
 %freeze dkind-ok.
 %freeze cnames.
 %freeze enum-rec-body.
 %freeze enum-rec-type.
 %freeze defeq-extra.
+
+% `declared` and `dkind-ok` depend on `name`, so freezing them (re-)freezes
+% `name` transitively.  The environment adds `<decl>/name` reservations to the
+% `name` family, so it must be thawed AFTER those freezes — final-checks.elf's
+% `%unique name` performs the final freeze once the whole environment is loaded.
+%thaw name.
 

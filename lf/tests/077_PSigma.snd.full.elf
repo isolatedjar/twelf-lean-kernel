@@ -1,11 +1,11 @@
 %%% Expected outcome: accept
 %%% Type-checking dependent projection functions
 %% inductive PSigma
-%%% HOLE
-PSigma/type-wf-sort : lvl.
+PSigma/type-wf-sort : lvl
+   = (limax (lsucc (lvar liz)) (limax (limax (lvar liz) (lsucc (lvar (lis liz)))) (lsucc (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))).
 
-%%% HOLE
-PSigma/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (esort (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))))) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (esort (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))))) (esort PSigma/type-wf-sort).
+PSigma/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (esort (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))))) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (esort (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))))) (esort PSigma/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall (defeq/forall h ([y] ([h1] defeq/sort-refl))) ([y] ([h1] defeq/sort-refl)))))).
 
 %%% HOLE
 PSigma/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (esort (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))))).

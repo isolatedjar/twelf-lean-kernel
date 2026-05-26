@@ -1,14 +1,14 @@
 %%% Expected outcome: accept
 %%% Arrow type (function type)
 %% def arrowType
-%%% HOLE
-arrowType/type-wf-sort : lvl.
+arrowType/type-wf-sort : lvl
+   = (lsucc (lsucc lzero)).
 
-%%% HOLE
-arrowType/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort arrowType/type-wf-sort).
+arrowType/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort arrowType/type-wf-sort)
+   = defeq/sort-refl.
 
-%%% HOLE
-arrowType/value-typed : defeq (eforall (esort lzero) ([x] (esort lzero))) (eforall (esort lzero) ([x] (esort lzero))) (esort (lsucc lzero)).
+arrowType/value-typed : defeq (eforall (esort lzero) ([x] (esort lzero))) (eforall (esort lzero) ([x] (esort lzero))) (esort (lsucc lzero))
+   = (defeq/conv (defeq/sort-eq lvl-eq/imax-idem) (defeq/forall defeq/sort-refl ([x] ([h] defeq/sort-refl)))).
 
 arrowType/name : name "arrowType" (is-decl (esort (lsucc lzero)) (defn (eforall (esort lzero) ([x] (esort lzero))))).
 

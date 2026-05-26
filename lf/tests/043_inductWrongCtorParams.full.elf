@@ -1,11 +1,11 @@
 %%% Expected outcome: reject
 %%% An inductive with a constructor with wrong parameters
 %% axiom aProp
-%%% HOLE
-aProp/type-wf-sort : lvl.
+aProp/type-wf-sort : lvl
+   = (lsucc lzero).
 
-%%% HOLE
-aProp/type-wf : defeq (esort lzero) (esort lzero) (esort aProp/type-wf-sort).
+aProp/type-wf : defeq (esort lzero) (esort lzero) (esort aProp/type-wf-sort)
+   = defeq/sort-refl.
 
 aProp/name : name "aProp" (is-decl (esort lzero) ax).
 
@@ -13,11 +13,11 @@ aProp/decl : declared "aProp" (esort lzero) ax
    = declared/ok aProp/name (dkind-ok/ax aProp/type-wf).
 
 %% inductive inductWrongCtorParams
-%%% HOLE
-inductWrongCtorParams/type-wf-sort : lvl.
+inductWrongCtorParams/type-wf-sort : lvl
+   = (limax (lsucc lzero) (lsucc (lsucc lzero))).
 
-%%% HOLE
-inductWrongCtorParams/type-wf : defeq (eforall (esort lzero) ([x] (esort (lsucc lzero)))) (eforall (esort lzero) ([x] (esort (lsucc lzero)))) (esort inductWrongCtorParams/type-wf-sort).
+inductWrongCtorParams/type-wf : defeq (eforall (esort lzero) ([x] (esort (lsucc lzero)))) (eforall (esort lzero) ([x] (esort (lsucc lzero)))) (esort inductWrongCtorParams/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] defeq/sort-refl))).
 
 %%% HOLE
 inductWrongCtorParams/ends-in-sort : ends-in-sort (eforall (esort lzero) ([x] (esort (lsucc lzero)))).
@@ -43,11 +43,11 @@ inductWrongCtorParams_mk/decl : declared "inductWrongCtorParams.mk" (eforall (es
    = declared/ok inductWrongCtorParams_mk/name (dkind-ok/ctor inductWrongCtorParams_mk/type-wf inductWrongCtorParams_mk/positivity).
 
 %% recursor inductWrongCtorParams.rec
-%%% HOLE
-inductWrongCtorParams_rec/type-wf-sort : lvl.
+inductWrongCtorParams_rec/type-wf-sort : lvl
+   = (lsucc lzero).
 
-%%% HOLE
-inductWrongCtorParams_rec/type-wf : defeq (esort lzero) (esort lzero) (esort inductWrongCtorParams_rec/type-wf-sort).
+inductWrongCtorParams_rec/type-wf : defeq (esort lzero) (esort lzero) (esort inductWrongCtorParams_rec/type-wf-sort)
+   = defeq/sort-refl.
 
 inductWrongCtorParams_rec/name : name "inductWrongCtorParams.rec" (is-decl (esort lzero) irec).
 

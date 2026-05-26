@@ -5,6 +5,7 @@
 // See plugin-refactor.md and the `Prover` interface in shared.ts.
 
 import type { ProofResult, Prover, TypeWfResult } from "./shared.ts";
+import { bridge, levelToFmt, synth } from "./synth.ts";
 
 // NullProver discharges nothing: every obligation becomes a HOLE. Running
 // the generator with this prover produces the `.render.elf` view — the
@@ -24,8 +25,28 @@ export const NullProver: Prover = {
   },
 };
 
-// RealProver is the featureful prover used for `.full.elf`. In step 1 of the
-// plugin refactor it is identical to NullProver (so .full.elf == .render.elf
-// content and every representable test is 🩹). It will be built up by mining
-// the old lean2lf.ts in later steps.
-export const RealProver: Prover = NullProver;
+// RealProver is the featureful prover used for `.full.elf`. It discharges the
+// closed sort/Π/λ fragment via src/synth.ts (sorts, Π-types, λ-abstractions,
+// bound variables — no constants, reduction, or inductives). Obligations
+// outside the fragment return null (→ a HOLE), so RealProver can only ever
+// turn 🩹 into ✅, never produce an unsound proof. Remaining obligation kinds
+// (ends-in-sort, ctor-positive) are still deferred. See src/synth.ts.
+export const RealProver: Prover = {
+  typeWellFormed({ type, levelParams }): TypeWfResult {
+    const r = synth(type);
+    if (!r || r.ty.kind !== "sort") return null;
+    return { sort: levelToFmt(r.ty.level, levelParams), proof: r.proof };
+  },
+  valueHasType({ value, type }): ProofResult {
+    const r = synth(value);
+    if (!r) return null;
+    const coerce = bridge(r.ty, type);
+    return coerce ? coerce(r.proof) : null;
+  },
+  endsInSort(): ProofResult {
+    return null;
+  },
+  ctorPositive(): ProofResult {
+    return null;
+  },
+};

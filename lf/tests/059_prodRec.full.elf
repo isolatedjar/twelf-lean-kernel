@@ -1,11 +1,11 @@
 %%% Expected outcome: accept
 %%% Asserting the type of the generated recursor
 %% inductive Prod
-%%% HOLE
-Prod/type-wf-sort : lvl.
+Prod/type-wf-sort : lvl
+   = (limax (lsucc (lsucc (lvar liz))) (limax (lsucc (lsucc (lvar (lis liz)))) (lsucc (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz))))))).
 
-%%% HOLE
-Prod/type-wf : defeq (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (esort (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz))))))))) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (esort (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz))))))))) (esort Prod/type-wf-sort).
+Prod/type-wf : defeq (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (esort (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz))))))))) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (esort (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz))))))))) (esort Prod/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] defeq/sort-refl)))))).
 
 %%% HOLE
 Prod/ends-in-sort : ends-in-sort (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (esort (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz))))))))).

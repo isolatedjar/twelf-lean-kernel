@@ -1,11 +1,11 @@
 %%% Expected outcome: accept
 %%% Peano arithmetic: 2 = 2
 %% def PN
-%%% HOLE
-PN/type-wf-sort : lvl.
+PN/type-wf-sort : lvl
+   = (lsucc (limax (lsucc (lvar liz)) (lvar liz))).
 
-%%% HOLE
-PN/type-wf : defeq (esort (limax (lsucc (lvar liz)) (lvar liz))) (esort (limax (lsucc (lvar liz)) (lvar liz))) (esort PN/type-wf-sort).
+PN/type-wf : defeq (esort (limax (lsucc (lvar liz)) (lvar liz))) (esort (limax (lsucc (lvar liz)) (lvar liz))) (esort PN/type-wf-sort)
+   = defeq/sort-refl.
 
 %%% HOLE
 PN/value-typed : defeq (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] x)) ([y] (eforall x ([z] x)))))) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] x)) ([y] (eforall x ([z] x)))))) (esort (limax (lsucc (lvar liz)) (lvar liz))).

@@ -1,11 +1,11 @@
 %%% Expected outcome: accept
 %%% Asserting the type of `Acc.rec`.
 %% inductive Acc
-%%% HOLE
-Acc/type-wf-sort : lvl.
+Acc/type-wf-sort : lvl
+   = (limax (lsucc (lvar liz)) (limax (limax (lvar liz) (limax (lvar liz) (lsucc lzero))) (limax (lvar liz) (lsucc lzero)))).
 
-%%% HOLE
-Acc/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (esort lzero))))))) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (esort lzero))))))) (esort Acc/type-wf-sort).
+Acc/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (esort lzero))))))) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (esort lzero))))))) (esort Acc/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall (defeq/forall h ([y] ([h1] (defeq/forall h ([z] ([h2] defeq/sort-refl)))))) ([y] ([h1] (defeq/forall h ([z] ([h2] defeq/sort-refl))))))))).
 
 %%% HOLE
 Acc/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (esort lzero))))))).

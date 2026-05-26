@@ -204,6 +204,19 @@ function tryLf(e: Expr): string | null {
 }
 
 function generateDecl(prover: Prover, d: Decl): void {
+  // Lean requires distinct universe-parameter names on every declaration; we
+  // can't represent the distinctness constraint in the implicit-level encoding,
+  // so any duplicate is outside our representable fragment → 🤷 SKIP.
+  // (Inductive blocks store levelParams per-member, not at the block level.)
+  if (d.kind !== "inductive") {
+    const lpNames = d.levelParams.map(nameToString);
+    if (new Set(lpNames).size < lpNames.length) {
+      skip(
+        `${d.kind} ${nameToString(d.name)} — duplicate universe parameter names [${lpNames.join(", ")}]`,
+      );
+      return;
+    }
+  }
   switch (d.kind) {
     case "def":
     case "opaque":

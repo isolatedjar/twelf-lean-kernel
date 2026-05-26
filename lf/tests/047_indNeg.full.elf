@@ -1,11 +1,11 @@
 %%% Expected outcome: reject
 %%% The classic example of an inductive with negative recursive occurrence
 %% inductive indNeg
-%%% HOLE
-indNeg/type-wf-sort : lvl.
+indNeg/type-wf-sort : lvl
+   = (lsucc (lsucc lzero)).
 
-%%% HOLE
-indNeg/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort indNeg/type-wf-sort).
+indNeg/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort indNeg/type-wf-sort)
+   = defeq/sort-refl.
 
 %%% HOLE
 indNeg/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
@@ -31,11 +31,11 @@ indNeg_mk/decl : declared "indNeg.mk" (eforall (eforall (econst "indNeg" lnil) (
    = declared/ok indNeg_mk/name (dkind-ok/ctor indNeg_mk/type-wf indNeg_mk/positivity).
 
 %% recursor indNeg.rec
-%%% HOLE
-indNeg_rec/type-wf-sort : lvl.
+indNeg_rec/type-wf-sort : lvl
+   = (lsucc lzero).
 
-%%% HOLE
-indNeg_rec/type-wf : defeq (esort lzero) (esort lzero) (esort indNeg_rec/type-wf-sort).
+indNeg_rec/type-wf : defeq (esort lzero) (esort lzero) (esort indNeg_rec/type-wf-sort)
+   = defeq/sort-refl.
 
 indNeg_rec/name : name "indNeg.rec" (is-decl (esort lzero) irec).
 

@@ -1,11 +1,11 @@
 %%% Expected outcome: accept
 %%% A parametrized product type (with more general level parameters)
 %% inductive PProd
-%%% HOLE
-PProd/type-wf-sort : lvl.
+PProd/type-wf-sort : lvl
+   = (limax (lsucc (lvar liz)) (limax (lsucc (lvar (lis liz))) (lsucc (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))).
 
-%%% HOLE
-PProd/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (esort (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))))) (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (esort (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))))) (esort PProd/type-wf-sort).
+PProd/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (esort (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))))) (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (esort (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))))) (esort PProd/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] defeq/sort-refl)))))).
 
 %%% HOLE
 PProd/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (esort (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))))).
@@ -43,11 +43,11 @@ PProd_rec/decl : declared "PProd.rec" (eforall (esort (lvar (lis liz))) ([x] (ef
    = declared/ok PProd_rec/name (dkind-ok/irec PProd_rec/type-wf).
 
 %% def pprodType
-%%% HOLE
-pprodType/type-wf-sort : lvl.
+pprodType/type-wf-sort : lvl
+   = (limax (lsucc (lsucc lzero)) (limax (lsucc (lsucc lzero)) (lsucc (lsucc lzero)))).
 
-%%% HOLE
-pprodType/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort pprodType/type-wf-sort).
+pprodType/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort pprodType/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] defeq/sort-refl)))))).
 
 %%% HOLE
 pprodType/value-typed : defeq (econst "PProd" (lcons (lsucc lzero) (lcons (lsucc lzero) lnil))) (econst "PProd" (lcons (lsucc lzero) (lcons (lsucc lzero) lnil))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))).
