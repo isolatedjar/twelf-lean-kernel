@@ -12,14 +12,14 @@
 //                            fiat; rejected by %freeze in the full load)
 //
 //   .render.elf = this generator with the NullProver (every obligation a HOLE)
-//   .full.elf   = this generator with the RealProver
+//   .full.elf   = this generator with makeRealProver(env)
 //
 // Because both files come from THIS generator, `.render.elf` structurally
 // contains every fact `.full.elf` does — that is the adequacy property.
 // The Prover (prover.ts) is untrusted; auditing shared.ts + parse.ts + this
 // file suffices.
 
-import { NullProver, RealProver } from "./prover.ts";
+import { makeRealProver, NullProver } from "./prover.ts";
 import { levelParamBindings, lfExpr, mangle, natLiteralsSeen } from "./render.ts";
 import type {
   Decl,
@@ -251,7 +251,7 @@ function generateValDecl(prover: Prover, d: Decl & { kind: "def" | "opaque" | "t
     emit(`%% ${d.kind} ${declName}`);
 
     const tw = emitTypeWf(
-      prover.typeWellFormed({ type: d.type, levelParams: d.levelParams }),
+      prover.typeWellFormed({ type: d.type, levelParams: d.levelParams, isThm: d.kind === "thm" }),
       mn,
       T,
       d.kind === "thm",
@@ -410,9 +410,9 @@ async function main(): Promise<void> {
   const which = process.argv.includes("--prover")
     ? process.argv[process.argv.indexOf("--prover") + 1]
     : "real";
-  const prover = which === "null" ? NullProver : RealProver;
   const raw = await readAllStdin();
   const env = transformNamesFromJSON(JSON.parse(raw)) as ParsedEnv;
+  const prover = which === "null" ? NullProver : makeRealProver(env);
   process.stdout.write(generateTwelf(prover, env));
 }
 

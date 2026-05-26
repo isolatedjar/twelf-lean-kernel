@@ -1,20 +1,54 @@
-// synth.ts — closed sort/Pi/λ type-synthesizer for RealProver.
+// synth.ts — type synthesizer and principled definitional-equality prover.
 //
-// UNTRUSTED. Like prover.ts, nothing here is part of the trusted base: the
-// generator only consumes the `Fmt` proof terms produced here, and validates
-// every atom/binder (ppFmt in generate-twelf.ts). This module discharges the
-// "closed fragment" of type checking — declarations whose type and value are
-// built only from sorts, Π-types, λ-abstractions, and bound variables (no
-// constants, reduction, or inductives). Anything outside the fragment yields
-// `null` (→ a HOLE), so it can only ever turn 🩹 into ✅, never regress.
+// UNTRUSTED. The generator only consumes the `Fmt` proof terms produced here,
+// and validates every atom/binder (ppFmt in generate-twelf.ts). This module
+// discharges proof obligations for the "closed fragment" (sorts, Π, λ, bvars)
+// and, when an EnvMap is supplied, for constants, applications, and
+// β/δ-reduction obligations. Anything unhandled → null (→ HOLE), never wrong.
 
-import { freshVar } from "./render.ts";
-import type { Expr, Fmt, Level, Name } from "./shared.ts";
+import { freshVar, mangle } from "./render.ts";
+import type { Expr, Fmt, Level, Name, ParsedEnv } from "./shared.ts";
 import { app, atom, lam, nameToString } from "./shared.ts";
 
 const ANON: Name = { kind: "anon" };
 
-// --- structural equality (alpha: binder names ignored) ------------------
+// ---------------------------------------------------------------------------
+// Environment map (for const lookup and δ-reduction)
+// ---------------------------------------------------------------------------
+
+export interface EnvEntry {
+  type: Expr;
+  value: Expr | null; // null for axiom/opaque/thm/inductive — no δ-reduction
+  levelParams: Name[];
+  mangleName: string; // LF constant name prefix, e.g. "constType" or "PN_succ"
+}
+
+export type EnvMap = Map<string, EnvEntry>;
+
+export function buildEnvMap(env: ParsedEnv): EnvMap {
+  const m: EnvMap = new Map();
+  for (const d of env.decls) {
+    if (d.kind === "inductive") {
+      // Inductive members are handled per-member (type former, ctors, recursor).
+      // Their `declared` witnesses exist in the generated .elf but are not
+      // δ-reducible (no defn body). Skip for now — Track C.
+      continue;
+    }
+    if (d.kind === "quot") continue;
+    const key = nameToString(d.name);
+    m.set(key, {
+      type: d.type,
+      value: d.kind === "def" ? d.value : null,
+      levelParams: d.levelParams,
+      mangleName: mangle(d.name),
+    });
+  }
+  return m;
+}
+
+// ---------------------------------------------------------------------------
+// Structural equality (alpha: binder names ignored)
+// ---------------------------------------------------------------------------
 
 function levelEq(a: Level, b: Level): boolean {
   if (a.kind !== b.kind) return false;
@@ -79,8 +113,11 @@ function exprEq(a: Expr, b: Expr): boolean {
   }
 }
 
-// de Bruijn shift: lift free variables (index >= cutoff) by `by`. Used to bring
-// a binder's stored type into the scope of a deeper bound-variable reference.
+// ---------------------------------------------------------------------------
+// De Bruijn shift and substitution
+// ---------------------------------------------------------------------------
+
+// Lift free variables (index >= cutoff) by `by`.
 function shift(e: Expr, by: number, cutoff = 0): Expr {
   switch (e.kind) {
     case "bvar":
@@ -108,12 +145,193 @@ function shift(e: Expr, by: number, cutoff = 0): Expr {
   }
 }
 
-// --- level → Fmt (the one place a level is emitted as a proof term) ------
-//
-// Mirrors lfLevel (render.ts) but builds an Fmt tree rather than text, so the
-// generator's ppFmt validator sees individual atoms/apps. Only used for the
-// type-wf `sort` field. Level params render as de Bruijn `(lvar i)` data,
-// matching withLevelParams/lidxLit in generate-twelf.ts.
+// Substitute `r` for `bvar(depth)` in `e`, decrementing deeper free vars.
+function subst(e: Expr, depth: number, r: Expr): Expr {
+  switch (e.kind) {
+    case "bvar":
+      if (e.deBruijn === depth) return shift(r, depth);
+      if (e.deBruijn > depth) return { kind: "bvar", deBruijn: e.deBruijn - 1 };
+      return e;
+    case "sort":
+    case "const":
+    case "natLit":
+    case "strLit":
+      return e;
+    case "lam":
+      return { ...e, type: subst(e.type, depth, r), body: subst(e.body, depth + 1, r) };
+    case "forallE":
+      return { ...e, type: subst(e.type, depth, r), body: subst(e.body, depth + 1, r) };
+    case "app":
+      return { kind: "app", fn: subst(e.fn, depth, r), arg: subst(e.arg, depth, r) };
+    case "letE":
+      return {
+        ...e,
+        type: subst(e.type, depth, r),
+        value: subst(e.value, depth, r),
+        body: subst(e.body, depth + 1, r),
+      };
+    case "proj":
+      return { ...e, struct: subst(e.struct, depth, r) };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Level instantiation (substitute level params by index)
+// ---------------------------------------------------------------------------
+
+function instantiateLevel(l: Level, sub: Map<string, Level>): Level {
+  switch (l.kind) {
+    case "zero":
+      return l;
+    case "succ":
+      return { kind: "succ", arg: instantiateLevel(l.arg, sub) };
+    case "max":
+      return { kind: "max", l: instantiateLevel(l.l, sub), r: instantiateLevel(l.r, sub) };
+    case "imax":
+      return { kind: "imax", l: instantiateLevel(l.l, sub), r: instantiateLevel(l.r, sub) };
+    case "param": {
+      const v = sub.get(nameToString(l.name));
+      return v !== undefined ? v : l;
+    }
+  }
+}
+
+function instantiateExprLevels(e: Expr, sub: Map<string, Level>): Expr {
+  switch (e.kind) {
+    case "sort":
+      return { kind: "sort", level: instantiateLevel(e.level, sub) };
+    case "const":
+      return { kind: "const", name: e.name, us: e.us.map((u) => instantiateLevel(u, sub)) };
+    case "app":
+      return {
+        kind: "app",
+        fn: instantiateExprLevels(e.fn, sub),
+        arg: instantiateExprLevels(e.arg, sub),
+      };
+    case "lam":
+      return {
+        ...e,
+        type: instantiateExprLevels(e.type, sub),
+        body: instantiateExprLevels(e.body, sub),
+      };
+    case "forallE":
+      return {
+        ...e,
+        type: instantiateExprLevels(e.type, sub),
+        body: instantiateExprLevels(e.body, sub),
+      };
+    case "letE":
+      return {
+        ...e,
+        type: instantiateExprLevels(e.type, sub),
+        value: instantiateExprLevels(e.value, sub),
+        body: instantiateExprLevels(e.body, sub),
+      };
+    case "proj":
+      return { ...e, struct: instantiateExprLevels(e.struct, sub) };
+    case "bvar":
+    case "natLit":
+    case "strLit":
+      return e;
+  }
+}
+
+function instantiateLevels(e: Expr, lpNames: Name[], ls: Level[]): Expr {
+  const sub = new Map<string, Level>();
+  for (let i = 0; i < lpNames.length; i++) {
+    const l = ls[i];
+    const p = lpNames[i];
+    if (l !== undefined && p !== undefined) sub.set(nameToString(p), l);
+  }
+  return instantiateExprLevels(e, sub);
+}
+
+// ---------------------------------------------------------------------------
+// inst-expr proof builders
+// ---------------------------------------------------------------------------
+
+function buildLvlNth(i: number): Fmt {
+  if (i === 0) return atom("lvl-nth/zero");
+  return app(atom("lvl-nth/succ"), buildLvlNth(i - 1));
+}
+
+function buildLvlInst(l: Level, lpNames: Name[]): Fmt {
+  switch (l.kind) {
+    case "zero":
+      return atom("lvl-inst/zero");
+    case "succ":
+      return app(atom("lvl-inst/succ"), buildLvlInst(l.arg, lpNames));
+    case "max":
+      return app(atom("lvl-inst/max"), buildLvlInst(l.l, lpNames), buildLvlInst(l.r, lpNames));
+    case "imax":
+      return app(atom("lvl-inst/imax"), buildLvlInst(l.l, lpNames), buildLvlInst(l.r, lpNames));
+    case "param": {
+      const i = lpNames.findIndex((p) => nameToString(p) === nameToString(l.name));
+      if (i < 0) return atom("lvl-inst/zero"); // fallback; shouldn't occur in well-formed schemas
+      return app(atom("lvl-inst/var"), buildLvlNth(i));
+    }
+  }
+}
+
+function buildLvlsInst(us: Level[], lpNames: Name[]): Fmt {
+  if (us.length === 0) return atom("lvls-inst/nil");
+  return app(
+    atom("lvls-inst/cons"),
+    buildLvlInst(us[0]!, lpNames),
+    buildLvlsInst(us.slice(1), lpNames),
+  );
+}
+
+// ieScope[k] = the LF hypothesis name for `inst-expr bvar_k LS bvar_k` at depth k.
+function buildInstExpr(e: Expr, lpNames: Name[], ieScope: string[], used: string[]): Fmt | null {
+  switch (e.kind) {
+    case "bvar": {
+      const hyp = ieScope[e.deBruijn];
+      return hyp !== undefined ? atom(hyp) : null;
+    }
+    case "sort":
+      return app(atom("inst-expr/sort"), buildLvlInst(e.level, lpNames));
+    case "const":
+      return app(atom("inst-expr/const"), buildLvlsInst(e.us, lpNames));
+    case "app": {
+      const fn = buildInstExpr(e.fn, lpNames, ieScope, used);
+      const ag = buildInstExpr(e.arg, lpNames, ieScope, used);
+      return fn && ag ? app(atom("inst-expr/app"), fn, ag) : null;
+    }
+    case "forallE": {
+      const domPf = buildInstExpr(e.type, lpNames, ieScope, used);
+      if (!domPf) return null;
+      const x = freshVar(used);
+      const ix = freshHyp([x, ...used]);
+      const bodyPf = buildInstExpr(e.body, lpNames, [ix, ...ieScope], [ix, x, ...used]);
+      if (!bodyPf) return null;
+      return app(atom("inst-expr/forall"), domPf, lam(x, lam(ix, bodyPf)));
+    }
+    case "lam": {
+      const domPf = buildInstExpr(e.type, lpNames, ieScope, used);
+      if (!domPf) return null;
+      const x = freshVar(used);
+      const ix = freshHyp([x, ...used]);
+      const bodyPf = buildInstExpr(e.body, lpNames, [ix, ...ieScope], [ix, x, ...used]);
+      if (!bodyPf) return null;
+      return app(atom("inst-expr/lam"), domPf, lam(x, lam(ix, bodyPf)));
+    }
+    case "proj": {
+      const spf = buildInstExpr(e.struct, lpNames, ieScope, used);
+      return spf ? app(atom("inst-expr/proj"), spf) : null;
+    }
+    case "natLit":
+      return atom("inst-expr/natlit");
+    case "strLit":
+      return atom("inst-expr/strlit");
+    case "letE":
+      return null; // no inst-expr/letE rule in TCB
+  }
+}
+
+// ---------------------------------------------------------------------------
+// level → Fmt
+// ---------------------------------------------------------------------------
 
 function lidxFmt(i: number): Fmt {
   let acc = atom("liz");
@@ -139,24 +357,14 @@ export function levelToFmt(l: Level, levelParams: Name[]): Fmt {
   }
 }
 
-// --- directed lvl-eq derivation -----------------------------------------
-//
-// Build a proof of `lvl-eq a b` from the lvl-eq rules in tcb.elf. Directed:
-// reduce each side toward normal form (reduceLevel/stepLevel), joining the
-// chains with lvl-eq/trans (and lvl-eq/symm for the `to` side), then fall back
-// to structural congruence. Returns null when no rule applies (→ the obligation
-// stays a HOLE, never a wrong proof).
-//
-// NOTE: this is a deliberately incomplete stopgap, NOT a decision procedure —
-// both this and the underlying tcb.elf `lvl-eq` family (an ad-hoc identity set)
-// are slated for replacement by a complete treatment (cf. lean4lean / mm0-lean).
+// ---------------------------------------------------------------------------
+// Directed lvl-eq solver
+// ---------------------------------------------------------------------------
 
 function sortLevel(e: Expr): Level | null {
   return e.kind === "sort" ? e.level : null;
 }
 
-// One-step top-level reduction; each rule corresponds to an lvl-eq constructor
-// in tcb.elf. Returns null when no top-level rule applies.
 function reduceLevel(l: Level): { result: Level; proof: Fmt } | null {
   if (l.kind === "imax" && l.r.kind === "zero") {
     return { result: { kind: "zero" }, proof: atom("lvl-eq/imax-zero") };
@@ -185,8 +393,6 @@ function reduceLevel(l: Level): { result: Level; proof: Fmt } | null {
   return null;
 }
 
-// One-step reduction at any position, wrapping a sub-position step in the
-// matching congruence rule. Returns null only when `l` is in normal form.
 function stepLevel(l: Level): { result: Level; proof: Fmt } | null {
   const top = reduceLevel(l);
   if (top !== null) return top;
@@ -243,13 +449,11 @@ export function proveLvlEq(a: Level, b: Level, depth = 0): Fmt | null {
   if (depth > 12) return null;
   if (levelEq(a, b)) return atom("lvl-eq/refl");
 
-  // Reduce `a` one step and recurse: lvl-eq/trans of the step with the rest.
   const ra = stepLevel(a);
   if (ra !== null) {
     const rest = proveLvlEq(ra.result, b, depth + 1);
     if (rest !== null) return app(atom("lvl-eq/trans"), ra.proof, rest);
   }
-  // Reduce `b` one step and recurse, flipping the step via lvl-eq/symm.
   const rb = stepLevel(b);
   if (rb !== null) {
     const rest = proveLvlEq(a, rb.result, depth + 1);
@@ -257,7 +461,6 @@ export function proveLvlEq(a: Level, b: Level, depth = 0): Fmt | null {
       return app(atom("lvl-eq/trans"), rest, app(atom("lvl-eq/symm"), rb.proof));
     }
   }
-  // Structural congruence (when neither side reduces but heads agree).
   if (a.kind === "succ" && b.kind === "succ") {
     const sub = proveLvlEq(a.arg, b.arg, depth + 1);
     return sub && app(atom("lvl-eq/lsucc-cong"), sub);
@@ -275,67 +478,15 @@ export function proveLvlEq(a: Level, b: Level, depth = 0): Fmt | null {
   return null;
 }
 
-// --- type coercion ------------------------------------------------------
-//
-// `bridgeProof(from, to)` builds a proof of `defeq from to (esort _)` — that the
-// two TYPES are definitionally equal at some sort. Two sorts: defeq/sort-eq over
-// a lvl-eq derivation. Two Π-types: defeq/forall congruence — bridge the domains,
-// then the codomains under a fresh `defeq x x from.type` hypothesis (the
-// hypothesis is typed at the left/`from` domain, per defeq/forall in tcb.elf).
-// `bridge(from, to)` turns that into a wrapper retyping a `defeq E E from` proof
-// into `defeq E E to` via defeq/conv. Anything else → null (stays a HOLE).
-
-function bridgeProof(from: Expr, to: Expr, used: string[], depth = 0): Fmt | null {
-  if (depth > 6) return null;
-
-  const lf = sortLevel(from);
-  const lt = sortLevel(to);
-  if (lf && lt) {
-    const le = proveLvlEq(lf, lt);
-    return le && app(atom("defeq/sort-eq"), le);
-  }
-
-  if (from.kind === "forallE" && to.kind === "forallE") {
-    const dom = bridgeProof(from.type, to.type, used, depth + 1);
-    if (!dom) return null;
-    const x = freshVar(used);
-    const usedX = [x, ...used];
-    const h = freshHyp(usedX);
-    const body = bridgeProof(from.body, to.body, [h, ...usedX], depth + 1);
-    if (!body) return null;
-    return app(atom("defeq/forall"), dom, lam(x, lam(h, body)));
-  }
-
-  return null;
-}
-
-export function bridge(from: Expr, to: Expr): ((pf: Fmt) => Fmt) | null {
-  if (exprEq(from, to)) return (pf) => pf;
-  const p = bridgeProof(from, to, []);
-  if (!p) return null;
-  return (pf) => app(atom("defeq/conv"), p, pf);
-}
-
-// --- type synthesis -----------------------------------------------------
-//
-// synth(e, scope) returns the inferred type of `e` (as IR, for further
-// synthesis) together with an Fmt proving `defeq e e ty`, or null if `e`
-// falls outside the closed fragment. `scope` holds, innermost-first, the
-// defeq hypothesis variable and binder type for each Π/λ in view; a bound
-// variable's proof is exactly its hypothesis.
+// ---------------------------------------------------------------------------
+// Scope and hypothesis helpers
+// ---------------------------------------------------------------------------
 
 interface Hyp {
-  hyp: string; // name of the `defeq x x A` hypothesis bound at this binder
-  ty: Expr; // the binder's type A
-}
-
-interface Synthed {
+  hyp: string;
   ty: Expr;
-  proof: Fmt;
 }
 
-// Used names = every LF-bound identifier in scope (both the `x` term vars and
-// the `h` hypothesis vars), so fresh names collide with neither.
 function freshHyp(used: string[]): string {
   if (!used.includes("h")) return "h";
   for (let i = 1; ; i++) {
@@ -344,7 +495,16 @@ function freshHyp(used: string[]): string {
   }
 }
 
-function synthRec(e: Expr, scope: Hyp[], used: string[]): Synthed | null {
+// ---------------------------------------------------------------------------
+// Type synthesis  synthRec: defeq e e ty
+// ---------------------------------------------------------------------------
+
+interface Synthed {
+  ty: Expr;
+  proof: Fmt;
+}
+
+function synthRec(e: Expr, scope: Hyp[], used: string[], envMap?: EnvMap): Synthed | null {
   switch (e.kind) {
     case "sort":
       return {
@@ -355,57 +515,449 @@ function synthRec(e: Expr, scope: Hyp[], used: string[]): Synthed | null {
     case "bvar": {
       const h = scope[e.deBruijn];
       if (h === undefined) return null;
-      // The stored type was captured `e.deBruijn + 1` binders shallower; shift
-      // its free variables into the current (deeper) scope.
       return { ty: shift(h.ty, e.deBruijn + 1), proof: atom(h.hyp) };
     }
 
-    case "forallE": {
-      const rA = synthRec(e.type, scope, used);
+    case "const": {
+      if (!envMap) return null;
+      const entry = envMap.get(nameToString(e.name));
+      if (!entry) return null;
+      if (e.us.length !== entry.levelParams.length) return null;
+      const instType = instantiateLevels(entry.type, entry.levelParams, e.us);
+      const ie = buildInstExpr(entry.type, entry.levelParams, [], []);
+      if (!ie) return null;
+      return {
+        ty: instType,
+        proof: app(atom("defeq/const"), atom(entry.mangleName + "/decl"), ie),
+      };
+    }
+
+    case "app": {
+      const rF = synthRec(e.fn, scope, used, envMap);
+      if (!rF) return null;
+      let fnProof = rF.proof;
+      let fnForall: Expr & { kind: "forallE" };
+      if (rF.ty.kind === "forallE") {
+        fnForall = rF.ty;
+      } else {
+        if (!envMap) return null;
+        const r = reduceToForall(rF.ty, fnProof, envMap, scope, used);
+        if (!r) return null;
+        fnForall = r.forall;
+        fnProof = r.proof;
+      }
+      const rA = synthRec(e.arg, scope, used, envMap);
       if (!rA) return null;
-      const u = sortLevel(rA.ty);
-      if (!u) return null;
+      let argProof = rA.proof;
+      if (!exprEq(rA.ty, fnForall.type)) {
+        const coerce = bridgeInternal(rA.ty, fnForall.type, scope, used, envMap, 0);
+        if (!coerce) return null;
+        argProof = app(atom("defeq/conv"), coerce.proof, rA.proof);
+      }
+      return {
+        ty: subst(fnForall.body, 0, e.arg),
+        proof: app(atom("defeq/app"), fnProof, argProof),
+      };
+    }
+
+    case "forallE": {
+      const rA = synthRec(e.type, scope, used, envMap);
+      if (!rA) return null;
+      let domProof = rA.proof;
+      let u = sortLevel(rA.ty);
+      if (!u) {
+        if (!envMap) return null;
+        const r = reduceToSort(rA.ty, rA.proof, envMap, scope, used);
+        if (!r) return null;
+        domProof = r.proof;
+        u = r.level;
+      }
       const x = freshVar(used);
       const usedX = [x, ...used];
       const h = freshHyp(usedX);
       const usedH = [h, ...usedX];
-      const rB = synthRec(e.body, [{ hyp: h, ty: e.type }, ...scope], usedH);
+      const rB = synthRec(e.body, [{ hyp: h, ty: e.type }, ...scope], usedH, envMap);
       if (!rB) return null;
-      const v = sortLevel(rB.ty);
-      if (!v) return null;
+      let bodyProof = rB.proof;
+      let v = sortLevel(rB.ty);
+      if (!v) {
+        if (!envMap) return null;
+        const r = reduceToSort(rB.ty, rB.proof, envMap, scope, usedH);
+        if (!r) return null;
+        bodyProof = r.proof;
+        v = r.level;
+      }
       return {
         ty: { kind: "sort", level: { kind: "imax", l: u, r: v } },
-        proof: app(atom("defeq/forall"), rA.proof, lam(x, lam(h, rB.proof))),
+        proof: app(atom("defeq/forall"), domProof, lam(x, lam(h, bodyProof))),
       };
     }
 
     case "lam": {
-      const rA = synthRec(e.type, scope, used);
+      const rA = synthRec(e.type, scope, used, envMap);
       if (!rA) return null;
-      if (!sortLevel(rA.ty)) return null;
+      let domProof = rA.proof;
+      if (!sortLevel(rA.ty)) {
+        if (!envMap) return null;
+        const r = reduceToSort(rA.ty, rA.proof, envMap, scope, used);
+        if (!r) return null;
+        domProof = r.proof;
+      }
       const x = freshVar(used);
       const usedX = [x, ...used];
       const h = freshHyp(usedX);
       const usedH = [h, ...usedX];
-      const rB = synthRec(e.body, [{ hyp: h, ty: e.type }, ...scope], usedH);
+      const rB = synthRec(e.body, [{ hyp: h, ty: e.type }, ...scope], usedH, envMap);
       if (!rB) return null;
       return {
         ty: { kind: "forallE", name: ANON, type: e.type, body: rB.ty },
-        proof: app(atom("defeq/lam"), rA.proof, lam(x, lam(h, rB.proof))),
+        proof: app(atom("defeq/lam"), domProof, lam(x, lam(h, rB.proof))),
       };
     }
 
     default:
-      // const, app, proj, letE, natLit, strLit — outside the fragment.
       return null;
   }
 }
 
-export function synth(e: Expr): Synthed | null {
-  return synthRec(e, [], []);
+// ---------------------------------------------------------------------------
+// Principled definitional equality  defeqProof: defeq a b ty
+// ---------------------------------------------------------------------------
+
+interface DefeqResult {
+  proof: Fmt;
+  ty: Expr; // type index of the proof
 }
 
-export function synthSort(e: Expr): Level | null {
-  const r = synth(e);
+// Reduce the type of `e` (given as `proof : defeq e e ty`) to a sort.
+// Returns {level, proof: defeq e e (esort level)} or null.
+function reduceToSort(
+  ty: Expr,
+  proof: Fmt,
+  envMap: EnvMap,
+  scope: Hyp[],
+  used: string[],
+  depth = 0,
+): { level: Level; proof: Fmt } | null {
+  if (depth > 8) return null;
+  const u = sortLevel(ty);
+  if (u !== null) return { level: u, proof };
+  const step = whnfStep(ty, envMap, scope, used, depth);
+  if (!step) return null;
+  return reduceToSort(
+    step.result,
+    app(atom("defeq/conv"), step.proof, proof),
+    envMap,
+    scope,
+    used,
+    depth + 1,
+  );
+}
+
+// Reduce the type of `e` (given as `proof : defeq e e ty`) to a forallE.
+// Returns {forall: ..., proof: defeq e e (forall ...)} or null.
+function reduceToForall(
+  ty: Expr,
+  proof: Fmt,
+  envMap: EnvMap,
+  scope: Hyp[],
+  used: string[],
+  depth = 0,
+): { forall: Expr & { kind: "forallE" }; proof: Fmt } | null {
+  if (depth > 8) return null;
+  if (ty.kind === "forallE") return { forall: ty, proof };
+  const step = whnfStep(ty, envMap, scope, used, depth);
+  if (!step) return null;
+  return reduceToForall(
+    step.result,
+    app(atom("defeq/conv"), step.proof, proof),
+    envMap,
+    scope,
+    used,
+    depth + 1,
+  );
+}
+
+// One-step head reduction: β (app of lam) or δ (const with defn).
+// Returns {result, proof: defeq e result ty, ty} or null if no redex.
+function whnfStep(
+  e: Expr,
+  envMap: EnvMap,
+  scope: Hyp[],
+  used: string[],
+  depth: number,
+): (DefeqResult & { result: Expr }) | null {
+  if (depth > 24) return null;
+
+  if (e.kind === "app") {
+    const fn = e.fn;
+    // β: fn is already a lam
+    if (fn.kind === "lam") {
+      // defeq/beta : ({x}{h} defeq (Body x)(Body x)(Bty x)) -> defeq E' E' A
+      //           -> defeq (eapp (elam A Body) E')(Body E')(Bty E')
+      const A = fn.type;
+      const x = freshVar(used);
+      const usedX = [x, ...used];
+      const h = freshHyp(usedX);
+      const usedH = [h, ...usedX];
+      const bodyS = synthRec(fn.body, [{ hyp: h, ty: A }, ...scope], usedH, envMap);
+      if (!bodyS) return null;
+      // motive: lam x lam h bodyS.proof
+      const motive = lam(x, lam(h, bodyS.proof));
+      // arg proof: defeq E' E' A — synth and coerce
+      const argS = synthRec(e.arg, scope, used, envMap);
+      if (!argS) return null;
+      let argProof = argS.proof;
+      if (!exprEq(argS.ty, A)) {
+        const br = bridgeInternal(argS.ty, A, scope, used, envMap, depth + 1);
+        if (!br) return null;
+        argProof = app(atom("defeq/conv"), br.proof, argS.proof);
+      }
+      const result = subst(fn.body, 0, e.arg);
+      const ty = subst(bodyS.ty, 0, e.arg);
+      return { result, proof: app(atom("defeq/beta"), motive, argProof), ty };
+    }
+
+    // lift: whnf fn one step and wrap with defeq/app
+    const sf = whnfStep(fn, envMap, scope, used, depth + 1);
+    if (sf && sf.ty.kind === "forallE") {
+      const argS = synthRec(e.arg, scope, used, envMap);
+      if (!argS) return null;
+      let argProof = argS.proof;
+      if (!exprEq(argS.ty, sf.ty.type)) {
+        const br = bridgeInternal(argS.ty, sf.ty.type, scope, used, envMap, depth + 1);
+        if (!br) return null;
+        argProof = app(atom("defeq/conv"), br.proof, argS.proof);
+      }
+      const result: Expr = { kind: "app", fn: sf.result, arg: e.arg };
+      const ty = subst(sf.ty.body, 0, e.arg);
+      return { result, proof: app(atom("defeq/app"), sf.proof, argProof), ty };
+    }
+    return null;
+  }
+
+  if (e.kind === "const") {
+    const entry = envMap.get(nameToString(e.name));
+    if (!entry || !entry.value) return null; // axiom/opaque/thm: no δ
+    if (e.us.length !== entry.levelParams.length) return null;
+    const T = instantiateLevels(entry.type, entry.levelParams, e.us);
+    const V = instantiateLevels(entry.value, entry.levelParams, e.us);
+    const ieT = buildInstExpr(entry.type, entry.levelParams, [], []);
+    const ieV = buildInstExpr(entry.value, entry.levelParams, [], []);
+    if (!ieT || !ieV) return null;
+    return {
+      result: V,
+      proof: app(atom("defeq/delta"), atom(entry.mangleName + "/decl"), ieT, ieV),
+      ty: T,
+    };
+  }
+
+  return null;
+}
+
+// Combine two proofs via defeq/trans, inserting defeq/conv if type indices differ.
+// p1 : defeq a m ty1   p2 : defeq m b ty2   →   defeq a b ty1
+function transAt(
+  p1: Fmt,
+  ty1: Expr,
+  p2: Fmt,
+  ty2: Expr,
+  envMap: EnvMap,
+  scope: Hyp[],
+  used: string[],
+  depth: number,
+): DefeqResult | null {
+  if (exprEq(ty1, ty2)) {
+    return { proof: app(atom("defeq/trans"), p1, p2), ty: ty1 };
+  }
+  // Convert p2 from ty2 to ty1 via defeq/conv.
+  const conv = defeqProofInternal(ty2, ty1, envMap, scope, used, depth + 1);
+  if (!conv) return null;
+  const p2c = app(atom("defeq/conv"), conv.proof, p2);
+  return { proof: app(atom("defeq/trans"), p1, p2c), ty: ty1 };
+}
+
+// Core principled defeq prover: produces proof of `defeq a b ty` or null.
+function defeqProofInternal(
+  a: Expr,
+  b: Expr,
+  envMap: EnvMap,
+  scope: Hyp[],
+  used: string[],
+  depth: number,
+): DefeqResult | null {
+  if (depth > 20) return null;
+
+  // 1. Reflexivity
+  if (exprEq(a, b)) {
+    const s = synthRec(a, scope, used, envMap);
+    return s ? { proof: s.proof, ty: s.ty } : null;
+  }
+
+  // 2. Both sorts: level equality
+  if (a.kind === "sort" && b.kind === "sort") {
+    const le = proveLvlEq(a.level, b.level);
+    if (!le) return null;
+    return {
+      proof: app(atom("defeq/sort-eq"), le),
+      ty: { kind: "sort", level: { kind: "succ", arg: a.level } },
+    };
+  }
+
+  // 3. Reduce a one step, recurse
+  const sa = whnfStep(a, envMap, scope, used, depth + 1);
+  if (sa) {
+    const rest = defeqProofInternal(sa.result, b, envMap, scope, used, depth + 1);
+    if (rest) {
+      const combined = transAt(
+        sa.proof,
+        sa.ty,
+        rest.proof,
+        rest.ty,
+        envMap,
+        scope,
+        used,
+        depth + 1,
+      );
+      if (combined) return combined;
+    }
+  }
+
+  // 4. Reduce b one step, recurse (symm on b's step)
+  const sb = whnfStep(b, envMap, scope, used, depth + 1);
+  if (sb) {
+    const rest = defeqProofInternal(a, sb.result, envMap, scope, used, depth + 1);
+    if (rest) {
+      const bSymm = app(atom("defeq/symm"), sb.proof);
+      const combined = transAt(rest.proof, rest.ty, bSymm, sb.ty, envMap, scope, used, depth + 1);
+      if (combined) return combined;
+    }
+  }
+
+  // 5. Structural congruence for matching heads (neutral / no redex)
+  if (a.kind === "forallE" && b.kind === "forallE") {
+    const dom = defeqProofInternal(a.type, b.type, envMap, scope, used, depth + 1);
+    if (!dom) return null;
+    const domSort = sortLevel(dom.ty);
+    if (!domSort) return null;
+    const x = freshVar(used);
+    const usedX = [x, ...used];
+    const h = freshHyp(usedX);
+    const usedH = [h, ...usedX];
+    const bodyScope = [{ hyp: h, ty: a.type }, ...scope];
+    const body = defeqProofInternal(a.body, b.body, envMap, bodyScope, usedH, depth + 1);
+    if (!body) return null;
+    const bodySort = sortLevel(body.ty);
+    if (!bodySort) return null;
+    return {
+      proof: app(atom("defeq/forall"), dom.proof, lam(x, lam(h, body.proof))),
+      ty: { kind: "sort", level: { kind: "imax", l: domSort, r: bodySort } },
+    };
+  }
+
+  if (a.kind === "lam" && b.kind === "lam") {
+    const dom = defeqProofInternal(a.type, b.type, envMap, scope, used, depth + 1);
+    if (!dom) return null;
+    const x = freshVar(used);
+    const usedX = [x, ...used];
+    const h = freshHyp(usedX);
+    const usedH = [h, ...usedX];
+    const bodyScope = [{ hyp: h, ty: a.type }, ...scope];
+    const body = defeqProofInternal(a.body, b.body, envMap, bodyScope, usedH, depth + 1);
+    if (!body) return null;
+    return {
+      proof: app(atom("defeq/lam"), dom.proof, lam(x, lam(h, body.proof))),
+      ty: { kind: "forallE", name: ANON, type: a.type, body: body.ty },
+    };
+  }
+
+  if (a.kind === "app" && b.kind === "app") {
+    const fn = defeqProofInternal(a.fn, b.fn, envMap, scope, used, depth + 1);
+    if (!fn || fn.ty.kind !== "forallE") return null;
+    let argProof: Fmt;
+    const argR = defeqProofInternal(a.arg, b.arg, envMap, scope, used, depth + 1);
+    if (!argR) return null;
+    if (!exprEq(argR.ty, fn.ty.type)) {
+      const br = bridgeInternal(argR.ty, fn.ty.type, scope, used, envMap, depth + 1);
+      if (!br) return null;
+      argProof = app(atom("defeq/conv"), br.proof, argR.proof);
+    } else {
+      argProof = argR.proof;
+    }
+    return {
+      proof: app(atom("defeq/app"), fn.proof, argProof),
+      ty: subst(fn.ty.body, 0, a.arg),
+    };
+  }
+
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// Type coercion  bridge / bridgeInternal
+// ---------------------------------------------------------------------------
+
+// Prove `defeq from to (esort _)` — both arguments are types.
+// Returns the proof or null.
+function bridgeInternal(
+  from: Expr,
+  to: Expr,
+  scope: Hyp[],
+  used: string[],
+  envMap: EnvMap | undefined,
+  depth: number,
+): DefeqResult | null {
+  if (depth > 8) return null;
+
+  // Pure-sort / Π-congruence path (no env needed)
+  const lf = sortLevel(from);
+  const lt = sortLevel(to);
+  if (lf && lt) {
+    const le = proveLvlEq(lf, lt);
+    if (!le) return null;
+    return {
+      proof: app(atom("defeq/sort-eq"), le),
+      ty: { kind: "sort", level: { kind: "succ", arg: lf } },
+    };
+  }
+
+  if (from.kind === "forallE" && to.kind === "forallE") {
+    const dom = bridgeInternal(from.type, to.type, scope, used, envMap, depth + 1);
+    if (!dom) return null;
+    const x = freshVar(used);
+    const usedX = [x, ...used];
+    const h = freshHyp(usedX);
+    const usedH = [h, ...usedX];
+    const innerScope = [{ hyp: h, ty: from.type }, ...scope];
+    const body = bridgeInternal(from.body, to.body, innerScope, usedH, envMap, depth + 1);
+    if (!body) return null;
+    return {
+      proof: app(atom("defeq/forall"), dom.proof, lam(x, lam(h, body.proof))),
+      ty: { kind: "sort", level: { kind: "zero" } }, // sort level computed by Twelf
+    };
+  }
+
+  if (!envMap) return null;
+  // General: use defeqProofInternal with reduction
+  return defeqProofInternal(from, to, envMap, scope, used, depth);
+}
+
+export function bridge(from: Expr, to: Expr, envMap?: EnvMap): ((pf: Fmt) => Fmt) | null {
+  if (exprEq(from, to)) return (pf) => pf;
+  const p = bridgeInternal(from, to, [], [], envMap, 0);
+  if (!p) return null;
+  return (pf) => app(atom("defeq/conv"), p.proof, pf);
+}
+
+// ---------------------------------------------------------------------------
+// Public entry points
+// ---------------------------------------------------------------------------
+
+export function synth(e: Expr, envMap?: EnvMap): Synthed | null {
+  return synthRec(e, [], [], envMap);
+}
+
+export function synthSort(e: Expr, envMap?: EnvMap): Level | null {
+  const r = synth(e, envMap);
   return r ? sortLevel(r.ty) : null;
 }

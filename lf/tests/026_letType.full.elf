@@ -7,8 +7,8 @@ letType/type-wf-sort : lvl
 letType/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort letType/type-wf-sort)
    = defeq/sort-refl.
 
-%%% HOLE
-letType/value-typed : defeq (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (esort (lsucc lzero)).
+letType/value-typed : defeq (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (esort (lsucc lzero))
+   = (defeq/app (defeq/lam defeq/sort-refl ([x] ([h] h))) defeq/sort-refl).
 
 letType/name : name "letType" (is-decl (esort (lsucc lzero)) (defn (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)))).
 

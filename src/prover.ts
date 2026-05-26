@@ -4,8 +4,8 @@
 // values returned here; nothing in this file is part of the trusted base.
 // See plugin-refactor.md and the `Prover` interface in shared.ts.
 
-import type { ProofResult, Prover, TypeWfResult } from "./shared.ts";
-import { bridge, levelToFmt, synth } from "./synth.ts";
+import type { ParsedEnv, ProofResult, Prover, TypeWfResult } from "./shared.ts";
+import { bridge, buildEnvMap, type EnvMap, levelToFmt, synth } from "./synth.ts";
 
 // NullProver discharges nothing: every obligation becomes a HOLE. Running
 // the generator with this prover produces the `.render.elf` view — the
@@ -25,28 +25,42 @@ export const NullProver: Prover = {
   },
 };
 
-// RealProver is the featureful prover used for `.full.elf`. It discharges the
-// closed sort/Π/λ fragment via src/synth.ts (sorts, Π-types, λ-abstractions,
-// bound variables — no constants, reduction, or inductives). Obligations
-// outside the fragment return null (→ a HOLE), so RealProver can only ever
-// turn 🩹 into ✅, never produce an unsound proof. Remaining obligation kinds
-// (ends-in-sort, ctor-positive) are still deferred. See src/synth.ts.
-export const RealProver: Prover = {
-  typeWellFormed({ type, levelParams }): TypeWfResult {
-    const r = synth(type);
-    if (!r || r.ty.kind !== "sort") return null;
-    return { sort: levelToFmt(r.ty.level, levelParams), proof: r.proof };
-  },
-  valueHasType({ value, type }): ProofResult {
-    const r = synth(value);
-    if (!r) return null;
-    const coerce = bridge(r.ty, type);
-    return coerce ? coerce(r.proof) : null;
-  },
-  endsInSort(): ProofResult {
-    return null;
-  },
-  ctorPositive(): ProofResult {
-    return null;
-  },
-};
+// makeRealProver builds the featureful prover for `.full.elf`, backed by the
+// full ParsedEnv for constant lookup and δ-reduction. It discharges:
+//   - closed sort/Π/λ/bvar fragment (always)
+//   - constants via defeq/const + explicit inst-expr witnesses
+//   - applications via defeq/app with codomain substitution
+//   - β-reduction (app of lam) via defeq/beta
+//   - δ-reduction (def unfolding) via defeq/delta
+// Obligations outside these rules return null (→ HOLE), never an unsound proof.
+export function makeRealProver(env: ParsedEnv): Prover {
+  const envMap: EnvMap = buildEnvMap(env);
+
+  return {
+    typeWellFormed({ type, levelParams, isThm }): TypeWfResult {
+      const r = synth(type, envMap);
+      if (!r || r.ty.kind !== "sort") return null;
+      if (isThm) {
+        // Generator emits proof at (esort lzero); coerce synth sort U → lzero.
+        const U = r.ty.level;
+        const lzero: import("./shared.ts").Level = { kind: "zero" };
+        const coerce = bridge({ kind: "sort", level: U }, { kind: "sort", level: lzero }, envMap);
+        if (!coerce) return null;
+        return { sort: levelToFmt(lzero, levelParams), proof: coerce(r.proof) };
+      }
+      return { sort: levelToFmt(r.ty.level, levelParams), proof: r.proof };
+    },
+    valueHasType({ value, type }): ProofResult {
+      const r = synth(value, envMap);
+      if (!r) return null;
+      const coerce = bridge(r.ty, type, envMap);
+      return coerce ? coerce(r.proof) : null;
+    },
+    endsInSort(): ProofResult {
+      return null;
+    },
+    ctorPositive(): ProofResult {
+      return null;
+    },
+  };
+}

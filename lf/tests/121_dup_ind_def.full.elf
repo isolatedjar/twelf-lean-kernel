@@ -31,11 +31,11 @@ dup_ind_def/decl : declared "dup_ind_def" (esort (lsucc lzero)) indt
    = declared/ok dup_ind_def/name (dkind-ok/indt dup_ind_def/type-wf dup_ind_def/ends-in-sort).
 
 %% ctor dup_ind_def.mk (of dup_ind_def)
-%%% HOLE
-dup_ind_def_mk/type-wf-sort : lvl.
+dup_ind_def_mk/type-wf-sort : lvl
+   = (lsucc lzero).
 
-%%% HOLE
-dup_ind_def_mk/type-wf : defeq (econst "dup_ind_def" lnil) (econst "dup_ind_def" lnil) (esort dup_ind_def_mk/type-wf-sort).
+dup_ind_def_mk/type-wf : defeq (econst "dup_ind_def" lnil) (econst "dup_ind_def" lnil) (esort dup_ind_def_mk/type-wf-sort)
+   = (defeq/const dup_ind_def/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
 
 %%% HOLE
 dup_ind_def_mk/positivity : ctor-positive "dup_ind_def" lnil (econst "dup_ind_def" lnil).

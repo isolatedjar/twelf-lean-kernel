@@ -16,14 +16,14 @@ PN/decl : declared "PN" (esort (limax (lsucc (lvar liz)) (lvar liz))) (defn (efo
    = declared/ok PN/name (dkind-ok/defn PN/type-wf PN/value-typed).
 
 %% def PN.succ
-%%% HOLE
-PN_succ/type-wf-sort : lvl.
+PN_succ/type-wf-sort : lvl
+   = (limax (limax (lsucc (lvar liz)) (lvar liz)) (limax (lsucc (lvar liz)) (lvar liz))).
 
-%%% HOLE
-PN_succ/type-wf : defeq (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (econst "PN" (lcons (lvar liz) lnil)))) (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (econst "PN" (lcons (lvar liz) lnil)))) (esort PN_succ/type-wf-sort).
+PN_succ/type-wf : defeq (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (econst "PN" (lcons (lvar liz) lnil)))) (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (econst "PN" (lcons (lvar liz) lnil)))) (esort PN_succ/type-wf-sort)
+   = (defeq/forall (defeq/const PN/decl (inst-expr/sort (lvl-inst/imax (lvl-inst/succ (lvl-inst/var lvl-nth/zero)) (lvl-inst/var lvl-nth/zero)))) ([x] ([h] (defeq/const PN/decl (inst-expr/sort (lvl-inst/imax (lvl-inst/succ (lvl-inst/var lvl-nth/zero)) (lvl-inst/var lvl-nth/zero))))))).
 
-%%% HOLE
-PN_succ/value-typed : defeq (elam (econst "PN" (lcons (lvar liz) lnil)) ([x] (elam (esort (lvar liz)) ([y] (elam (eforall y ([z] y)) ([z] (elam y ([w] (eapp z (eapp (eapp (eapp x y) z) w)))))))))) (elam (econst "PN" (lcons (lvar liz) lnil)) ([x] (elam (esort (lvar liz)) ([y] (elam (eforall y ([z] y)) ([z] (elam y ([w] (eapp z (eapp (eapp (eapp x y) z) w)))))))))) (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (econst "PN" (lcons (lvar liz) lnil)))).
+PN_succ/value-typed : defeq (elam (econst "PN" (lcons (lvar liz) lnil)) ([x] (elam (esort (lvar liz)) ([y] (elam (eforall y ([z] y)) ([z] (elam y ([w] (eapp z (eapp (eapp (eapp x y) z) w)))))))))) (elam (econst "PN" (lcons (lvar liz) lnil)) ([x] (elam (esort (lvar liz)) ([y] (elam (eforall y ([z] y)) ([z] (elam y ([w] (eapp z (eapp (eapp (eapp x y) z) w)))))))))) (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (econst "PN" (lcons (lvar liz) lnil))))
+   = (defeq/conv (defeq/forall (defeq/const PN/decl (inst-expr/sort (lvl-inst/imax (lvl-inst/succ (lvl-inst/var lvl-nth/zero)) (lvl-inst/var lvl-nth/zero)))) ([x] ([h] (defeq/trans (defeq/forall defeq/sort-refl ([y] ([h1] (defeq/forall (defeq/forall h1 ([z] ([h2] h1))) ([z] ([h2] (defeq/forall h1 ([w] ([h3] h1))))))))) (defeq/conv (defeq/sort-eq (lvl-eq/trans (lvl-eq/trans lvl-eq/refl (lvl-eq/symm (lvl-eq/limax-cong lvl-eq/refl lvl-eq/imax-idem))) (lvl-eq/symm (lvl-eq/limax-cong lvl-eq/refl lvl-eq/imax-idem)))) (defeq/symm (defeq/delta PN/decl (inst-expr/sort (lvl-inst/imax (lvl-inst/succ (lvl-inst/var lvl-nth/zero)) (lvl-inst/var lvl-nth/zero))) (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] h))) ([y] ([h1] (inst-expr/forall h ([z] ([h2] h)))))))))))))))) (defeq/lam (defeq/const PN/decl (inst-expr/sort (lvl-inst/imax (lvl-inst/succ (lvl-inst/var lvl-nth/zero)) (lvl-inst/var lvl-nth/zero)))) ([x] ([h] (defeq/lam defeq/sort-refl ([y] ([h1] (defeq/lam (defeq/forall h1 ([z] ([h2] h1))) ([z] ([h2] (defeq/lam h1 ([w] ([h3] (defeq/app h2 (defeq/app (defeq/app (defeq/app (defeq/conv (defeq/delta PN/decl (inst-expr/sort (lvl-inst/imax (lvl-inst/succ (lvl-inst/var lvl-nth/zero)) (lvl-inst/var lvl-nth/zero))) (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] h))) ([y] ([h1] (inst-expr/forall h ([z] ([h2] h)))))))))) h) h1) h2) h3))))))))))))))).
 
 PN_succ/name : name "PN.succ" (is-decl (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (econst "PN" (lcons (lvar liz) lnil)))) (defn (elam (econst "PN" (lcons (lvar liz) lnil)) ([x] (elam (esort (lvar liz)) ([y] (elam (eforall y ([z] y)) ([z] (elam y ([w] (eapp z (eapp (eapp (eapp x y) z) w)))))))))))).
 
@@ -31,14 +31,14 @@ PN_succ/decl : declared "PN.succ" (eforall (econst "PN" (lcons (lvar liz) lnil))
    = declared/ok PN_succ/name (dkind-ok/defn PN_succ/type-wf PN_succ/value-typed).
 
 %% def PN.zero
-%%% HOLE
-PN_zero/type-wf-sort : lvl.
+PN_zero/type-wf-sort : lvl
+   = (limax (lsucc (lvar liz)) (lvar liz)).
 
-%%% HOLE
-PN_zero/type-wf : defeq (econst "PN" (lcons (lvar liz) lnil)) (econst "PN" (lcons (lvar liz) lnil)) (esort PN_zero/type-wf-sort).
+PN_zero/type-wf : defeq (econst "PN" (lcons (lvar liz) lnil)) (econst "PN" (lcons (lvar liz) lnil)) (esort PN_zero/type-wf-sort)
+   = (defeq/const PN/decl (inst-expr/sort (lvl-inst/imax (lvl-inst/succ (lvl-inst/var lvl-nth/zero)) (lvl-inst/var lvl-nth/zero)))).
 
-%%% HOLE
-PN_zero/value-typed : defeq (elam (esort (lvar liz)) ([x] (elam (eforall x ([y] x)) ([y] (elam x ([z] z)))))) (elam (esort (lvar liz)) ([x] (elam (eforall x ([y] x)) ([y] (elam x ([z] z)))))) (econst "PN" (lcons (lvar liz) lnil)).
+PN_zero/value-typed : defeq (elam (esort (lvar liz)) ([x] (elam (eforall x ([y] x)) ([y] (elam x ([z] z)))))) (elam (esort (lvar liz)) ([x] (elam (eforall x ([y] x)) ([y] (elam x ([z] z)))))) (econst "PN" (lcons (lvar liz) lnil))
+   = (defeq/conv (defeq/trans (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall (defeq/forall h ([y] ([h1] h))) ([y] ([h1] (defeq/forall h ([z] ([h2] h))))))))) (defeq/conv (defeq/sort-eq (lvl-eq/trans (lvl-eq/trans lvl-eq/refl (lvl-eq/symm (lvl-eq/limax-cong lvl-eq/refl lvl-eq/imax-idem))) (lvl-eq/symm (lvl-eq/limax-cong lvl-eq/refl lvl-eq/imax-idem)))) (defeq/symm (defeq/delta PN/decl (inst-expr/sort (lvl-inst/imax (lvl-inst/succ (lvl-inst/var lvl-nth/zero)) (lvl-inst/var lvl-nth/zero))) (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] h))) ([y] ([h1] (inst-expr/forall h ([z] ([h2] h))))))))))))) (defeq/lam defeq/sort-refl ([x] ([h] (defeq/lam (defeq/forall h ([y] ([h1] h))) ([y] ([h1] (defeq/lam h ([z] ([h2] h2)))))))))).
 
 PN_zero/name : name "PN.zero" (is-decl (econst "PN" (lcons (lvar liz) lnil)) (defn (elam (esort (lvar liz)) ([x] (elam (eforall x ([y] x)) ([y] (elam x ([z] z)))))))).
 
@@ -46,14 +46,14 @@ PN_zero/decl : declared "PN.zero" (econst "PN" (lcons (lvar liz) lnil)) (defn (e
    = declared/ok PN_zero/name (dkind-ok/defn PN_zero/type-wf PN_zero/value-typed).
 
 %% def PN.lit0
-%%% HOLE
-PN_lit0/type-wf-sort : lvl.
+PN_lit0/type-wf-sort : lvl
+   = (limax (lsucc (lvar liz)) (lvar liz)).
 
-%%% HOLE
-PN_lit0/type-wf : defeq (econst "PN" (lcons (lvar liz) lnil)) (econst "PN" (lcons (lvar liz) lnil)) (esort PN_lit0/type-wf-sort).
+PN_lit0/type-wf : defeq (econst "PN" (lcons (lvar liz) lnil)) (econst "PN" (lcons (lvar liz) lnil)) (esort PN_lit0/type-wf-sort)
+   = (defeq/const PN/decl (inst-expr/sort (lvl-inst/imax (lvl-inst/succ (lvl-inst/var lvl-nth/zero)) (lvl-inst/var lvl-nth/zero)))).
 
-%%% HOLE
-PN_lit0/value-typed : defeq (econst "PN.zero" (lcons (lvar liz) lnil)) (econst "PN.zero" (lcons (lvar liz) lnil)) (econst "PN" (lcons (lvar liz) lnil)).
+PN_lit0/value-typed : defeq (econst "PN.zero" (lcons (lvar liz) lnil)) (econst "PN.zero" (lcons (lvar liz) lnil)) (econst "PN" (lcons (lvar liz) lnil))
+   = (defeq/const PN_zero/decl (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil))).
 
 PN_lit0/name : name "PN.lit0" (is-decl (econst "PN" (lcons (lvar liz) lnil)) (defn (econst "PN.zero" (lcons (lvar liz) lnil)))).
 
@@ -61,14 +61,14 @@ PN_lit0/decl : declared "PN.lit0" (econst "PN" (lcons (lvar liz) lnil)) (defn (e
    = declared/ok PN_lit0/name (dkind-ok/defn PN_lit0/type-wf PN_lit0/value-typed).
 
 %% def PN.lit1
-%%% HOLE
-PN_lit1/type-wf-sort : lvl.
+PN_lit1/type-wf-sort : lvl
+   = (limax (lsucc (lvar liz)) (lvar liz)).
 
-%%% HOLE
-PN_lit1/type-wf : defeq (econst "PN" (lcons (lvar liz) lnil)) (econst "PN" (lcons (lvar liz) lnil)) (esort PN_lit1/type-wf-sort).
+PN_lit1/type-wf : defeq (econst "PN" (lcons (lvar liz) lnil)) (econst "PN" (lcons (lvar liz) lnil)) (esort PN_lit1/type-wf-sort)
+   = (defeq/const PN/decl (inst-expr/sort (lvl-inst/imax (lvl-inst/succ (lvl-inst/var lvl-nth/zero)) (lvl-inst/var lvl-nth/zero)))).
 
-%%% HOLE
-PN_lit1/value-typed : defeq (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econst "PN.lit0" (lcons (lvar liz) lnil))) (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econst "PN.lit0" (lcons (lvar liz) lnil))) (econst "PN" (lcons (lvar liz) lnil)).
+PN_lit1/value-typed : defeq (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econst "PN.lit0" (lcons (lvar liz) lnil))) (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econst "PN.lit0" (lcons (lvar liz) lnil))) (econst "PN" (lcons (lvar liz) lnil))
+   = (defeq/app (defeq/const PN_succ/decl (inst-expr/forall (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)) ([x] ([h] (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)))))) (defeq/const PN_lit0/decl (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)))).
 
 PN_lit1/name : name "PN.lit1" (is-decl (econst "PN" (lcons (lvar liz) lnil)) (defn (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econst "PN.lit0" (lcons (lvar liz) lnil))))).
 
@@ -76,14 +76,14 @@ PN_lit1/decl : declared "PN.lit1" (econst "PN" (lcons (lvar liz) lnil)) (defn (e
    = declared/ok PN_lit1/name (dkind-ok/defn PN_lit1/type-wf PN_lit1/value-typed).
 
 %% def PN.lit2
-%%% HOLE
-PN_lit2/type-wf-sort : lvl.
+PN_lit2/type-wf-sort : lvl
+   = (limax (lsucc (lvar liz)) (lvar liz)).
 
-%%% HOLE
-PN_lit2/type-wf : defeq (econst "PN" (lcons (lvar liz) lnil)) (econst "PN" (lcons (lvar liz) lnil)) (esort PN_lit2/type-wf-sort).
+PN_lit2/type-wf : defeq (econst "PN" (lcons (lvar liz) lnil)) (econst "PN" (lcons (lvar liz) lnil)) (esort PN_lit2/type-wf-sort)
+   = (defeq/const PN/decl (inst-expr/sort (lvl-inst/imax (lvl-inst/succ (lvl-inst/var lvl-nth/zero)) (lvl-inst/var lvl-nth/zero)))).
 
-%%% HOLE
-PN_lit2/value-typed : defeq (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econst "PN.lit1" (lcons (lvar liz) lnil))) (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econst "PN.lit1" (lcons (lvar liz) lnil))) (econst "PN" (lcons (lvar liz) lnil)).
+PN_lit2/value-typed : defeq (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econst "PN.lit1" (lcons (lvar liz) lnil))) (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econst "PN.lit1" (lcons (lvar liz) lnil))) (econst "PN" (lcons (lvar liz) lnil))
+   = (defeq/app (defeq/const PN_succ/decl (inst-expr/forall (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)) ([x] ([h] (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)))))) (defeq/const PN_lit1/decl (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)))).
 
 PN_lit2/name : name "PN.lit2" (is-decl (econst "PN" (lcons (lvar liz) lnil)) (defn (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econst "PN.lit1" (lcons (lvar liz) lnil))))).
 
@@ -91,14 +91,14 @@ PN_lit2/decl : declared "PN.lit2" (econst "PN" (lcons (lvar liz) lnil)) (defn (e
    = declared/ok PN_lit2/name (dkind-ok/defn PN_lit2/type-wf PN_lit2/value-typed).
 
 %% def PN.add
-%%% HOLE
-PN_add/type-wf-sort : lvl.
+PN_add/type-wf-sort : lvl
+   = (limax (limax (lsucc (lvar liz)) (lvar liz)) (limax (limax (lsucc (lvar liz)) (lvar liz)) (limax (lsucc (lvar liz)) (lvar liz)))).
 
-%%% HOLE
-PN_add/type-wf : defeq (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (econst "PN" (lcons (lvar liz) lnil)))))) (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (econst "PN" (lcons (lvar liz) lnil)))))) (esort PN_add/type-wf-sort).
+PN_add/type-wf : defeq (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (econst "PN" (lcons (lvar liz) lnil)))))) (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (econst "PN" (lcons (lvar liz) lnil)))))) (esort PN_add/type-wf-sort)
+   = (defeq/forall (defeq/const PN/decl (inst-expr/sort (lvl-inst/imax (lvl-inst/succ (lvl-inst/var lvl-nth/zero)) (lvl-inst/var lvl-nth/zero)))) ([x] ([h] (defeq/forall (defeq/const PN/decl (inst-expr/sort (lvl-inst/imax (lvl-inst/succ (lvl-inst/var lvl-nth/zero)) (lvl-inst/var lvl-nth/zero)))) ([y] ([h1] (defeq/const PN/decl (inst-expr/sort (lvl-inst/imax (lvl-inst/succ (lvl-inst/var lvl-nth/zero)) (lvl-inst/var lvl-nth/zero)))))))))).
 
-%%% HOLE
-PN_add/value-typed : defeq (elam (econst "PN" (lcons (lvar liz) lnil)) ([x] (elam (econst "PN" (lcons (lvar liz) lnil)) ([y] (elam (esort (lvar liz)) ([z] (elam (eforall z ([w] z)) ([w] (elam z ([x1] (eapp (eapp (eapp x z) w) (eapp (eapp (eapp y z) w) x1)))))))))))) (elam (econst "PN" (lcons (lvar liz) lnil)) ([x] (elam (econst "PN" (lcons (lvar liz) lnil)) ([y] (elam (esort (lvar liz)) ([z] (elam (eforall z ([w] z)) ([w] (elam z ([x1] (eapp (eapp (eapp x z) w) (eapp (eapp (eapp y z) w) x1)))))))))))) (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (econst "PN" (lcons (lvar liz) lnil)))))).
+PN_add/value-typed : defeq (elam (econst "PN" (lcons (lvar liz) lnil)) ([x] (elam (econst "PN" (lcons (lvar liz) lnil)) ([y] (elam (esort (lvar liz)) ([z] (elam (eforall z ([w] z)) ([w] (elam z ([x1] (eapp (eapp (eapp x z) w) (eapp (eapp (eapp y z) w) x1)))))))))))) (elam (econst "PN" (lcons (lvar liz) lnil)) ([x] (elam (econst "PN" (lcons (lvar liz) lnil)) ([y] (elam (esort (lvar liz)) ([z] (elam (eforall z ([w] z)) ([w] (elam z ([x1] (eapp (eapp (eapp x z) w) (eapp (eapp (eapp y z) w) x1)))))))))))) (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (econst "PN" (lcons (lvar liz) lnil))))))
+   = (defeq/conv (defeq/forall (defeq/const PN/decl (inst-expr/sort (lvl-inst/imax (lvl-inst/succ (lvl-inst/var lvl-nth/zero)) (lvl-inst/var lvl-nth/zero)))) ([x] ([h] (defeq/forall (defeq/const PN/decl (inst-expr/sort (lvl-inst/imax (lvl-inst/succ (lvl-inst/var lvl-nth/zero)) (lvl-inst/var lvl-nth/zero)))) ([y] ([h1] (defeq/trans (defeq/forall defeq/sort-refl ([z] ([h2] (defeq/forall (defeq/forall h2 ([w] ([h3] h2))) ([w] ([h3] (defeq/forall h2 ([x1] ([h4] h2))))))))) (defeq/conv (defeq/sort-eq (lvl-eq/trans (lvl-eq/trans lvl-eq/refl (lvl-eq/symm (lvl-eq/limax-cong lvl-eq/refl lvl-eq/imax-idem))) (lvl-eq/symm (lvl-eq/limax-cong lvl-eq/refl lvl-eq/imax-idem)))) (defeq/symm (defeq/delta PN/decl (inst-expr/sort (lvl-inst/imax (lvl-inst/succ (lvl-inst/var lvl-nth/zero)) (lvl-inst/var lvl-nth/zero))) (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] h))) ([y] ([h1] (inst-expr/forall h ([z] ([h2] h))))))))))))))))))) (defeq/lam (defeq/const PN/decl (inst-expr/sort (lvl-inst/imax (lvl-inst/succ (lvl-inst/var lvl-nth/zero)) (lvl-inst/var lvl-nth/zero)))) ([x] ([h] (defeq/lam (defeq/const PN/decl (inst-expr/sort (lvl-inst/imax (lvl-inst/succ (lvl-inst/var lvl-nth/zero)) (lvl-inst/var lvl-nth/zero)))) ([y] ([h1] (defeq/lam defeq/sort-refl ([z] ([h2] (defeq/lam (defeq/forall h2 ([w] ([h3] h2))) ([w] ([h3] (defeq/lam h2 ([x1] ([h4] (defeq/app (defeq/app (defeq/app (defeq/conv (defeq/delta PN/decl (inst-expr/sort (lvl-inst/imax (lvl-inst/succ (lvl-inst/var lvl-nth/zero)) (lvl-inst/var lvl-nth/zero))) (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] h))) ([y] ([h1] (inst-expr/forall h ([z] ([h2] h)))))))))) h) h2) h3) (defeq/app (defeq/app (defeq/app (defeq/conv (defeq/delta PN/decl (inst-expr/sort (lvl-inst/imax (lvl-inst/succ (lvl-inst/var lvl-nth/zero)) (lvl-inst/var lvl-nth/zero))) (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] h))) ([y] ([h1] (inst-expr/forall h ([z] ([h2] h)))))))))) h1) h2) h3) h4)))))))))))))))))).
 
 PN_add/name : name "PN.add" (is-decl (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (econst "PN" (lcons (lvar liz) lnil)))))) (defn (elam (econst "PN" (lcons (lvar liz) lnil)) ([x] (elam (econst "PN" (lcons (lvar liz) lnil)) ([y] (elam (esort (lvar liz)) ([z] (elam (eforall z ([w] z)) ([w] (elam z ([x1] (eapp (eapp (eapp x z) w) (eapp (eapp (eapp y z) w) x1)))))))))))))).
 
@@ -106,8 +106,8 @@ PN_add/decl : declared "PN.add" (eforall (econst "PN" (lcons (lvar liz) lnil)) (
    = declared/ok PN_add/name (dkind-ok/defn PN_add/type-wf PN_add/value-typed).
 
 %% thm peano2
-%%% HOLE
-peano2/type-wf : defeq (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero))) ([x] (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp x (econst "PN.lit2" (lcons (lvar liz) lnil))))))) (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero))) ([x] (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp x (econst "PN.lit2" (lcons (lvar liz) lnil))))))) (esort lzero).
+peano2/type-wf : defeq (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero))) ([x] (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp x (econst "PN.lit2" (lcons (lvar liz) lnil))))))) (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero))) ([x] (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp x (econst "PN.lit2" (lcons (lvar liz) lnil))))))) (esort lzero)
+   = (defeq/conv (defeq/sort-eq (lvl-eq/trans (lvl-eq/limax-cong lvl-eq/imax-succ lvl-eq/refl) (lvl-eq/trans (lvl-eq/limax-cong lvl-eq/refl lvl-eq/imax-zero) (lvl-eq/trans lvl-eq/imax-zero lvl-eq/refl)))) (defeq/forall (defeq/forall (defeq/const PN/decl (inst-expr/sort (lvl-inst/imax (lvl-inst/succ (lvl-inst/var lvl-nth/zero)) (lvl-inst/var lvl-nth/zero)))) ([x] ([h] defeq/sort-refl))) ([x] ([h] (defeq/forall (defeq/forall (defeq/const PN/decl (inst-expr/sort (lvl-inst/imax (lvl-inst/succ (lvl-inst/var lvl-nth/zero)) (lvl-inst/var lvl-nth/zero)))) ([y] ([h1] (defeq/app h h1)))) ([y] ([h1] (defeq/app h (defeq/const PN_lit2/decl (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil))))))))))).
 
 %%% HOLE
 peano2/value-typed : defeq (elam (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero))) ([x] (elam (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp y (eapp (eapp (econst "PN.add" (lcons (lvar liz) lnil)) (econst "PN.lit1" (lcons (lvar liz) lnil))) (econst "PN.lit1" (lcons (lvar liz) lnil)))))))) (elam (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero))) ([x] (elam (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp y (eapp (eapp (econst "PN.add" (lcons (lvar liz) lnil)) (econst "PN.lit1" (lcons (lvar liz) lnil))) (econst "PN.lit1" (lcons (lvar liz) lnil)))))))) (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero))) ([x] (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp x (econst "PN.lit2" (lcons (lvar liz) lnil))))))).
