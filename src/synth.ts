@@ -79,6 +79,35 @@ function exprEq(a: Expr, b: Expr): boolean {
   }
 }
 
+// de Bruijn shift: lift free variables (index >= cutoff) by `by`. Used to bring
+// a binder's stored type into the scope of a deeper bound-variable reference.
+function shift(e: Expr, by: number, cutoff = 0): Expr {
+  switch (e.kind) {
+    case "bvar":
+      return e.deBruijn >= cutoff ? { kind: "bvar", deBruijn: e.deBruijn + by } : e;
+    case "sort":
+    case "const":
+    case "natLit":
+    case "strLit":
+      return e;
+    case "lam":
+      return { ...e, type: shift(e.type, by, cutoff), body: shift(e.body, by, cutoff + 1) };
+    case "forallE":
+      return { ...e, type: shift(e.type, by, cutoff), body: shift(e.body, by, cutoff + 1) };
+    case "app":
+      return { kind: "app", fn: shift(e.fn, by, cutoff), arg: shift(e.arg, by, cutoff) };
+    case "letE":
+      return {
+        ...e,
+        type: shift(e.type, by, cutoff),
+        value: shift(e.value, by, cutoff),
+        body: shift(e.body, by, cutoff + 1),
+      };
+    case "proj":
+      return { ...e, struct: shift(e.struct, by, cutoff) };
+  }
+}
+
 // --- level → Fmt (the one place a level is emitted as a proof term) ------
 //
 // Mirrors lfLevel (render.ts) but builds an Fmt tree rather than text, so the
@@ -112,53 +141,135 @@ export function levelToFmt(l: Level, levelParams: Name[]): Fmt {
 
 // --- directed lvl-eq derivation -----------------------------------------
 //
-// Build a proof of `lvl-eq a b` from the lvl-eq rules in tcb.elf. Directed
-// (no symm/trans search): match the identities, else recurse through the
-// congruences. Returns null when no rule applies (→ the obligation stays a
-// HOLE, never a wrong proof).
+// Build a proof of `lvl-eq a b` from the lvl-eq rules in tcb.elf. Directed:
+// reduce each side toward normal form (reduceLevel/stepLevel), joining the
+// chains with lvl-eq/trans (and lvl-eq/symm for the `to` side), then fall back
+// to structural congruence. Returns null when no rule applies (→ the obligation
+// stays a HOLE, never a wrong proof).
+//
+// NOTE: this is a deliberately incomplete stopgap, NOT a decision procedure —
+// both this and the underlying tcb.elf `lvl-eq` family (an ad-hoc identity set)
+// are slated for replacement by a complete treatment (cf. lean4lean / mm0-lean).
 
 function sortLevel(e: Expr): Level | null {
   return e.kind === "sort" ? e.level : null;
 }
 
-export function proveLvlEq(a: Level, b: Level): Fmt | null {
+// One-step top-level reduction; each rule corresponds to an lvl-eq constructor
+// in tcb.elf. Returns null when no top-level rule applies.
+function reduceLevel(l: Level): { result: Level; proof: Fmt } | null {
+  if (l.kind === "imax" && l.r.kind === "zero") {
+    return { result: { kind: "zero" }, proof: atom("lvl-eq/imax-zero") };
+  }
+  if (l.kind === "imax" && l.r.kind === "succ") {
+    return { result: { kind: "max", l: l.l, r: l.r }, proof: atom("lvl-eq/imax-succ") };
+  }
+  if (l.kind === "imax" && levelEq(l.l, l.r)) {
+    return { result: l.l, proof: atom("lvl-eq/imax-idem") };
+  }
+  if (l.kind === "max" && levelEq(l.l, l.r)) {
+    return { result: l.l, proof: atom("lvl-eq/max-idem") };
+  }
+  if (l.kind === "max" && l.l.kind === "zero") {
+    return { result: l.r, proof: atom("lvl-eq/max-zero-l") };
+  }
+  if (l.kind === "max" && l.r.kind === "zero") {
+    return { result: l.l, proof: atom("lvl-eq/max-zero-r") };
+  }
+  if (l.kind === "max" && l.l.kind === "succ" && l.r.kind === "succ") {
+    return {
+      result: { kind: "succ", arg: { kind: "max", l: l.l.arg, r: l.r.arg } },
+      proof: atom("lvl-eq/max-succ"),
+    };
+  }
+  return null;
+}
+
+// One-step reduction at any position, wrapping a sub-position step in the
+// matching congruence rule. Returns null only when `l` is in normal form.
+function stepLevel(l: Level): { result: Level; proof: Fmt } | null {
+  const top = reduceLevel(l);
+  if (top !== null) return top;
+  switch (l.kind) {
+    case "zero":
+    case "param":
+      return null;
+    case "succ": {
+      const inner = stepLevel(l.arg);
+      if (inner === null) return null;
+      return {
+        result: { kind: "succ", arg: inner.result },
+        proof: app(atom("lvl-eq/lsucc-cong"), inner.proof),
+      };
+    }
+    case "max": {
+      const ls = stepLevel(l.l);
+      if (ls !== null) {
+        return {
+          result: { kind: "max", l: ls.result, r: l.r },
+          proof: app(atom("lvl-eq/lmax-cong"), ls.proof, atom("lvl-eq/refl")),
+        };
+      }
+      const rs = stepLevel(l.r);
+      if (rs !== null) {
+        return {
+          result: { kind: "max", l: l.l, r: rs.result },
+          proof: app(atom("lvl-eq/lmax-cong"), atom("lvl-eq/refl"), rs.proof),
+        };
+      }
+      return null;
+    }
+    case "imax": {
+      const ls = stepLevel(l.l);
+      if (ls !== null) {
+        return {
+          result: { kind: "imax", l: ls.result, r: l.r },
+          proof: app(atom("lvl-eq/limax-cong"), ls.proof, atom("lvl-eq/refl")),
+        };
+      }
+      const rs = stepLevel(l.r);
+      if (rs !== null) {
+        return {
+          result: { kind: "imax", l: l.l, r: rs.result },
+          proof: app(atom("lvl-eq/limax-cong"), atom("lvl-eq/refl"), rs.proof),
+        };
+      }
+      return null;
+    }
+  }
+}
+
+export function proveLvlEq(a: Level, b: Level, depth = 0): Fmt | null {
+  if (depth > 12) return null;
   if (levelEq(a, b)) return atom("lvl-eq/refl");
 
-  // lvl-eq/imax-zero : lvl-eq (limax L lzero) lzero.
-  if (a.kind === "imax" && a.r.kind === "zero" && b.kind === "zero") {
-    return atom("lvl-eq/imax-zero");
+  // Reduce `a` one step and recurse: lvl-eq/trans of the step with the rest.
+  const ra = stepLevel(a);
+  if (ra !== null) {
+    const rest = proveLvlEq(ra.result, b, depth + 1);
+    if (rest !== null) return app(atom("lvl-eq/trans"), ra.proof, rest);
   }
-  // lvl-eq/imax-idem : lvl-eq (limax L L) L.
-  if (a.kind === "imax" && levelEq(a.l, a.r) && levelEq(b, a.l)) {
-    return atom("lvl-eq/imax-idem");
+  // Reduce `b` one step and recurse, flipping the step via lvl-eq/symm.
+  const rb = stepLevel(b);
+  if (rb !== null) {
+    const rest = proveLvlEq(a, rb.result, depth + 1);
+    if (rest !== null) {
+      return app(atom("lvl-eq/trans"), rest, app(atom("lvl-eq/symm"), rb.proof));
+    }
   }
-  // lvl-eq/max-idem : lvl-eq (lmax L L) L.
-  if (a.kind === "max" && levelEq(a.l, a.r) && levelEq(b, a.l)) {
-    return atom("lvl-eq/max-idem");
-  }
-  // lvl-eq/max-zero-l : lvl-eq (lmax lzero L) L.
-  if (a.kind === "max" && a.l.kind === "zero" && levelEq(b, a.r)) {
-    return atom("lvl-eq/max-zero-l");
-  }
-  // lvl-eq/max-zero-r : lvl-eq (lmax L lzero) L.
-  if (a.kind === "max" && a.r.kind === "zero" && levelEq(b, a.l)) {
-    return atom("lvl-eq/max-zero-r");
-  }
-  // lvl-eq/lsucc-cong : lvl-eq L1 L2 -> lvl-eq (lsucc L1) (lsucc L2).
+  // Structural congruence (when neither side reduces but heads agree).
   if (a.kind === "succ" && b.kind === "succ") {
-    const sub = proveLvlEq(a.arg, b.arg);
+    const sub = proveLvlEq(a.arg, b.arg, depth + 1);
     return sub && app(atom("lvl-eq/lsucc-cong"), sub);
   }
-  // lvl-eq/limax-cong : congruence on both arguments.
   if (a.kind === "imax" && b.kind === "imax") {
-    const l = proveLvlEq(a.l, b.l);
-    const r = proveLvlEq(a.r, b.r);
+    const l = proveLvlEq(a.l, b.l, depth + 1);
+    const r = proveLvlEq(a.r, b.r, depth + 1);
     return l && r && app(atom("lvl-eq/limax-cong"), l, r);
   }
-  // lvl-eq/lmax-cong : congruence on both arguments.
   if (a.kind === "max" && b.kind === "max") {
-    const l = proveLvlEq(a.l, b.l);
-    const r = proveLvlEq(a.r, b.r);
+    const l = proveLvlEq(a.l, b.l, depth + 1);
+    const r = proveLvlEq(a.r, b.r, depth + 1);
     return l && r && app(atom("lvl-eq/lmax-cong"), l, r);
   }
   return null;
@@ -166,21 +277,43 @@ export function proveLvlEq(a: Level, b: Level): Fmt | null {
 
 // --- type coercion ------------------------------------------------------
 //
-// Given a proof of `defeq E E from`, return a wrapper producing a proof of
-// `defeq E E to`. Identity when the types are syntactically equal; for two
-// sorts, retype via defeq/conv + defeq/sort-eq using a lvl-eq derivation.
-// (Only sort-to-sort coercion is needed in the closed fragment.)
+// `bridgeProof(from, to)` builds a proof of `defeq from to (esort _)` — that the
+// two TYPES are definitionally equal at some sort. Two sorts: defeq/sort-eq over
+// a lvl-eq derivation. Two Π-types: defeq/forall congruence — bridge the domains,
+// then the codomains under a fresh `defeq x x from.type` hypothesis (the
+// hypothesis is typed at the left/`from` domain, per defeq/forall in tcb.elf).
+// `bridge(from, to)` turns that into a wrapper retyping a `defeq E E from` proof
+// into `defeq E E to` via defeq/conv. Anything else → null (stays a HOLE).
 
-export function bridge(from: Expr, to: Expr): ((pf: Fmt) => Fmt) | null {
-  if (exprEq(from, to)) return (pf) => pf;
+function bridgeProof(from: Expr, to: Expr, used: string[], depth = 0): Fmt | null {
+  if (depth > 6) return null;
+
   const lf = sortLevel(from);
   const lt = sortLevel(to);
   if (lf && lt) {
     const le = proveLvlEq(lf, lt);
-    if (!le) return null;
-    return (pf) => app(atom("defeq/conv"), app(atom("defeq/sort-eq"), le), pf);
+    return le && app(atom("defeq/sort-eq"), le);
   }
+
+  if (from.kind === "forallE" && to.kind === "forallE") {
+    const dom = bridgeProof(from.type, to.type, used, depth + 1);
+    if (!dom) return null;
+    const x = freshVar(used);
+    const usedX = [x, ...used];
+    const h = freshHyp(usedX);
+    const body = bridgeProof(from.body, to.body, [h, ...usedX], depth + 1);
+    if (!body) return null;
+    return app(atom("defeq/forall"), dom, lam(x, lam(h, body)));
+  }
+
   return null;
+}
+
+export function bridge(from: Expr, to: Expr): ((pf: Fmt) => Fmt) | null {
+  if (exprEq(from, to)) return (pf) => pf;
+  const p = bridgeProof(from, to, []);
+  if (!p) return null;
+  return (pf) => app(atom("defeq/conv"), p, pf);
 }
 
 // --- type synthesis -----------------------------------------------------
@@ -222,7 +355,9 @@ function synthRec(e: Expr, scope: Hyp[], used: string[]): Synthed | null {
     case "bvar": {
       const h = scope[e.deBruijn];
       if (h === undefined) return null;
-      return { ty: h.ty, proof: atom(h.hyp) };
+      // The stored type was captured `e.deBruijn + 1` binders shallower; shift
+      // its free variables into the current (deeper) scope.
+      return { ty: shift(h.ty, e.deBruijn + 1), proof: atom(h.hyp) };
     }
 
     case "forallE": {

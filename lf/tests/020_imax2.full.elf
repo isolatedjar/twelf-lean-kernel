@@ -7,8 +7,8 @@ imax2/type-wf-sort : lvl
 imax2/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc lzero))))) (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc lzero))))) (esort imax2/type-wf-sort)
    = (defeq/forall defeq/sort-refl ([x] ([h] defeq/sort-refl))).
 
-%%% HOLE
-imax2/value-typed : defeq (elam (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] x)))) (elam (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] x)))) (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc lzero))))).
+imax2/value-typed : defeq (elam (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] x)))) (elam (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] x)))) (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc lzero)))))
+   = (defeq/conv (defeq/forall (defeq/sort-eq lvl-eq/refl) ([x] ([h] (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-succ (lvl-eq/trans lvl-eq/max-succ (lvl-eq/trans (lvl-eq/lsucc-cong lvl-eq/max-zero-r) lvl-eq/refl))))))) (defeq/lam defeq/sort-refl ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] h))))))).
 
 imax2/name : name "imax2" (is-decl (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc lzero))))) (defn (elam (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] x)))))).
 
