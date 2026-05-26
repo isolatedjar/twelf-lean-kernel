@@ -8,9 +8,9 @@
 // constants, reduction, or inductives). Anything outside the fragment yields
 // `null` (→ a HOLE), so it can only ever turn 🩹 into ✅, never regress.
 
+import { freshVar } from "./render.ts";
 import type { Expr, Fmt, Level, Name } from "./shared.ts";
 import { app, atom, lam, nameToString } from "./shared.ts";
-import { freshVar } from "./render.ts";
 
 const ANON: Name = { kind: "anon" };
 

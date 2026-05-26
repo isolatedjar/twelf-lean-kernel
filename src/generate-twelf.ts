@@ -211,7 +211,9 @@ function generateDecl(prover: Prover, d: Decl): void {
   if (d.kind !== "inductive") {
     const lpNames = d.levelParams.map(nameToString);
     if (new Set(lpNames).size < lpNames.length) {
-      skip(`${d.kind} ${nameToString(d.name)} — duplicate universe parameter names [${lpNames.join(", ")}]`);
+      skip(
+        `${d.kind} ${nameToString(d.name)} — duplicate universe parameter names [${lpNames.join(", ")}]`,
+      );
       return;
     }
   }
