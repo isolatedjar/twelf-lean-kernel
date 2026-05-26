@@ -7,8 +7,8 @@ PN/type-wf-sort : lvl
 PN/type-wf : defeq (esort (limax (lsucc (lvar liz)) (lvar liz))) (esort (limax (lsucc (lvar liz)) (lvar liz))) (esort PN/type-wf-sort)
    = defeq/sort-refl.
 
-%%% HOLE
-PN/value-typed : defeq (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] x)) ([y] (eforall x ([z] x)))))) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] x)) ([y] (eforall x ([z] x)))))) (esort (limax (lsucc (lvar liz)) (lvar liz))).
+PN/value-typed : defeq (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] x)) ([y] (eforall x ([z] x)))))) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] x)) ([y] (eforall x ([z] x)))))) (esort (limax (lsucc (lvar liz)) (lvar liz)))
+   = (defeq/conv (defeq/sort-eq (lvl-eq/trans (lvl-eq/limax-cong lvl-eq/refl lvl-eq/imax-idem) (lvl-eq/trans (lvl-eq/limax-cong lvl-eq/refl lvl-eq/imax-idem) lvl-eq/refl))) (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall (defeq/forall h ([y] ([h1] h))) ([y] ([h1] (defeq/forall h ([z] ([h2] h)))))))))).
 
 PN/name : name "PN" (is-decl (esort (limax (lsucc (lvar liz)) (lvar liz))) (defn (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] x)) ([y] (eforall x ([z] x)))))))).
 

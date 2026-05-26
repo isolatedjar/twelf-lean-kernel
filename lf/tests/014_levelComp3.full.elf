@@ -7,8 +7,8 @@ levelComp3/type-wf-sort : lvl
 levelComp3/type-wf : defeq (esort (lsucc (lsucc (lsucc lzero)))) (esort (lsucc (lsucc (lsucc lzero)))) (esort levelComp3/type-wf-sort)
    = defeq/sort-refl.
 
-%%% HOLE
-levelComp3/value-typed : defeq (esort (limax (lsucc (lsucc lzero)) (lsucc lzero))) (esort (limax (lsucc (lsucc lzero)) (lsucc lzero))) (esort (lsucc (lsucc (lsucc lzero)))).
+levelComp3/value-typed : defeq (esort (limax (lsucc (lsucc lzero)) (lsucc lzero))) (esort (limax (lsucc (lsucc lzero)) (lsucc lzero))) (esort (lsucc (lsucc (lsucc lzero))))
+   = (defeq/conv (defeq/sort-eq (lvl-eq/trans (lvl-eq/lsucc-cong lvl-eq/imax-succ) (lvl-eq/trans (lvl-eq/lsucc-cong lvl-eq/max-succ) (lvl-eq/trans (lvl-eq/lsucc-cong (lvl-eq/lsucc-cong lvl-eq/max-zero-r)) lvl-eq/refl)))) defeq/sort-refl).
 
 levelComp3/name : name "levelComp3" (is-decl (esort (lsucc (lsucc (lsucc lzero)))) (defn (esort (limax (lsucc (lsucc lzero)) (lsucc lzero))))).
 
