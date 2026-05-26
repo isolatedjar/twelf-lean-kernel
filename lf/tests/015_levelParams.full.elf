@@ -16,14 +16,14 @@ levelParamF/decl : declared "levelParamF" (eforall (esort (lvar liz)) ([x] (efor
    = declared/ok levelParamF/name (dkind-ok/defn levelParamF/type-wf levelParamF/value-typed).
 
 %% def levelParams
-%%% HOLE
-levelParams/type-wf-sort : lvl.
+levelParams/type-wf-sort : lvl
+   = (lsucc lzero).
 
-%%% HOLE
-levelParams/type-wf : defeq (eapp (eapp (econst "levelParamF" (lcons (lsucc lzero) lnil)) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))) (eapp (eapp (econst "levelParamF" (lcons (lsucc lzero) lnil)) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))) (esort levelParams/type-wf-sort).
+levelParams/type-wf : defeq (eapp (eapp (econst "levelParamF" (lcons (lsucc lzero) lnil)) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))) (eapp (eapp (econst "levelParamF" (lcons (lsucc lzero) lnil)) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))) (esort levelParams/type-wf-sort)
+   = (defeq/app (defeq/app (defeq/const levelParamF/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([y] ([h1] (inst-expr/sort (lvl-inst/var lvl-nth/zero))))))))) defeq/sort-refl) (defeq/conv (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-succ (lvl-eq/trans lvl-eq/max-idem lvl-eq/refl))) (defeq/forall defeq/sort-refl ([x] ([h] defeq/sort-refl))))).
 
-%%% HOLE
-levelParams/value-typed : defeq (eforall (esort lzero) ([x] x)) (eforall (esort lzero) ([x] x)) (eapp (eapp (econst "levelParamF" (lcons (lsucc lzero) lnil)) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))).
+levelParams/value-typed : defeq (eforall (esort lzero) ([x] x)) (eforall (esort lzero) ([x] x)) (eapp (eapp (econst "levelParamF" (lcons (lsucc lzero) lnil)) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero))))
+   = (defeq/conv (defeq/trans (defeq/trans (defeq/trans (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-zero lvl-eq/refl)) (defeq/conv (defeq/sort-eq (lvl-eq/trans lvl-eq/refl (lvl-eq/symm (lvl-eq/lsucc-cong lvl-eq/imax-zero)))) (defeq/symm (defeq/beta ([x] ([h] defeq/sort-refl)) (defeq/conv (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-succ (lvl-eq/trans lvl-eq/max-idem lvl-eq/refl))) (defeq/forall defeq/sort-refl ([x] ([h] defeq/sort-refl)))))))) (defeq/conv (defeq/sort-eq (lvl-eq/trans lvl-eq/refl (lvl-eq/symm (lvl-eq/lsucc-cong lvl-eq/imax-zero)))) (defeq/symm (defeq/app (defeq/beta ([x] ([h] (defeq/lam defeq/sort-refl ([y] ([h1] h))))) defeq/sort-refl) (defeq/conv (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-succ (lvl-eq/trans lvl-eq/max-idem lvl-eq/refl))) (defeq/forall defeq/sort-refl ([x] ([h] defeq/sort-refl)))))))) (defeq/conv (defeq/sort-eq (lvl-eq/trans lvl-eq/refl (lvl-eq/symm (lvl-eq/lsucc-cong lvl-eq/imax-zero)))) (defeq/symm (defeq/app (defeq/app (defeq/delta levelParamF/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([y] ([h1] (inst-expr/sort (lvl-inst/var lvl-nth/zero)))))))) (inst-expr/lam (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/lam (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([y] ([h1] h))))))) defeq/sort-refl) (defeq/conv (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-succ (lvl-eq/trans lvl-eq/max-idem lvl-eq/refl))) (defeq/forall defeq/sort-refl ([x] ([h] defeq/sort-refl)))))))) (defeq/forall defeq/sort-refl ([x] ([h] h)))).
 
 levelParams/name : name "levelParams" (is-decl (eapp (eapp (econst "levelParamF" (lcons (lsucc lzero) lnil)) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))) (defn (eforall (esort lzero) ([x] x)))).
 

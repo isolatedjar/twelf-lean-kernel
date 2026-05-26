@@ -16,14 +16,14 @@ constType/decl : declared "constType" (eforall (esort (lsucc lzero)) ([x] (efora
    = declared/ok constType/name (dkind-ok/defn constType/type-wf constType/value-typed).
 
 %% def betaReduction
-%%% HOLE
-betaReduction/type-wf-sort : lvl.
+betaReduction/type-wf-sort : lvl
+   = (lsucc lzero).
 
-%%% HOLE
-betaReduction/type-wf : defeq (eapp (eapp (econst "constType" lnil) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))) (eapp (eapp (econst "constType" lnil) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))) (esort betaReduction/type-wf-sort).
+betaReduction/type-wf : defeq (eapp (eapp (econst "constType" lnil) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))) (eapp (eapp (econst "constType" lnil) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))) (esort betaReduction/type-wf-sort)
+   = (defeq/app (defeq/app (defeq/const constType/decl (inst-expr/forall (inst-expr/sort (lvl-inst/succ lvl-inst/zero)) ([x] ([h] (inst-expr/forall (inst-expr/sort (lvl-inst/succ lvl-inst/zero)) ([y] ([h1] (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))))))) defeq/sort-refl) (defeq/conv (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-succ (lvl-eq/trans lvl-eq/max-idem lvl-eq/refl))) (defeq/forall defeq/sort-refl ([x] ([h] defeq/sort-refl))))).
 
-%%% HOLE
-betaReduction/value-typed : defeq (eforall (esort lzero) ([x] x)) (eforall (esort lzero) ([x] x)) (eapp (eapp (econst "constType" lnil) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))).
+betaReduction/value-typed : defeq (eforall (esort lzero) ([x] x)) (eforall (esort lzero) ([x] x)) (eapp (eapp (econst "constType" lnil) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero))))
+   = (defeq/conv (defeq/trans (defeq/trans (defeq/trans (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-zero lvl-eq/refl)) (defeq/conv (defeq/sort-eq (lvl-eq/trans lvl-eq/refl (lvl-eq/symm (lvl-eq/lsucc-cong lvl-eq/imax-zero)))) (defeq/symm (defeq/beta ([x] ([h] defeq/sort-refl)) (defeq/conv (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-succ (lvl-eq/trans lvl-eq/max-idem lvl-eq/refl))) (defeq/forall defeq/sort-refl ([x] ([h] defeq/sort-refl)))))))) (defeq/conv (defeq/sort-eq (lvl-eq/trans lvl-eq/refl (lvl-eq/symm (lvl-eq/lsucc-cong lvl-eq/imax-zero)))) (defeq/symm (defeq/app (defeq/beta ([x] ([h] (defeq/lam defeq/sort-refl ([y] ([h1] h))))) defeq/sort-refl) (defeq/conv (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-succ (lvl-eq/trans lvl-eq/max-idem lvl-eq/refl))) (defeq/forall defeq/sort-refl ([x] ([h] defeq/sort-refl)))))))) (defeq/conv (defeq/sort-eq (lvl-eq/trans lvl-eq/refl (lvl-eq/symm (lvl-eq/lsucc-cong lvl-eq/imax-zero)))) (defeq/symm (defeq/app (defeq/app (defeq/delta constType/decl (inst-expr/forall (inst-expr/sort (lvl-inst/succ lvl-inst/zero)) ([x] ([h] (inst-expr/forall (inst-expr/sort (lvl-inst/succ lvl-inst/zero)) ([y] ([h1] (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))))) (inst-expr/lam (inst-expr/sort (lvl-inst/succ lvl-inst/zero)) ([x] ([h] (inst-expr/lam (inst-expr/sort (lvl-inst/succ lvl-inst/zero)) ([y] ([h1] h))))))) defeq/sort-refl) (defeq/conv (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-succ (lvl-eq/trans lvl-eq/max-idem lvl-eq/refl))) (defeq/forall defeq/sort-refl ([x] ([h] defeq/sort-refl)))))))) (defeq/forall defeq/sort-refl ([x] ([h] h)))).
 
 betaReduction/name : name "betaReduction" (is-decl (eapp (eapp (econst "constType" lnil) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))) (defn (eforall (esort lzero) ([x] x)))).
 

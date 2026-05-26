@@ -177,7 +177,8 @@ export type TypeWfResult = { sort: Fmt; proof: Fmt } | null;
 // *type*, the prover only supplies the *proof*.
 export interface Prover {
   // defeq T T (esort U) — T is a well-formed type; U is its (synthesized) sort.
-  typeWellFormed(ctx: { type: Expr; levelParams: Name[] }): TypeWfResult;
+  // For thm declarations, isThm=true and the generator uses the proof at (esort lzero).
+  typeWellFormed(ctx: { type: Expr; levelParams: Name[]; isThm?: boolean }): TypeWfResult;
   // defeq V V T — value V has type T.
   valueHasType(ctx: { value: Expr; type: Expr; levelParams: Name[] }): ProofResult;
   // ends-in-sort T — T is a Π-chain ending in a sort (inductive type formers).
