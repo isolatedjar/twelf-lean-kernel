@@ -36,8 +36,8 @@ indNegReducible/type-wf-sort : lvl
 indNegReducible/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort indNegReducible/type-wf-sort)
    = defeq/sort-refl.
 
-%%% HOLE
-indNegReducible/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
+indNegReducible/ends-in-sort : ends-in-sort (esort (lsucc lzero))
+   = ends-in-sort/sort.
 
 indNegReducible/name : name "indNegReducible" (is-decl (esort (lsucc lzero)) indt).
 
@@ -45,11 +45,11 @@ indNegReducible/decl : declared "indNegReducible" (esort (lsucc lzero)) indt
    = declared/ok indNegReducible/name (dkind-ok/indt indNegReducible/type-wf indNegReducible/ends-in-sort).
 
 %% ctor indNegReducible.mk (of indNegReducible)
-%%% HOLE
-indNegReducible_mk/type-wf-sort : lvl.
+indNegReducible_mk/type-wf-sort : lvl
+   = (limax (limax (lsucc lzero) (lsucc lzero)) (lsucc lzero)).
 
-%%% HOLE
-indNegReducible_mk/type-wf : defeq (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil))) (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil))) (esort indNegReducible_mk/type-wf-sort).
+indNegReducible_mk/type-wf : defeq (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil))) (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil))) (esort indNegReducible_mk/type-wf-sort)
+   = (defeq/forall (defeq/forall (defeq/app (defeq/app (defeq/const constType/decl (inst-expr/forall (inst-expr/sort (lvl-inst/succ lvl-inst/zero)) ([x] ([h] (inst-expr/forall (inst-expr/sort (lvl-inst/succ lvl-inst/zero)) ([y] ([h1] (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))))))) (defeq/const aType/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))) (defeq/const indNegReducible/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))) ([x] ([h] (defeq/const indNegReducible/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))) ([x] ([h] (defeq/const indNegReducible/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))).
 
 %%% HOLE
 indNegReducible_mk/positivity : ctor-positive "indNegReducible" lnil (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil))).

@@ -1,17 +1,4 @@
 %%% Expected outcome: reject
 %%% An inductive with duplicate level params
-%% inductive inductLevelParam
-inductLevelParam/type-wf-sort : lvl
-   = (lsucc (lsucc lzero)).
-
-inductLevelParam/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort inductLevelParam/type-wf-sort)
-   = defeq/sort-refl.
-
-%%% HOLE
-inductLevelParam/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
-
-inductLevelParam/name : name "inductLevelParam" (is-decl (esort (lsucc lzero)) indt).
-
-inductLevelParam/decl : declared "inductLevelParam" (esort (lsucc lzero)) indt
-   = declared/ok inductLevelParam/name (dkind-ok/indt inductLevelParam/type-wf inductLevelParam/ends-in-sort).
+%%% SKIP: inductive inductLevelParam — duplicate universe parameter names
 

@@ -7,8 +7,8 @@ And/type-wf-sort : lvl
 And/type-wf : defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (esort And/type-wf-sort)
    = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] defeq/sort-refl)))))).
 
-%%% HOLE
-And/ends-in-sort : ends-in-sort (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))).
+And/ends-in-sort : ends-in-sort (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero)))))
+   = (ends-in-sort/forall ([x] (ends-in-sort/forall ([y] ends-in-sort/sort)))).
 
 And/name : name "And" (is-decl (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) indt).
 
@@ -16,14 +16,14 @@ And/decl : declared "And" (eforall (esort lzero) ([x] (eforall (esort lzero) ([y
    = declared/ok And/name (dkind-ok/indt And/type-wf And/ends-in-sort).
 
 %% ctor And.intro (of And)
-%%% HOLE
-And_intro/type-wf-sort : lvl.
+And_intro/type-wf-sort : lvl
+   = (limax (lsucc lzero) (limax (lsucc lzero) (limax lzero (limax lzero lzero)))).
 
-%%% HOLE
-And_intro/type-wf : defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) (esort And_intro/type-wf-sort).
+And_intro/type-wf : defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) (esort And_intro/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] (defeq/forall h ([z] ([h2] (defeq/forall h1 ([w] ([h3] (defeq/app (defeq/app (defeq/const And/decl (inst-expr/forall (inst-expr/sort lvl-inst/zero) ([x] ([h] (inst-expr/forall (inst-expr/sort lvl-inst/zero) ([y] ([h1] (inst-expr/sort lvl-inst/zero)))))))) h) h1))))))))))))).
 
-%%% HOLE
-And_intro/positivity : ctor-positive "And" lnil (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))).
+And_intro/positivity : ctor-positive "And" lnil (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y)))))))))
+   = (ctor-positive/intro ([S] (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp S x) y)))))))))) (ctor-spine/arg (strict-pos/no-occur (esort lzero)) ([x] (ctor-spine/arg (strict-pos/no-occur (esort lzero)) ([y] (ctor-spine/arg (strict-pos/no-occur x) ([z] (ctor-spine/arg (strict-pos/no-occur y) ([w] (ctor-spine/result (applies-self/app (applies-self/app applies-self/refl)))))))))))).
 
 And_intro/name : name "And.intro" (is-decl (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) ctor).
 
@@ -31,11 +31,11 @@ And_intro/decl : declared "And.intro" (eforall (esort lzero) ([x] (eforall (esor
    = declared/ok And_intro/name (dkind-ok/ctor And_intro/type-wf And_intro/positivity).
 
 %% recursor And.rec
-%%% HOLE
-And_rec/type-wf-sort : lvl.
+And_rec/type-wf-sort : lvl
+   = (limax (lsucc lzero) (limax (lsucc lzero) (limax (limax lzero (lsucc (lvar liz))) (limax (limax lzero (limax lzero (lvar liz))) (limax lzero (lvar liz)))))).
 
-%%% HOLE
-And_rec/type-wf : defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] (esort (lvar liz)))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "And.intro" lnil) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "And" lnil) x) y) ([x1] (eapp z x1))))))))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] (esort (lvar liz)))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "And.intro" lnil) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "And" lnil) x) y) ([x1] (eapp z x1))))))))))) (esort And_rec/type-wf-sort).
+And_rec/type-wf : defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] (esort (lvar liz)))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "And.intro" lnil) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "And" lnil) x) y) ([x1] (eapp z x1))))))))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] (esort (lvar liz)))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "And.intro" lnil) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "And" lnil) x) y) ([x1] (eapp z x1))))))))))) (esort And_rec/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] (defeq/forall (defeq/forall (defeq/app (defeq/app (defeq/const And/decl (inst-expr/forall (inst-expr/sort lvl-inst/zero) ([x] ([h] (inst-expr/forall (inst-expr/sort lvl-inst/zero) ([y] ([h1] (inst-expr/sort lvl-inst/zero)))))))) h) h1) ([z] ([h2] defeq/sort-refl))) ([z] ([h2] (defeq/forall (defeq/forall h ([w] ([h3] (defeq/forall h1 ([x1] ([h4] (defeq/app h2 (defeq/app (defeq/app (defeq/app (defeq/app (defeq/const And_intro/decl (inst-expr/forall (inst-expr/sort lvl-inst/zero) ([x] ([h] (inst-expr/forall (inst-expr/sort lvl-inst/zero) ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/forall h1 ([w] ([h3] (inst-expr/app (inst-expr/app (inst-expr/const lvls-inst/nil) h) h1)))))))))))))) h) h1) h3) h4)))))))) ([w] ([h3] (defeq/forall (defeq/app (defeq/app (defeq/const And/decl (inst-expr/forall (inst-expr/sort lvl-inst/zero) ([x] ([h] (inst-expr/forall (inst-expr/sort lvl-inst/zero) ([y] ([h1] (inst-expr/sort lvl-inst/zero)))))))) h) h1) ([x1] ([h4] (defeq/app h2 h4)))))))))))))))).
 
 And_rec/name : name "And.rec" (is-decl (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] (esort (lvar liz)))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "And.intro" lnil) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "And" lnil) x) y) ([x1] (eapp z x1))))))))))) irec).
 
@@ -49,8 +49,8 @@ andType/type-wf-sort : lvl
 andType/type-wf : defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (esort andType/type-wf-sort)
    = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] defeq/sort-refl)))))).
 
-%%% HOLE
-andType/value-typed : defeq (econst "And" lnil) (econst "And" lnil) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))).
+andType/value-typed : defeq (econst "And" lnil) (econst "And" lnil) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero)))))
+   = (defeq/const And/decl (inst-expr/forall (inst-expr/sort lvl-inst/zero) ([x] ([h] (inst-expr/forall (inst-expr/sort lvl-inst/zero) ([y] ([h1] (inst-expr/sort lvl-inst/zero)))))))).
 
 andType/name : name "andType" (is-decl (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (defn (econst "And" lnil))).
 

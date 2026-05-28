@@ -5,16 +5,16 @@
 // Auditing the encoding means reading this file alone.
 //
 // State: a single module-level Map of level-param bindings is exported and
-// mutated by lean2lf.ts when it enters/leaves a polymorphic declaration's
-// scope. It's consulted by lfLevel (for `param` levels) and by freshVar
-// (to avoid colliding with binder names). Keeping it module-local here
-// avoids threading it through every call site.
+// mutated by generate-twelf.ts when it enters/leaves a polymorphic
+// declaration's scope. It's consulted by lfLevel (for `param` levels) and by
+// freshVar (to avoid colliding with binder names). Keeping it module-local
+// here avoids threading it through every call site.
 
 import type { Expr, Level, Name } from "./shared.ts";
 import { nameToString } from "./shared.ts";
 
 // =====================================================================
-// Level-param scope (mutated by lean2lf.ts around polymorphic decls)
+// Level-param scope (mutated by generate-twelf.ts around polymorphic decls)
 // =====================================================================
 
 export const levelParamBindings: Map<string, string> = new Map();
@@ -27,7 +27,7 @@ export const levelParamBindings: Map<string, string> = new Map();
 // `nonneg_n` is a Twelf proof of `n >= 0` discharged via `%solve`.
 // %solve declarations must appear at the top level (not inside an
 // expression), so lfExpr accumulates the integers it has seen into
-// this set; main() in lean2lf.ts iterates it once at the end and
+// this set; generate-twelf.ts iterates it once at the end and
 // prepends a `%solve nonneg_N : N >= 0.` line per unique N.
 //
 // Stored as strings (not bigint) because the Lean IR carries arbitrary-
@@ -43,20 +43,6 @@ export const natLiteralsSeen: Set<string> = new Set();
 export function mangle(n: Name): string {
   // Replace dots and disallowed chars for use as Twelf identifiers.
   return nameToString(n).replace(/[^A-Za-z0-9_]/g, "_");
-}
-
-// Sanitize a Lean level-param name into an LF identifier that won't
-// collide with freshVar's letters (x/y/z/w).
-//
-// NOTE: dead w.r.t. the de Bruijn level scheme used by generate-twelf.ts
-// (level params now render as `(lvar i)` data, not LF variables).  Retained
-// only because the superseded lean2lf.ts / render-cli.ts still import it; it
-// will go when those are deleted in the end-state cleanup.
-export function nameToLfLevelVar(n: Name): string {
-  const raw = nameToString(n).replace(/[^A-Za-z0-9_]/g, "_");
-  if (raw === "") return "lv_anon";
-  if (/^[xyzw]/.test(raw)) return `lv_${raw}`;
-  return raw;
 }
 
 // =====================================================================

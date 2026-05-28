@@ -12,45 +12,5 @@ aProp/name : name "aProp" (is-decl (esort lzero) ax).
 aProp/decl : declared "aProp" (esort lzero) ax
    = declared/ok aProp/name (dkind-ok/ax aProp/type-wf).
 
-%% inductive inductInIndex
-inductInIndex/type-wf-sort : lvl
-   = (limax (lsucc lzero) (lsucc lzero)).
-
-inductInIndex/type-wf : defeq (eforall (esort lzero) ([x] (esort lzero))) (eforall (esort lzero) ([x] (esort lzero))) (esort inductInIndex/type-wf-sort)
-   = (defeq/forall defeq/sort-refl ([x] ([h] defeq/sort-refl))).
-
-%%% HOLE
-inductInIndex/ends-in-sort : ends-in-sort (eforall (esort lzero) ([x] (esort lzero))).
-
-inductInIndex/name : name "inductInIndex" (is-decl (eforall (esort lzero) ([x] (esort lzero))) indt).
-
-inductInIndex/decl : declared "inductInIndex" (eforall (esort lzero) ([x] (esort lzero))) indt
-   = declared/ok inductInIndex/name (dkind-ok/indt inductInIndex/type-wf inductInIndex/ends-in-sort).
-
-%% ctor inductInIndex.mk (of inductInIndex)
-%%% HOLE
-inductInIndex_mk/type-wf-sort : lvl.
-
-%%% HOLE
-inductInIndex_mk/type-wf : defeq (eapp (econst "inductInIndex" lnil) (eapp (econst "inductInIndex" lnil) (econst "aProp" lnil))) (eapp (econst "inductInIndex" lnil) (eapp (econst "inductInIndex" lnil) (econst "aProp" lnil))) (esort inductInIndex_mk/type-wf-sort).
-
-%%% HOLE
-inductInIndex_mk/positivity : ctor-positive "inductInIndex" lnil (eapp (econst "inductInIndex" lnil) (eapp (econst "inductInIndex" lnil) (econst "aProp" lnil))).
-
-inductInIndex_mk/name : name "inductInIndex.mk" (is-decl (eapp (econst "inductInIndex" lnil) (eapp (econst "inductInIndex" lnil) (econst "aProp" lnil))) ctor).
-
-inductInIndex_mk/decl : declared "inductInIndex.mk" (eapp (econst "inductInIndex" lnil) (eapp (econst "inductInIndex" lnil) (econst "aProp" lnil))) ctor
-   = declared/ok inductInIndex_mk/name (dkind-ok/ctor inductInIndex_mk/type-wf inductInIndex_mk/positivity).
-
-%% recursor inductInIndex.rec
-inductInIndex_rec/type-wf-sort : lvl
-   = (lsucc lzero).
-
-inductInIndex_rec/type-wf : defeq (esort lzero) (esort lzero) (esort inductInIndex_rec/type-wf-sort)
-   = defeq/sort-refl.
-
-inductInIndex_rec/name : name "inductInIndex.rec" (is-decl (esort lzero) irec).
-
-inductInIndex_rec/decl : declared "inductInIndex.rec" (esort lzero) irec
-   = declared/ok inductInIndex_rec/name (dkind-ok/irec inductInIndex_rec/type-wf).
+%%% SKIP: ctor inductInIndex.mk — result-type index arg #1 mentions the inductive "inductInIndex"
 

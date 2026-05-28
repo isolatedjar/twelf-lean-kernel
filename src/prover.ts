@@ -5,7 +5,17 @@
 // See plugin-refactor.md and the `Prover` interface in shared.ts.
 
 import type { ParsedEnv, ProofResult, Prover, TypeWfResult } from "./shared.ts";
-import { bridge, buildEnvMap, type EnvMap, levelToFmt, synth } from "./synth.ts";
+import { failOnPurpose, nameToString } from "./shared.ts";
+import {
+  bridge,
+  buildCtorPositive,
+  buildEnvMap,
+  endsInSortProof,
+  type EnvMap,
+  levelToFmt,
+  provablyDistinctSorts,
+  synth,
+} from "./synth.ts";
 
 // NullProver discharges nothing: every obligation becomes a HOLE. Running
 // the generator with this prover produces the `.render.elf` view — the
@@ -54,13 +64,23 @@ export function makeRealProver(env: ParsedEnv): Prover {
       const r = synth(value, envMap);
       if (!r) return null;
       const coerce = bridge(r.ty, type, envMap);
-      return coerce ? coerce(r.proof) : null;
-    },
-    endsInSort(): ProofResult {
+      if (coerce) return coerce(r.proof);
+      // Decide-then-refute: if the synthesized type and the declared type are
+      // both concrete closed sorts at different universe levels, the obligation
+      // is provably false. Emit a genuine refutation (Twelf ❌) rather than a
+      // HOLE — never an unsound proof.
+      if (provablyDistinctSorts(r.ty, type)) return failOnPurpose;
       return null;
     },
-    ctorPositive(): ProofResult {
-      return null;
+    endsInSort({ type }): ProofResult {
+      return endsInSortProof(type);
+    },
+    ctorPositive({ ctorType, indName, indLevels, levelParams }): ProofResult {
+      try {
+        return buildCtorPositive(ctorType, nameToString(indName), indLevels, levelParams);
+      } catch {
+        return null;
+      }
     },
   };
 }

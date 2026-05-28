@@ -22,8 +22,8 @@ dup_ind_def/type-wf-sort : lvl
 dup_ind_def/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort dup_ind_def/type-wf-sort)
    = defeq/sort-refl.
 
-%%% HOLE
-dup_ind_def/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
+dup_ind_def/ends-in-sort : ends-in-sort (esort (lsucc lzero))
+   = ends-in-sort/sort.
 
 dup_ind_def/name : name "dup_ind_def" (is-decl (esort (lsucc lzero)) indt).
 
@@ -37,8 +37,8 @@ dup_ind_def_mk/type-wf-sort : lvl
 dup_ind_def_mk/type-wf : defeq (econst "dup_ind_def" lnil) (econst "dup_ind_def" lnil) (esort dup_ind_def_mk/type-wf-sort)
    = (defeq/const dup_ind_def/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
 
-%%% HOLE
-dup_ind_def_mk/positivity : ctor-positive "dup_ind_def" lnil (econst "dup_ind_def" lnil).
+dup_ind_def_mk/positivity : ctor-positive "dup_ind_def" lnil (econst "dup_ind_def" lnil)
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
 dup_ind_def_mk/name : name "dup_ind_def.mk" (is-decl (econst "dup_ind_def" lnil) ctor).
 
@@ -46,11 +46,11 @@ dup_ind_def_mk/decl : declared "dup_ind_def.mk" (econst "dup_ind_def" lnil) ctor
    = declared/ok dup_ind_def_mk/name (dkind-ok/ctor dup_ind_def_mk/type-wf dup_ind_def_mk/positivity).
 
 %% recursor dup_ind_def.rec
-%%% HOLE
-dup_ind_def_rec/type-wf-sort : lvl.
+dup_ind_def_rec/type-wf-sort : lvl
+   = (limax (limax (lsucc lzero) (lsucc (lvar liz))) (limax (lvar liz) (limax (lsucc lzero) (lvar liz)))).
 
-%%% HOLE
-dup_ind_def_rec/type-wf : defeq (eforall (eforall (econst "dup_ind_def" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ind_def.mk" lnil)) ([y] (eforall (econst "dup_ind_def" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "dup_ind_def" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ind_def.mk" lnil)) ([y] (eforall (econst "dup_ind_def" lnil) ([z] (eapp x z))))))) (esort dup_ind_def_rec/type-wf-sort).
+dup_ind_def_rec/type-wf : defeq (eforall (eforall (econst "dup_ind_def" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ind_def.mk" lnil)) ([y] (eforall (econst "dup_ind_def" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "dup_ind_def" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ind_def.mk" lnil)) ([y] (eforall (econst "dup_ind_def" lnil) ([z] (eapp x z))))))) (esort dup_ind_def_rec/type-wf-sort)
+   = (defeq/forall (defeq/forall (defeq/const dup_ind_def/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] defeq/sort-refl))) ([x] ([h] (defeq/forall (defeq/app h (defeq/const dup_ind_def_mk/decl (inst-expr/const lvls-inst/nil))) ([y] ([h1] (defeq/forall (defeq/const dup_ind_def/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([z] ([h2] (defeq/app h h2)))))))))).
 
 dup_ind_def_rec/name : name "dup_ind_def.rec" (is-decl (eforall (eforall (econst "dup_ind_def" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ind_def.mk" lnil)) ([y] (eforall (econst "dup_ind_def" lnil) ([z] (eapp x z))))))) irec).
 

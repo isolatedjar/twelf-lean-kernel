@@ -17,45 +17,5 @@ dup_rec_def2_rec/name : name "dup_rec_def2.rec" (is-decl (esort (lsucc lzero)) (
 dup_rec_def2_rec/decl : declared "dup_rec_def2.rec" (esort (lsucc lzero)) (defn (esort lzero))
    = declared/ok dup_rec_def2_rec/name (dkind-ok/defn dup_rec_def2_rec/type-wf dup_rec_def2_rec/value-typed).
 
-%% inductive dup_rec_def2
-dup_rec_def2/type-wf-sort : lvl
-   = (lsucc (lsucc lzero)).
-
-dup_rec_def2/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort dup_rec_def2/type-wf-sort)
-   = defeq/sort-refl.
-
-%%% HOLE
-dup_rec_def2/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
-
-dup_rec_def2/name : name "dup_rec_def2" (is-decl (esort (lsucc lzero)) indt).
-
-dup_rec_def2/decl : declared "dup_rec_def2" (esort (lsucc lzero)) indt
-   = declared/ok dup_rec_def2/name (dkind-ok/indt dup_rec_def2/type-wf dup_rec_def2/ends-in-sort).
-
-%% ctor dup_rec_def2.mk (of dup_rec_def2)
-%%% HOLE
-dup_rec_def2_mk/type-wf-sort : lvl.
-
-%%% HOLE
-dup_rec_def2_mk/type-wf : defeq (econst "dup_rec_def2" lnil) (econst "dup_rec_def2" lnil) (esort dup_rec_def2_mk/type-wf-sort).
-
-%%% HOLE
-dup_rec_def2_mk/positivity : ctor-positive "dup_rec_def2" lnil (econst "dup_rec_def2" lnil).
-
-dup_rec_def2_mk/name : name "dup_rec_def2.mk" (is-decl (econst "dup_rec_def2" lnil) ctor).
-
-dup_rec_def2_mk/decl : declared "dup_rec_def2.mk" (econst "dup_rec_def2" lnil) ctor
-   = declared/ok dup_rec_def2_mk/name (dkind-ok/ctor dup_rec_def2_mk/type-wf dup_rec_def2_mk/positivity).
-
-%% recursor dup_rec_def2.original_rec
-%%% HOLE
-dup_rec_def2_original_rec/type-wf-sort : lvl.
-
-%%% HOLE
-dup_rec_def2_original_rec/type-wf : defeq (eforall (eforall (econst "dup_rec_def2" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_rec_def2.mk" lnil)) ([y] (eforall (econst "dup_rec_def2" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "dup_rec_def2" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_rec_def2.mk" lnil)) ([y] (eforall (econst "dup_rec_def2" lnil) ([z] (eapp x z))))))) (esort dup_rec_def2_original_rec/type-wf-sort).
-
-dup_rec_def2_original_rec/name : name "dup_rec_def2.original_rec" (is-decl (eforall (eforall (econst "dup_rec_def2" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_rec_def2.mk" lnil)) ([y] (eforall (econst "dup_rec_def2" lnil) ([z] (eapp x z))))))) irec).
-
-dup_rec_def2_original_rec/decl : declared "dup_rec_def2.original_rec" (eforall (eforall (econst "dup_rec_def2" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_rec_def2.mk" lnil)) ([y] (eforall (econst "dup_rec_def2" lnil) ([z] (eapp x z))))))) irec
-   = declared/ok dup_rec_def2_original_rec/name (dkind-ok/irec dup_rec_def2_original_rec/type-wf).
+%%% SKIP: recursor dup_rec_def2.original_rec — name is not <type>.rec for any type in the block
 

@@ -7,8 +7,8 @@ Bool/type-wf-sort : lvl
 Bool/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort Bool/type-wf-sort)
    = defeq/sort-refl.
 
-%%% HOLE
-Bool/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
+Bool/ends-in-sort : ends-in-sort (esort (lsucc lzero))
+   = ends-in-sort/sort.
 
 Bool/name : name "Bool" (is-decl (esort (lsucc lzero)) indt).
 
@@ -16,14 +16,14 @@ Bool/decl : declared "Bool" (esort (lsucc lzero)) indt
    = declared/ok Bool/name (dkind-ok/indt Bool/type-wf Bool/ends-in-sort).
 
 %% ctor Bool.false (of Bool)
-%%% HOLE
-Bool_false/type-wf-sort : lvl.
+Bool_false/type-wf-sort : lvl
+   = (lsucc lzero).
 
-%%% HOLE
-Bool_false/type-wf : defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort Bool_false/type-wf-sort).
+Bool_false/type-wf : defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort Bool_false/type-wf-sort)
+   = (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
 
-%%% HOLE
-Bool_false/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil).
+Bool_false/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil)
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
 Bool_false/name : name "Bool.false" (is-decl (econst "Bool" lnil) ctor).
 
@@ -31,14 +31,14 @@ Bool_false/decl : declared "Bool.false" (econst "Bool" lnil) ctor
    = declared/ok Bool_false/name (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity).
 
 %% ctor Bool.true (of Bool)
-%%% HOLE
-Bool_true/type-wf-sort : lvl.
+Bool_true/type-wf-sort : lvl
+   = (lsucc lzero).
 
-%%% HOLE
-Bool_true/type-wf : defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort Bool_true/type-wf-sort).
+Bool_true/type-wf : defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort Bool_true/type-wf-sort)
+   = (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
 
-%%% HOLE
-Bool_true/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil).
+Bool_true/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil)
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
 Bool_true/name : name "Bool.true" (is-decl (econst "Bool" lnil) ctor).
 
@@ -46,11 +46,11 @@ Bool_true/decl : declared "Bool.true" (econst "Bool" lnil) ctor
    = declared/ok Bool_true/name (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity).
 
 %% recursor Bool.rec
-%%% HOLE
-Bool_rec/type-wf-sort : lvl.
+Bool_rec/type-wf-sort : lvl
+   = (limax (limax (lsucc lzero) (lsucc (lvar liz))) (limax (lvar liz) (limax (lvar liz) (limax (lsucc lzero) (lvar liz))))).
 
-%%% HOLE
-Bool_rec/type-wf : defeq (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort Bool_rec/type-wf-sort).
+Bool_rec/type-wf : defeq (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort Bool_rec/type-wf-sort)
+   = (defeq/forall (defeq/forall (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] defeq/sort-refl))) ([x] ([h] (defeq/forall (defeq/app h (defeq/const Bool_false/decl (inst-expr/const lvls-inst/nil))) ([y] ([h1] (defeq/forall (defeq/app h (defeq/const Bool_true/decl (inst-expr/const lvls-inst/nil))) ([z] ([h2] (defeq/forall (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([w] ([h3] (defeq/app h h3))))))))))))).
 
 Bool_rec/name : name "Bool.rec" (is-decl (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) irec).
 
@@ -64,8 +64,8 @@ boolType/type-wf-sort : lvl
 boolType/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort boolType/type-wf-sort)
    = defeq/sort-refl.
 
-%%% HOLE
-boolType/value-typed : defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort (lsucc lzero)).
+boolType/value-typed : defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort (lsucc lzero))
+   = (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
 
 boolType/name : name "boolType" (is-decl (esort (lsucc lzero)) (defn (econst "Bool" lnil))).
 
