@@ -28,9 +28,10 @@ validates every atom/binder, so an untrusted prover cannot smuggle a
 declaration terminator). A prover method returns one of:
 
 - `Fmt` → `<const> : <obligation> = <proof>.` (discharged)
-- `null` → `%%% HOLE` + `<const> : <obligation>.` (bare decl, rejected by `%freeze`)
+- `null` → `%%% HOLE` + `<const> : <obligation>.` (bare decl, rejected by
+  `%freeze`)
 - `failOnPurpose` (the undeclared atom `fail-on-purpose`) → Twelf ABORTs → the
-  env is **rejected on purpose** (used when the prover can *prove* an
+  env is **rejected on purpose** (used when the prover can _prove_ an
   obligation false, not merely fail to prove it true)
 
 Two provers, both run by the same generator:
@@ -79,23 +80,23 @@ After regenerating NDJSON, re-run `./scripts/gen-tests.sh` to update the
 
 ## Key files
 
-| File                               | Role                                                     |
-| ---------------------------------- | -------------------------------------------------------- |
-| `lf/tcb.elf`                       | Trusted base — LF encoding of Lean's type theory         |
-| `lf/derived.elf`                   | Derived lemmas built on top of the TCB                   |
-| `lf/shared.elf`                    | Shared definitions used across test files                |
-| `lf/final-checks.elf`              | Final verification declarations                          |
-| `lf/sources.cfg`                   | Twelf sources file (loads TCB in order)                  |
-| `src/parse.ts`                     | NDJSON → JSON IR parser (trusted)                        |
-| `src/shared.ts`                    | IR types + the `Prover` interface + `Fmt` (trusted)     |
+| File                               | Role                                                                |
+| ---------------------------------- | ------------------------------------------------------------------- |
+| `lf/tcb.elf`                       | Trusted base — LF encoding of Lean's type theory                    |
+| `lf/derived.elf`                   | Derived lemmas built on top of the TCB                              |
+| `lf/shared.elf`                    | Shared definitions used across test files                           |
+| `lf/final-checks.elf`              | Final verification declarations                                     |
+| `lf/sources.cfg`                   | Twelf sources file (loads TCB in order)                             |
+| `src/parse.ts`                     | NDJSON → JSON IR parser (trusted)                                   |
+| `src/shared.ts`                    | IR types + the `Prover` interface + `Fmt` (trusted)                 |
 | `src/generate-twelf.ts`            | JSON IR → Twelf LF generator (trusted); inductive pre-flight checks |
-| `src/render.ts`                    | Pure IR → LF text rendering (`lfExpr`, mangling)         |
-| `src/prover.ts`                    | `NullProver` + `makeRealProver` (untrusted)              |
-| `src/synth.ts`                     | Type synthesizer / defeq prover / positivity builders (untrusted) |
-| `scripts/gen-tests.sh`             | Generate `lf/tests/*.elf` from `tests/*.ndjson`          |
-| `scripts/check-tests.sh`           | Run Twelf on each `.elf` and report results              |
-| `scripts/regen-tutorial-ndjson.sh` | Regenerate `tests/tutorial/**/*.ndjson` from Lean source |
-| `lean/tutorial/`                   | Lean 4 source for the tutorial test suite                |
+| `src/render.ts`                    | Pure IR → LF text rendering (`lfExpr`, mangling)                    |
+| `src/prover.ts`                    | `NullProver` + `makeRealProver` (untrusted)                         |
+| `src/synth.ts`                     | Type synthesizer / defeq prover / positivity builders (untrusted)   |
+| `scripts/gen-tests.sh`             | Generate `lf/tests/*.elf` from `tests/*.ndjson`                     |
+| `scripts/check-tests.sh`           | Run Twelf on each `.elf` and report results                         |
+| `scripts/regen-tutorial-ndjson.sh` | Regenerate `tests/tutorial/**/*.ndjson` from Lean source            |
+| `lean/tutorial/`                   | Lean 4 source for the tutorial test suite                           |
 
 ## Test status
 
@@ -111,13 +112,13 @@ Run `check-tests.sh` for the current pass/fail/skip breakdown.
 Each test gets one raw outcome (precedence order), reported by
 `check-tests.sh`:
 
-| Outcome | Meaning |
-| ------- | ------- |
-| 🤷 | generator declined to represent the env (`.full.elf` has `%%% SKIP`) |
-| 🔴 | `.render.elf` rejected by Twelf even without freeze (rendering is broken) |
-| ✅ | `.full.elf` accepted by the full pipeline (freeze + final-checks) |
-| 🩹 | `.full.elf` rejected *with* freeze but accepted *without* (only unfilled HOLEs failed) |
-| ❌ | `.full.elf` rejected even without freeze (a genuine error on a concrete term) |
+| Outcome | Meaning                                                                                |
+| ------- | -------------------------------------------------------------------------------------- |
+| 🤷      | generator declined to represent the env (`.full.elf` has `%%% SKIP`)                   |
+| 🔴      | `.render.elf` rejected by Twelf even without freeze (rendering is broken)              |
+| ✅      | `.full.elf` accepted by the full pipeline (freeze + final-checks)                      |
+| 🩹      | `.full.elf` rejected _with_ freeze but accepted _without_ (only unfilled HOLEs failed) |
+| ❌      | `.full.elf` rejected even without freeze (a genuine error on a concrete term)          |
 
 Mapping to a pass/fail verdict depends on what the test expects:
 
@@ -126,16 +127,16 @@ Mapping to a pass/fail verdict depends on what the test expects:
   **soundness failure**
 
 🤷 (and 🔴) count as a reject from the Kernel Arena's perspective, so they are
-a *pass* for bad tests and a *fail* for good tests — we'd like to represent
+a _pass_ for bad tests and a _fail_ for good tests — we'd like to represent
 every valid Lean signature, but some inputs (unparseable NDJSON, malformed de
 Bruijn indices, invariants we can only check translator-side) genuinely can't
-be posed to Twelf. A 🩹 means we declined to *evaluate* the development (the
+be posed to Twelf. A 🩹 means we declined to _evaluate_ the development (the
 HOLE isn't filled), distinct from Twelf verifying it bad (❌).
 
 ## Plans and design docs
 
 - `completeness-plan.md` — the live roadmap: a tick-box accounting of how much
-  of Mario Carneiro's declarative `IsDefEq` spec the TCB encodes, plus salvaged
-  design notes for the highest-value remaining work (level-equality decision
-  procedure, name-reservation soundness check, `lean.mm1` borrows). Start here
-  for "what's left to do."
+  of Mario Carneiro's declarative `IsDefEq` spec the TCB encodes, plus
+  salvaged design notes for the highest-value remaining work (level-equality
+  decision procedure, name-reservation soundness check, `lean.mm1` borrows).
+  Start here for "what's left to do."

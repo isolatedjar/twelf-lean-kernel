@@ -408,15 +408,16 @@ soundness comparison lived in `archive/mm0-analysis.md` (vs. Carneiro's
 ### 7.1 Level-equality decision procedure (closes §2 wholesale)
 
 The highest-leverage `lvl-eq` fix is to port **Carneiro's algorithmic level
-inequality** (Type Theory of Lean thesis, p.7): the offset relation `ℓ ≤ ℓ' +
-n`, `n ∈ ℤ`, with `ℓ ≡ ℓ'` as `ℓ ≤ ℓ' + 0 ∧ ℓ' ≤ ℓ + 0`. (NB: this is the
-*inference-rule* algorithm, searchable by Twelf — **not** lean4lean's
-`VLevel.LE`, which is a semantic universal-over-valuations definition and isn't
-directly searchable.)
+inequality** (Type Theory of Lean thesis, p.7): the offset relation
+`ℓ ≤ ℓ' + n`, `n ∈ ℤ`, with `ℓ ≡ ℓ'` as `ℓ ≤ ℓ' + 0 ∧ ℓ' ≤ ℓ + 0`. (NB: this
+is the _inference-rule_ algorithm, searchable by Twelf — **not** lean4lean's
+`VLevel.LE`, which is a semantic universal-over-valuations definition and
+isn't directly searchable.)
 
 The thirteen structural rules transcribe directly into Twelf over the integer
 constraint domain and were validated against `%solve` (all queries <10 ms,
-including nested `imax`/`max`, commutativity, and correct *failure* on `1 ≤ 0`):
+including nested `imax`/`max`, commutativity, and correct _failure_ on
+`1 ≤ 0`):
 
 ```twelf
 mleq : level -> level -> integer -> type.
@@ -441,8 +442,8 @@ mleq/imax_mxR : mleq L (lmax (limax L1 L2) (limax L1 L3)) N
 
 **The one sticking point** is the fourteenth rule — universe-variable
 elimination by case-split `u ↦ 0` / `u ↦ Su`. The naive HOAS transcription
-(`mleq (L lz) (L' lz) N -> ({u} mleq (L (ls u)) (L' (ls u)) N) -> mleq (L U)
-(L' U) N`) loops in Twelf search (`L, L' : level -> level` unify with anything).
+(`mleq (L lz) (L' lz) N -> ({u} mleq (L (ls u)) (L' (ls u)) N) -> mleq (L U) (L' U) N`)
+loops in Twelf search (`L, L' : level -> level` unify with anything).
 **Recommended: Option B (hybrid).** Keep the thirteen structural rules in
 Twelf; detect `imax _ U` for free `U` in TypeScript, perform the case-split
 there, `%solve` each branch, and recombine via a no-op `mleq/var-discharge`
@@ -455,82 +456,88 @@ for `enatlit`'s `N >= 0`) is the template.
 
 ### 7.2 Name-reservation soundness check (principled fix for 124-style)
 
-`124_dup_rec_def2` is currently rejected by a *translator-side* pre-flight
-check in `generate-twelf.ts` (a primitive recursor must be named `<type>.rec`).
-The **principled, Twelf-verified** alternative — model Lean's implicit "adding
-inductive `Foo` reserves the name `Foo.rec`" rule — was validated with five
-Twelf spikes. Root cause: Lean generates the recursor name fresh as
-`mkRecName ind = ind ++ ".rec"`, so the reservation exists no matter what the
-export calls the recursor; an export naming it `original_rec` is adversarial.
+`124_dup_rec_def2` is currently rejected by a _translator-side_ pre-flight
+check in `generate-twelf.ts` (a primitive recursor must be named
+`<type>.rec`). The **principled, Twelf-verified** alternative — model Lean's
+implicit "adding inductive `Foo` reserves the name `Foo.rec`" rule — was
+validated with five Twelf spikes. Root cause: Lean generates the recursor name
+fresh as `mkRecName ind = ind ++ ".rec"`, so the reservation exists no matter
+what the export calls the recursor; an export naming it `original_rec` is
+adversarial.
 
 Validated LF design (deviates from the obvious sketch in 3 ways that matter):
 
 1. **`name-kind` payloads are payload-free** (`is-declaration`, `is-rec`,
-   `is-quot`) — a `string` payload inside the *kind* puts a non-ground variable
-   in `%mode name +S -K` output (Twelf can't run string deconcatenation). The
-   inductive↔recursor link rides in the *string index* via `(N ++ ".rec")`,
-   which Twelf evaluates forward fine.
+   `is-quot`) — a `string` payload inside the _kind_ puts a non-ground
+   variable in `%mode name +S -K` output (Twelf can't run string
+   deconcatenation). The inductive↔recursor link rides in the _string index_
+   via `(N ++ ".rec")`, which Twelf evaluates forward fine.
 2. **The reservation family is open with ground per-decl constants only**
    (exactly like `declared`). Generic constructors make `%unique` report a
    static overlap on every file (false positive).
-3. **Reservations live in the `dkind-ok` rules with a threaded `{N : string}`**
-   (forcing `N` = the `declared` name), not in the `dkind` constructors. The
-   recursor (`irec`) reserves **nothing** — the inductive owns the `.rec` slot
-   (`%unique` flags *any* two constants sharing a string, even same-kind).
+3. **Reservations live in the `dkind-ok` rules with a threaded
+   `{N : string}`** (forcing `N` = the `declared` name), not in the `dkind`
+   constructors. The recursor (`irec`) reserves **nothing** — the inductive
+   owns the `.rec` slot (`%unique` flags _any_ two constants sharing a string,
+   even same-kind).
 
-Then `dkind-ok/indt` requires both `name N is-declaration` and `name (N ++
-".rec") is-rec`, and `final-checks.elf` adds `%mode name +S -K. / %worlds ()
-(name _ _). / %unique name +S -1K.` — so a `def Foo.rec` and inductive `Foo`
-both reserving string `"Foo.rec"` with different kinds make uniqueness false →
-ABORT. This requires repurposing term-level `name` to `string` throughout
-`tcb.elf` (mechanical; generated `.elf` already use string literals). Out of
-scope of the spike: forcing a recursor's *own* name to be `<ind>.rec` in
-general (needs a `+kind -string` uniqueness in the other direction).
+Then `dkind-ok/indt` requires both `name N is-declaration` and
+`name (N ++ ".rec") is-rec`, and `final-checks.elf` adds
+`%mode name +S -K. / %worlds () (name _ _). / %unique name +S -1K.` — so a
+`def Foo.rec` and inductive `Foo` both reserving string `"Foo.rec"` with
+different kinds make uniqueness false → ABORT. This requires repurposing
+term-level `name` to `string` throughout `tcb.elf` (mechanical; generated
+`.elf` already use string literals). Out of scope of the spike: forcing a
+recursor's _own_ name to be `<ind>.rec` in general (needs a `+kind -string`
+uniqueness in the other direction).
 
 ### 7.3 `lean.mm1` borrows + the trusted-export soundness gaps
 
-Carneiro's `lean.mm1` is a *complete* declarative spec of the same `IsDefEq`;
+Carneiro's `lean.mm1` is a _complete_ declarative spec of the same `IsDefEq`;
 where our TCB is partial it reads as a checklist. No bug found in rules we
 already check; the gaps are exactly the things §3 marks "we trust the export",
-which flip from *incomplete* to *unsound* if the export isn't trustworthy:
+which flip from _incomplete_ to _unsound_ if the export isn't trustworthy:
 
-- **Ctor field-universe constraints** — `lean.mm1`'s `ctor_Pi` carries `l2 <=l
-  l` (each field's sort ≤ the inductive's sort); `ctorR_S` carries `l_imax l2 l
-  <=l l` for recursive args. We check only `defeq T T (esort U)`. (Our
-  translator-side concrete-case check (d) approximates this; encoding it in LF
-  removes the trust.)
+- **Ctor field-universe constraints** — `lean.mm1`'s `ctor_Pi` carries
+  `l2 <=l l` (each field's sort ≤ the inductive's sort); `ctorR_S` carries
+  `l_imax l2 l <=l l` for recursive args. We check only `defeq T T (esort U)`.
+  (Our translator-side concrete-case check (d) approximates this; encoding it
+  in LF removes the trust.)
 - **Large-elimination / subsingleton eligibility** — `lean.mm1`'s `LE` /
-  `LE_ctor` / `LE_mem` apparatus decides whether a Prop-inductive may eliminate
-  into `Type`. Missing here; allowing large elimination from a
+  `LE_ctor` / `LE_mem` apparatus decides whether a Prop-inductive may
+  eliminate into `Type`. Missing here; allowing large elimination from a
   non-subsingleton Prop is a classic route to a closed proof of `False`.
-- **Recursor type well-formedness** — `lean.mm1` *synthesizes* the recursor
+- **Recursor type well-formedness** — `lean.mm1` _synthesizes_ the recursor
   type (`Rec_*`) and checks it; we accept the export's. Our iota rules
   currently lean on the export supplying a genuine recursor rather than a
   schema-shaped lookalike.
 
-Porting discipline (LF vs. MM0): **delete every `subst: A[e/x] = B` premise and
-replace `B` with the LF application `(λx.A) e`** — MM0 reifies substitution only
-because it lacks LF's meta-level β. Stance: this project follows **Appel &
-Felty** (LF as proof-checking with a tiny trusted checker), *not* Crary–Sarkar
-(safety argued inside the Twelf metalogic). Keep `%total`/`%worlds`/`%covers`
-off the trusted checking path; the only legitimate metatheorem use is
-confidence *about* the TCB (e.g. proving two `lvl-eq` characterizations
-coincide), living outside `tcb.elf`. `%unique` and the open-`declared`
-discipline are the two non-pure-LF checks we do rely on — small decidable
-side-conditions, the kind a flit-style minimal LF checker would need to add.
+Porting discipline (LF vs. MM0): **delete every `subst: A[e/x] = B` premise
+and replace `B` with the LF application `(λx.A) e`** — MM0 reifies
+substitution only because it lacks LF's meta-level β. Stance: this project
+follows **Appel & Felty** (LF as proof-checking with a tiny trusted checker),
+_not_ Crary–Sarkar (safety argued inside the Twelf metalogic). Keep
+`%total`/`%worlds`/`%covers` off the trusted checking path; the only
+legitimate metatheorem use is confidence _about_ the TCB (e.g. proving two
+`lvl-eq` characterizations coincide), living outside `tcb.elf`. `%unique` and
+the open-`declared` discipline are the two non-pure-LF checks we do rely on —
+small decidable side-conditions, the kind a flit-style minimal LF checker
+would need to add.
 
 ### 7.4 Name-usages not captured by Lean's `Declaration` (adequacy checklist)
 
-A faithful `.render.elf` must account for names that don't appear syntactically
-in the per-`Declaration` input:
+A faithful `.render.elf` must account for names that don't appear
+syntactically in the per-`Declaration` input:
 
-1. **Quot family** — `Declaration.quotDecl` is payload-free; the kernel injects
-   `Quot`/`Quot.mk`/`Quot.lift`/`Quot.ind`/`Quot.sound` with hardcoded types.
+1. **Quot family** — `Declaration.quotDecl` is payload-free; the kernel
+   injects `Quot`/`Quot.mk`/`Quot.lift`/`Quot.ind`/`Quot.sound` with hardcoded
+   types.
 2. **Literal-reduction names** — `Nat`, `Nat.zero`, `Nat.succ` (+ arithmetic),
    `String`, `String.mk`, `List.nil/cons`, `Char.ofNat`, … are hardwired into
    the kernel's literal extension; none appear in the literal `Expr`.
 3. **Recursors** — synthesized fresh as `Foo.rec` (lean4export does serialize
-   them, so our NDJSON carries them — but the bare `Declaration` type doesn't).
+   them, so our NDJSON carries them — but the bare `Declaration` type
+   doesn't).
 4. **`proj typeName idx`** — needs the structure's single constructor for its
-   reduction; carried today as opaque `eproj` data with no link to the names it
-   depends on.
+   reduction; carried today as opaque `eproj` data with no link to the names
+   it depends on.
