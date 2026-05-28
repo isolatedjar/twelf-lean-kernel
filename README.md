@@ -22,6 +22,10 @@ OS.exit
 then that file encodes a valid Lean signature, and that any valid Lean
 signature can be encoded as such a file.
 
+**Important:** this requires a modified semantics of the `%freeze` and `%thaw`
+commands that is implemented on the `limited-thaw` branch here: 
+https://github.com/robsimmons/twelf/tree/limited-thaw
+
 ## Evaluation pipeline
 
 The script `scripts/gen-tests.sh` takes the NDJSON files in `tests` and
