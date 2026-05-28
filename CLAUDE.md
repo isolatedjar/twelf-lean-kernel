@@ -60,7 +60,28 @@ HOLE/reject), never accept an ill-typed term.
 npx tsc --noEmit
 ```
 
-Twelf server binary: `/home/user/twelf-src/bin/twelf-server`
+## Twelf binary (limited-thaw build)
+
+Twelf server binary: `/home/user/twelf-src/bin/twelf-server`.
+
+It must be built from the **`limited-thaw`** branch of
+[`robsimmons/twelf`](https://github.com/robsimmons/twelf/tree/limited-thaw), not
+stock Twelf. The harness detects unfilled obligations by loading the environment
+against a **frozen** TCB: a HOLE is a bare declaration on a frozen family, which
+Twelf's freezing check rejects. This only works if `%thaw name` (in
+`lf/freeze.elf`, needed so each environment can add its own `<decl>/name`
+reservations) thaws *only* `name` and not its transitive dependents. Stock Twelf
+thaws transitively — re-opening `defeq` — so it would wrongly accept unfilled
+`defeq` obligations; `limited-thaw` is a one-line fix to
+`src/subordinate/subordinate.fun`. Rebuild with:
+
+```bash
+./scripts/build-twelf.sh            # requires MLton; → /home/user/twelf-src/bin/twelf-server
+```
+
+Because the frozen load is now authoritative, the `%%% HOLE` marker in generated
+`.elf` files is purely informational — `check-tests.sh` no longer simulates
+freeze rejection from it.
 
 ## Regenerating the tutorial NDJSON test cases
 
