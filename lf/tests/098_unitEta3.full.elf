@@ -7,8 +7,8 @@ PUnit/type-wf-sort : lvl
 PUnit/type-wf : defeq (esort (lvar liz)) (esort (lvar liz)) (esort PUnit/type-wf-sort)
    = defeq/sort-refl.
 
-%%% HOLE
-PUnit/ends-in-sort : ends-in-sort (esort (lvar liz)).
+PUnit/ends-in-sort : ends-in-sort (esort (lvar liz))
+   = ends-in-sort/sort.
 
 PUnit/name : name "PUnit" (is-decl (esort (lvar liz)) indt).
 
@@ -16,14 +16,14 @@ PUnit/decl : declared "PUnit" (esort (lvar liz)) indt
    = declared/ok PUnit/name (dkind-ok/indt PUnit/type-wf PUnit/ends-in-sort).
 
 %% ctor PUnit.unit (of PUnit)
-%%% HOLE
-PUnit_unit/type-wf-sort : lvl.
+PUnit_unit/type-wf-sort : lvl
+   = (lvar liz).
 
-%%% HOLE
-PUnit_unit/type-wf : defeq (econst "PUnit" (lcons (lvar liz) lnil)) (econst "PUnit" (lcons (lvar liz) lnil)) (esort PUnit_unit/type-wf-sort).
+PUnit_unit/type-wf : defeq (econst "PUnit" (lcons (lvar liz) lnil)) (econst "PUnit" (lcons (lvar liz) lnil)) (esort PUnit_unit/type-wf-sort)
+   = (defeq/const PUnit/decl (inst-expr/sort (lvl-inst/var lvl-nth/zero))).
 
-%%% HOLE
-PUnit_unit/positivity : ctor-positive "PUnit" (lcons (lvar liz) lnil) (econst "PUnit" (lcons (lvar liz) lnil)).
+PUnit_unit/positivity : ctor-positive "PUnit" (lcons (lvar liz) lnil) (econst "PUnit" (lcons (lvar liz) lnil))
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
 PUnit_unit/name : name "PUnit.unit" (is-decl (econst "PUnit" (lcons (lvar liz) lnil)) ctor).
 
@@ -31,11 +31,11 @@ PUnit_unit/decl : declared "PUnit.unit" (econst "PUnit" (lcons (lvar liz) lnil))
    = declared/ok PUnit_unit/name (dkind-ok/ctor PUnit_unit/type-wf PUnit_unit/positivity).
 
 %% recursor PUnit.rec
-%%% HOLE
-PUnit_rec/type-wf-sort : lvl.
+PUnit_rec/type-wf-sort : lvl
+   = (limax (limax (lvar (lis liz)) (lsucc (lvar liz))) (limax (lvar liz) (limax (lvar (lis liz)) (lvar liz)))).
 
-%%% HOLE
-PUnit_rec/type-wf : defeq (eforall (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z))))))) (eforall (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z))))))) (esort PUnit_rec/type-wf-sort).
+PUnit_rec/type-wf : defeq (eforall (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z))))))) (eforall (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z))))))) (esort PUnit_rec/type-wf-sort)
+   = (defeq/forall (defeq/forall (defeq/const PUnit/decl (inst-expr/sort (lvl-inst/var lvl-nth/zero))) ([x] ([h] defeq/sort-refl))) ([x] ([h] (defeq/forall (defeq/app h (defeq/const PUnit_unit/decl (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)))) ([y] ([h1] (defeq/forall (defeq/const PUnit/decl (inst-expr/sort (lvl-inst/var lvl-nth/zero))) ([z] ([h2] (defeq/app h h2)))))))))).
 
 PUnit_rec/name : name "PUnit.rec" (is-decl (eforall (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z))))))) irec).
 
@@ -49,8 +49,8 @@ Eq/type-wf-sort : lvl
 Eq/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (esort Eq/type-wf-sort)
    = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall h ([y] ([h1] (defeq/forall h ([z] ([h2] defeq/sort-refl))))))))).
 
-%%% HOLE
-Eq/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))).
+Eq/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero)))))))
+   = (ends-in-sort/forall ([x] (ends-in-sort/forall ([y] (ends-in-sort/forall ([z] ends-in-sort/sort)))))).
 
 Eq/name : name "Eq" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) indt).
 
@@ -58,14 +58,14 @@ Eq/decl : declared "Eq" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforal
    = declared/ok Eq/name (dkind-ok/indt Eq/type-wf Eq/ends-in-sort).
 
 %% ctor Eq.refl (of Eq)
-%%% HOLE
-Eq_refl/type-wf-sort : lvl.
+Eq_refl/type-wf-sort : lvl
+   = (limax (lsucc (lvar liz)) (limax (lvar liz) lzero)).
 
-%%% HOLE
-Eq_refl/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (esort Eq_refl/type-wf-sort).
+Eq_refl/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (esort Eq_refl/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall h ([y] ([h1] (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h1))))))).
 
-%%% HOLE
-Eq_refl/positivity : ctor-positive "Eq" (lcons (lvar liz) lnil) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))).
+Eq_refl/positivity : ctor-positive "Eq" (lcons (lvar liz) lnil) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y)))))
+   = (ctor-positive/intro ([S] (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp S x) y) y)))))) (ctor-spine/arg (strict-pos/no-occur (esort (lvar liz))) ([x] (ctor-spine/arg (strict-pos/no-occur x) ([y] (ctor-spine/result (applies-self/app (applies-self/app (applies-self/app applies-self/refl))))))))).
 
 Eq_refl/name : name "Eq.refl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) ctor).
 
@@ -73,11 +73,11 @@ Eq_refl/decl : declared "Eq.refl" (eforall (esort (lvar liz)) ([x] (eforall x ([
    = declared/ok Eq_refl/name (dkind-ok/ctor Eq_refl/type-wf Eq_refl/positivity).
 
 %% recursor Eq.rec
-%%% HOLE
-Eq_rec/type-wf-sort : lvl.
+Eq_rec/type-wf-sort : lvl
+   = (limax (lsucc (lvar (lis liz))) (limax (lvar (lis liz)) (limax (limax (lvar (lis liz)) (limax lzero (lsucc (lvar liz)))) (limax (lvar liz) (limax (lvar (lis liz)) (limax lzero (lvar liz))))))).
 
-%%% HOLE
-Eq_rec/type-wf : defeq (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Eq_rec/type-wf-sort).
+Eq_rec/type-wf : defeq (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Eq_rec/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall h ([y] ([h1] (defeq/forall (defeq/forall h ([z] ([h2] (defeq/forall (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h2) ([w] ([h3] defeq/sort-refl)))))) ([z] ([h2] (defeq/forall (defeq/app (defeq/app h2 h1) (defeq/app (defeq/app (defeq/const Eq_refl/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)) h) h1) h1)))))))) h) h1)) ([w] ([h3] (defeq/forall h ([x1] ([h4] (defeq/forall (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h4) ([y1] ([h5] (defeq/app (defeq/app h2 h4) h5))))))))))))))))))).
 
 Eq_rec/name : name "Eq.rec" (is-decl (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) irec).
 
@@ -85,14 +85,14 @@ Eq_rec/decl : declared "Eq.rec" (eforall (esort (lvar (lis liz))) ([x] (eforall 
    = declared/ok Eq_rec/name (dkind-ok/irec Eq_rec/type-wf).
 
 %% def rfl
-%%% HOLE
-rfl/type-wf-sort : lvl.
+rfl/type-wf-sort : lvl
+   = (limax (lsucc (lvar liz)) (limax (lvar liz) lzero)).
 
-%%% HOLE
-rfl/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (esort rfl/type-wf-sort).
+rfl/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (esort rfl/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall h ([y] ([h1] (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h1))))))).
 
-%%% HOLE
-rfl/value-typed : defeq (elam (esort (lvar liz)) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x) y))))) (elam (esort (lvar liz)) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x) y))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))).
+rfl/value-typed : defeq (elam (esort (lvar liz)) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x) y))))) (elam (esort (lvar liz)) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x) y))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y)))))
+   = (defeq/lam defeq/sort-refl ([x] ([h] (defeq/lam h ([y] ([h1] (defeq/app (defeq/app (defeq/const Eq_refl/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)) h) h1) h1)))))))) h) h1))))))).
 
 rfl/name : name "rfl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (defn (elam (esort (lvar liz)) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x) y))))))).
 
@@ -100,11 +100,11 @@ rfl/decl : declared "rfl" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp
    = declared/ok rfl/name (dkind-ok/defn rfl/type-wf rfl/value-typed).
 
 %% def unitEta3
-%%% HOLE
-unitEta3/type-wf-sort : lvl.
+unitEta3/type-wf-sort : lvl
+   = (limax lzero (limax lzero lzero)).
 
-%%% HOLE
-unitEta3/type-wf : defeq (eforall (econst "PUnit" (lcons lzero lnil)) ([x] (eforall (econst "PUnit" (lcons lzero lnil)) ([y] (eapp (eapp (eapp (econst "Eq" (lcons lzero lnil)) (econst "PUnit" (lcons lzero lnil))) x) y))))) (eforall (econst "PUnit" (lcons lzero lnil)) ([x] (eforall (econst "PUnit" (lcons lzero lnil)) ([y] (eapp (eapp (eapp (econst "Eq" (lcons lzero lnil)) (econst "PUnit" (lcons lzero lnil))) x) y))))) (esort unitEta3/type-wf-sort).
+unitEta3/type-wf : defeq (eforall (econst "PUnit" (lcons lzero lnil)) ([x] (eforall (econst "PUnit" (lcons lzero lnil)) ([y] (eapp (eapp (eapp (econst "Eq" (lcons lzero lnil)) (econst "PUnit" (lcons lzero lnil))) x) y))))) (eforall (econst "PUnit" (lcons lzero lnil)) ([x] (eforall (econst "PUnit" (lcons lzero lnil)) ([y] (eapp (eapp (eapp (econst "Eq" (lcons lzero lnil)) (econst "PUnit" (lcons lzero lnil))) x) y))))) (esort unitEta3/type-wf-sort)
+   = (defeq/forall (defeq/const PUnit/decl (inst-expr/sort (lvl-inst/var lvl-nth/zero))) ([x] ([h] (defeq/forall (defeq/const PUnit/decl (inst-expr/sort (lvl-inst/var lvl-nth/zero))) ([y] ([h1] (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) (defeq/const PUnit/decl (inst-expr/sort (lvl-inst/var lvl-nth/zero)))) h) h1))))))).
 
 %%% HOLE
 unitEta3/value-typed : defeq (elam (econst "PUnit" (lcons lzero lnil)) ([x] (elam (econst "PUnit" (lcons lzero lnil)) ([y] (eapp (eapp (econst "rfl" (lcons lzero lnil)) (econst "PUnit" (lcons lzero lnil))) x))))) (elam (econst "PUnit" (lcons lzero lnil)) ([x] (elam (econst "PUnit" (lcons lzero lnil)) ([y] (eapp (eapp (econst "rfl" (lcons lzero lnil)) (econst "PUnit" (lcons lzero lnil))) x))))) (eforall (econst "PUnit" (lcons lzero lnil)) ([x] (eforall (econst "PUnit" (lcons lzero lnil)) ([y] (eapp (eapp (eapp (econst "Eq" (lcons lzero lnil)) (econst "PUnit" (lcons lzero lnil))) x) y))))).

@@ -7,8 +7,8 @@ N/type-wf-sort : lvl
 N/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort N/type-wf-sort)
    = defeq/sort-refl.
 
-%%% HOLE
-N/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
+N/ends-in-sort : ends-in-sort (esort (lsucc lzero))
+   = ends-in-sort/sort.
 
 N/name : name "N" (is-decl (esort (lsucc lzero)) indt).
 
@@ -16,14 +16,14 @@ N/decl : declared "N" (esort (lsucc lzero)) indt
    = declared/ok N/name (dkind-ok/indt N/type-wf N/ends-in-sort).
 
 %% ctor N.zero (of N)
-%%% HOLE
-N_zero/type-wf-sort : lvl.
+N_zero/type-wf-sort : lvl
+   = (lsucc lzero).
 
-%%% HOLE
-N_zero/type-wf : defeq (econst "N" lnil) (econst "N" lnil) (esort N_zero/type-wf-sort).
+N_zero/type-wf : defeq (econst "N" lnil) (econst "N" lnil) (esort N_zero/type-wf-sort)
+   = (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
 
-%%% HOLE
-N_zero/positivity : ctor-positive "N" lnil (econst "N" lnil).
+N_zero/positivity : ctor-positive "N" lnil (econst "N" lnil)
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
 N_zero/name : name "N.zero" (is-decl (econst "N" lnil) ctor).
 
@@ -31,14 +31,14 @@ N_zero/decl : declared "N.zero" (econst "N" lnil) ctor
    = declared/ok N_zero/name (dkind-ok/ctor N_zero/type-wf N_zero/positivity).
 
 %% ctor N.succ (of N)
-%%% HOLE
-N_succ/type-wf-sort : lvl.
+N_succ/type-wf-sort : lvl
+   = (limax (lsucc lzero) (lsucc lzero)).
 
-%%% HOLE
-N_succ/type-wf : defeq (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (esort N_succ/type-wf-sort).
+N_succ/type-wf : defeq (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (esort N_succ/type-wf-sort)
+   = (defeq/forall (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))).
 
-%%% HOLE
-N_succ/positivity : ctor-positive "N" lnil (eforall (econst "N" lnil) ([x] (econst "N" lnil))).
+N_succ/positivity : ctor-positive "N" lnil (eforall (econst "N" lnil) ([x] (econst "N" lnil)))
+   = (ctor-positive/intro ([S] (eforall S ([x] S))) (ctor-spine/arg (strict-pos/head applies-self/refl) ([x] (ctor-spine/result applies-self/refl)))).
 
 N_succ/name : name "N.succ" (is-decl (eforall (econst "N" lnil) ([x] (econst "N" lnil))) ctor).
 
@@ -46,11 +46,11 @@ N_succ/decl : declared "N.succ" (eforall (econst "N" lnil) ([x] (econst "N" lnil
    = declared/ok N_succ/name (dkind-ok/ctor N_succ/type-wf N_succ/positivity).
 
 %% recursor N.rec
-%%% HOLE
-N_rec/type-wf-sort : lvl.
+N_rec/type-wf-sort : lvl
+   = (limax (limax (lsucc lzero) (lsucc (lvar liz))) (limax (lvar liz) (limax (limax (lsucc lzero) (limax (lvar liz) (lvar liz))) (limax (lsucc lzero) (lvar liz))))).
 
-%%% HOLE
-N_rec/type-wf : defeq (eforall (eforall (econst "N" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "N" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) (esort N_rec/type-wf-sort).
+N_rec/type-wf : defeq (eforall (eforall (econst "N" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "N" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) (esort N_rec/type-wf-sort)
+   = (defeq/forall (defeq/forall (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] defeq/sort-refl))) ([x] ([h] (defeq/forall (defeq/app h (defeq/const N_zero/decl (inst-expr/const lvls-inst/nil))) ([y] ([h1] (defeq/forall (defeq/forall (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([z] ([h2] (defeq/forall (defeq/app h h2) ([w] ([h3] (defeq/app h (defeq/app (defeq/const N_succ/decl (inst-expr/forall (inst-expr/const lvls-inst/nil) ([x] ([h] (inst-expr/const lvls-inst/nil))))) h2)))))))) ([z] ([h2] (defeq/forall (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([w] ([h3] (defeq/app h h3))))))))))))).
 
 N_rec/name : name "N.rec" (is-decl (eforall (eforall (econst "N" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) irec).
 
@@ -64,8 +64,8 @@ natDef/type-wf-sort : lvl
 natDef/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort natDef/type-wf-sort)
    = defeq/sort-refl.
 
-%%% HOLE
-natDef/value-typed : defeq (econst "N" lnil) (econst "N" lnil) (esort (lsucc lzero)).
+natDef/value-typed : defeq (econst "N" lnil) (econst "N" lnil) (esort (lsucc lzero))
+   = (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
 
 natDef/name : name "natDef" (is-decl (esort (lsucc lzero)) (defn (econst "N" lnil))).
 

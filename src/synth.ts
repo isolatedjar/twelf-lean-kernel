@@ -29,9 +29,35 @@ export function buildEnvMap(env: ParsedEnv): EnvMap {
   const m: EnvMap = new Map();
   for (const d of env.decls) {
     if (d.kind === "inductive") {
-      // Inductive members are handled per-member (type former, ctors, recursor).
-      // Their `declared` witnesses exist in the generated .elf but are not
-      // δ-reducible (no defn body). Skip for now — Track C.
+      // Register every inductive member (type former, constructor, recursor)
+      // as a value-less entry: synth can reference it via defeq/const using the
+      // `<mangle>/decl` witness the generator emits, but it is not δ-reducible
+      // (no defn body — `value: null`). This unlocks recursor type-wf and
+      // value-typed obligations that mention the inductive's constants.
+      for (const t of d.types) {
+        m.set(nameToString(t.name), {
+          type: t.type,
+          value: null,
+          levelParams: t.levelParams,
+          mangleName: mangle(t.name),
+        });
+      }
+      for (const c of d.ctors) {
+        m.set(nameToString(c.name), {
+          type: c.type,
+          value: null,
+          levelParams: c.levelParams,
+          mangleName: mangle(c.name),
+        });
+      }
+      for (const r of d.recursors) {
+        m.set(nameToString(r.name), {
+          type: r.type,
+          value: null,
+          levelParams: r.levelParams,
+          mangleName: mangle(r.name),
+        });
+      }
       continue;
     }
     if (d.kind === "quot") continue;
@@ -960,4 +986,235 @@ export function synth(e: Expr, envMap?: EnvMap): Synthed | null {
 export function synthSort(e: Expr, envMap?: EnvMap): Level | null {
   const r = synth(e, envMap);
   return r ? sortLevel(r.ty) : null;
+}
+
+// ---------------------------------------------------------------------------
+// Track C: ends-in-sort + ctor-positive (strict positivity) proof builders
+// ---------------------------------------------------------------------------
+//
+// These are purely structural ports from the (now-deleted) lean2lf.ts: they
+// build `Fmt` witnesses for the soundness gates Lean requires on inductive
+// declarations. As with everything in this module, they return null (→ HOLE)
+// whenever the shape isn't handled — never an unsound proof.
+
+// `ends-in-sort T`: T is a Π-chain ending in a sort. Structural only (no
+// reduction), matching Lean's own ends-in-sort check.
+export function endsInSortProof(t: Expr, scope: string[] = []): Fmt | null {
+  if (t.kind === "sort") return atom("ends-in-sort/sort");
+  if (t.kind === "forallE") {
+    const v = freshVar(scope);
+    const inner = endsInSortProof(t.body, [v, ...scope]);
+    if (!inner) return null;
+    return app(atom("ends-in-sort/forall"), lam(v, inner));
+  }
+  return null;
+}
+
+// Does `t` syntactically equal the inductive's self-reference
+// `econst selfName selfLevels`?
+function isSelfRef(t: Expr, selfName: string, selfLevels: Level[]): boolean {
+  if (t.kind !== "const") return false;
+  if (nameToString(t.name) !== selfName) return false;
+  if (t.us.length !== selfLevels.length) return false;
+  return t.us.every((u, i) => {
+    const sl = selfLevels[i];
+    return sl !== undefined && levelEq(u, sl);
+  });
+}
+
+// Does `t` syntactically mention the self-reference anywhere?
+function exprMentions(t: Expr, selfName: string, selfLevels: Level[]): boolean {
+  if (isSelfRef(t, selfName, selfLevels)) return true;
+  switch (t.kind) {
+    case "sort":
+    case "const":
+    case "bvar":
+    case "natLit":
+    case "strLit":
+      return false;
+    case "app":
+      return exprMentions(t.fn, selfName, selfLevels) || exprMentions(t.arg, selfName, selfLevels);
+    case "forallE":
+    case "lam":
+      return (
+        exprMentions(t.type, selfName, selfLevels) || exprMentions(t.body, selfName, selfLevels)
+      );
+    case "letE":
+      return (
+        exprMentions(t.type, selfName, selfLevels) ||
+        exprMentions(t.value, selfName, selfLevels) ||
+        exprMentions(t.body, selfName, selfLevels)
+      );
+    case "proj":
+      return exprMentions(t.struct, selfName, selfLevels);
+  }
+}
+
+// Render a `lvls` list to Fmt: (lcons L0 (lcons L1 ... lnil)).
+function lvlsToFmt(us: Level[], levelParams: Name[]): Fmt {
+  let acc = atom("lnil");
+  for (let i = us.length - 1; i >= 0; i--) {
+    acc = app(atom("lcons"), levelToFmt(us[i]!, levelParams), acc);
+  }
+  return acc;
+}
+
+// Render an Expr to an LF `expr` term as Fmt (the data-level encoding, not a
+// proof). Mirrors render.ts's `lfExpr` but produces Fmt and, when `self` is
+// supplied, replaces occurrences of the self-reference with `atom(self.varName)`
+// (used to build the HOAS `T_HOAS` argument to ctor-positive/intro).
+// Returns null for shapes outside the representable fragment (letE/proj/lits)
+// so callers degrade to a HOLE rather than emit something wrong.
+function exprToFmt(
+  t: Expr,
+  boundVars: string[],
+  levelParams: Name[],
+  self?: { name: string; levels: Level[]; varName: string },
+): Fmt | null {
+  if (self && isSelfRef(t, self.name, self.levels)) return atom(self.varName);
+  switch (t.kind) {
+    case "bvar": {
+      const name = boundVars[t.deBruijn];
+      return name !== undefined ? atom(name) : null;
+    }
+    case "sort":
+      return app(atom("esort"), levelToFmt(t.level, levelParams));
+    case "const":
+      return app(atom("econst"), atom(`"${nameToString(t.name)}"`), lvlsToFmt(t.us, levelParams));
+    case "app": {
+      const fn = exprToFmt(t.fn, boundVars, levelParams, self);
+      const ag = exprToFmt(t.arg, boundVars, levelParams, self);
+      return fn && ag ? app(atom("eapp"), fn, ag) : null;
+    }
+    case "lam":
+    case "forallE": {
+      const ty = exprToFmt(t.type, boundVars, levelParams, self);
+      if (!ty) return null;
+      const v = freshVar(boundVars);
+      const body = exprToFmt(t.body, [v, ...boundVars], levelParams, self);
+      if (!body) return null;
+      return app(atom(t.kind === "forallE" ? "eforall" : "elam"), ty, lam(v, body));
+    }
+    default:
+      return null; // letE / proj / natLit / strLit — conservative
+  }
+}
+
+// `applies-self ([S] T)`: T's head, after S-substitution, is the bound S.
+function buildAppliesSelf(t: Expr, selfName: string, selfLevels: Level[]): Fmt | null {
+  if (isSelfRef(t, selfName, selfLevels)) return atom("applies-self/refl");
+  if (t.kind === "app") {
+    const inner = buildAppliesSelf(t.fn, selfName, selfLevels);
+    return inner ? app(atom("applies-self/app"), inner) : null;
+  }
+  return null;
+}
+
+// `strict-pos ([S] T)`: head / no-occur / Π cases.
+function buildStrictPos(
+  t: Expr,
+  selfName: string,
+  selfLevels: Level[],
+  scope: string[],
+  levelParams: Name[],
+): Fmt | null {
+  const head = buildAppliesSelf(t, selfName, selfLevels);
+  if (head) return app(atom("strict-pos/head"), head);
+  if (!exprMentions(t, selfName, selfLevels)) {
+    const e = exprToFmt(t, scope, levelParams);
+    return e ? app(atom("strict-pos/no-occur"), e) : null;
+  }
+  if (t.kind === "forallE") {
+    if (exprMentions(t.type, selfName, selfLevels)) return null;
+    const A = exprToFmt(t.type, scope, levelParams);
+    if (!A) return null;
+    const y = freshVar(scope);
+    const inner = buildStrictPos(t.body, selfName, selfLevels, [y, ...scope], levelParams);
+    if (!inner) return null;
+    return app(atom("strict-pos/forall"), A, lam(y, inner));
+  }
+  return null;
+}
+
+// `ctor-spine ([S] T)`: Π-bodies via ctor-spine/arg; leaf must be S-applied.
+function buildCtorSpine(
+  t: Expr,
+  selfName: string,
+  selfLevels: Level[],
+  scope: string[],
+  levelParams: Name[],
+): Fmt | null {
+  if (t.kind === "forallE") {
+    const argSP = buildStrictPos(t.type, selfName, selfLevels, scope, levelParams);
+    if (!argSP) return null;
+    const y = freshVar(scope);
+    const bodyCS = buildCtorSpine(t.body, selfName, selfLevels, [y, ...scope], levelParams);
+    if (!bodyCS) return null;
+    return app(atom("ctor-spine/arg"), argSP, lam(y, bodyCS));
+  }
+  const result = buildAppliesSelf(t, selfName, selfLevels);
+  return result ? app(atom("ctor-spine/result"), result) : null;
+}
+
+// Top-level `ctor-positive selfName selfLevels T` via ctor-positive/intro:
+//   ctor-positive/intro ([S] T_HOAS) <ctor-spine proof>
+// where T_HOAS is the ctor type with the self-reference replaced by S.
+export function buildCtorPositive(
+  ctorType: Expr,
+  selfName: string,
+  selfLevels: Level[],
+  levelParams: Name[],
+): Fmt | null {
+  const cs = buildCtorSpine(ctorType, selfName, selfLevels, [], levelParams);
+  if (!cs) return null;
+  const hoasBody = exprToFmt(ctorType, [], levelParams, {
+    name: selfName,
+    levels: selfLevels,
+    varName: "S",
+  });
+  if (!hoasBody) return null;
+  return app(atom("ctor-positive/intro"), lam("S", hoasBody), cs);
+}
+
+// ---------------------------------------------------------------------------
+// Decide-then-refute helper for safe/narrow fail-on-purpose
+// ---------------------------------------------------------------------------
+
+// Evaluate a closed (param-free) level to its concrete universe number, or
+// null if any level parameter appears (then we can't decide it numerically).
+function evalClosedLevel(l: Level): number | null {
+  switch (l.kind) {
+    case "zero":
+      return 0;
+    case "param":
+      return null;
+    case "succ": {
+      const a = evalClosedLevel(l.arg);
+      return a === null ? null : a + 1;
+    }
+    case "max": {
+      const a = evalClosedLevel(l.l);
+      const b = evalClosedLevel(l.r);
+      return a === null || b === null ? null : Math.max(a, b);
+    }
+    case "imax": {
+      const b = evalClosedLevel(l.r);
+      if (b === null) return null;
+      if (b === 0) return 0;
+      const a = evalClosedLevel(l.l);
+      return a === null ? null : Math.max(a, b);
+    }
+  }
+}
+
+// True only when `a` and `b` are both concrete closed sorts at *different*
+// universe levels — i.e. the obligation `defeq a b _` is provably false, not
+// merely unproven. Used to emit a genuine refutation (failOnPurpose) rather
+// than a HOLE. Conservative: returns false whenever either side is open or
+// non-sort, so it can never false-reject a dischargeable obligation.
+export function provablyDistinctSorts(a: Expr, b: Expr): boolean {
+  if (a.kind !== "sort" || b.kind !== "sort") return false;
+  const la = evalClosedLevel(a.level);
+  const lb = evalClosedLevel(b.level);
+  return la !== null && lb !== null && la !== lb;
 }

@@ -7,8 +7,8 @@ indNeg/type-wf-sort : lvl
 indNeg/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort indNeg/type-wf-sort)
    = defeq/sort-refl.
 
-%%% HOLE
-indNeg/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
+indNeg/ends-in-sort : ends-in-sort (esort (lsucc lzero))
+   = ends-in-sort/sort.
 
 indNeg/name : name "indNeg" (is-decl (esort (lsucc lzero)) indt).
 
@@ -16,11 +16,11 @@ indNeg/decl : declared "indNeg" (esort (lsucc lzero)) indt
    = declared/ok indNeg/name (dkind-ok/indt indNeg/type-wf indNeg/ends-in-sort).
 
 %% ctor indNeg.mk (of indNeg)
-%%% HOLE
-indNeg_mk/type-wf-sort : lvl.
+indNeg_mk/type-wf-sort : lvl
+   = (limax (limax (lsucc lzero) (lsucc lzero)) (lsucc lzero)).
 
-%%% HOLE
-indNeg_mk/type-wf : defeq (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (esort indNeg_mk/type-wf-sort).
+indNeg_mk/type-wf : defeq (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (esort indNeg_mk/type-wf-sort)
+   = (defeq/forall (defeq/forall (defeq/const indNeg/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] (defeq/const indNeg/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))) ([x] ([h] (defeq/const indNeg/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))).
 
 %%% HOLE
 indNeg_mk/positivity : ctor-positive "indNeg" lnil (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))).

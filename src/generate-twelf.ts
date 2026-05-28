@@ -230,7 +230,7 @@ function generateDecl(prover: Prover, d: Decl): void {
       generateInductive(prover, d);
       break;
     case "quot":
-      // Deferred (plugin-refactor step 1): quot members carry a type on this
+      // Deferred: quot members carry a type on this
       // branch, but representing the Quot family + its kernel reductions is
       // its own task.  Declining keeps these tests 🤷 for now.
       skip(`quot ${nameToString(d.name)} (${d.quotKind}) — not yet represented`);
@@ -289,7 +289,191 @@ function generateAxiom(prover: Prover, d: Decl & { kind: "axiom" }): void {
   });
 }
 
+// =====================================================================
+// Inductive pre-flight checks
+// =====================================================================
+//
+// Soundness invariants Lean's kernel enforces on an inductive block that are
+// NOT encoded in the LF signature (so Twelf can't see them). Once the prover
+// can discharge `ends-in-sort`/`ctor-positive` and synth the recursor/ctor
+// obligations, a malformed block would otherwise sail through (the missing
+// check was previously masked by those obligations being HOLEs). These checks
+// reproduce the translator-side rejections the old lean2lf.ts performed:
+//   (a) numParams ≤ #leading Π binders of the type former        → 042
+//   (b) ctor result applies the inductive to its param binders    → 043 / 044
+//       in canonical order
+//   (c) ctor result-type index args don't mention the inductive   → 046
+//   (d) concrete ctor field universe ≤ inductive universe − 1     → 054
+//   (e) a primitive recursor is named `<type>.rec`                → 124
+//   plus: no duplicate universe-parameter names on any member     → 041
+//
+// On violation we SKIP (🤷): Twelf isn't checking the condition, so this is a
+// translator-side decline, not a Twelf-verified rejection. All checks are
+// conservative — they only fire on genuinely malformed blocks, never on a
+// well-formed one.
+
+// Count the leading Π binders of a type (the declaration "spine").
+function countLeadingForalls(e: Expr): number {
+  let n = 0;
+  let cur = e;
+  while (cur.kind === "forallE") {
+    n++;
+    cur = cur.body;
+  }
+  return n;
+}
+
+// Does any `const` subexpression of `e` carry the name `name`? Used for the
+// index-occurrence check (c); name-only (ignores levels) so it's conservative.
+function mentionsConst(e: Expr, name: string): boolean {
+  switch (e.kind) {
+    case "const":
+      return nameToString(e.name) === name;
+    case "app":
+      return mentionsConst(e.fn, name) || mentionsConst(e.arg, name);
+    case "lam":
+    case "forallE":
+      return mentionsConst(e.type, name) || mentionsConst(e.body, name);
+    case "letE":
+      return (
+        mentionsConst(e.type, name) || mentionsConst(e.value, name) || mentionsConst(e.body, name)
+      );
+    case "proj":
+      return mentionsConst(e.struct, name);
+    default:
+      return false; // bvar / sort / natLit / strLit
+  }
+}
+
+// A chain of `succ` over `zero` as a number, else null (we don't reason about
+// max/imax/param universes here).
+function levelToNumber(l: Level): number | null {
+  let n = 0;
+  let cur = l;
+  while (cur.kind === "succ") {
+    cur = cur.arg;
+    n++;
+  }
+  return cur.kind === "zero" ? n : null;
+}
+
+// The inductive's universe if its type signature ends in a concrete Sort.
+function inductiveResultUniverse(t: Expr): Level | null {
+  let cur = t;
+  while (cur.kind === "forallE") cur = cur.body;
+  return cur.kind === "sort" ? cur.level : null;
+}
+
+// Checks (b), (c), (d) on a single ctor. Returns a mismatch reason or null.
+function checkCtorStructure(
+  ctorType: Expr,
+  indName: string,
+  indUniverse: Level | null,
+  numParams: number,
+  numFields: number,
+): string | null {
+  let e = ctorType;
+  for (let i = 0; i < numParams; i++) {
+    if (e.kind !== "forallE") {
+      return `expected >= ${numParams + numFields} leading binders, found ${i}`;
+    }
+    e = e.body;
+  }
+  const indUnivN = indUniverse !== null ? levelToNumber(indUniverse) : null;
+  for (let f = 0; f < numFields; f++) {
+    if (e.kind !== "forallE") {
+      return `expected >= ${numParams + numFields} leading binders, found ${numParams + f}`;
+    }
+    // (d) concrete-case field universe check.
+    if (indUnivN !== null && indUnivN > 0 && e.type.kind === "sort") {
+      const fieldLvlN = levelToNumber(e.type.level);
+      if (fieldLvlN !== null && fieldLvlN + 1 > indUnivN) {
+        return `field #${f + 1} has type Sort ${fieldLvlN} (lives at Sort ${fieldLvlN + 1}); inductive is at Sort ${indUnivN}`;
+      }
+    }
+    e = e.body;
+  }
+  // e is the result type; decompose its application spine.
+  const args: Expr[] = [];
+  while (e.kind === "app") {
+    args.unshift(e.arg);
+    e = e.fn;
+  }
+  if (e.kind !== "const") {
+    return `result-type head is not a constant (got ${e.kind})`;
+  }
+  // Wrong head: defer to Twelf — no `applies-self` rule fires on a bad head,
+  // so ctor-positive can't be discharged and the obligation stays a HOLE.
+  if (nameToString(e.name) !== indName) return null;
+  if (args.length < numParams) {
+    return `result-type has ${args.length} args, expected >= ${numParams}`;
+  }
+  // (b) param args must be the param binders, in canonical order.
+  for (const [i, a] of args.slice(0, numParams).entries()) {
+    const expected = numFields + numParams - 1 - i;
+    if (a.kind !== "bvar" || a.deBruijn !== expected) {
+      const got = a.kind === "bvar" ? `bvar(${a.deBruijn})` : a.kind;
+      return `result-type param arg #${i + 1} should be bvar(${expected}), got ${got}`;
+    }
+  }
+  // (c) index args must not mention the inductive.
+  for (const [i, a] of args.slice(numParams).entries()) {
+    if (mentionsConst(a, indName)) {
+      return `result-type index arg #${i + 1} mentions the inductive "${indName}"`;
+    }
+  }
+  return null;
+}
+
+function preflightInductiveReject(ind: Decl & { kind: "inductive" }): string | null {
+  const dupLevels = (lps: Name[]): boolean => {
+    const names = lps.map(nameToString);
+    return new Set(names).size < names.length;
+  };
+  for (const t of ind.types) {
+    if (dupLevels(t.levelParams)) {
+      return `inductive ${nameToString(t.name)} — duplicate universe parameter names`;
+    }
+    if (t.numParams > countLeadingForalls(t.type)) {
+      return `inductive ${nameToString(t.name)} — numParams=${t.numParams} exceeds the ${countLeadingForalls(t.type)} leading Π binders of its type`;
+    }
+  }
+  for (const c of ind.ctors) {
+    if (dupLevels(c.levelParams)) {
+      return `ctor ${nameToString(c.name)} — duplicate universe parameter names`;
+    }
+    const indSpec = ind.types.find((t) => nameToString(t.name) === nameToString(c.induct));
+    if (!indSpec) continue;
+    const why = checkCtorStructure(
+      c.type,
+      nameToString(c.induct),
+      inductiveResultUniverse(indSpec.type),
+      c.numParams,
+      c.numFields,
+    );
+    if (why !== null) return `ctor ${nameToString(c.name)} — ${why}`;
+  }
+  const typeNames = new Set(ind.types.map((t) => nameToString(t.name)));
+  for (const r of ind.recursors) {
+    if (dupLevels(r.levelParams)) {
+      return `recursor ${nameToString(r.name)} — duplicate universe parameter names`;
+    }
+    // (e) a primitive recursor must be named `<type>.rec` for a type in the block.
+    const rn = nameToString(r.name);
+    const ok = rn.endsWith(".rec") && typeNames.has(rn.slice(0, -".rec".length));
+    if (!ok) {
+      return `recursor ${rn} — name is not <type>.rec for any type in the block`;
+    }
+  }
+  return null;
+}
+
 function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): void {
+  const reject = preflightInductiveReject(ind);
+  if (reject !== null) {
+    skip(reject);
+    return;
+  }
   // Type formers.
   for (const t of ind.types) {
     generateIndType(prover, t);

@@ -7,8 +7,8 @@ dup_ctor_rec/type-wf-sort : lvl
 dup_ctor_rec/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort dup_ctor_rec/type-wf-sort)
    = defeq/sort-refl.
 
-%%% HOLE
-dup_ctor_rec/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
+dup_ctor_rec/ends-in-sort : ends-in-sort (esort (lsucc lzero))
+   = ends-in-sort/sort.
 
 dup_ctor_rec/name : name "dup_ctor_rec" (is-decl (esort (lsucc lzero)) indt).
 
@@ -16,14 +16,14 @@ dup_ctor_rec/decl : declared "dup_ctor_rec" (esort (lsucc lzero)) indt
    = declared/ok dup_ctor_rec/name (dkind-ok/indt dup_ctor_rec/type-wf dup_ctor_rec/ends-in-sort).
 
 %% ctor dup_ctor_rec.rec (of dup_ctor_rec)
-%%% HOLE
-dup_ctor_rec_rec/type-wf-sort : lvl.
+dup_ctor_rec_rec/type-wf-sort : lvl
+   = (lsucc lzero).
 
-%%% HOLE
-dup_ctor_rec_rec/type-wf : defeq (econst "dup_ctor_rec" lnil) (econst "dup_ctor_rec" lnil) (esort dup_ctor_rec_rec/type-wf-sort).
+dup_ctor_rec_rec/type-wf : defeq (econst "dup_ctor_rec" lnil) (econst "dup_ctor_rec" lnil) (esort dup_ctor_rec_rec/type-wf-sort)
+   = (defeq/const dup_ctor_rec/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
 
-%%% HOLE
-dup_ctor_rec_rec/positivity : ctor-positive "dup_ctor_rec" lnil (econst "dup_ctor_rec" lnil).
+dup_ctor_rec_rec/positivity : ctor-positive "dup_ctor_rec" lnil (econst "dup_ctor_rec" lnil)
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
 dup_ctor_rec_rec/name : name "dup_ctor_rec.rec" (is-decl (econst "dup_ctor_rec" lnil) ctor).
 

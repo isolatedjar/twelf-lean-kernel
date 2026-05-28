@@ -1,17 +1,4 @@
 %%% Expected outcome: reject
 %%% An inductive with too few parameters in the type
-%% inductive inductTooFewParams
-inductTooFewParams/type-wf-sort : lvl
-   = (limax (lsucc lzero) (lsucc lzero)).
-
-inductTooFewParams/type-wf : defeq (eforall (esort lzero) ([x] (esort lzero))) (eforall (esort lzero) ([x] (esort lzero))) (esort inductTooFewParams/type-wf-sort)
-   = (defeq/forall defeq/sort-refl ([x] ([h] defeq/sort-refl))).
-
-%%% HOLE
-inductTooFewParams/ends-in-sort : ends-in-sort (eforall (esort lzero) ([x] (esort lzero))).
-
-inductTooFewParams/name : name "inductTooFewParams" (is-decl (eforall (esort lzero) ([x] (esort lzero))) indt).
-
-inductTooFewParams/decl : declared "inductTooFewParams" (eforall (esort lzero) ([x] (esort lzero))) indt
-   = declared/ok inductTooFewParams/name (dkind-ok/indt inductTooFewParams/type-wf inductTooFewParams/ends-in-sort).
+%%% SKIP: inductive inductTooFewParams — numParams=2 exceeds the 1 leading Π binders of its type
 
