@@ -2,7 +2,7 @@
 //
 // UNTRUSTED. The generator (generate-twelf.ts) only consumes the `Fmt`
 // values returned here; nothing in this file is part of the trusted base.
-// See plugin-refactor.md and the `Prover` interface in shared.ts.
+// See the `Prover` interface in shared.ts and the architecture note in CLAUDE.md.
 
 import type { ParsedEnv, ProofResult, Prover, TypeWfResult } from "./shared.ts";
 import { failOnPurpose, nameToString } from "./shared.ts";

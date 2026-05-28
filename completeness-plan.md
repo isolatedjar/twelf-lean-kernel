@@ -393,3 +393,144 @@ human/LLM/external procedure in the gap. The closure of the TCB just
 guarantees those handoffs are well-posed: the proof exists somewhere in the LF
 signature, the question is just whether someone (us, them, something else) can
 find it.
+
+---
+
+## 7. Salvaged design notes (from deleted `archive/`, May 2026)
+
+When the `lean2lf.ts → generate-twelf.ts + prover.ts + synth.ts` refactor
+landed, the old `archive/` design docs and `plugin-refactor.md` were deleted
+(the refactor is done; full text in git history). These are the high-value,
+still-actionable nuggets that were in them. The framework stance and a longer
+soundness comparison lived in `archive/mm0-analysis.md` (vs. Carneiro's
+`lean.mm1`); the level material in `archive/first-version-report.md`.
+
+### 7.1 Level-equality decision procedure (closes §2 wholesale)
+
+The highest-leverage `lvl-eq` fix is to port **Carneiro's algorithmic level
+inequality** (Type Theory of Lean thesis, p.7): the offset relation `ℓ ≤ ℓ' +
+n`, `n ∈ ℤ`, with `ℓ ≡ ℓ'` as `ℓ ≤ ℓ' + 0 ∧ ℓ' ≤ ℓ + 0`. (NB: this is the
+*inference-rule* algorithm, searchable by Twelf — **not** lean4lean's
+`VLevel.LE`, which is a semantic universal-over-valuations definition and isn't
+directly searchable.)
+
+The thirteen structural rules transcribe directly into Twelf over the integer
+constraint domain and were validated against `%solve` (all queries <10 ms,
+including nested `imax`/`max`, commutativity, and correct *failure* on `1 ≤ 0`):
+
+```twelf
+mleq : level -> level -> integer -> type.
+mleq/lz       : N >= 0 -> mleq lz L N.
+mleq/self     : N >= 0 -> mleq L L N.
+mleq/sL       : mleq L L' (N - 1) -> mleq (ls L) L' N.
+mleq/sR       : mleq L L' (N + 1) -> mleq L (ls L') N.
+mleq/maxR_l   : mleq L L1 N -> mleq L (lmax L1 L2) N.
+mleq/maxR_r   : mleq L L2 N -> mleq L (lmax L1 L2) N.
+mleq/maxL     : mleq L1 L N -> mleq L2 L N -> mleq (lmax L1 L2) L N.
+mleq/imax_lzL : mleq lz L N -> mleq (limax L1 lz) L N.
+mleq/imax_lsL : mleq (lmax L1 (ls L2)) L N -> mleq (limax L1 (ls L2)) L N.
+mleq/imax_imL : mleq (lmax (limax L1 L3) (limax L2 L3)) L N
+                  -> mleq (limax L1 (limax L2 L3)) L N.
+mleq/imax_imR : mleq L (lmax (limax L1 L3) (limax L2 L3)) N
+                  -> mleq L (limax L1 (limax L2 L3)) N.
+mleq/imax_mxL : mleq (lmax (limax L1 L2) (limax L1 L3)) L N
+                  -> mleq (limax L1 (lmax L2 L3)) L N.
+mleq/imax_mxR : mleq L (lmax (limax L1 L2) (limax L1 L3)) N
+                  -> mleq L (limax L1 (lmax L2 L3)) N.
+```
+
+**The one sticking point** is the fourteenth rule — universe-variable
+elimination by case-split `u ↦ 0` / `u ↦ Su`. The naive HOAS transcription
+(`mleq (L lz) (L' lz) N -> ({u} mleq (L (ls u)) (L' (ls u)) N) -> mleq (L U)
+(L' U) N`) loops in Twelf search (`L, L' : level -> level` unify with anything).
+**Recommended: Option B (hybrid).** Keep the thirteen structural rules in
+Twelf; detect `imax _ U` for free `U` in TypeScript, perform the case-split
+there, `%solve` each branch, and recombine via a no-op `mleq/var-discharge`
+axiom (concrete levels passed in from TS, so it never fires on its own during
+search). The variable-elim case is empirically rare. Net effect: replaces the
+reactive `lvl-eq` rule table with a near-complete decision procedure, and also
+fixes the `t-const` same-level diagonal limitation (§1.1) once levels compare
+up to equivalence. The `%solve`-carries-a-side-condition pattern (already used
+for `enatlit`'s `N >= 0`) is the template.
+
+### 7.2 Name-reservation soundness check (principled fix for 124-style)
+
+`124_dup_rec_def2` is currently rejected by a *translator-side* pre-flight
+check in `generate-twelf.ts` (a primitive recursor must be named `<type>.rec`).
+The **principled, Twelf-verified** alternative — model Lean's implicit "adding
+inductive `Foo` reserves the name `Foo.rec`" rule — was validated with five
+Twelf spikes. Root cause: Lean generates the recursor name fresh as
+`mkRecName ind = ind ++ ".rec"`, so the reservation exists no matter what the
+export calls the recursor; an export naming it `original_rec` is adversarial.
+
+Validated LF design (deviates from the obvious sketch in 3 ways that matter):
+
+1. **`name-kind` payloads are payload-free** (`is-declaration`, `is-rec`,
+   `is-quot`) — a `string` payload inside the *kind* puts a non-ground variable
+   in `%mode name +S -K` output (Twelf can't run string deconcatenation). The
+   inductive↔recursor link rides in the *string index* via `(N ++ ".rec")`,
+   which Twelf evaluates forward fine.
+2. **The reservation family is open with ground per-decl constants only**
+   (exactly like `declared`). Generic constructors make `%unique` report a
+   static overlap on every file (false positive).
+3. **Reservations live in the `dkind-ok` rules with a threaded `{N : string}`**
+   (forcing `N` = the `declared` name), not in the `dkind` constructors. The
+   recursor (`irec`) reserves **nothing** — the inductive owns the `.rec` slot
+   (`%unique` flags *any* two constants sharing a string, even same-kind).
+
+Then `dkind-ok/indt` requires both `name N is-declaration` and `name (N ++
+".rec") is-rec`, and `final-checks.elf` adds `%mode name +S -K. / %worlds ()
+(name _ _). / %unique name +S -1K.` — so a `def Foo.rec` and inductive `Foo`
+both reserving string `"Foo.rec"` with different kinds make uniqueness false →
+ABORT. This requires repurposing term-level `name` to `string` throughout
+`tcb.elf` (mechanical; generated `.elf` already use string literals). Out of
+scope of the spike: forcing a recursor's *own* name to be `<ind>.rec` in
+general (needs a `+kind -string` uniqueness in the other direction).
+
+### 7.3 `lean.mm1` borrows + the trusted-export soundness gaps
+
+Carneiro's `lean.mm1` is a *complete* declarative spec of the same `IsDefEq`;
+where our TCB is partial it reads as a checklist. No bug found in rules we
+already check; the gaps are exactly the things §3 marks "we trust the export",
+which flip from *incomplete* to *unsound* if the export isn't trustworthy:
+
+- **Ctor field-universe constraints** — `lean.mm1`'s `ctor_Pi` carries `l2 <=l
+  l` (each field's sort ≤ the inductive's sort); `ctorR_S` carries `l_imax l2 l
+  <=l l` for recursive args. We check only `defeq T T (esort U)`. (Our
+  translator-side concrete-case check (d) approximates this; encoding it in LF
+  removes the trust.)
+- **Large-elimination / subsingleton eligibility** — `lean.mm1`'s `LE` /
+  `LE_ctor` / `LE_mem` apparatus decides whether a Prop-inductive may eliminate
+  into `Type`. Missing here; allowing large elimination from a
+  non-subsingleton Prop is a classic route to a closed proof of `False`.
+- **Recursor type well-formedness** — `lean.mm1` *synthesizes* the recursor
+  type (`Rec_*`) and checks it; we accept the export's. Our iota rules
+  currently lean on the export supplying a genuine recursor rather than a
+  schema-shaped lookalike.
+
+Porting discipline (LF vs. MM0): **delete every `subst: A[e/x] = B` premise and
+replace `B` with the LF application `(λx.A) e`** — MM0 reifies substitution only
+because it lacks LF's meta-level β. Stance: this project follows **Appel &
+Felty** (LF as proof-checking with a tiny trusted checker), *not* Crary–Sarkar
+(safety argued inside the Twelf metalogic). Keep `%total`/`%worlds`/`%covers`
+off the trusted checking path; the only legitimate metatheorem use is
+confidence *about* the TCB (e.g. proving two `lvl-eq` characterizations
+coincide), living outside `tcb.elf`. `%unique` and the open-`declared`
+discipline are the two non-pure-LF checks we do rely on — small decidable
+side-conditions, the kind a flit-style minimal LF checker would need to add.
+
+### 7.4 Name-usages not captured by Lean's `Declaration` (adequacy checklist)
+
+A faithful `.render.elf` must account for names that don't appear syntactically
+in the per-`Declaration` input:
+
+1. **Quot family** — `Declaration.quotDecl` is payload-free; the kernel injects
+   `Quot`/`Quot.mk`/`Quot.lift`/`Quot.ind`/`Quot.sound` with hardcoded types.
+2. **Literal-reduction names** — `Nat`, `Nat.zero`, `Nat.succ` (+ arithmetic),
+   `String`, `String.mk`, `List.nil/cons`, `Char.ofNat`, … are hardwired into
+   the kernel's literal extension; none appear in the literal `Expr`.
+3. **Recursors** — synthesized fresh as `Foo.rec` (lean4export does serialize
+   them, so our NDJSON carries them — but the bare `Declaration` type doesn't).
+4. **`proj typeName idx`** — needs the structure's single constructor for its
+   reduction; carried today as opaque `eproj` data with no link to the names it
+   depends on.

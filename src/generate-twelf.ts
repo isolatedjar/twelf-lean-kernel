@@ -230,7 +230,7 @@ function generateDecl(prover: Prover, d: Decl): void {
       generateInductive(prover, d);
       break;
     case "quot":
-      // Deferred (plugin-refactor step 1): quot members carry a type on this
+      // Deferred: quot members carry a type on this
       // branch, but representing the Quot family + its kernel reductions is
       // its own task.  Declining keeps these tests 🤷 for now.
       skip(`quot ${nameToString(d.name)} (${d.quotKind}) — not yet represented`);

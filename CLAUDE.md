@@ -12,10 +12,39 @@ to verify each declaration type-checks against the TCB (`lf/tcb.elf`).
 Pipeline:
 
 ```
-.ndjson  →  src/parse.ts  →  JSON IR  →  src/lean2lf.ts  →  .elf  →  twelf-server  →  ✅ / ❌
+.ndjson  →  src/parse.ts  →  JSON IR  →  src/generate-twelf.ts  →  .elf  →  twelf-server  →  ✅ / ❌
+                                              (prover plugin: src/prover.ts + src/synth.ts)
 ```
 
 Test cases live under `tests/` (NDJSON) and `lf/tests/` (generated `.elf`).
+
+## Architecture (trust boundary)
+
+`generate-twelf.ts` is the single, **trusted** generator. It walks a
+`ParsedEnv` and, for each proof obligation, asks a **`Prover`** (see the
+`Prover` interface in `shared.ts`) to discharge it. The prover returns a
+structured `Fmt` proof term, which the generator pretty-prints (`ppFmt`
+validates every atom/binder, so an untrusted prover cannot smuggle a
+declaration terminator). A prover method returns one of:
+
+- `Fmt` → `<const> : <obligation> = <proof>.` (discharged)
+- `null` → `%%% HOLE` + `<const> : <obligation>.` (bare decl, rejected by `%freeze`)
+- `failOnPurpose` (the undeclared atom `fail-on-purpose`) → Twelf ABORTs → the
+  env is **rejected on purpose** (used when the prover can *prove* an
+  obligation false, not merely fail to prove it true)
+
+Two provers, both run by the same generator:
+
+- **`NullProver`** discharges nothing → produces `.render.elf` (every
+  obligation a HOLE). This is the "moral Twelf" view.
+- **`makeRealProver(env)`** (in `prover.ts`, backed by `synth.ts`) → produces
+  `.full.elf`.
+
+Because both files come from the same generator, `.render.elf` structurally
+contains every fact `.full.elf` does (the adequacy property). **Auditing
+`shared.ts` + `parse.ts` + `generate-twelf.ts` suffices**; `prover.ts` /
+`synth.ts` are untrusted — a prover bug can only lose completeness (a wrongful
+HOLE/reject), never accept an ill-typed term.
 
 ## Running tests
 
@@ -57,8 +86,12 @@ After regenerating NDJSON, re-run `./scripts/gen-tests.sh` to update the
 | `lf/shared.elf`                    | Shared definitions used across test files                |
 | `lf/final-checks.elf`              | Final verification declarations                          |
 | `lf/sources.cfg`                   | Twelf sources file (loads TCB in order)                  |
-| `src/parse.ts`                     | NDJSON → JSON IR parser                                  |
-| `src/lean2lf.ts`                   | JSON IR → Twelf LF translator                            |
+| `src/parse.ts`                     | NDJSON → JSON IR parser (trusted)                        |
+| `src/shared.ts`                    | IR types + the `Prover` interface + `Fmt` (trusted)     |
+| `src/generate-twelf.ts`            | JSON IR → Twelf LF generator (trusted); inductive pre-flight checks |
+| `src/render.ts`                    | Pure IR → LF text rendering (`lfExpr`, mangling)         |
+| `src/prover.ts`                    | `NullProver` + `makeRealProver` (untrusted)              |
+| `src/synth.ts`                     | Type synthesizer / defeq prover / positivity builders (untrusted) |
 | `scripts/gen-tests.sh`             | Generate `lf/tests/*.elf` from `tests/*.ndjson`          |
 | `scripts/check-tests.sh`           | Run Twelf on each `.elf` and report results              |
 | `scripts/regen-tutorial-ndjson.sh` | Regenerate `tests/tutorial/**/*.ndjson` from Lean source |
@@ -73,11 +106,36 @@ Tests are in `tests/` and categorized:
 
 Run `check-tests.sh` for the current pass/fail/skip breakdown.
 
+### Verdict taxonomy
+
+Each test gets one raw outcome (precedence order), reported by
+`check-tests.sh`:
+
+| Outcome | Meaning |
+| ------- | ------- |
+| 🤷 | generator declined to represent the env (`.full.elf` has `%%% SKIP`) |
+| 🔴 | `.render.elf` rejected by Twelf even without freeze (rendering is broken) |
+| ✅ | `.full.elf` accepted by the full pipeline (freeze + final-checks) |
+| 🩹 | `.full.elf` rejected *with* freeze but accepted *without* (only unfilled HOLEs failed) |
+| ❌ | `.full.elf` rejected even without freeze (a genuine error on a concrete term) |
+
+Mapping to a pass/fail verdict depends on what the test expects:
+
+- **good (expect accept):** ✅ → pass · 🩹 → incomplete · 🤷/🔴/❌ → fail
+- **bad (expect reject):** 🤷/🔴/❌ → pass(reject) · 🩹 → incomplete · ✅ → 💥
+  **soundness failure**
+
+🤷 (and 🔴) count as a reject from the Kernel Arena's perspective, so they are
+a *pass* for bad tests and a *fail* for good tests — we'd like to represent
+every valid Lean signature, but some inputs (unparseable NDJSON, malformed de
+Bruijn indices, invariants we can only check translator-side) genuinely can't
+be posed to Twelf. A 🩹 means we declined to *evaluate* the development (the
+HOLE isn't filled), distinct from Twelf verifying it bad (❌).
+
 ## Plans and design docs
 
-- `render-plan-revised-by-rob.md` — current active plan (render pass + hole
-  emission)
-- `completeness-plan.md` — longer-term roadmap for filling proof gaps
-- `render-plan.md` — earlier draft (superseded by the -by-rob version)
-- `lf/archive/first-version.elf` — historical earlier encoding (explicit
-  levels; superseded by tcb.elf's implicit-level approach)
+- `completeness-plan.md` — the live roadmap: a tick-box accounting of how much
+  of Mario Carneiro's declarative `IsDefEq` spec the TCB encodes, plus salvaged
+  design notes for the highest-value remaining work (level-equality decision
+  procedure, name-reservation soundness check, `lean.mm1` borrows). Start here
+  for "what's left to do."

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # scripts/check-tests.sh
 #
-# Classify each generated test under the plugin-refactor taxonomy by
+# Classify each generated test under the verdict taxonomy (see CLAUDE.md) by
 # loading its .render.elf / .full.elf through Twelf with and without the
 # %freeze step.
 #
