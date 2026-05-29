@@ -22,8 +22,11 @@ rm -f "$OUT_DIR"/bad/*.ndjson  "$OUT_DIR"/bad/*.info.json
 
 # Force re-elaboration of Tutorial.lean: lake skips modules whose .olean
 # is fresh, so we delete just that one cache entry rather than all deps.
-rm -f "$LEAN_DIR/.lake/build/lib/Tutorial.olean" \
-      "$LEAN_DIR/.lake/build/lib/Tutorial.trace"
+# The build path moved under `lib/lean/` in newer Lake, so clear the matching
+# artifacts wherever they live rather than assuming the legacy flat path.
+find "$LEAN_DIR/.lake/build" \
+     \( -name 'Tutorial.olean' -o -name 'Tutorial.trace' -o -name 'Tutorial.ilean' \) \
+     -delete 2>/dev/null || true
 
 cd "$LEAN_DIR"
 OUT="$OUT_DIR" lake build Tutorial

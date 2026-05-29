@@ -1,5 +1,5 @@
-%%% Render-only view of: 116_quotLiftType
-%%% Asserting the type of `Quot.lift`.
+%%% Render-only view of: 116_quotIndType
+%%% Asserting the type of `Quot.ind`.
 %% inductive Eq
 %%% HOLE
 Eq/type-wf-sort : lvl.
@@ -50,18 +50,18 @@ Eq_rec/decl : declared "Eq.rec" (eforall (esort (lvar (lis liz))) ([x] (eforall 
 
 %%% SKIP: quot Quot.ind (ind) — not yet represented
 
-%% def quotLiftType
+%% def quotIndType
 %%% HOLE
-quotLiftType/type-wf-sort : lvl.
-
-%%% HOLE
-quotLiftType/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (esort (lvar (lis liz))) ([z] (eforall (eforall x ([w] z)) ([w] (eforall (eforall x ([x1] (eforall x ([y1] (eforall (eapp (eapp y x1) y1) ([z1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) z) (eapp w x1)) (eapp w y1)))))))) ([x1] (eforall (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y) ([y1] z)))))))))))) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (esort (lvar (lis liz))) ([z] (eforall (eforall x ([w] z)) ([w] (eforall (eforall x ([x1] (eforall x ([y1] (eforall (eapp (eapp y x1) y1) ([z1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) z) (eapp w x1)) (eapp w y1)))))))) ([x1] (eforall (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y) ([y1] z)))))))))))) (esort quotLiftType/type-wf-sort).
+quotIndType/type-wf-sort : lvl.
 
 %%% HOLE
-quotLiftType/value-typed : defeq (econst "Quot.lift" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) (econst "Quot.lift" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (esort (lvar (lis liz))) ([z] (eforall (eforall x ([w] z)) ([w] (eforall (eforall x ([x1] (eforall x ([y1] (eforall (eapp (eapp y x1) y1) ([z1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) z) (eapp w x1)) (eapp w y1)))))))) ([x1] (eforall (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y) ([y1] z)))))))))))).
+quotIndType/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eapp z (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar liz) lnil)) x) y) w)))) ([w] (eforall (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y) ([x1] (eapp z x1))))))))))) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eapp z (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar liz) lnil)) x) y) w)))) ([w] (eforall (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y) ([x1] (eapp z x1))))))))))) (esort quotIndType/type-wf-sort).
 
-quotLiftType/name : name "quotLiftType" (is-decl (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (esort (lvar (lis liz))) ([z] (eforall (eforall x ([w] z)) ([w] (eforall (eforall x ([x1] (eforall x ([y1] (eforall (eapp (eapp y x1) y1) ([z1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) z) (eapp w x1)) (eapp w y1)))))))) ([x1] (eforall (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y) ([y1] z)))))))))))) (defn (econst "Quot.lift" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))))).
+%%% HOLE
+quotIndType/value-typed : defeq (econst "Quot.ind" (lcons (lvar liz) lnil)) (econst "Quot.ind" (lcons (lvar liz) lnil)) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eapp z (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar liz) lnil)) x) y) w)))) ([w] (eforall (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y) ([x1] (eapp z x1))))))))))).
 
-quotLiftType/decl : declared "quotLiftType" (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (esort (lvar (lis liz))) ([z] (eforall (eforall x ([w] z)) ([w] (eforall (eforall x ([x1] (eforall x ([y1] (eforall (eapp (eapp y x1) y1) ([z1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) z) (eapp w x1)) (eapp w y1)))))))) ([x1] (eforall (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y) ([y1] z)))))))))))) (defn (econst "Quot.lift" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))))
-   = declared/ok quotLiftType/name (dkind-ok/defn quotLiftType/type-wf quotLiftType/value-typed).
+quotIndType/name : name "quotIndType" (is-decl (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eapp z (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar liz) lnil)) x) y) w)))) ([w] (eforall (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y) ([x1] (eapp z x1))))))))))) (defn (econst "Quot.ind" (lcons (lvar liz) lnil)))).
+
+quotIndType/decl : declared "quotIndType" (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eapp z (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar liz) lnil)) x) y) w)))) ([w] (eforall (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y) ([x1] (eapp z x1))))))))))) (defn (econst "Quot.ind" (lcons (lvar liz) lnil)))
+   = declared/ok quotIndType/name (dkind-ok/defn quotIndType/type-wf quotIndType/value-typed).
 
