@@ -1137,7 +1137,14 @@ function buildStrictPos(
 }
 
 // `ctor-spine ([S] T)`: Π-bodies via ctor-spine/arg; leaf must be S-applied.
-function buildCtorSpine(
+//
+// This is the *spine* proof that ctor-positive/intro consumes.  The matching
+// `T_HOAS` argument is NOT built here: the trusted generator computes it
+// directly (render.ts `lfExpr` with a SelfSubst), so a buggy or adversarial
+// prover cannot supply a wrong T_HOAS that hides a negative occurrence in a
+// closed position.  Twelf checks this spine against the generator's T_HOAS,
+// so an ill-formed spine can only lose completeness, never soundness.
+export function buildCtorSpine(
   t: Expr,
   selfName: string,
   selfLevels: Level[],
@@ -1154,26 +1161,6 @@ function buildCtorSpine(
   }
   const result = buildAppliesSelf(t, selfName, selfLevels);
   return result ? app(atom("ctor-spine/result"), result) : null;
-}
-
-// Top-level `ctor-positive selfName selfLevels T` via ctor-positive/intro:
-//   ctor-positive/intro ([S] T_HOAS) <ctor-spine proof>
-// where T_HOAS is the ctor type with the self-reference replaced by S.
-export function buildCtorPositive(
-  ctorType: Expr,
-  selfName: string,
-  selfLevels: Level[],
-  levelParams: Name[],
-): Fmt | null {
-  const cs = buildCtorSpine(ctorType, selfName, selfLevels, [], levelParams);
-  if (!cs) return null;
-  const hoasBody = exprToFmt(ctorType, [], levelParams, {
-    name: selfName,
-    levels: selfLevels,
-    varName: "S",
-  });
-  if (!hoasBody) return null;
-  return app(atom("ctor-positive/intro"), lam("S", hoasBody), cs);
 }
 
 // ---------------------------------------------------------------------------

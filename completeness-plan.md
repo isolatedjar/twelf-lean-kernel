@@ -142,7 +142,7 @@ NOT part of `IsDefEq`. They live in our TCB as separate closed families.
 | Nested inductives                                        | —                                 | ✗ deferred — per-type-former "positivity-preserving" predicate                                          |
 | Recursor type well-formedness                            | none beyond `defeq T T (esort U)` | **✗ no kernel-side synthesis check — we trust the export**                                              |
 | Universe consistency (ctor field sorts ≤ inductive sort) | —                                 | **✗ missing**                                                                                           |
-| Subsingleton elimination check                           | —                                 | ✗ missing (affects large elimination from Prop into Type)                                               |
+| Subsingleton elimination check                           | generator pre-flight (check f)    | ◑ ≥2-ctor Prop large-elim rejected translator-side (127); ≤1-ctor subsingleton case not LF-verified     |
 | Positivity modulo defeq                                  | —                                 | **✗ deepest open issue: lifting `ctor-positive` through `defeq` stops being a closed-family operation** |
 
 The recursor and universe-consistency cases are notable because Lean's kernel
@@ -267,12 +267,26 @@ test `buildAppliesSelf` on the result): if the head IS applicable but
 `buildCtorSpine` still fails, the failure must be a field strict-pos issue,
 and we stay 🤷 rather than defer to Twelf.
 
-**Principled fix (not done):** add a `fully-captures N0 LS0 T_HOAS T` judgment
-that's only inhabited when T*HOAS abstracts \_every* occurrence of
-`(econst N0 LS0)` in T. Make `ctor-positive/intro` take a `fully-captures`
-premise. The judgment is recursive over Expr structure and decidable (no
-higher-order ambiguity), so the resulting strengthened `ctor-positive` would
-be soundly `%solve`-able.
+**Mitigation in place (generator-level, May 2026).** The exploit above
+requires an untrusted prover to *supply* the wrong T_HOAS. The trusted
+generator now computes T_HOAS itself — the full `self → S` abstraction, via
+`render.ts` `lfExpr` with a `SelfSubst` (see `generate-twelf.ts`
+`emitCtorPositive`) — and the prover (`prover.ts` `ctorPositive`) returns
+*only* the `ctor-spine` proof. Twelf checks that spine against the generator's
+correct T_HOAS, under which a negative-occurrence ctor's `ctor-spine` type is
+uninhabited; no spine the prover supplies can inhabit it. Verified
+adversarially: the witness above is accepted when the fake T_HOAS is supplied
+directly to the TCB, but rejected (`Type mismatch`) once the generator fixes
+T_HOAS. This closes the hole under the project's trust model
+(`generate-twelf.ts` + `render.ts` trusted; `prover.ts` / `synth.ts` not).
+
+**Pure-TCB fix (still not done):** add a `no-self-ref N0 LS0 A` premise to
+`strict-pos/forall` and `strict-pos/no-occur`, so the LF signature itself bars
+a self-occurrence in a closed domain. The `no-self-ref/const` case needs an
+`N neq N0` decision, i.e. `inequality/strings` — a constraint domain not in
+the current limited-thaw Twelf build (only `inequality/integers` ships). This
+would make `ctor-positive` sound independent of the generator. See tcb.elf,
+`strict-pos/forall` comment.
 
 ### Other translator-side declines still active
 
@@ -290,6 +304,13 @@ need substantial TCB extensions:
   `applies-self`/`ctor-spine` chain at the right places.
 - **concrete-case field universe ≤ inductive universe minus 1** (054). Needs
   universe arithmetic in LF.
+- **large elimination from a ≥2-ctor Prop** (127). Gated translator-side
+  (check (f)): a Prop inductive with ≥2 ctors whose recursor motive targets a
+  non-Prop sort is rejected (SKIP). A pure-TCB fix would add an `le-ok` premise
+  to `dkind-ok/irec` that reads the motive's target sort and checks
+  subsingleton eligibility; needs universe comparison + ctor-field analysis in
+  LF. The ≤1-ctor subsingleton case (Acc/Eq/Quot-style legitimate large elim)
+  is currently admitted on typing alone.
 - **projection-expression support** (009, 078, 079, 081, 083, 084, 085, 087,
   088, 104). Need `proj` constructor in the expr datatype and corresponding
   typing/reduction rules.

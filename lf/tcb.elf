@@ -465,9 +465,25 @@ strict-pos/forall :
 
 %%% Soundness-critical: in /forall, the domain A has type `expr`,
 %%% not `expr -> expr`.  LF will not let the translator supply an
-%%% A that depends on S.  This is the same syntactic enforcement
-%%% the linear-logic encoding uses to keep a linear variable out of
-%%% a `letb`'s body or a `bang`'s scope.
+%%% A that depends on the LF VARIABLE S.  This is the same syntactic
+%%% enforcement the linear-logic encoding uses to keep a linear
+%%% variable out of a `letb`'s body or a `bang`'s scope.
+%%%
+%%% Residual gap (mitigated in the generator, not yet in LF): A is
+%%% only barred from depending on the *bound variable* S, not from
+%%% containing the inductive's self-reference as the *free constant*
+%%% `(econst N0 LS0)`.  So a WRONG `T_HOAS` that under-abstracts —
+%%% leaving a self-occurrence as a closed constant inside A — would
+%%% pass /no-occur or /forall and fake positivity for a non-strictly-
+%%% positive ctor (e.g. `(indNeg → indNeg) → indNeg` with
+%%% T_HOAS = [S] (econst "indNeg" → S) → S).  The generator closes
+%%% this by computing T_HOAS itself (the FULL self→S abstraction; see
+%%% generate-twelf.ts `emitCtorPositive`) so the untrusted prover only
+%%% supplies the `ctor-spine` proof, which Twelf checks against the
+%%% correct T_HOAS — under which the bad spine is uninhabited.  A pure
+%%% TCB fix would add a `no-self-ref N0 LS0 A` premise here, which
+%%% needs `inequality/strings` (an `N neq N0` decision) — not in the
+%%% current limited-thaw Twelf build.
 
 %%% --- `ctor-spine M` : M : expr -> expr, viewed as a Π-chain
 %%% under self-binding, has every argument type strictly positive
@@ -540,6 +556,17 @@ dkind-ok/ctor :
 %%% later, they will pattern-match on `dkind-ok/ctor` derivations
 %%% and thus may rely on this positivity having been checked.
 
+%%% A recursor is admitted on the strength of its type being well-formed.
+%%% This does NOT encode Lean's elimination-universe restriction: a Prop
+%%% (Sort 0) inductive may only large-eliminate (motive into a higher Sort)
+%%% if it is a subsingleton (≤1 ctor, with that ctor's fields all proofs or
+%%% indices).  A ≥2-ctor Prop whose recursor motive targets a non-Prop sort
+%%% is unsound, but its recursor type is still a well-formed LF `expr`, so
+%%% `defeq T T (esort U)` holds and this rule would accept it.  The generator
+%%% gates this translator-side (generate-twelf.ts `preflightInductiveReject`
+%%% check (f) → SKIP).  A pure TCB fix would add an `le-ok` premise that
+%%% inspects the motive's target sort against the inductive's universe and
+%%% subsingleton-eligibility; tracked in completeness-plan.md.
 dkind-ok/irec :
    defeq T T (esort U) -> dkind-ok irec T.
 

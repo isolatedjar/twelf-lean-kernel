@@ -8,7 +8,7 @@ import type { ParsedEnv, ProofResult, Prover, TypeWfResult } from "./shared.ts";
 import { failOnPurpose, nameToString } from "./shared.ts";
 import {
   bridge,
-  buildCtorPositive,
+  buildCtorSpine,
   buildEnvMap,
   endsInSortProof,
   type EnvMap,
@@ -75,9 +75,11 @@ export function makeRealProver(env: ParsedEnv): Prover {
     endsInSort({ type }): ProofResult {
       return endsInSortProof(type);
     },
+    // Returns only the `ctor-spine` proof; the trusted generator computes the
+    // matching `T_HOAS` and assembles `ctor-positive/intro`.  See shared.ts.
     ctorPositive({ ctorType, indName, indLevels, levelParams }): ProofResult {
       try {
-        return buildCtorPositive(ctorType, nameToString(indName), indLevels, levelParams);
+        return buildCtorSpine(ctorType, nameToString(indName), indLevels, [], levelParams);
       } catch {
         return null;
       }

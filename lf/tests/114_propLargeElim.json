@@ -1,0 +1,84 @@
+{
+  "decls": [
+    {
+      "kind": "inductive",
+      "types": [
+        {
+          "name": { "_n": ["propLargeElim"] },
+          "levelParams": [],
+          "type": { "kind": "sort", "level": { "kind": "zero" } },
+          "numParams": 0,
+          "numIndices": 0
+        }
+      ],
+      "ctors": [
+        {
+          "name": { "_n": ["propLargeElim", "a"] },
+          "levelParams": [],
+          "type": { "kind": "const", "name": { "_n": ["propLargeElim"] }, "us": [] },
+          "numParams": 0,
+          "numFields": 0,
+          "induct": { "_n": ["propLargeElim"] }
+        },
+        {
+          "name": { "_n": ["propLargeElim", "b"] },
+          "levelParams": [],
+          "type": { "kind": "const", "name": { "_n": ["propLargeElim"] }, "us": [] },
+          "numParams": 0,
+          "numFields": 0,
+          "induct": { "_n": ["propLargeElim"] }
+        }
+      ],
+      "recursors": [
+        {
+          "name": { "_n": ["propLargeElim", "rec"] },
+          "levelParams": [],
+          "type": {
+            "kind": "forallE",
+            "name": { "_n": ["motive"] },
+            "type": {
+              "kind": "forallE",
+              "name": { "_n": ["x"] },
+              "type": { "kind": "const", "name": { "_n": ["propLargeElim"] }, "us": [] },
+              "body": { "kind": "sort", "level": { "kind": "succ", "arg": { "kind": "zero" } } }
+            },
+            "body": {
+              "kind": "forallE",
+              "name": { "_n": ["x"] },
+              "type": {
+                "kind": "app",
+                "fn": { "kind": "bvar", "deBruijn": 0 },
+                "arg": { "kind": "const", "name": { "_n": ["propLargeElim", "a"] }, "us": [] }
+              },
+              "body": {
+                "kind": "forallE",
+                "name": { "_n": ["x"] },
+                "type": {
+                  "kind": "app",
+                  "fn": { "kind": "bvar", "deBruijn": 1 },
+                  "arg": { "kind": "const", "name": { "_n": ["propLargeElim", "b"] }, "us": [] }
+                },
+                "body": {
+                  "kind": "forallE",
+                  "name": { "_n": ["t"] },
+                  "type": { "kind": "const", "name": { "_n": ["propLargeElim"] }, "us": [] },
+                  "body": {
+                    "kind": "app",
+                    "fn": { "kind": "bvar", "deBruijn": 3 },
+                    "arg": { "kind": "bvar", "deBruijn": 0 }
+                  }
+                }
+              }
+            }
+          },
+          "numParams": 0,
+          "numIndices": 0,
+          "numMotives": 1,
+          "numMinors": 2,
+          "rules": [],
+          "k": false
+        }
+      ]
+    }
+  ]
+}

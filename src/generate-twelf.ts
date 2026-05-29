@@ -155,6 +155,57 @@ function emitTypeWf(result: TypeWfResult, mn: string, T: string, isThm: boolean)
   );
 }
 
+// Emit the `ctor-positive` obligation for a constructor and return its name.
+//
+// SOUNDNESS BOUNDARY.  The proof is `ctor-positive/intro ([S] T_HOAS) <spine>`.
+// The generator (trusted) computes T_HOAS itself — the ctor type with the
+// inductive's self-reference `(econst IndName IndLevels)` abstracted to the
+// bound `S` — via render.ts `lfExpr` with a SelfSubst.  The prover supplies
+// ONLY the `<spine>` (a `ctor-spine T_HOAS` derivation).  Were the prover to
+// supply T_HOAS, it could hide a negative self-occurrence in a closed (S-free)
+// position and so fake positivity for a non-strictly-positive inductive (the
+// `strict-pos/forall`/`strict-pos/no-occur` rules accept any closed domain,
+// including one mentioning the self-constant).  By fixing T_HOAS here, Twelf
+// checks the prover's spine against the *correct* abstraction, under which a
+// negative occurrence makes `ctor-spine` uninhabited — so a bad spine can only
+// produce a HOLE/reject, never an unsound acceptance.
+function emitCtorPositive(
+  prover: Prover,
+  c: { type: Expr; induct: Name; levelParams: Name[] },
+  indName: string,
+  indLevels: Level[],
+  mn: string,
+  T: string,
+): string {
+  const posName = `${mn}/positivity`;
+  const posType = `ctor-positive "${indName}" ${formalLvls(c.levelParams.length)} ${T}`;
+  const spine = prover.ctorPositive({
+    ctorType: c.type,
+    indName: c.induct,
+    indLevels,
+    levelParams: c.levelParams,
+  });
+  // Compute the trusted T_HOAS body: render the ctor type, abstracting the
+  // self-reference to S.  `selfStr` is the rendering of (econst IndName
+  // IndLevels) in the current level-param scope; rendering is injective on
+  // (name, levels), so the substitution targets exactly the self-reference.
+  let hoasBody: string | null;
+  try {
+    const selfStr = lfExpr({ kind: "const", name: c.induct, us: indLevels }, []);
+    hoasBody = lfExpr(c.type, [], { selfStr, varName: "S" });
+  } catch {
+    hoasBody = null;
+  }
+  if (spine === null || hoasBody === null) {
+    emitDefn(posName, posType, null); // HOLE
+    return posName;
+  }
+  emit(`${posName} : ${posType}`);
+  emit(`   = (ctor-positive/intro ([S] ${hoasBody}) ${ppFmt(spine)}).`);
+  emit(``);
+  return posName;
+}
+
 // Emit a complete declaration: the open `name` reservation plus the closed
 // `declared` definition that consumes it.
 //
@@ -305,6 +356,7 @@ function generateAxiom(prover: Prover, d: Decl & { kind: "axiom" }): void {
 //   (c) ctor result-type index args don't mention the inductive   → 046
 //   (d) concrete ctor field universe ≤ inductive universe − 1     → 054
 //   (e) a primitive recursor is named `<type>.rec`                → 124
+//   (f) a Prop inductive with ≥2 ctors does not large-eliminate   → 127
 //   plus: no duplicate universe-parameter names on any member     → 041
 //
 // On violation we SKIP (🤷): Twelf isn't checking the condition, so this is a
@@ -362,6 +414,22 @@ function inductiveResultUniverse(t: Expr): Level | null {
   let cur = t;
   while (cur.kind === "forallE") cur = cur.body;
   return cur.kind === "sort" ? cur.level : null;
+}
+
+// The universe a recursor eliminates *into*: the Sort at the tail of the
+// motive's type.  The recursor's type is
+//   {params} (motive : {indices}{major} → Sort u) {minors} {indices} {major} → …
+// so we skip `numParams` leading binders, take the next binder (the first
+// motive), and read the Sort ending its Π-chain.  Returns null if the shape
+// doesn't match (then we can't classify the elimination and stay conservative).
+function motiveResultUniverse(recType: Expr, numParams: number): Level | null {
+  let e = recType;
+  for (let i = 0; i < numParams; i++) {
+    if (e.kind !== "forallE") return null;
+    e = e.body;
+  }
+  if (e.kind !== "forallE") return null; // the motive binder
+  return inductiveResultUniverse(e.type);
 }
 
 // Checks (b), (c), (d) on a single ctor. Returns a mismatch reason or null.
@@ -465,6 +533,30 @@ function preflightInductiveReject(ind: Decl & { kind: "inductive" }): string | n
       return `recursor ${rn} — name is not <type>.rec for any type in the block`;
     }
   }
+  // (f) Large-elimination gate.  A Prop (Sort 0) inductive may only eliminate
+  // into Type if it is a subsingleton — at most one constructor (Lean also
+  // requires that ctor's fields be propositions/indices, which we don't try to
+  // verify structurally).  A Prop inductive with ≥2 constructors whose recursor
+  // motive targets a universe other than Sort 0 is unsound (it would transport
+  // a Prop case-distinction into Type).  The LF `dkind-ok/irec` rule checks only
+  // that the recursor type is well-formed, so Twelf can't see this — we gate it
+  // here.  Conservative: fires only when the inductive universe is concretely
+  // Prop and the motive's target is concretely a non-Prop sort.
+  for (const t of ind.types) {
+    const indU = inductiveResultUniverse(t.type);
+    if (indU === null || levelToNumber(indU) !== 0) continue; // only concrete Prop
+    const tname = nameToString(t.name);
+    const ctorCount = ind.ctors.filter((c) => nameToString(c.induct) === tname).length;
+    if (ctorCount < 2) continue; // ≤1 ctor: may be a large-eliminating subsingleton
+    const rec = ind.recursors.find((r) => nameToString(r.name) === `${tname}.rec`);
+    if (!rec) continue;
+    const motiveU = motiveResultUniverse(rec.type, rec.numParams);
+    // motiveU.kind === "zero" → small elimination (into Prop), sound.  Anything
+    // else (a concrete higher Sort, or a polymorphic Sort u) is large.
+    if (motiveU !== null && motiveU.kind !== "zero") {
+      return `recursor ${tname}.rec — large elimination (motive into a non-Prop sort) from a Prop inductive with ${ctorCount} constructors`;
+    }
+  }
   return null;
 }
 
@@ -497,16 +589,7 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
         T,
         false,
       );
-      const cp = emitObligation(
-        prover.ctorPositive({
-          ctorType: c.type,
-          indName: c.induct,
-          indLevels,
-          levelParams: c.levelParams,
-        }),
-        `${mn}/positivity`,
-        `ctor-positive "${indName}" ${formalLvls(c.levelParams.length)} ${T}`,
-      );
+      const cp = emitCtorPositive(prover, c, indName, indLevels, mn, T);
       emitDeclared(mn, declName, T, `ctor`, `(dkind-ok/ctor ${tw} ${cp})`);
     });
   }

@@ -1180,6 +1180,70 @@ bad_thm accRecNoEta :
     Acc.rec (motive := fun _ _ => Bool) (fun _ _ _ => p) h = p :=
   @fun α r a h p => unchecked Eq.refl p
 
+/--
+Large elimination is restricted to subsingletons.  `Acc`/`Eq` (one
+constructor) may eliminate into an arbitrary universe, but a `Prop` with
+**two** constructors may not — that would transport a genuine case
+distinction out of `Prop` into `Type`.  Here `Two : Prop` has constructors
+`Two.a`, `Two.b` and a hand-built recursor whose motive targets `Sort 1`;
+the kernel rejects this recursor, so it is written with raw constants.
+-/
+bad_raw_consts
+  let n := `propLargeElim
+  #[ .ctorInfo {
+      name := n ++ `a
+      levelParams := []
+      type := .const n []
+      numParams := 0
+      induct := n
+      cidx := 0
+      numFields := 0
+      isUnsafe := false
+  },
+  .ctorInfo {
+      name := n ++ `b
+      levelParams := []
+      type := .const n []
+      numParams := 0
+      induct := n
+      cidx := 1
+      numFields := 0
+      isUnsafe := false
+  },
+  .recInfo {
+      name := n ++ `rec
+      levelParams := []
+      -- (motive : Two → Sort 1) → motive Two.a → motive Two.b → (t : Two) → motive t
+      type :=
+        Lean.mkForall `motive .default (arrow (.const n []) (.sort 1)) <|
+        arrow (.app (.bvar 0) (.const (n ++ `a) [])) <|
+        arrow (.app (.bvar 1) (.const (n ++ `b) [])) <|
+        Lean.mkForall `t .default (.const n []) <|
+        .app (.bvar 3) (.bvar 0)
+      all := [n]
+      numParams := 0
+      numIndices := 0
+      numMotives := 1
+      numMinors := 2
+      rules := []
+      k := false
+      isUnsafe := false
+  },
+  .inductInfo {
+      name := n
+      levelParams := []
+      type := .sort 0
+      numParams := 0
+      numIndices := 0
+      all := [n]
+      ctors := [n ++ `a, n ++ `b]
+      numNested := 0
+      isRec := false
+      isUnsafe := false
+      isReflexive := false
+  }
+  ]
+
 /-! Quotients -/
 
 /-- Asserting the type of `Quot.mk`. -/

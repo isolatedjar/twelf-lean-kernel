@@ -71,10 +71,19 @@ export function lfLvls(ls: Level[]): string {
   return ls.reduceRight((acc, l) => `(lcons ${lfLevel(l)} ${acc})`, "lnil");
 }
 
+// A self-reference substitution for building a HOAS abstraction: when
+// rendering hits a `const` whose rendered form equals `selfStr`, emit the
+// bound variable `varName` instead.  Used by the trusted generator to compute
+// the `T_HOAS` argument of `ctor-positive/intro` itself (rather than trusting
+// an untrusted prover to supply it).  Rendering of a `const` is injective on
+// (name, levels), so string comparison reliably identifies the self-reference.
+export type SelfSubst = { selfStr: string; varName: string };
+
 // HOAS translation: bvar 0 inside a binder becomes the LF-level variable
 // introduced at that binder.  `boundVars` is the LF-side variable name
-// stack, innermost-first.
-export function lfExpr(e: Expr, boundVars: string[]): string {
+// stack, innermost-first.  When `self` is supplied, occurrences of the
+// self-reference constant are abstracted to `self.varName` (see SelfSubst).
+export function lfExpr(e: Expr, boundVars: string[], self?: SelfSubst): string {
   switch (e.kind) {
     case "bvar": {
       const name = boundVars[e.deBruijn];
@@ -84,24 +93,26 @@ export function lfExpr(e: Expr, boundVars: string[]): string {
     }
     case "sort":
       return `(esort ${lfLevel(e.level)})`;
-    case "const":
-      return `(econst "${nameToString(e.name)}" ${lfLvls(e.us)})`;
+    case "const": {
+      const s = `(econst "${nameToString(e.name)}" ${lfLvls(e.us)})`;
+      return self && s === self.selfStr ? self.varName : s;
+    }
     case "app":
-      return `(eapp ${lfExpr(e.fn, boundVars)} ${lfExpr(e.arg, boundVars)})`;
+      return `(eapp ${lfExpr(e.fn, boundVars, self)} ${lfExpr(e.arg, boundVars, self)})`;
     case "lam": {
       const v = freshVar(boundVars);
-      return `(elam ${lfExpr(e.type, boundVars)} ([${v}] ${lfExpr(e.body, [v, ...boundVars])}))`;
+      return `(elam ${lfExpr(e.type, boundVars, self)} ([${v}] ${lfExpr(e.body, [v, ...boundVars], self)}))`;
     }
     case "forallE": {
       const v = freshVar(boundVars);
-      return `(eforall ${lfExpr(e.type, boundVars)} ([${v}] ${lfExpr(e.body, [v, ...boundVars])}))`;
+      return `(eforall ${lfExpr(e.type, boundVars, self)} ([${v}] ${lfExpr(e.body, [v, ...boundVars], self)}))`;
     }
     case "letE":
       // Unreachable: parse.ts desugars letE to (λx:T. body) value before
       // any IR reaches the translator. See desugarLetE in src/parse.ts.
       throw new Error("letE should have been desugared by parse.ts");
     case "proj":
-      return `(eproj "${nameToString(e.typeName)}" ${e.idx} ${lfExpr(e.struct, boundVars)})`;
+      return `(eproj "${nameToString(e.typeName)}" ${e.idx} ${lfExpr(e.struct, boundVars, self)})`;
     case "natLit": {
       natLiteralsSeen.add(e.value);
       return `(enatlit ${e.value} nonneg_${e.value})`;
