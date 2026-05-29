@@ -1,5 +1,7 @@
 %%% Expected outcome: accept
 %%% Asserting the type of the generated recursor.
+sneq/0 : string-neq "Bool" "RTree".
+
 %% inductive Bool
 Bool/type-wf-sort : lvl
    = (lsucc (lsucc lzero)).
@@ -95,7 +97,7 @@ RTree_node/type-wf : defeq (eforall (eforall (econst "Bool" lnil) ([x] (econst "
    = (defeq/forall (defeq/forall (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] (defeq/const RTree/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))) ([x] ([h] (defeq/const RTree/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))).
 
 RTree_node/positivity : ctor-positive "RTree" lnil (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil)))
-   = (ctor-positive/intro ([S] (eforall (eforall (econst "Bool" lnil) ([x] S)) ([x] S))) (ctor-spine/arg (strict-pos/forall (econst "Bool" lnil) ([x] (strict-pos/head applies-self/refl))) ([x] (ctor-spine/result applies-self/refl)))).
+   = (ctor-positive/intro ([S] (eforall (eforall (econst "Bool" lnil) ([x] S)) ([x] S))) (ctor-spine/arg (strict-pos/forall (econst "Bool" lnil) (no-self-ref/const sneq/0) ([x] ([y] (strict-pos/head applies-self/refl)))) ([x] ([y] (ctor-spine/result applies-self/refl))))).
 
 RTree_node/name : name "RTree.node" (is-decl (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil))) ctor).
 

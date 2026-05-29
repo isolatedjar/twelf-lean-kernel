@@ -294,6 +294,32 @@ is-decl : expr -> dkind -> nkind.
 
 name : string -> nkind -> type.
 
+%%% --- `string-neq A B` : the strings A and B are *posited* to be
+%%% distinct.  LF is a positive type theory: it can witness that two
+%%% strings ARE equal (by unification) but has no built-in way to
+%%% witness that they DIFFER.  Rather than extend Twelf with a string-
+%%% inequality decision procedure, we fake disequality the same way we
+%%% fake the name-to-meaning functional dependency: `string-neq` is an
+%%% OPEN family (`%thaw string-neq` in freeze.elf), so an environment
+%%% may assert any disequalities it likes by adding constants
+%%%
+%%%   <c> : string-neq "this" "that".
+%%%
+%%% A purported signature is thus free to *claim* whatever string
+%%% inequalities its positivity proofs need.  We catch the liars
+%%% globally: final-checks.elf runs
+%%%
+%%%   %query 0 * string-neq X X.
+%%%
+%%% which asks for zero proofs of `string-neq X X` and ABORTS the whole
+%%% load if it finds even one — i.e. if the environment ever claimed a
+%%% string differs from itself.  So honest disequalities pass; any
+%%% reflexive claim sinks the entire development.  This is exactly the
+%%% posit-then-globally-audit pattern that `%unique name` uses for the
+%%% functional dependency.
+
+string-neq : string -> string -> type.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Declaration Well-Formedness
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -438,67 +464,119 @@ applies-self/app  :
    applies-self ([S] F S)
    -> applies-self ([S] eapp (F S) (A S)).
 
-%%% --- `strict-pos M` : the self-reference, as bound inside M,
-%%% occurs only strictly positively in M's body.  Three cases:
+%%% --- `no-self-ref N0 E` : the type former named N0 does not occur
+%%% anywhere in E.  This is the genuine "Foo is absent from this
+%%% subterm" leaf that Lean's strict positivity needs — case (a) and
+%%% the Π-domain of case (c).  It is a structural traversal of E whose
+%%% only interesting node is `econst`, where we demand the constant's
+%%% name DIFFER from N0 via the posited `string-neq` family.  Because
+%%% `string-neq` is globally audited by `%query 0 * string-neq X X`
+%%% (final-checks.elf), a closed derivation of `no-self-ref N0 E` is
+%%% sound: every `econst N` leaf it traverses came with a `string-neq N
+%%% N0` witness, and a reflexive (N = N0) claim would abort the load.
+%%%
+%%% Matching is *name-only*: `econst N0` at ANY level instantiation
+%%% counts as an occurrence of the inductive.  That is the conservative
+%%% (and correct) reading of "Foo occurs" — a recursive use at any
+%%% universe is still Foo — and is strictly safer than the old name+
+%%% level test, which silently ignored cross-level self-occurrences.
+%%%
+%%% Under a binder we introduce the bound variable together with a
+%%% hypothesis `no-self-ref N0 x` for it (the standard regular-worlds
+%%% discipline), so occurrences of the binder's own variable in the
+%%% body discharge against that hypothesis rather than needing a rule.
+
+no-self-ref : string -> expr -> type.   %name no-self-ref NSR.
+
+no-self-ref/sort   : no-self-ref N0 (esort L).
+
+no-self-ref/const  : string-neq N N0 -> no-self-ref N0 (econst N LS).
+
+no-self-ref/app    : no-self-ref N0 F -> no-self-ref N0 A
+                      -> no-self-ref N0 (eapp F A).
+
+no-self-ref/lam    : no-self-ref N0 A
+                      -> ({x} no-self-ref N0 x -> no-self-ref N0 (B x))
+                      -> no-self-ref N0 (elam A B).
+
+no-self-ref/forall : no-self-ref N0 A
+                      -> ({x} no-self-ref N0 x -> no-self-ref N0 (B x))
+                      -> no-self-ref N0 (eforall A B).
+
+no-self-ref/proj   : string-neq SN N0 -> no-self-ref N0 E
+                      -> no-self-ref N0 (eproj SN I E).
+
+no-self-ref/natlit : no-self-ref N0 (enatlit N P).
+
+no-self-ref/strlit : no-self-ref N0 (estrlit S).
+
+%%% --- `strict-pos N0 M` : the self-reference, as bound inside M,
+%%% occurs only strictly positively in M's body, where N0 is the
+%%% inductive's name.  Three cases:
 %%%
 %%%   * /head     : the body is S applied to args.
-%%%   * /no-occur : the body doesn't mention S at all.  This is the
-%%%                 linear-logic move: the rule takes a closed
-%%%                 expression `E : expr` and concludes
-%%%                 `strict-pos ([S] E)`.  Because E has type `expr`
-%%%                 (not `expr -> expr`), LF guarantees E does not
-%%%                 depend on S — absence is enforced by typing.
-%%%   * /forall   : the body is a Π whose *domain* A is S-free
-%%%                 (typed `expr`) and whose codomain B is
-%%%                 recursively strictly positive.
+%%%   * /no-occur : the body mentions neither S nor the inductive.
+%%%                 TWO complementary guards make this sound:
+%%%                   - `E : expr` (not `expr -> expr`) so LF typing
+%%%                     forbids E from depending on the bound var S;
+%%%                   - `no-self-ref N0 E` so E may not contain the
+%%%                     self-reference as the free *constant*
+%%%                     `(econst N0 _)` either.
+%%%                 The second guard is what closes the old soundness
+%%%                 gap: previously a ctor type whose self-occurrences
+%%%                 were left as `econst N0` constants (rather than the
+%%%                 bound S) slipped through /no-occur and /forall.
+%%%   * /forall   : the body is a Π whose *domain* A is S-free (typed
+%%%                 `expr`) AND inductive-free (`no-self-ref N0 A`) and
+%%%                 whose codomain B is recursively strictly positive.
 
-strict-pos : (expr -> expr) -> type.   %name strict-pos SP.
+strict-pos : string -> (expr -> expr) -> type.   %name strict-pos SP.
 
-strict-pos/head     : applies-self M -> strict-pos M.
+strict-pos/head     : applies-self M -> strict-pos N0 M.
 
-strict-pos/no-occur : {E : expr} strict-pos ([S] E).
+strict-pos/no-occur : {E : expr} no-self-ref N0 E -> strict-pos N0 ([S] E).
 
 strict-pos/forall :
    {A : expr}
-   ({y : expr} strict-pos ([S] B S y))
-   -> strict-pos ([S] eforall A ([y] B S y)).
+   no-self-ref N0 A
+   -> ({y : expr} no-self-ref N0 y -> strict-pos N0 ([S] B S y))
+   -> strict-pos N0 ([S] eforall A ([y] B S y)).
 
-%%% Soundness-critical: in /forall, the domain A has type `expr`,
-%%% not `expr -> expr`.  LF will not let the translator supply an
-%%% A that depends on the LF VARIABLE S.  This is the same syntactic
-%%% enforcement the linear-logic encoding uses to keep a linear
-%%% variable out of a `letb`'s body or a `bang`'s scope.
+%%% Soundness: in /forall the domain A is guarded TWO ways.  Its LF
+%%% type is `expr`, not `expr -> expr`, so LF will not let the
+%%% translator supply an A that depends on the bound VARIABLE S (the
+%%% same syntactic enforcement the linear-logic encoding uses to keep a
+%%% linear variable out of a `letb` body).  AND the `no-self-ref N0 A`
+%%% premise bars A from containing the self-reference as the free
+%%% CONSTANT `(econst N0 _)`.
 %%%
-%%% Residual gap (mitigated in the generator, not yet in LF): A is
-%%% only barred from depending on the *bound variable* S, not from
-%%% containing the inductive's self-reference as the *free constant*
-%%% `(econst N0 LS0)`.  So a WRONG `T_HOAS` that under-abstracts —
-%%% leaving a self-occurrence as a closed constant inside A — would
-%%% pass /no-occur or /forall and fake positivity for a non-strictly-
-%%% positive ctor (e.g. `(indNeg → indNeg) → indNeg` with
-%%% T_HOAS = [S] (econst "indNeg" → S) → S).  The generator closes
-%%% this by computing T_HOAS itself (the FULL self→S abstraction; see
-%%% generate-twelf.ts `emitCtorPositive`) so the untrusted prover only
-%%% supplies the `ctor-spine` proof, which Twelf checks against the
-%%% correct T_HOAS — under which the bad spine is uninhabited.  A pure
-%%% TCB fix would add a `no-self-ref N0 LS0 A` premise here, which
-%%% needs `inequality/strings` (an `N neq N0` decision) — not in the
-%%% current limited-thaw Twelf build.
+%%% The second guard closes a gap that earlier versions only patched in
+%%% the generator: without it, a WRONG `T_HOAS` that under-abstracts —
+%%% leaving a self-occurrence as a closed constant inside A — would pass
+%%% /no-occur or /forall and fake positivity for a non-strictly-positive
+%%% ctor (e.g. `(indNeg → indNeg) → indNeg` with
+%%% T_HOAS = [S] (econst "indNeg" → S) → S).  Now any such residual
+%%% `econst N0` forces a `string-neq N0 N0` obligation at the `econst`
+%%% leaf of `no-self-ref`, which the global `%query 0 * string-neq X X`
+%%% rejects.  So `T_HOAS` correctness is no longer a SOUNDNESS condition
+%%% — at worst a wrong T_HOAS loses completeness (a HOLE) — and the
+%%% generator's `emitCtorPositive` computing T_HOAS is now only a
+%%% convenience for discharging the obligation, not a trust dependency.
 
-%%% --- `ctor-spine M` : M : expr -> expr, viewed as a Π-chain
+%%% --- `ctor-spine N0 M` : M : expr -> expr, viewed as a Π-chain
 %%% under self-binding, has every argument type strictly positive
-%%% and a result that's S-applied.  Unlike `strict-pos`, the
-%%% argument types here may mention S (they're typed `expr -> expr`),
-%%% subject to the strict-pos check.
+%%% (in the inductive named N0) and a result that's S-applied.  Unlike
+%%% `strict-pos`, the argument types here may mention S (they're typed
+%%% `expr -> expr`), subject to the strict-pos check.
 
-ctor-spine : (expr -> expr) -> type.   %name ctor-spine CS.
+ctor-spine : string -> (expr -> expr) -> type.   %name ctor-spine CS.
 
-ctor-spine/result : applies-self M -> ctor-spine M.
+ctor-spine/result : applies-self M -> ctor-spine N0 M.
 
 ctor-spine/arg :
-   strict-pos A
-   -> ({y : expr} ctor-spine ([S] B S y))
-   -> ctor-spine ([S] eforall (A S) ([y] B S y)).
+   strict-pos N0 A
+   -> ({y : expr} no-self-ref N0 y -> ctor-spine N0 ([S] B S y))
+   -> ctor-spine N0 ([S] eforall (A S) ([y] B S y)).
 
 %%% --- `ctor-positive N0 LS0 T` : T (a ctor's type) is positive
 %%% with respect to the type former named N0 at level instantiation
@@ -516,7 +594,7 @@ ctor-positive : string -> lvls -> expr -> type.   %name ctor-positive CP.
 
 ctor-positive/intro :
    {T_HOAS : expr -> expr}
-   ctor-spine T_HOAS
+   ctor-spine N0 T_HOAS
    -> ctor-positive N0 LS0 (T_HOAS (econst N0 LS0)).
 
 %%% Adequacy: closed inhabitants of `ctor-positive N0 LS0 T` are in

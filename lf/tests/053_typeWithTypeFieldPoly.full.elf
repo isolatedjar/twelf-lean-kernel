@@ -23,7 +23,7 @@ TypeWithTypeFieldPoly_mk/type-wf : defeq (eforall (esort (lsucc (lvar liz))) ([x
    = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/const TypeWithTypeFieldPoly/decl (inst-expr/sort (lvl-inst/succ (lvl-inst/succ (lvl-inst/var lvl-nth/zero)))))))).
 
 TypeWithTypeFieldPoly_mk/positivity : ctor-positive "TypeWithTypeFieldPoly" (lcons (lvar liz) lnil) (eforall (esort (lsucc (lvar liz))) ([x] (econst "TypeWithTypeFieldPoly" (lcons (lvar liz) lnil))))
-   = (ctor-positive/intro ([S] (eforall (esort (lsucc (lvar liz))) ([x] S))) (ctor-spine/arg (strict-pos/no-occur (esort (lsucc (lvar liz)))) ([x] (ctor-spine/result applies-self/refl)))).
+   = (ctor-positive/intro ([S] (eforall (esort (lsucc (lvar liz))) ([x] S))) (ctor-spine/arg (strict-pos/no-occur (esort (lsucc (lvar liz))) no-self-ref/sort) ([x] ([y] (ctor-spine/result applies-self/refl))))).
 
 TypeWithTypeFieldPoly_mk/name : name "TypeWithTypeFieldPoly.mk" (is-decl (eforall (esort (lsucc (lvar liz))) ([x] (econst "TypeWithTypeFieldPoly" (lcons (lvar liz) lnil)))) ctor).
 

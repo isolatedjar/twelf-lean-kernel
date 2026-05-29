@@ -23,7 +23,7 @@ PredWithTypeField_mk/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (econst
    = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/const PredWithTypeField/decl (inst-expr/sort lvl-inst/zero))))).
 
 PredWithTypeField_mk/positivity : ctor-positive "PredWithTypeField" lnil (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil)))
-   = (ctor-positive/intro ([S] (eforall (esort (lsucc lzero)) ([x] S))) (ctor-spine/arg (strict-pos/no-occur (esort (lsucc lzero))) ([x] (ctor-spine/result applies-self/refl)))).
+   = (ctor-positive/intro ([S] (eforall (esort (lsucc lzero)) ([x] S))) (ctor-spine/arg (strict-pos/no-occur (esort (lsucc lzero)) no-self-ref/sort) ([x] ([y] (ctor-spine/result applies-self/refl))))).
 
 PredWithTypeField_mk/name : name "PredWithTypeField.mk" (is-decl (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil))) ctor).
 

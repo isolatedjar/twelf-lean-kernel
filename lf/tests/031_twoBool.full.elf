@@ -1,5 +1,7 @@
 %%% Expected outcome: accept
 %%% A simple product type
+sneq/0 : string-neq "Bool" "TwoBool".
+
 %% inductive Bool
 Bool/type-wf-sort : lvl
    = (lsucc (lsucc lzero)).
@@ -80,7 +82,7 @@ TwoBool_mk/type-wf : defeq (eforall (econst "Bool" lnil) ([x] (eforall (econst "
    = (defeq/forall (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] (defeq/forall (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([y] ([h1] (defeq/const TwoBool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))))))).
 
 TwoBool_mk/positivity : ctor-positive "TwoBool" lnil (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (econst "TwoBool" lnil)))))
-   = (ctor-positive/intro ([S] (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] S))))) (ctor-spine/arg (strict-pos/no-occur (econst "Bool" lnil)) ([x] (ctor-spine/arg (strict-pos/no-occur (econst "Bool" lnil)) ([y] (ctor-spine/result applies-self/refl)))))).
+   = (ctor-positive/intro ([S] (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] S))))) (ctor-spine/arg (strict-pos/no-occur (econst "Bool" lnil) (no-self-ref/const sneq/0)) ([x] ([y] (ctor-spine/arg (strict-pos/no-occur (econst "Bool" lnil) (no-self-ref/const sneq/0)) ([z] ([w] (ctor-spine/result applies-self/refl)))))))).
 
 TwoBool_mk/name : name "TwoBool.mk" (is-decl (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (econst "TwoBool" lnil))))) ctor).
 

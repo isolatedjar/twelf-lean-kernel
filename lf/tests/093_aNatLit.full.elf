@@ -40,7 +40,7 @@ Nat_succ/type-wf : defeq (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil)))
    = (defeq/forall (defeq/const Nat/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] (defeq/const Nat/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))).
 
 Nat_succ/positivity : ctor-positive "Nat" lnil (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil)))
-   = (ctor-positive/intro ([S] (eforall S ([x] S))) (ctor-spine/arg (strict-pos/head applies-self/refl) ([x] (ctor-spine/result applies-self/refl)))).
+   = (ctor-positive/intro ([S] (eforall S ([x] S))) (ctor-spine/arg (strict-pos/head applies-self/refl) ([x] ([y] (ctor-spine/result applies-self/refl))))).
 
 Nat_succ/name : name "Nat.succ" (is-decl (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) ctor).
 

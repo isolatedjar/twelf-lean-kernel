@@ -36,6 +36,42 @@ export const levelParamBindings: Map<string, string> = new Map();
 
 export const natLiteralsSeen: Set<string> = new Set();
 
+// ---------------------------------------------------------------------------
+// Posited string-disequality facts
+// ---------------------------------------------------------------------------
+//
+// `no-self-ref` proofs (strict positivity, see synth.ts) discharge each
+// `econst N` leaf with a `string-neq N N0` witness asserting the constant's
+// name differs from the inductive's.  LF cannot derive string disequality, so
+// the environment *posits* these facts as constants on the open `string-neq`
+// family.  Each distinct (a, b) pair requested here becomes one declaration
+//
+//   sneq/<i> : string-neq "a" "b".
+//
+// emitted into the generated prelude; the no-self-ref proof refers to it by
+// the returned `sneq/<i>` name.  Soundness does not depend on these claims
+// being true: final-checks.elf's `%query 0 * string-neq X X` aborts the whole
+// load if any posited pair is reflexive (a = b).  So an untrusted prover may
+// request whatever it likes — a lie only ever sinks the development.
+const stringNeqIndex: Map<string, number> = new Map();
+export const stringNeqFacts: { a: string; b: string }[] = [];
+
+export function recordStringNeq(a: string, b: string): string {
+  const key = JSON.stringify([a, b]);
+  let i = stringNeqIndex.get(key);
+  if (i === undefined) {
+    i = stringNeqFacts.length;
+    stringNeqIndex.set(key, i);
+    stringNeqFacts.push({ a, b });
+  }
+  return `sneq/${i}`;
+}
+
+export function clearStringNeqFacts(): void {
+  stringNeqIndex.clear();
+  stringNeqFacts.length = 0;
+}
+
 // =====================================================================
 // Name mangling
 // =====================================================================

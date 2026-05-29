@@ -79,7 +79,7 @@ export function makeRealProver(env: ParsedEnv): Prover {
     // matching `T_HOAS` and assembles `ctor-positive/intro`.  See shared.ts.
     ctorPositive({ ctorType, indName, indLevels, levelParams }): ProofResult {
       try {
-        return buildCtorSpine(ctorType, nameToString(indName), indLevels, [], levelParams);
+        return buildCtorSpine(ctorType, nameToString(indName), indLevels, [], [], levelParams);
       } catch {
         return null;
       }

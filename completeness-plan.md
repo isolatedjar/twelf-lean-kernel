@@ -137,7 +137,7 @@ NOT part of `IsDefEq`. They live in our TCB as separate closed families.
 | Check                                                    | Our TCB                           | Status                                                                                                  |
 | -------------------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------- |
 | Inductive type ends in `Sort _`                          | `ends-in-sort`                    | ✓                                                                                                       |
-| Constructor strict positivity                            | `ctor-positive`                   | ✓ (single-self, non-nested)                                                                             |
+| Constructor strict positivity                            | `ctor-positive` + `no-self-ref`   | ✓ (single-self, non-nested; sound in-TCB via `string-neq` + global `%query`)                            |
 | Mutual inductives                                        | —                                 | ✗ deferred — generalize `ctor-positive` to a _list_ of self-refs                                        |
 | Nested inductives                                        | —                                 | ✗ deferred — per-type-former "positivity-preserving" predicate                                          |
 | Recursor type well-formedness                            | none beyond `defeq T T (esort U)` | **✗ no kernel-side synthesis check — we trust the export**                                              |
@@ -267,26 +267,45 @@ test `buildAppliesSelf` on the result): if the head IS applicable but
 `buildCtorSpine` still fails, the failure must be a field strict-pos issue,
 and we stay 🤷 rather than defer to Twelf.
 
-**Mitigation in place (generator-level, May 2026).** The exploit above
-requires an untrusted prover to *supply* the wrong T_HOAS. The trusted
-generator now computes T_HOAS itself — the full `self → S` abstraction, via
-`render.ts` `lfExpr` with a `SelfSubst` (see `generate-twelf.ts`
-`emitCtorPositive`) — and the prover (`prover.ts` `ctorPositive`) returns
-*only* the `ctor-spine` proof. Twelf checks that spine against the generator's
-correct T_HOAS, under which a negative-occurrence ctor's `ctor-spine` type is
-uninhabited; no spine the prover supplies can inhabit it. Verified
-adversarially: the witness above is accepted when the fake T_HOAS is supplied
-directly to the TCB, but rejected (`Type mismatch`) once the generator fixes
-T_HOAS. This closes the hole under the project's trust model
-(`generate-twelf.ts` + `render.ts` trusted; `prover.ts` / `synth.ts` not).
+**Pure-TCB fix DONE (May 2026).** `strict-pos` now carries the inductive's
+name `N0`, and its absence leaves take a `no-self-ref N0 E` premise (likewise
+the Π-domain of `strict-pos/forall`).  `no-self-ref` is a structural traversal
+that, at each `econst N` leaf, demands `string-neq N N0`.  So the LF signature
+itself — not the generator — bars a self-occurrence from any closed domain:
+the under-abstracted `T_HOAS` above leaves `econst I` in the inner domain,
+which now forces a `string-neq "I" "I"` obligation.
 
-**Pure-TCB fix (still not done):** add a `no-self-ref N0 LS0 A` premise to
-`strict-pos/forall` and `strict-pos/no-occur`, so the LF signature itself bars
-a self-occurrence in a closed domain. The `no-self-ref/const` case needs an
-`N neq N0` decision, i.e. `inequality/strings` — a constraint domain not in
-the current limited-thaw Twelf build (only `inequality/integers` ships). This
-would make `ctor-positive` sound independent of the generator. See tcb.elf,
-`strict-pos/forall` comment.
+`no-self-ref/const`'s `N ≠ N0` decision is supplied without a Twelf string-
+inequality domain (none ships in the limited-thaw build) by *faking*
+disequality the same way the name→meaning functional dependency is faked: a
+new OPEN family `string-neq : string -> string -> type` (thawed in
+`freeze.elf`) lets an environment *posit* any disequalities its positivity
+proofs need, and a global
+
+```
+%query 0 * string-neq X X.
+```
+
+in `final-checks.elf` ABORTs the whole load if any posited pair is reflexive.
+Honest claims (`a ≠ b`) never match `X X`; a lie (`a = a`) sinks the
+development.  Net effect: `T_HOAS` correctness is no longer a soundness
+condition — a wrong/adversarial `T_HOAS` or spine can only lose completeness (a
+HOLE), never fake positivity.  `ctor-positive` is now sound *independent of the
+generator* (only `tcb.elf` + `freeze.elf` + `final-checks.elf` + `parse.ts` +
+`generate-twelf.ts` + `shared.ts` need auditing; `prover.ts`/`synth.ts` do
+not).
+
+Guarded by a hand-written regression:
+`lf/soundness/positivity-underabstraction.elf` reconstructs the exact
+under-abstraction attack on
+`mk : (indNeg → Empty) → indNeg` and is rejected by `scripts/check-soundness.sh`
+(the attack type-checks only by declaring `string-neq "indNeg" "indNeg"`, which
+the global query then catches).  Note the new check is also *name-only* (any
+level instantiation of `N0` counts as an occurrence), closing the related
+latent gap where the old name+level `isSelfRef` ignored cross-level self-uses.
+
+The still-deferred generalizations (mutual self-refs, nested inductives,
+positivity modulo defeq) are unchanged — see the table rows above.
 
 ### Other translator-side declines still active
 

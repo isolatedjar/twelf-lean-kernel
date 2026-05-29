@@ -20,7 +20,14 @@
 // file suffices.
 
 import { makeRealProver, NullProver } from "./prover.ts";
-import { levelParamBindings, lfExpr, mangle, natLiteralsSeen } from "./render.ts";
+import {
+  clearStringNeqFacts,
+  levelParamBindings,
+  lfExpr,
+  mangle,
+  natLiteralsSeen,
+  stringNeqFacts,
+} from "./render.ts";
 import type {
   Decl,
   Expr,
@@ -157,18 +164,23 @@ function emitTypeWf(result: TypeWfResult, mn: string, T: string, isThm: boolean)
 
 // Emit the `ctor-positive` obligation for a constructor and return its name.
 //
-// SOUNDNESS BOUNDARY.  The proof is `ctor-positive/intro ([S] T_HOAS) <spine>`.
-// The generator (trusted) computes T_HOAS itself — the ctor type with the
-// inductive's self-reference `(econst IndName IndLevels)` abstracted to the
-// bound `S` — via render.ts `lfExpr` with a SelfSubst.  The prover supplies
-// ONLY the `<spine>` (a `ctor-spine T_HOAS` derivation).  Were the prover to
-// supply T_HOAS, it could hide a negative self-occurrence in a closed (S-free)
-// position and so fake positivity for a non-strictly-positive inductive (the
-// `strict-pos/forall`/`strict-pos/no-occur` rules accept any closed domain,
-// including one mentioning the self-constant).  By fixing T_HOAS here, Twelf
-// checks the prover's spine against the *correct* abstraction, under which a
-// negative occurrence makes `ctor-spine` uninhabited — so a bad spine can only
-// produce a HOLE/reject, never an unsound acceptance.
+// The proof is `ctor-positive/intro ([S] T_HOAS) <spine>`.  The generator
+// computes T_HOAS — the ctor type with the inductive's self-reference
+// `(econst IndName IndLevels)` abstracted to the bound `S` — via render.ts
+// `lfExpr` with a SelfSubst, and the prover supplies the `<spine>` (a
+// `ctor-spine N0 T_HOAS` derivation).
+//
+// This is NO LONGER a soundness boundary.  Earlier, T_HOAS correctness was
+// load-bearing: a wrong abstraction that left a self-occurrence as the closed
+// constant `(econst N0 _)` in a Π-domain would slip through
+// `strict-pos/no-occur`/`strict-pos/forall` and fake positivity.  The TCB now
+// guards every such domain with a `no-self-ref N0` premise (tcb.elf), whose
+// `econst` leaves are discharged by posited `string-neq` facts audited by the
+// global `%query 0 * string-neq X X` (final-checks.elf).  So a residual self-
+// constant forces a reflexive `string-neq N0 N0` that sinks the load, and a
+// wrong/adversarial T_HOAS or spine can now only lose completeness (a HOLE),
+// never produce an unsound acceptance.  Computing T_HOAS here remains a
+// convenience for discharging the obligation, not a trust dependency.
 function emitCtorPositive(
   prover: Prover,
   c: { type: Expr; induct: Name; levelParams: Name[] },
@@ -648,6 +660,7 @@ export function generateTwelf(prover: Prover, env: ParsedEnv): string {
   out.length = 0;
   natLiteralsSeen.clear();
   levelParamBindings.clear();
+  clearStringNeqFacts();
 
   for (const decl of env.decls) {
     try {
@@ -662,6 +675,24 @@ export function generateTwelf(prover: Prover, env: ParsedEnv): string {
   const prelude: string[] = [];
   if (natLiteralsSeen.size > 0) {
     for (const n of natLiteralsSeen) prelude.push(`%solve nonneg_${n} : ${n} >= 0.`);
+    prelude.push(``);
+  }
+  // Prelude: the posited string-disequality facts that `no-self-ref` proofs
+  // (strict positivity) refer to by `sneq/<i>` name.  These add to the open
+  // `string-neq` family; final-checks.elf's `%query 0 * string-neq X X` rejects
+  // any reflexive (a = b) claim, so emitting whatever the prover requested is
+  // sound regardless of correctness.  A name with a quote/backslash/newline
+  // would break the string literal, so reject it defensively (cannot happen
+  // for well-formed Lean names, but the output must never be injectable).
+  if (stringNeqFacts.length > 0) {
+    stringNeqFacts.forEach(({ a, b }, i) => {
+      for (const s of [a, b]) {
+        if (/["\\\n]/.test(s)) {
+          throw new Error(`string-neq fact rejected (possible injection): ${JSON.stringify(s)}`);
+        }
+      }
+      prelude.push(`sneq/${i} : string-neq "${a}" "${b}".`);
+    });
     prelude.push(``);
   }
   return [...prelude, ...out].join("\n") + "\n";
