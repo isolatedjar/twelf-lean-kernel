@@ -10,6 +10,8 @@ inductWrongCtorResLevel/type-wf : defeq (eforall (esort lzero) ([x] (eforall (es
 %%% HOLE
 inductWrongCtorResLevel/ends-in-sort : ends-in-sort (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))).
 
+inductWrongCtorResLevel/rec-name : name "inductWrongCtorResLevel.rec" (is-rec-for "inductWrongCtorResLevel").
+
 inductWrongCtorResLevel/name : name "inductWrongCtorResLevel" (is-decl (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) indt).
 
 inductWrongCtorResLevel/decl : declared "inductWrongCtorResLevel" (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) indt
@@ -37,8 +39,6 @@ inductWrongCtorResLevel_rec/type-wf-sort : lvl.
 %%% HOLE
 inductWrongCtorResLevel_rec/type-wf : defeq (esort lzero) (esort lzero) (esort inductWrongCtorResLevel_rec/type-wf-sort).
 
-inductWrongCtorResLevel_rec/name : name "inductWrongCtorResLevel.rec" (is-decl (esort lzero) irec).
-
 inductWrongCtorResLevel_rec/decl : declared "inductWrongCtorResLevel.rec" (esort lzero) irec
-   = declared/ok inductWrongCtorResLevel_rec/name (dkind-ok/irec inductWrongCtorResLevel_rec/type-wf).
+   = declared/ok-irec inductWrongCtorResLevel/rec-name (dkind-ok/irec inductWrongCtorResLevel_rec/type-wf).
 

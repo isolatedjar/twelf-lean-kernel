@@ -10,6 +10,8 @@ PredWithTypeField/type-wf : defeq (esort lzero) (esort lzero) (esort PredWithTyp
 PredWithTypeField/ends-in-sort : ends-in-sort (esort lzero)
    = ends-in-sort/sort.
 
+PredWithTypeField/rec-name : name "PredWithTypeField.rec" (is-rec-for "PredWithTypeField").
+
 PredWithTypeField/name : name "PredWithTypeField" (is-decl (esort lzero) indt).
 
 PredWithTypeField/decl : declared "PredWithTypeField" (esort lzero) indt
@@ -37,10 +39,8 @@ PredWithTypeField_rec/type-wf-sort : lvl
 PredWithTypeField_rec/type-wf : defeq (eforall (eforall (econst "PredWithTypeField" lnil) ([x] (esort lzero))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "PredWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "PredWithTypeField" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "PredWithTypeField" lnil) ([x] (esort lzero))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "PredWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "PredWithTypeField" lnil) ([z] (eapp x z))))))) (esort PredWithTypeField_rec/type-wf-sort)
    = (defeq/forall (defeq/forall (defeq/const PredWithTypeField/decl (inst-expr/sort lvl-inst/zero)) ([x] ([h] defeq/sort-refl))) ([x] ([h] (defeq/forall (defeq/forall defeq/sort-refl ([y] ([h1] (defeq/app h (defeq/app (defeq/const PredWithTypeField_mk/decl (inst-expr/forall (inst-expr/sort (lvl-inst/succ lvl-inst/zero)) ([x] ([h] (inst-expr/const lvls-inst/nil))))) h1))))) ([y] ([h1] (defeq/forall (defeq/const PredWithTypeField/decl (inst-expr/sort lvl-inst/zero)) ([z] ([h2] (defeq/app h h2)))))))))).
 
-PredWithTypeField_rec/name : name "PredWithTypeField.rec" (is-decl (eforall (eforall (econst "PredWithTypeField" lnil) ([x] (esort lzero))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "PredWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "PredWithTypeField" lnil) ([z] (eapp x z))))))) irec).
-
 PredWithTypeField_rec/decl : declared "PredWithTypeField.rec" (eforall (eforall (econst "PredWithTypeField" lnil) ([x] (esort lzero))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "PredWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "PredWithTypeField" lnil) ([z] (eapp x z))))))) irec
-   = declared/ok PredWithTypeField_rec/name (dkind-ok/irec PredWithTypeField_rec/type-wf).
+   = declared/ok-irec PredWithTypeField/rec-name (dkind-ok/irec PredWithTypeField_rec/type-wf).
 
 %% def predWithTypeField
 predWithTypeField/type-wf-sort : lvl

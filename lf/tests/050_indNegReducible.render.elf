@@ -39,6 +39,8 @@ indNegReducible/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (eso
 %%% HOLE
 indNegReducible/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
+indNegReducible/rec-name : name "indNegReducible.rec" (is-rec-for "indNegReducible").
+
 indNegReducible/name : name "indNegReducible" (is-decl (esort (lsucc lzero)) indt).
 
 indNegReducible/decl : declared "indNegReducible" (esort (lsucc lzero)) indt
@@ -66,8 +68,6 @@ indNegReducible_rec/type-wf-sort : lvl.
 %%% HOLE
 indNegReducible_rec/type-wf : defeq (esort lzero) (esort lzero) (esort indNegReducible_rec/type-wf-sort).
 
-indNegReducible_rec/name : name "indNegReducible.rec" (is-decl (esort lzero) irec).
-
 indNegReducible_rec/decl : declared "indNegReducible.rec" (esort lzero) irec
-   = declared/ok indNegReducible_rec/name (dkind-ok/irec indNegReducible_rec/type-wf).
+   = declared/ok-irec indNegReducible/rec-name (dkind-ok/irec indNegReducible_rec/type-wf).
 

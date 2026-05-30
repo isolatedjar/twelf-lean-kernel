@@ -290,7 +290,13 @@ quot : dkind.
 %%% with `%unique name +N -K` (each string given at most one meaning).
 nkind : type.
 is-decl : expr -> dkind -> nkind.
-%%% Todo: other things (recursors? constructors?) that we need to not conflict with declared names?
+is-rec-for : string -> nkind.
+%%% `is-rec-for IndN` : this slot is reserved as the primitive recursor for
+%%% the inductive named IndN.  Emitted alongside the inductive's own `name`
+%%% fact by the trusted generator (generate-twelf.ts, `generateIndType`).
+%%% %unique name ensures no other declaration (def, ctor, etc.) can claim
+%%% the same recursor-slot string — preventing `def Foo.rec` from masquerading
+%%% as a real recursor while the actual recursor uses a mismatched name.
 
 name : string -> nkind -> type.
 
@@ -662,6 +668,16 @@ declared/ok :
    name N (is-decl T K)
    -> dkind-ok K T
    -> declared N T K.
+
+%%% Recursors use this rule instead of `declared/ok` so that their name must
+%%% have been reserved by a legitimate inductive via `is-rec-for`.  Combined
+%%% with %unique name, this means (a) any `def Foo.rec` conflicts with the
+%%% inductive's reservation and ABORTs the load, and (b) a recursor at an
+%%% un-reserved name has no witness and is rejected by %freeze as a bare decl.
+declared/ok-irec :
+   name N (is-rec-for IndN)
+   -> dkind-ok irec T
+   -> declared N T irec.
 
 %%% defeq facts earned by a well-formed declaration.  A use `econst N LS`
 %%% instantiates the stored schema Ts at LS to get the use-site type T.

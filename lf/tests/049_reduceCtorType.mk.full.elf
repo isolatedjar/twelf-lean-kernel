@@ -26,6 +26,8 @@ reduceCtorType/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esor
 reduceCtorType/ends-in-sort : ends-in-sort (esort (lsucc lzero))
    = ends-in-sort/sort.
 
+reduceCtorType/rec-name : name "reduceCtorType.rec" (is-rec-for "reduceCtorType").
+
 reduceCtorType/name : name "reduceCtorType" (is-decl (esort (lsucc lzero)) indt).
 
 reduceCtorType/decl : declared "reduceCtorType" (esort (lsucc lzero)) indt
@@ -53,8 +55,6 @@ reduceCtorType_rec/type-wf-sort : lvl
 reduceCtorType_rec/type-wf : defeq (esort lzero) (esort lzero) (esort reduceCtorType_rec/type-wf-sort)
    = defeq/sort-refl.
 
-reduceCtorType_rec/name : name "reduceCtorType.rec" (is-decl (esort lzero) irec).
-
 reduceCtorType_rec/decl : declared "reduceCtorType.rec" (esort lzero) irec
-   = declared/ok reduceCtorType_rec/name (dkind-ok/irec reduceCtorType_rec/type-wf).
+   = declared/ok-irec reduceCtorType/rec-name (dkind-ok/irec reduceCtorType_rec/type-wf).
 

@@ -13,6 +13,8 @@ Nat/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort Nat/type-
 %%% HOLE
 Nat/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
+Nat/rec-name : name "Nat.rec" (is-rec-for "Nat").
+
 Nat/name : name "Nat" (is-decl (esort (lsucc lzero)) indt).
 
 Nat/decl : declared "Nat" (esort (lsucc lzero)) indt
@@ -55,10 +57,8 @@ Nat_rec/type-wf-sort : lvl.
 %%% HOLE
 Nat_rec/type-wf : defeq (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (esort Nat_rec/type-wf-sort).
 
-Nat_rec/name : name "Nat.rec" (is-decl (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) irec).
-
 Nat_rec/decl : declared "Nat.rec" (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) irec
-   = declared/ok Nat_rec/name (dkind-ok/irec Nat_rec/type-wf).
+   = declared/ok-irec Nat/rec-name (dkind-ok/irec Nat_rec/type-wf).
 
 %%% SKIP: ctor reflOccInIndex.mk — field #1 has type Sort 1 (lives at Sort 2); inductive is at Sort 1
 

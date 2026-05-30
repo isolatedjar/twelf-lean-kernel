@@ -538,12 +538,6 @@ function preflightInductiveReject(ind: Decl & { kind: "inductive" }): string | n
     if (dupLevels(r.levelParams)) {
       return `recursor ${nameToString(r.name)} — duplicate universe parameter names`;
     }
-    // (e) a primitive recursor must be named `<type>.rec` for a type in the block.
-    const rn = nameToString(r.name);
-    const ok = rn.endsWith(".rec") && typeNames.has(rn.slice(0, -".rec".length));
-    if (!ok) {
-      return `recursor ${rn} — name is not <type>.rec for any type in the block`;
-    }
   }
   // (f) Large-elimination gate.  A Prop (Sort 0) inductive may only eliminate
   // into Type if it is a subsingleton — at most one constructor (Lean also
@@ -622,7 +616,22 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
         T,
         false,
       );
-      emitDeclared(mn, declName, T, `irec`, `(dkind-ok/irec ${tw})`);
+      // Find the parent inductive's rec-name reservation by computing IndN = recN[:-4].
+      // The TCB rule `declared/ok-irec` requires `name N (is-rec-for IndN)`, which was
+      // emitted by generateIndType.  If no matching inductive exists, emit a HOLE
+      // (bare decl rejected by %freeze) rather than using the old declared/ok path.
+      const IndN = declName.endsWith(".rec") ? declName.slice(0, -4) : null;
+      const indType = IndN !== null ? ind.types.find((t) => nameToString(t.name) === IndN) : undefined;
+      const indMn = indType !== undefined ? mangle(indType.name) : null;
+      if (indMn !== null) {
+        emit(`${mn}/decl : declared "${declName}" ${T} irec`);
+        emit(`   = declared/ok-irec ${indMn}/rec-name (dkind-ok/irec ${tw}).`);
+        emit(``);
+      } else {
+        emit(`%%% HOLE: recursor ${declName} — name does not follow <inductive>.rec convention`);
+        emit(`${mn}/decl : declared "${declName}" ${T} irec.`);
+        emit(``);
+      }
     });
   }
 }
@@ -648,6 +657,10 @@ function generateIndType(prover: Prover, t: IndType): void {
       `${mn}/ends-in-sort`,
       `ends-in-sort ${T}`,
     );
+    // Reserve the canonical recursor slot: %unique name ensures no other
+    // declaration can claim this string (e.g., a def with the recursor name).
+    emit(`${mn}/rec-name : name "${declName}.rec" (is-rec-for "${declName}").`);
+    emit(``);
     emitDeclared(mn, declName, T, `indt`, `(dkind-ok/indt ${tw} ${eis})`);
   });
 }

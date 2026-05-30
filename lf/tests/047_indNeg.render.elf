@@ -10,6 +10,8 @@ indNeg/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort indNeg
 %%% HOLE
 indNeg/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
+indNeg/rec-name : name "indNeg.rec" (is-rec-for "indNeg").
+
 indNeg/name : name "indNeg" (is-decl (esort (lsucc lzero)) indt).
 
 indNeg/decl : declared "indNeg" (esort (lsucc lzero)) indt
@@ -37,8 +39,6 @@ indNeg_rec/type-wf-sort : lvl.
 %%% HOLE
 indNeg_rec/type-wf : defeq (esort lzero) (esort lzero) (esort indNeg_rec/type-wf-sort).
 
-indNeg_rec/name : name "indNeg.rec" (is-decl (esort lzero) irec).
-
 indNeg_rec/decl : declared "indNeg.rec" (esort lzero) irec
-   = declared/ok indNeg_rec/name (dkind-ok/irec indNeg_rec/type-wf).
+   = declared/ok-irec indNeg/rec-name (dkind-ok/irec indNeg_rec/type-wf).
 
