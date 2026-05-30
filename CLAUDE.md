@@ -43,9 +43,28 @@ Two provers, both run by the same generator:
 
 Because both files come from the same generator, `.render.elf` structurally
 contains every fact `.full.elf` does (the adequacy property). **Auditing
-`shared.ts` + `parse.ts` + `generate-twelf.ts` suffices**; `prover.ts` /
+`shared.ts` + `parse.ts` + `generate-twelf.ts` suffices** (plus the three
+trusted `.elf`: `tcb.elf`, `freeze.elf`, `final-checks.elf`); `prover.ts` /
 `synth.ts` are untrusted — a prover bug can only lose completeness (a wrongful
 HOLE/reject), never accept an ill-typed term.
+
+### Posited facts audited globally (the `%unique` / `string-neq` pattern)
+
+Two soundness checks follow the same shape: the environment is allowed to
+*posit* facts onto an **open** type family, and a global directive in
+`final-checks.elf` rejects the whole load if any posited fact is inconsistent.
+
+- **Name → meaning functional dependency.** The env adds `<decl>/name` facts to
+  the open `name` family; `%unique name` rejects a string given two meanings.
+- **String disequality (strict positivity).** LF can't *derive* that two
+  strings differ, so the env *posits* `string-neq "a" "b"` facts on the open
+  `string-neq` family to discharge the `no-self-ref` leaves of a constructor's
+  positivity proof. `%query 0 * string-neq X X.` ABORTs the load if any posited
+  pair is reflexive (`a = a`). So a translator may claim whatever
+  disequalities it likes; a lie sinks the development. This makes
+  `ctor-positive` sound **inside the TCB**, independent of the generator's
+  `T_HOAS` computation (see the `string-neq` / `no-self-ref` comments in
+  `tcb.elf`, and the regression in `lf/soundness/`).
 
 ## Running tests
 
@@ -55,6 +74,10 @@ HOLE/reject), never accept an ill-typed term.
 
 # Check all tests with Twelf
 ./scripts/check-tests.sh /home/user/twelf-src/bin/twelf-server
+
+# Run the hand-written soundness regressions (adversarial .elf that the TCB
+# must reject on its own — see lf/soundness/)
+./scripts/check-soundness.sh /home/user/twelf-src/bin/twelf-server
 
 # TypeScript type-check
 npx tsc --noEmit
@@ -106,7 +129,8 @@ After regenerating NDJSON, re-run `./scripts/gen-tests.sh` to update the
 | `lf/tcb.elf`                       | Trusted base — LF encoding of Lean's type theory                    |
 | `lf/derived.elf`                   | Derived lemmas built on top of the TCB                              |
 | `lf/shared.elf`                    | Shared definitions used across test files                           |
-| `lf/final-checks.elf`              | Final verification declarations                                     |
+| `lf/final-checks.elf`              | Final verification declarations (`%unique name`, `string-neq` audit)|
+| `lf/soundness/`                    | Hand-written adversarial `.elf` the TCB must reject (regressions)   |
 | `lf/sources.cfg`                   | Twelf sources file (loads TCB in order)                             |
 | `src/parse.ts`                     | NDJSON → JSON IR parser (trusted)                                   |
 | `src/shared.ts`                    | IR types + the `Prover` interface + `Fmt` (trusted)                 |
@@ -116,6 +140,7 @@ After regenerating NDJSON, re-run `./scripts/gen-tests.sh` to update the
 | `src/synth.ts`                     | Type synthesizer / defeq prover / positivity builders (untrusted)   |
 | `scripts/gen-tests.sh`             | Generate `lf/tests/*.elf` from `tests/*.ndjson`                     |
 | `scripts/check-tests.sh`           | Run Twelf on each `.elf` and report results                         |
+| `scripts/check-soundness.sh`       | Load each `lf/soundness/*.elf` through the chain; assert it ABORTs  |
 | `scripts/regen-tutorial-ndjson.sh` | Regenerate `tests/tutorial/**/*.ndjson` from Lean source            |
 | `lean/tutorial/`                   | Lean 4 source for the tutorial test suite                           |
 

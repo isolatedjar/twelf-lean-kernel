@@ -1,6 +1,8 @@
 %%% Expected outcome: accept
 %%% Inductive predicates eliminate into Sort if they have one constructors and it carries data, but the data is
 %%% known from the type, e.g. a parameter or an index
+sneq/0 : string-neq "Bool" "SortElimProp".
+
 %% inductive Bool
 Bool/type-wf-sort : lvl
    = (lsucc (lsucc lzero)).
@@ -81,7 +83,7 @@ SortElimProp_mk/type-wf : defeq (eforall (econst "Bool" lnil) ([x] (eforall (eco
    = (defeq/forall (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] (defeq/forall (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([y] ([h1] (defeq/forall (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([z] ([h2] (defeq/app (defeq/app (defeq/app (defeq/const SortElimProp/decl (inst-expr/forall (inst-expr/const lvls-inst/nil) ([x] ([h] (inst-expr/forall (inst-expr/const lvls-inst/nil) ([y] ([h1] (inst-expr/forall (inst-expr/const lvls-inst/nil) ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h2) h1)))))))))).
 
 SortElimProp_mk/positivity : ctor-positive "SortElimProp" lnil (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp (eapp (eapp (econst "SortElimProp" lnil) x) z) y)))))))
-   = (ctor-positive/intro ([S] (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp (eapp (eapp S x) z) y)))))))) (ctor-spine/arg (strict-pos/no-occur (econst "Bool" lnil)) ([x] (ctor-spine/arg (strict-pos/no-occur (econst "Bool" lnil)) ([y] (ctor-spine/arg (strict-pos/no-occur (econst "Bool" lnil)) ([z] (ctor-spine/result (applies-self/app (applies-self/app (applies-self/app applies-self/refl))))))))))).
+   = (ctor-positive/intro ([S] (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp (eapp (eapp S x) z) y)))))))) (ctor-spine/arg (strict-pos/no-occur (econst "Bool" lnil) (no-self-ref/const sneq/0)) ([x] ([y] (ctor-spine/arg (strict-pos/no-occur (econst "Bool" lnil) (no-self-ref/const sneq/0)) ([z] ([w] (ctor-spine/arg (strict-pos/no-occur (econst "Bool" lnil) (no-self-ref/const sneq/0)) ([x1] ([y1] (ctor-spine/result (applies-self/app (applies-self/app (applies-self/app applies-self/refl)))))))))))))).
 
 SortElimProp_mk/name : name "SortElimProp.mk" (is-decl (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp (eapp (eapp (econst "SortElimProp" lnil) x) z) y))))))) ctor).
 

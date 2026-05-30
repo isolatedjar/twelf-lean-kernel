@@ -11,7 +11,9 @@
 %freeze lvl-inst.
 %freeze lvls-inst.
 %freeze name.
+%freeze string-neq.
 %freeze expr.
+%freeze no-self-ref.
 %freeze inst-expr.
 %freeze defeq.
 %freeze dkind.
@@ -31,4 +33,12 @@
 % `name` transitively.  The environment adds `<decl>/name` reservations to the
 % `name` family, so it must be thawed AFTER those freezes
 %thaw name.
+
+% `string-neq` is subordinate to no-self-ref / strict-pos / ctor-spine /
+% ctor-positive (and thus to declared / dkind-ok), so freezing those re-freezes
+% it transitively.  The environment adds `string-neq "a" "b"` disequality
+% claims, so it too must be thawed AFTER those freezes.  (limited-thaw Twelf
+% thaws ONLY string-neq, not its dependents — so no-self-ref et al. stay
+% frozen, and the global %query in final-checks.elf remains authoritative.)
+%thaw string-neq.
 

@@ -183,15 +183,17 @@ export interface Prover {
   valueHasType(ctx: { value: Expr; type: Expr; levelParams: Name[] }): ProofResult;
   // ends-in-sort T — T is a Π-chain ending in a sort (inductive type formers).
   endsInSort(ctx: { type: Expr; levelParams: Name[] }): ProofResult;
-  // The `ctor-spine T_HOAS` proof for a constructor's strict-positivity
+  // The `ctor-spine N0 T_HOAS` proof for a constructor's strict-positivity
   // obligation.  The prover returns ONLY the spine; the trusted generator
   // computes the matching `T_HOAS` (the ctor type with the inductive's
   // self-reference abstracted) and assembles `ctor-positive/intro ([S] T_HOAS)
-  // <spine>`.  This is a soundness boundary: were the prover to supply T_HOAS,
-  // it could hide a negative self-occurrence in a closed (S-free) position and
-  // fake positivity for a non-strictly-positive inductive.  By fixing T_HOAS
-  // in the generator, Twelf checks the prover's spine against the correct
-  // abstraction, so a bad spine can only lose completeness, never soundness.
+  // <spine>`.  The spine now also carries `no-self-ref N0` subderivations whose
+  // `econst` leaves are discharged by posited `string-neq` facts (recordString-
+  // Neq → the open `string-neq` family), audited globally by the `%query 0 *
+  // string-neq X X` in final-checks.elf.  Those premises make the TCB reject
+  // any residual self-constant in a closed position, so T_HOAS correctness is
+  // no longer a soundness condition: a wrong/adversarial T_HOAS or spine can
+  // only lose completeness (a HOLE), never fake positivity.
   ctorPositive(ctx: {
     ctorType: Expr;
     indName: Name;

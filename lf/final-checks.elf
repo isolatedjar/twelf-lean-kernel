@@ -15,3 +15,11 @@
 %worlds () (name _ _).
 %unique name +N -NK.
 
+%%% Audit the posited string disequalities (see `string-neq` in tcb.elf).
+%%% The environment may claim any `string-neq "a" "b"` facts its strict-
+%%% positivity (`no-self-ref`) proofs need; this query asks for ZERO proofs of
+%%% a reflexive claim `string-neq X X` and ABORTS the whole load if it finds
+%%% even one — i.e. if the environment ever claimed a string differs from
+%%% itself.  Honest disequalities (a ≠ b) never match `X X`, so they pass.
+%query 0 * string-neq X X.
+

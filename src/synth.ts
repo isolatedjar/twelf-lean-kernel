@@ -6,7 +6,7 @@
 // and, when an EnvMap is supplied, for constants, applications, and
 // β/δ-reduction obligations. Anything unhandled → null (→ HOLE), never wrong.
 
-import { freshVar, mangle } from "./render.ts";
+import { freshVar, mangle, recordStringNeq } from "./render.ts";
 import type { Expr, Fmt, Level, Name, ParsedEnv } from "./shared.ts";
 import { app, atom, lam, nameToString } from "./shared.ts";
 
@@ -1110,54 +1110,129 @@ function buildAppliesSelf(t: Expr, selfName: string, selfLevels: Level[]): Fmt |
   return null;
 }
 
-// `strict-pos ([S] T)`: head / no-occur / Π cases.
+// `no-self-ref N0 E`: the constant `econst N0` (at ANY level instantiation) is
+// absent from E.  Discharges each `econst N` leaf with a posited `string-neq N
+// N0` fact (recordStringNeq → the open `string-neq` family, audited globally by
+// final-checks.elf), and each bound-variable leaf with the `no-self-ref N0 y`
+// hypothesis carried in `nsScope` (parallel to the expr-var `scope`).  Returns
+// null on a genuine self-occurrence (N === selfName — absence is unprovable, so
+// the obligation degrades to a HOLE rather than a query-tripping lie) or on any
+// node outside the rendered fragment.  Only ever reached on exprs `exprToFmt`
+// already renders (sort / const / app / lam / forallE / bvar).
+function buildNoSelfRef(
+  t: Expr,
+  selfName: string,
+  scope: string[],
+  nsScope: string[],
+  levelParams: Name[],
+): Fmt | null {
+  switch (t.kind) {
+    case "bvar": {
+      const h = nsScope[t.deBruijn];
+      return h !== undefined ? atom(h) : null;
+    }
+    case "sort":
+      return atom("no-self-ref/sort");
+    case "const": {
+      const n = nameToString(t.name);
+      if (n === selfName) return null; // a real self-occurrence: cannot prove absence
+      return app(atom("no-self-ref/const"), atom(recordStringNeq(n, selfName)));
+    }
+    case "app": {
+      const f = buildNoSelfRef(t.fn, selfName, scope, nsScope, levelParams);
+      const a = buildNoSelfRef(t.arg, selfName, scope, nsScope, levelParams);
+      return f && a ? app(atom("no-self-ref/app"), f, a) : null;
+    }
+    case "lam":
+    case "forallE": {
+      const ty = buildNoSelfRef(t.type, selfName, scope, nsScope, levelParams);
+      if (!ty) return null;
+      const y = freshVar([...scope, ...nsScope]);
+      const ny = freshVar([y, ...scope, ...nsScope]);
+      const body = buildNoSelfRef(t.body, selfName, [y, ...scope], [ny, ...nsScope], levelParams);
+      if (!body) return null;
+      const c = t.kind === "forallE" ? "no-self-ref/forall" : "no-self-ref/lam";
+      return app(atom(c), ty, lam(y, lam(ny, body)));
+    }
+    default:
+      return null; // proj / natLit / strLit / letE — outside the rendered fragment
+  }
+}
+
+// `strict-pos N0 ([S] T)`: head / no-occur / Π cases.  `nsScope` carries the
+// `no-self-ref N0 y` hypothesis for each enclosing Π-bound variable (parallel
+// to `scope`), threaded so the no-occur/forall leaves can prove the inductive
+// absent from closed domains.
 function buildStrictPos(
   t: Expr,
   selfName: string,
   selfLevels: Level[],
   scope: string[],
+  nsScope: string[],
   levelParams: Name[],
 ): Fmt | null {
   const head = buildAppliesSelf(t, selfName, selfLevels);
   if (head) return app(atom("strict-pos/head"), head);
   if (!exprMentions(t, selfName, selfLevels)) {
     const e = exprToFmt(t, scope, levelParams);
-    return e ? app(atom("strict-pos/no-occur"), e) : null;
+    if (!e) return null;
+    const nsr = buildNoSelfRef(t, selfName, scope, nsScope, levelParams);
+    return nsr ? app(atom("strict-pos/no-occur"), e, nsr) : null;
   }
   if (t.kind === "forallE") {
     if (exprMentions(t.type, selfName, selfLevels)) return null;
     const A = exprToFmt(t.type, scope, levelParams);
     if (!A) return null;
-    const y = freshVar(scope);
-    const inner = buildStrictPos(t.body, selfName, selfLevels, [y, ...scope], levelParams);
+    const nsrA = buildNoSelfRef(t.type, selfName, scope, nsScope, levelParams);
+    if (!nsrA) return null;
+    const y = freshVar([...scope, ...nsScope]);
+    const ny = freshVar([y, ...scope, ...nsScope]);
+    const inner = buildStrictPos(
+      t.body,
+      selfName,
+      selfLevels,
+      [y, ...scope],
+      [ny, ...nsScope],
+      levelParams,
+    );
     if (!inner) return null;
-    return app(atom("strict-pos/forall"), A, lam(y, inner));
+    return app(atom("strict-pos/forall"), A, nsrA, lam(y, lam(ny, inner)));
   }
   return null;
 }
 
-// `ctor-spine ([S] T)`: Π-bodies via ctor-spine/arg; leaf must be S-applied.
+// `ctor-spine N0 ([S] T)`: Π-bodies via ctor-spine/arg; leaf must be S-applied.
 //
 // This is the *spine* proof that ctor-positive/intro consumes.  The matching
 // `T_HOAS` argument is NOT built here: the trusted generator computes it
-// directly (render.ts `lfExpr` with a SelfSubst), so a buggy or adversarial
-// prover cannot supply a wrong T_HOAS that hides a negative occurrence in a
-// closed position.  Twelf checks this spine against the generator's T_HOAS,
-// so an ill-formed spine can only lose completeness, never soundness.
+// directly (render.ts `lfExpr` with a SelfSubst).  Soundness no longer hinges
+// on that T_HOAS being correct — the TCB's `no-self-ref` premises (discharged
+// by buildNoSelfRef above, audited by the global `%query`) reject any residual
+// self-constant in a closed position regardless — so an ill-formed spine can
+// only lose completeness, never soundness.
 export function buildCtorSpine(
   t: Expr,
   selfName: string,
   selfLevels: Level[],
   scope: string[],
+  nsScope: string[],
   levelParams: Name[],
 ): Fmt | null {
   if (t.kind === "forallE") {
-    const argSP = buildStrictPos(t.type, selfName, selfLevels, scope, levelParams);
+    const argSP = buildStrictPos(t.type, selfName, selfLevels, scope, nsScope, levelParams);
     if (!argSP) return null;
-    const y = freshVar(scope);
-    const bodyCS = buildCtorSpine(t.body, selfName, selfLevels, [y, ...scope], levelParams);
+    const y = freshVar([...scope, ...nsScope]);
+    const ny = freshVar([y, ...scope, ...nsScope]);
+    const bodyCS = buildCtorSpine(
+      t.body,
+      selfName,
+      selfLevels,
+      [y, ...scope],
+      [ny, ...nsScope],
+      levelParams,
+    );
     if (!bodyCS) return null;
-    return app(atom("ctor-spine/arg"), argSP, lam(y, bodyCS));
+    return app(atom("ctor-spine/arg"), argSP, lam(y, lam(ny, bodyCS)));
   }
   const result = buildAppliesSelf(t, selfName, selfLevels);
   return result ? app(atom("ctor-spine/result"), result) : null;

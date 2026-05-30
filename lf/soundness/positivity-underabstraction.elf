@@ -1,0 +1,45 @@
+%%% Soundness regression: strict-positivity under-abstraction attack.
+%%%
+%%% This file is a hand-written ADVERSARIAL development — it does NOT come from
+%%% the trusted generator.  It models what a buggy or malicious translator
+%%% could try, to prove that the TCB rejects it *on its own*, without relying
+%%% on the generator computing a correct `T_HOAS`.
+%%%
+%%% The target is the NON-strictly-positive inductive
+%%%
+%%%   inductive indNeg | mk : (indNeg -> Empty) -> indNeg
+%%%
+%%% whose constructor `mk` has the self-reference in a *negative* position
+%%% (the domain of a Π in its argument type), which Lean forbids.
+%%%
+%%% The attack supplies a `T_HOAS` that UNDER-ABSTRACTS: instead of replacing
+%%% the negative occurrence with the bound self `S`, it leaves it as the closed
+%%% constant `(econst "indNeg" lnil)`.  The argument type is then S-free, so it
+%%% reaches `strict-pos`'s absence leaves — which, before the `no-self-ref`
+%%% guard existed, accepted any closed domain and thereby faked positivity for
+%%% a type that can encode `(indNeg -> Empty) -> indNeg` and derive `Empty`.
+%%%
+%%% With the guard in place, every `econst` in that domain must be discharged
+%%% by a `string-neq N "indNeg"` fact.  The residual `econst "indNeg"` forces a
+%%% reflexive `string-neq "indNeg" "indNeg"` (`liar` below): there is no honest
+%%% way to prove the inductive absent from a term that literally contains it.
+%%%
+%%% Expected outcome: REJECT.  `attack` type-checks only by consuming `liar`,
+%%% and the global `%query 0 * string-neq X X` in final-checks.elf then ABORTs
+%%% the whole load.  (Run via scripts/check-soundness.sh.)
+
+honest : string-neq "Empty" "indNeg".    %% legitimate: Empty =/= indNeg
+liar   : string-neq "indNeg" "indNeg".    %% the reflexive lie the attack needs
+
+attack : ctor-positive "indNeg" lnil
+           (eforall (eforall (econst "indNeg" lnil) ([_] econst "Empty" lnil))
+                    ([_] econst "indNeg" lnil))
+       = ctor-positive/intro
+           ([S] eforall (eforall (econst "indNeg" lnil) ([_] econst "Empty" lnil))
+                        ([_] S))
+           (ctor-spine/arg
+              (strict-pos/no-occur
+                 (eforall (econst "indNeg" lnil) ([_] econst "Empty" lnil))
+                 (no-self-ref/forall (no-self-ref/const liar)
+                    ([x][nx] no-self-ref/const honest)))
+              ([y][ny] ctor-spine/result applies-self/refl)).

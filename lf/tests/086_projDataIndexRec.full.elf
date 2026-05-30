@@ -1,5 +1,8 @@
 %%% Expected outcome: accept
 %%% The recursor for `ProjDataIndex` allows elimination into sort.
+sneq/0 : string-neq "N" "ProjDataIndex".
+sneq/1 : string-neq "True" "ProjDataIndex".
+
 %% inductive N
 N/type-wf-sort : lvl
    = (lsucc (lsucc lzero)).
@@ -38,7 +41,7 @@ N_succ/type-wf : defeq (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (efor
    = (defeq/forall (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))).
 
 N_succ/positivity : ctor-positive "N" lnil (eforall (econst "N" lnil) ([x] (econst "N" lnil)))
-   = (ctor-positive/intro ([S] (eforall S ([x] S))) (ctor-spine/arg (strict-pos/head applies-self/refl) ([x] (ctor-spine/result applies-self/refl)))).
+   = (ctor-positive/intro ([S] (eforall S ([x] S))) (ctor-spine/arg (strict-pos/head applies-self/refl) ([x] ([y] (ctor-spine/result applies-self/refl))))).
 
 N_succ/name : name "N.succ" (is-decl (eforall (econst "N" lnil) ([x] (econst "N" lnil))) ctor).
 
@@ -122,7 +125,7 @@ ProjDataIndex_mk/type-wf : defeq (eforall (econst "N" lnil) ([x] (eforall (econs
    = (defeq/forall (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] (defeq/forall (defeq/const True/decl (inst-expr/sort lvl-inst/zero)) ([y] ([h1] (defeq/app (defeq/const ProjDataIndex/decl (inst-expr/forall (inst-expr/const lvls-inst/nil) ([x] ([h] (inst-expr/sort lvl-inst/zero))))) h))))))).
 
 ProjDataIndex_mk/positivity : ctor-positive "ProjDataIndex" lnil (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp (econst "ProjDataIndex" lnil) x)))))
-   = (ctor-positive/intro ([S] (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp S x)))))) (ctor-spine/arg (strict-pos/no-occur (econst "N" lnil)) ([x] (ctor-spine/arg (strict-pos/no-occur (econst "True" lnil)) ([y] (ctor-spine/result (applies-self/app applies-self/refl))))))).
+   = (ctor-positive/intro ([S] (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp S x)))))) (ctor-spine/arg (strict-pos/no-occur (econst "N" lnil) (no-self-ref/const sneq/0)) ([x] ([y] (ctor-spine/arg (strict-pos/no-occur (econst "True" lnil) (no-self-ref/const sneq/1)) ([z] ([w] (ctor-spine/result (applies-self/app applies-self/refl))))))))).
 
 ProjDataIndex_mk/name : name "ProjDataIndex.mk" (is-decl (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp (econst "ProjDataIndex" lnil) x))))) ctor).
 
