@@ -621,7 +621,8 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
       // emitted by generateIndType.  If no matching inductive exists, emit a HOLE
       // (bare decl rejected by %freeze) rather than using the old declared/ok path.
       const IndN = declName.endsWith(".rec") ? declName.slice(0, -4) : null;
-      const indType = IndN !== null ? ind.types.find((t) => nameToString(t.name) === IndN) : undefined;
+      const indType =
+        IndN !== null ? ind.types.find((t) => nameToString(t.name) === IndN) : undefined;
       const indMn = indType !== undefined ? mangle(indType.name) : null;
       if (indMn !== null) {
         emit(`${mn}/decl : declared "${declName}" ${T} irec`);
