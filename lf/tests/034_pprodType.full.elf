@@ -1,5 +1,7 @@
 %%% Expected outcome: accept
 %%% A parametrized product type (with more general level parameters)
+%solve nonneg_0 : 0 >= 0.
+
 %% inductive PProd
 PProd/type-wf-sort : lvl
    = (limax (lsucc (lvar liz)) (limax (lsucc (lvar (lis liz))) (lsucc (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))).
@@ -50,7 +52,7 @@ pprodType/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (eforall (esort (l
    = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] defeq/sort-refl)))))).
 
 pprodType/value-typed : defeq (econst "PProd" (lcons (lsucc lzero) (lcons (lsucc lzero) lnil))) (econst "PProd" (lcons (lsucc lzero) (lcons (lsucc lzero) lnil))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero))))))
-   = (defeq/conv (defeq/forall (defeq/sort-eq lvl-eq/refl) ([x] ([h] (defeq/forall (defeq/sort-eq lvl-eq/refl) ([y] ([h1] (defeq/sort-eq (lvl-eq/trans (lvl-eq/lmax-cong lvl-eq/max-idem lvl-eq/refl) (lvl-eq/trans lvl-eq/max-idem lvl-eq/refl))))))))) (defeq/const PProd/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/sort (lvl-inst/var (lvl-nth/succ lvl-nth/zero))) ([y] ([h1] (inst-expr/sort (lvl-inst/max (lvl-inst/max (lvl-inst/succ lvl-inst/zero) (lvl-inst/var lvl-nth/zero)) (lvl-inst/var (lvl-nth/succ lvl-nth/zero)))))))))))).
+   = (defeq/conv (defeq/forall (defeq/sort-eq lvl-eq/refl) ([x] ([h] (defeq/forall (defeq/sort-eq lvl-eq/refl) ([y] ([h1] (defeq/sort-eq (lvl-eq/le (mleq/sR (mleq/maxL (mleq/maxL (mleq/sL (mleq/self nonneg_0)) (mleq/sL (mleq/self nonneg_0))) (mleq/sL (mleq/self nonneg_0)))) (mleq/sL (mleq/maxR-l (mleq/maxR-l (mleq/sR (mleq/self nonneg_0))))))))))))) (defeq/const PProd/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/sort (lvl-inst/var (lvl-nth/succ lvl-nth/zero))) ([y] ([h1] (inst-expr/sort (lvl-inst/max (lvl-inst/max (lvl-inst/succ lvl-inst/zero) (lvl-inst/var lvl-nth/zero)) (lvl-inst/var (lvl-nth/succ lvl-nth/zero)))))))))))).
 
 pprodType/name : name "pprodType" (is-decl (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (defn (econst "PProd" (lcons (lsucc lzero) (lcons (lsucc lzero) lnil))))).
 

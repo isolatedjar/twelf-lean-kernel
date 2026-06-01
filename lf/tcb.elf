@@ -48,48 +48,123 @@ lis : lidx -> lidx.
 lvar : lidx -> lvl.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Algorithmic level inequality   ℓ ≤ ℓ' + n
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Carneiro's algorithmic level inequality (Type Theory of Lean thesis,
+%%% p.7): `mleq L L' N` holds iff ⟦L⟧_v ≤ ⟦L'⟧_v + N for every valuation v
+%%% of the universe variables, with N : integer (the offset, possibly
+%%% negative).  This is the *inference-rule* characterization — searchable
+%%% and checkable — NOT lean4lean's semantic `VLevel.LE` (universal over
+%%% valuations).  Level equality is recovered as the two-sided
+%%% `mleq L L' 0 ∧ mleq L' L 0` (see `lvl-eq/le`).
+%%%
+%%% The 15 structural rules below transcribe the thesis algorithm (its 13,
+%%% plus the two RHS `imax` simplification duals `imax-lzR`/`imax-lsR` the
+%%% comparison needs once an offset has put the imax on the right).  They
+%%% decide the universe-variable-free fragment completely — associativity,
+%%% commutativity, distributivity, and the max/imax zero/succ/idempotence laws
+%%% the old reactive `lvl-eq` table had to special-case one at a time.
+%%%
+%%% Integer handling: the (untrusted) prover supplies a CONCRETE offset at
+%%% every step, so every `mleq` node has a ground index.  Twelf never solves
+%%% for an integer; it only *checks* the ground `N-1` / `N+1` / `N >= 0`
+%%% constraints via the `inequality/integers` domain — the same
+%%% checked-not-solved mode `enatlit`'s `n >= 0` witnesses already use.  The
+%%% `N >= 0` premises of `mleq/lz` and `mleq/self` are discharged by the same
+%%% `%solve nonneg_<n>` witnesses the generator emits for nat literals.
+%%%
+%%% Universe variables: the thesis' 14th rule eliminates a universe variable
+%%% by the case split u ↦ 0 / u ↦ S u.  Because our level variables are
+%%% first-order de Bruijn indices (`lvar : lidx -> lvl`), not HOAS, this is
+%%% encoded directly as `mleq/var-elim` below, using a first-order
+%%% substitution judgment (`lvl-subst`) and structurally-decidable index
+%%% (dis)equality (`lidx-eq` / `lidx-neq`) — no higher-order unification.
+%%% With it, `mleq` decides the full fragment, so `lvl-eq` needs no algebraic
+%%% rules beyond the `mleq` bridge.
+
+mleq : lvl -> lvl -> integer -> type.   %name mleq MLE.
+
+mleq/lz       : N >= 0 -> mleq lzero L N.
+mleq/self     : N >= 0 -> mleq L L N.
+mleq/sL       : mleq L L' (N - 1) -> mleq (lsucc L) L' N.
+mleq/sR       : mleq L L' (N + 1) -> mleq L (lsucc L') N.
+mleq/maxR-l   : mleq L L1 N -> mleq L (lmax L1 L2) N.
+mleq/maxR-r   : mleq L L2 N -> mleq L (lmax L1 L2) N.
+mleq/maxL     : mleq L1 L N -> mleq L2 L N -> mleq (lmax L1 L2) L N.
+%%% imax simplification, on both sides.  imax(L1, 0) = 0 and
+%%% imax(L1, S L2) = max(L1, S L2) hold for every valuation, so each has an
+%%% L- and an R-form (the thesis lists the L-forms; the R-duals are needed
+%%% whenever an offset has driven the comparison to put the imax on the right).
+mleq/imax-lzL : mleq lzero L N -> mleq (limax L1 lzero) L N.
+mleq/imax-lzR : mleq L lzero N -> mleq L (limax L1 lzero) N.
+mleq/imax-lsL : mleq (lmax L1 (lsucc L2)) L N -> mleq (limax L1 (lsucc L2)) L N.
+mleq/imax-lsR : mleq L (lmax L1 (lsucc L2)) N -> mleq L (limax L1 (lsucc L2)) N.
+mleq/imax-imL : mleq (lmax (limax L1 L3) (limax L2 L3)) L N
+                  -> mleq (limax L1 (limax L2 L3)) L N.
+mleq/imax-imR : mleq L (lmax (limax L1 L3) (limax L2 L3)) N
+                  -> mleq L (limax L1 (limax L2 L3)) N.
+mleq/imax-mxL : mleq (lmax (limax L1 L2) (limax L1 L3)) L N
+                  -> mleq (limax L1 (lmax L2 L3)) L N.
+mleq/imax-mxR : mleq L (lmax (limax L1 L2) (limax L1 L3)) N
+                  -> mleq L (limax L1 (lmax L2 L3)) N.
+
+%%% --- Universe-variable elimination (the thesis' 14th rule) ---
+%%% First-order index (dis)equality.  `lidx` is structural (liz / lis), so
+%%% both equality and DISEQUALITY are decidable closed judgments — unlike
+%%% strings, no posit-and-audit is needed.
+
+lidx-eq : lidx -> lidx -> type.   %name lidx-eq IEQ.
+lidx-eq/z : lidx-eq liz liz.
+lidx-eq/s : lidx-eq I J -> lidx-eq (lis I) (lis J).
+
+lidx-neq : lidx -> lidx -> type.   %name lidx-neq INEQ.
+lidx-neq/zs : lidx-neq liz (lis J).
+lidx-neq/sz : lidx-neq (lis I) liz.
+lidx-neq/ss : lidx-neq I J -> lidx-neq (lis I) (lis J).
+
+%%% `lvl-subst I V L L'` : L' is L with every `lvar I` replaced by V (a single-
+%%% index substitution, structural like `lvl-inst`).  Total and exact: the
+%%% `var-eq`/`var-neq` split (decided by `lidx-eq`/`lidx-neq`) replaces exactly
+%%% the matching occurrences and preserves all others.
+
+lvl-subst : lidx -> lvl -> lvl -> lvl -> type.   %name lvl-subst LSUB.
+lvl-subst/zero : lvl-subst I V lzero lzero.
+lvl-subst/succ : lvl-subst I V L L' -> lvl-subst I V (lsucc L) (lsucc L').
+lvl-subst/max  : lvl-subst I V L1 L1' -> lvl-subst I V L2 L2'
+              -> lvl-subst I V (lmax L1 L2) (lmax L1' L2').
+lvl-subst/imax : lvl-subst I V L1 L1' -> lvl-subst I V L2 L2'
+              -> lvl-subst I V (limax L1 L2) (limax L1' L2').
+lvl-subst/var-eq  : lidx-eq I J -> lvl-subst I V (lvar J) V.
+lvl-subst/var-neq : lidx-neq I J -> lvl-subst I V (lvar J) (lvar J).
+
+%%% `mleq/var-elim`: a universe variable `lvar I` ranges over ℕ = {0} ∪ {S k}.
+%%% So `mleq A B N` holds for every valuation iff it holds with `lvar I` set to
+%%% `lzero` (the zero branch) AND with `lvar I` set to `lsucc (lvar I)` — whose
+%%% still-free `lvar I` is the predecessor `k`, covering every successor case.
+%%% Sound for any valuation v: v(I) is 0 (zero branch, with w = v) or S m (succ
+%%% branch, with w = v[I ↦ m]).  Because the goal levels are first-order, the
+%%% abstraction is the explicit `lvl-subst` judgment — no HOAS, no higher-order
+%%% unification.
+
+mleq/var-elim : {I : lidx}
+   lvl-subst I lzero A A0 -> lvl-subst I lzero B B0 -> mleq A0 B0 N
+   -> lvl-subst I (lsucc (lvar I)) A A1 -> lvl-subst I (lsucc (lvar I)) B B1
+   -> mleq A1 B1 N
+   -> mleq A B N.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Level equivalence   ℓ ≈ ℓ'
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Currently an ad-hoc under approximation of level equivalence as defined
-%%% in the specification of Lean rather than a comprehensive artifact. This
-%%% will likely hit headwinds at some point.
+%%% `lvl-eq` is the interface consumed by `defeq/sort-eq`.  With `mleq` now a
+%%% complete decision procedure (including `var-elim` for universe variables),
+%%% equality is just two-sided `mleq` at offset 0 (`lvl-eq/le`); `lvl-eq/refl`
+%%% is kept as the syntactic-equality primitive (used by derived.elf and the
+%%% prover's fast path).  No algebraic or congruence rules are needed.
 
 lvl-eq : lvl -> lvl -> type.   %name lvl-eq E.
 
-%%% --- equivalence relation ---
-lvl-eq/refl  : lvl-eq L L.
-lvl-eq/symm  : lvl-eq L1 L2 -> lvl-eq L2 L1.
-lvl-eq/trans : lvl-eq L1 L2 -> lvl-eq L2 L3 -> lvl-eq L1 L3.
-
-%%% --- algebraic identities (grow as forced) ---
-%%% lmax L L ≈ L
-lvl-eq/max-idem  : lvl-eq (lmax L L) L.
-
-%%% lmax 0 L ≈ L  and  lmax L 0 ≈ L
-lvl-eq/max-zero-l : lvl-eq (lmax lzero L) L.
-lvl-eq/max-zero-r : lvl-eq (lmax L lzero) L.
-
-%%% lmax (S L1) (S L2) ≈ S (lmax L1 L2)
-lvl-eq/max-succ : lvl-eq (lmax (lsucc L1) (lsucc L2)) (lsucc (lmax L1 L2)).
-
-%%% imax(L1, S L2) = max(L1, S L2)   (from thesis §2.2)
-lvl-eq/imax-succ : lvl-eq (limax L1 (lsucc L2)) (lmax L1 (lsucc L2)).
-
-%%% imax(L, 0) = 0   (from thesis §2.2)
-lvl-eq/imax-zero : lvl-eq (limax L lzero) lzero.
-
-%%% imax(L, L) = L  (Lean's semantic equality: for any L, imax L L = L
-%%% because if L = 0 then imax = 0 = L, else imax = max L L = L.)
-lvl-eq/imax-idem : lvl-eq (limax L L) L.
-
-%%% --- structural congruence rules ---
-%%% Needed because sort-level reductions chain through `defeq/trans`,
-%%% which requires its level indices to be syntactically identical;
-%%% Twelf doesn't see through `lvl-eq`.  These let us re-index a
-%%% derivation when the levels are equivalent but not syntactic.
-lvl-eq/lsucc-cong : lvl-eq L1 L2 -> lvl-eq (lsucc L1) (lsucc L2).
-lvl-eq/lmax-cong  : lvl-eq L1 L1' -> lvl-eq L2 L2' -> lvl-eq (lmax L1 L2) (lmax L1' L2').
-lvl-eq/limax-cong : lvl-eq L1 L1' -> lvl-eq L2 L2' -> lvl-eq (limax L1 L2) (limax L1' L2').
+lvl-eq/refl : lvl-eq L L.
+lvl-eq/le   : mleq L L' 0 -> mleq L' L 0 -> lvl-eq L L'.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Universe-level instantiation lists

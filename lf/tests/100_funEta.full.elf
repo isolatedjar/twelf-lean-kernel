@@ -1,5 +1,7 @@
 %%% Expected outcome: accept
 %%% Function eta for non-dependent functions.
+%solve nonneg_0 : 0 >= 0.
+
 %% inductive Eq
 Eq/type-wf-sort : lvl
    = (limax (lsucc (lvar liz)) (limax (lvar liz) (limax (lvar liz) (lsucc lzero)))).
@@ -59,7 +61,7 @@ rfl/decl : declared "rfl" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp
 
 %% thm funEta
 funEta/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (eforall (eforall x ([z] y)) ([z] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eforall x ([w] y))) (elam x ([w] (eapp z w)))) z))))))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (eforall (eforall x ([z] y)) ([z] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eforall x ([w] y))) (elam x ([w] (eapp z w)))) z))))))) (esort lzero)
-   = (defeq/conv (defeq/sort-eq (lvl-eq/trans (lvl-eq/limax-cong lvl-eq/refl (lvl-eq/limax-cong lvl-eq/refl lvl-eq/imax-zero)) (lvl-eq/trans (lvl-eq/limax-cong lvl-eq/refl lvl-eq/imax-zero) (lvl-eq/trans lvl-eq/imax-zero lvl-eq/refl)))) (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] (defeq/forall (defeq/forall h ([z] ([h2] h1))) ([z] ([h2] (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) (defeq/conv (defeq/sort-eq (lvl-eq/trans lvl-eq/imax-succ (lvl-eq/trans lvl-eq/max-idem lvl-eq/refl))) (defeq/forall h ([w] ([h3] h1))))) (defeq/lam h ([w] ([h3] (defeq/app h2 h3))))) h2))))))))))).
+   = (defeq/conv (defeq/sort-eq (lvl-eq/le (mleq/imax-imL (mleq/maxL (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))) (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))))) (mleq/lz nonneg_0))) (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] (defeq/forall (defeq/forall h ([z] ([h2] h1))) ([z] ([h2] (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) (defeq/conv (defeq/sort-eq (lvl-eq/le (mleq/imax-lsL (mleq/sR (mleq/maxL (mleq/sL (mleq/self nonneg_0)) (mleq/sL (mleq/self nonneg_0))))) (mleq/sL (mleq/imax-lsR (mleq/maxR-l (mleq/sR (mleq/self nonneg_0))))))) (defeq/forall h ([w] ([h3] h1))))) (defeq/lam h ([w] ([h3] (defeq/app h2 h3))))) h2))))))))))).
 
 %%% HOLE
 funEta/value-typed : defeq (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] (elam (eforall x ([z] y)) ([z] (eapp (eapp (econst "rfl" (lcons (lsucc lzero) lnil)) (eforall x ([w] y))) (elam x ([w] (eapp z w)))))))))) (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] (elam (eforall x ([z] y)) ([z] (eapp (eapp (econst "rfl" (lcons (lsucc lzero) lnil)) (eforall x ([w] y))) (elam x ([w] (eapp z w)))))))))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (eforall (eforall x ([z] y)) ([z] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eforall x ([w] y))) (elam x ([w] (eapp z w)))) z))))))).

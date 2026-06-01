@@ -98,36 +98,40 @@ Mario's `ℓ ≡ ℓ'` is _extensional_: defined by `⟦ℓ⟧_v = ⟦ℓ'⟧_v`
 assignment `v : ℕ → ℕ` of nat values to universe variables (`VLevel.Equiv` in
 the formalization).
 
-Our `lvl-eq` is a derivability relation with explicit rules. Status:
+**Status: closed by the `mleq` decision procedure (May 2026).** The old
+reactive table of `lvl-eq` algebraic rules has been replaced by a port of
+**Carneiro's algorithmic level inequality** (Type Theory of Lean thesis, p.7):
+the offset relation `mleq L L' N` (⟦L⟧ ≤ ⟦L'⟧ + N for every valuation), with
+`lvl-eq L L'` recovered as two-sided `mleq L L' 0 ∧ mleq L' L 0` (`lvl-eq/le`).
+It is the inference-rule algorithm (searchable/checkable), NOT the semantic
+`VLevel.Equiv`. `lvl-eq` now has only `refl` (the syntactic primitive) and `le`
+(the `mleq` bridge); no algebraic or congruence rules remain.
 
-| Rule                             | Status                                              |
-| -------------------------------- | --------------------------------------------------- |
-| `lvl-eq/refl`                    | ✓                                                   |
-| `lvl-eq/symm`                    | ✓                                                   |
-| `lvl-eq/trans`                   | ✓                                                   |
-| `lvl-eq/max-comm`                | ✓                                                   |
-| `lvl-eq/max-self`                | ✓                                                   |
-| `lvl-eq/imax-zero`               | ✓                                                   |
-| `lvl-eq/zero-imax`               | ✓                                                   |
-| `lvl-eq/imax-succ`               | ✓ (`imax(a, S b) = max(a, S b)` — `b+1` is nonzero) |
-| `lvl-eq/imax-idem`               | ✓ (`imax(L, L) = L`)                                |
-| `lvl-eq/{lsucc,lmax,limax}-cong` | ✓                                                   |
-| max-assoc                        | ✗ missing                                           |
-| max-left-id (`max 0 L = L`)      | ✗ missing                                           |
-| max-right-id (`max L 0 = L`)     | ✗ missing                                           |
-| imax-with-max distributivity     | ✗ missing                                           |
-| general normalization            | ✗ missing                                           |
+The 15 structural rules (the thesis' 13 + the two RHS `imax` simplification
+duals `imax-lzR`/`imax-lsR`, needed once an offset puts the imax on the right)
+decide the variable-free fragment — associativity, commutativity,
+distributivity, and the max/imax zero/succ/idempotence laws the old table had
+to special-case. The prover (`synth.ts`, `proveMleq`) supplies a concrete
+integer offset at every step, so Twelf only *checks* ground `N±1` / `N >= 0`
+constraints (the `enatlit` `nonneg` witness pattern), never solves for them.
 
-**Completeness gap.** Our rules are sound but provably incomplete: e.g.,
-`max(max u v) w ≡ max u (max v w)` (associativity) isn't derivable. We've
-added rules reactively when the corpus forces them.
-
-**The decision-procedure alternative** (sketched in earlier conversation):
-replace this whole table with `eval : nats -> level -> nat -> type` and a
-finite-test-set quantifier. That gives TCB-completeness for `lvl-eq` in one
-move, relative to Mario's `VLevel.Equiv`. It's a refactor of working code
-rather than a fix to any of the failing corpus tests, so not the highest
-leverage right now, but it'd close this whole section as a single tick-box.
+**Universe variables: closed via first-order variable elimination.** The
+thesis' 14th rule eliminates a universe variable by the case split `u ↦ 0` /
+`u ↦ S u`. Earlier this was thought to require fragile HOAS (`mleq (LF U)(LG U)
+N` with a degenerate higher-order unification `LF U = a`). But our level
+variables are **first-order de Bruijn indices** (`lvar : lidx -> lvl`), so the
+case split is encoded directly as `mleq/var-elim` using a first-order
+substitution judgment `lvl-subst` and structurally-decidable index
+(dis)equality `lidx-eq` / `lidx-neq` (no posit-and-audit — unlike strings,
+`lidx` disequality is a genuine closed judgment). Soundness: `lvar I` ranges
+over ℕ = {0} ∪ {S k}, so a goal holding with `I ↦ 0` and with `I ↦ S I` (whose
+still-free `I` is the predecessor) holds for every valuation; the substitution
+is exact by construction, so the rule has no loophole. The prover (`proveMleq`
+→ `proveVarElim`) detects a variable blocking as an `imax` second argument,
+case-splits it, and recurses. This reaches e.g. `imax (imax u u) u ≡
+imax (succ u) u` (Peano tests 023–025). `mleq` is now complete for the full
+fragment; 36 corpus tests prove sort equalities via the structural rules, the 3
+Peano tests via `var-elim`.
 
 ## 3. Inductive-type acceptance (orthogonal to defeq)
 

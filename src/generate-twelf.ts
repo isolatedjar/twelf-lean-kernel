@@ -23,6 +23,7 @@ import { makeRealProver, NullProver } from "./prover.ts";
 import {
   clearStringNeqFacts,
   levelParamBindings,
+  levelParamIndices,
   lfExpr,
   mangle,
   natLiteralsSeen,
@@ -103,11 +104,15 @@ function formalLvls(n: number): string {
 function withLevelParams<T>(params: Name[], fn: () => T): T {
   params.forEach((p, i) => {
     levelParamBindings.set(nameToString(p), `(lvar ${lidxLit(i)})`);
+    levelParamIndices.set(nameToString(p), i);
   });
   try {
     return fn();
   } finally {
-    for (const p of params) levelParamBindings.delete(nameToString(p));
+    for (const p of params) {
+      levelParamBindings.delete(nameToString(p));
+      levelParamIndices.delete(nameToString(p));
+    }
   }
 }
 
@@ -675,6 +680,7 @@ export function generateTwelf(prover: Prover, env: ParsedEnv): string {
   out.length = 0;
   natLiteralsSeen.clear();
   levelParamBindings.clear();
+  levelParamIndices.clear();
   clearStringNeqFacts();
 
   for (const decl of env.decls) {
