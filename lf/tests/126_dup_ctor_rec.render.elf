@@ -10,6 +10,8 @@ dup_ctor_rec/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort 
 %%% HOLE
 dup_ctor_rec/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
+dup_ctor_rec/rec-name : name "dup_ctor_rec.rec" (is-rec-for "dup_ctor_rec").
+
 dup_ctor_rec/name : name "dup_ctor_rec" (is-decl (esort (lsucc lzero)) indt).
 
 dup_ctor_rec/decl : declared "dup_ctor_rec" (esort (lsucc lzero)) indt
@@ -37,8 +39,6 @@ dup_ctor_rec_rec/type-wf-sort : lvl.
 %%% HOLE
 dup_ctor_rec_rec/type-wf : defeq (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z))))))) (esort dup_ctor_rec_rec/type-wf-sort).
 
-dup_ctor_rec_rec/name : name "dup_ctor_rec.rec" (is-decl (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z))))))) irec).
-
 dup_ctor_rec_rec/decl : declared "dup_ctor_rec.rec" (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z))))))) irec
-   = declared/ok dup_ctor_rec_rec/name (dkind-ok/irec dup_ctor_rec_rec/type-wf).
+   = declared/ok-irec dup_ctor_rec/rec-name (dkind-ok/irec dup_ctor_rec_rec/type-wf).
 

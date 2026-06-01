@@ -197,5 +197,15 @@ printf "    💥  accept:      %d  (soundness failure)\n" "$b_accept"
 [[ $n_no_header -gt 0 ]] && printf "  ?   no header:    %d\n" "$n_no_header"
 echo ""
 
-# Non-zero exit on a genuine good-test failure or a soundness failure.
-if [[ $(( g_fail + b_accept )) -gt 0 ]]; then exit 1; fi
+# Also run the hand-written adversarial soundness regressions (lf/soundness/).
+# Unlike the generated tests above, these bypass the trusted generator: each
+# models an attack a buggy/malicious translator could emit directly, and the
+# TCB must reject it on its own.  They're cheap, so we always run them as part
+# of a check-tests invocation — even a subset run — so they can't be forgotten.
+echo "  ──────────────────────────────────────── soundness regressions"
+soundness_fail=0
+"$REPO_ROOT/scripts/check-soundness.sh" "$TWELF" || soundness_fail=1
+
+# Non-zero exit on a genuine good-test failure, a soundness failure, or an
+# adversarial regression that the TCB failed to reject.
+if [[ $(( g_fail + b_accept )) -gt 0 || $soundness_fail -ne 0 ]]; then exit 1; fi
