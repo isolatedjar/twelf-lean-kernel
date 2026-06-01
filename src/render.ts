@@ -19,6 +19,12 @@ import { nameToString } from "./shared.ts";
 
 export const levelParamBindings: Map<string, string> = new Map();
 
+// Parallel to `levelParamBindings`: maps a universe parameter's name to its
+// de Bruijn index for the current declaration.  The (untrusted) prover needs
+// the raw index — not just the rendered `(lvar i)` string — to build the
+// `lvl-subst` / `mleq/var-elim` proofs for universe-variable elimination.
+export const levelParamIndices: Map<string, number> = new Map();
+
 // =====================================================================
 // Nat literal accumulator
 // =====================================================================

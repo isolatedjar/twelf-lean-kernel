@@ -98,37 +98,40 @@ Mario's `ℓ ≡ ℓ'` is _extensional_: defined by `⟦ℓ⟧_v = ⟦ℓ'⟧_v`
 assignment `v : ℕ → ℕ` of nat values to universe variables (`VLevel.Equiv` in
 the formalization).
 
-**Status: mostly closed by the `mleq` decision procedure (May 2026).** The
-old reactive table of `lvl-eq` algebraic rules has been superseded by a port
-of **Carneiro's algorithmic level inequality** (Type Theory of Lean thesis,
-p.7): the offset relation `mleq L L' N` (⟦L⟧ ≤ ⟦L'⟧ + N for every valuation),
-with `lvl-eq L L'` recovered as two-sided `mleq L L' 0 ∧ mleq L' L 0`
-(`lvl-eq/le`). It is the inference-rule algorithm (searchable/checkable), NOT
-the semantic `VLevel.Equiv`. The 15 structural rules (the thesis' 13 + the two
-RHS `imax` simplification duals `imax-lzR`/`imax-lsR`, which the comparison
-needs once an offset has put the imax on the right) decide the **universe-
-variable-free fragment completely** — including associativity, commutativity,
+**Status: closed by the `mleq` decision procedure (May 2026).** The old
+reactive table of `lvl-eq` algebraic rules has been replaced by a port of
+**Carneiro's algorithmic level inequality** (Type Theory of Lean thesis, p.7):
+the offset relation `mleq L L' N` (⟦L⟧ ≤ ⟦L'⟧ + N for every valuation), with
+`lvl-eq L L'` recovered as two-sided `mleq L L' 0 ∧ mleq L' L 0` (`lvl-eq/le`).
+It is the inference-rule algorithm (searchable/checkable), NOT the semantic
+`VLevel.Equiv`. `lvl-eq` now has only `refl` (the syntactic primitive) and `le`
+(the `mleq` bridge); no algebraic or congruence rules remain.
+
+The 15 structural rules (the thesis' 13 + the two RHS `imax` simplification
+duals `imax-lzR`/`imax-lsR`, needed once an offset puts the imax on the right)
+decide the variable-free fragment — associativity, commutativity,
 distributivity, and the max/imax zero/succ/idempotence laws the old table had
 to special-case. The prover (`synth.ts`, `proveMleq`) supplies a concrete
 integer offset at every step, so Twelf only *checks* ground `N±1` / `N >= 0`
 constraints (the `enatlit` `nonneg` witness pattern), never solves for them.
 
-**Remaining gap: universe-variable `imax`.** `mleq`'s structural rules cover
-`imax` whose second argument is `zero`/`succ`/`imax`/`max`, but not a bare
-universe variable (`limax _ (lvar i)`). The genuine fix is the thesis' 14th
-rule, variable elimination by the case split `u ↦ 0` / `u ↦ S u`. It is
-deferred: in this proof-checking setting the natural HOAS encoding
-(`mleq (LF U) (LG U) N` from the `u = 0` and `u = S u` branches) relies on a
-degenerate higher-order unification of `LF U = a` for concrete `U`, which is
-fragile. Pending it, the legacy reduce-and-congruence rules (`lvl-eq/imax-idem`
-+ the `*-cong` / `symm` / `trans` family, still in `tcb.elf`) are kept as a
-**fallback** that reaches the common `imax(L, L) → L` case under a congruence
-for variable `L` (e.g. `imax (imax u u) u ≡ imax (succ u) u` in a Peano
-encoding — corpus tests 023–025). `proveLvlEq` tries `mleq` first, then this
-fallback. The fallback rules are all sound level identities, redundant with
-`mleq` on the variable-free fragment; once `mleq/var-elim` lands they can be
-dropped. As of this change 36 corpus tests prove their sort equalities via
-`mleq`; only the 3 Peano tests use the fallback.
+**Universe variables: closed via first-order variable elimination.** The
+thesis' 14th rule eliminates a universe variable by the case split `u ↦ 0` /
+`u ↦ S u`. Earlier this was thought to require fragile HOAS (`mleq (LF U)(LG U)
+N` with a degenerate higher-order unification `LF U = a`). But our level
+variables are **first-order de Bruijn indices** (`lvar : lidx -> lvl`), so the
+case split is encoded directly as `mleq/var-elim` using a first-order
+substitution judgment `lvl-subst` and structurally-decidable index
+(dis)equality `lidx-eq` / `lidx-neq` (no posit-and-audit — unlike strings,
+`lidx` disequality is a genuine closed judgment). Soundness: `lvar I` ranges
+over ℕ = {0} ∪ {S k}, so a goal holding with `I ↦ 0` and with `I ↦ S I` (whose
+still-free `I` is the predecessor) holds for every valuation; the substitution
+is exact by construction, so the rule has no loophole. The prover (`proveMleq`
+→ `proveVarElim`) detects a variable blocking as an `imax` second argument,
+case-splits it, and recurses. This reaches e.g. `imax (imax u u) u ≡
+imax (succ u) u` (Peano tests 023–025). `mleq` is now complete for the full
+fragment; 36 corpus tests prove sort equalities via the structural rules, the 3
+Peano tests via `var-elim`.
 
 ## 3. Inductive-type acceptance (orthogonal to defeq)
 
