@@ -533,7 +533,6 @@ function preflightInductiveReject(ind: Decl & { kind: "inductive" }): string | n
     );
     if (why !== null) return `ctor ${nameToString(c.name)} — ${why}`;
   }
-  const typeNames = new Set(ind.types.map((t) => nameToString(t.name)));
   for (const r of ind.recursors) {
     if (dupLevels(r.levelParams)) {
       return `recursor ${nameToString(r.name)} — duplicate universe parameter names`;
