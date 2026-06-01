@@ -6,7 +6,7 @@
 // and, when an EnvMap is supplied, for constants, applications, and
 // β/δ-reduction obligations. Anything unhandled → null (→ HOLE), never wrong.
 
-import { freshVar, mangle, recordStringNeq } from "./render.ts";
+import { freshVar, mangle, recordNonneg, recordStringNeq } from "./render.ts";
 import type { Expr, Fmt, Level, Name, ParsedEnv } from "./shared.ts";
 import { app, atom, lam, nameToString } from "./shared.ts";
 
@@ -391,6 +391,147 @@ function sortLevel(e: Expr): Level | null {
   return e.kind === "sort" ? e.level : null;
 }
 
+// --- Carneiro's algorithmic level inequality (see `mleq` in tcb.elf) -------
+//
+// `proveMleq a b n` builds an `mleq a b n` proof term (a ≤ b + n for every
+// valuation) as an Fmt, or null.  The offset `n` is concrete and threaded
+// down the recursion, so every node has a ground integer index and Twelf only
+// has to *check* the `N±1` / `N >= 0` constraints, never solve for them.  The
+// `mleq/self` and `mleq/lz` leaves require an `n >= 0` witness, recorded via
+// `recordNonneg` (shares the generator's `nonneg_<n>` %solve mechanism); they
+// fire only when n >= 0, so negative-offset branches dead-end and the search
+// backtracks.  This is a completeness-only routine: a wrong or missing proof
+// becomes a HOLE, never an unsound acceptance.
+
+// The four LHS `imax` rewrites (imax-lzL/lsL/imL/mxL): given `a = limax a.l r`,
+// return the level `a` rewrites to and the rule atom.  `null` for `r` a bare
+// param (the unencoded variable-elimination case → HOLE).
+function imaxRewriteL(al: Level, r: Level): { newL: Level; ctor: string } | null {
+  switch (r.kind) {
+    case "zero":
+      return { newL: { kind: "zero" }, ctor: "mleq/imax-lzL" };
+    case "succ":
+      return { newL: { kind: "max", l: al, r }, ctor: "mleq/imax-lsL" };
+    case "imax": // limax L1 (limax L2 L3) → lmax (limax L1 L3) (limax L2 L3)
+      return {
+        newL: {
+          kind: "max",
+          l: { kind: "imax", l: al, r: r.r },
+          r: { kind: "imax", l: r.l, r: r.r },
+        },
+        ctor: "mleq/imax-imL",
+      };
+    case "max": // limax L1 (lmax L2 L3) → lmax (limax L1 L2) (limax L1 L3)
+      return {
+        newL: {
+          kind: "max",
+          l: { kind: "imax", l: al, r: r.l },
+          r: { kind: "imax", l: al, r: r.r },
+        },
+        ctor: "mleq/imax-mxL",
+      };
+    default:
+      return null;
+  }
+}
+
+// The RHS `imax` rewrites (imax-lzR/lsR/imR/mxR), dual to the LHS ones: given
+// `b = limax bl r`, return the level `b` rewrites to.  `param` → null (the
+// unencoded variable-elimination case → HOLE).
+function imaxRewriteR(bl: Level, r: Level): { newR: Level; ctor: string } | null {
+  switch (r.kind) {
+    case "zero":
+      return { newR: { kind: "zero" }, ctor: "mleq/imax-lzR" };
+    case "succ":
+      return { newR: { kind: "max", l: bl, r }, ctor: "mleq/imax-lsR" };
+    case "imax": // limax L1 (limax L2 L3) → lmax (limax L1 L3) (limax L2 L3)
+      return {
+        newR: {
+          kind: "max",
+          l: { kind: "imax", l: bl, r: r.r },
+          r: { kind: "imax", l: r.l, r: r.r },
+        },
+        ctor: "mleq/imax-imR",
+      };
+    case "max": // limax L1 (lmax L2 L3) → lmax (limax L1 L2) (limax L1 L3)
+      return {
+        newR: {
+          kind: "max",
+          l: { kind: "imax", l: bl, r: r.l },
+          r: { kind: "imax", l: bl, r: r.r },
+        },
+        ctor: "mleq/imax-mxR",
+      };
+    default:
+      return null;
+  }
+}
+
+function proveMleq(a: Level, b: Level, n: number, depth = 0): Fmt | null {
+  if (depth > 40) return null;
+  // Leaves (need n >= 0): mleq/self covers a ≡ b, mleq/lz covers lzero ≤ _.
+  if (n >= 0 && levelEq(a, b)) return app(atom("mleq/self"), atom(recordNonneg(n)));
+  if (n >= 0 && a.kind === "zero") return app(atom("mleq/lz"), atom(recordNonneg(n)));
+  // Deterministic LHS rewrites: imax-elimination then succ-on-left.
+  if (a.kind === "imax") {
+    const rw = imaxRewriteL(a.l, a.r);
+    if (rw) {
+      const p = proveMleq(rw.newL, b, n, depth + 1);
+      if (p) return app(atom(rw.ctor), p);
+    }
+  }
+  if (a.kind === "succ") {
+    const p = proveMleq(a.arg, b, n - 1, depth + 1);
+    if (p) return app(atom("mleq/sL"), p);
+  }
+  // Deterministic RHS rewrites: imax-elimination then succ-on-right.
+  if (b.kind === "imax") {
+    const rw = imaxRewriteR(b.l, b.r);
+    if (rw) {
+      const p = proveMleq(a, rw.newR, n, depth + 1);
+      if (p) return app(atom(rw.ctor), p);
+    }
+  }
+  if (b.kind === "succ") {
+    const p = proveMleq(a, b.arg, n + 1, depth + 1);
+    if (p) return app(atom("mleq/sR"), p);
+  }
+  // Branching: decompose an LHS max (both halves), or pick an RHS max disjunct.
+  if (a.kind === "max") {
+    const l = proveMleq(a.l, b, n, depth + 1);
+    if (l) {
+      const r = proveMleq(a.r, b, n, depth + 1);
+      if (r) return app(atom("mleq/maxL"), l, r);
+    }
+  }
+  if (b.kind === "max") {
+    const l = proveMleq(a, b.l, n, depth + 1);
+    if (l) return app(atom("mleq/maxR-l"), l);
+    const r = proveMleq(a, b.r, n, depth + 1);
+    if (r) return app(atom("mleq/maxR-r"), r);
+  }
+  return null;
+}
+
+export function proveLvlEq(a: Level, b: Level): Fmt | null {
+  if (levelEq(a, b)) return atom("lvl-eq/refl"); // fast path, keeps proof terms small
+  // Primary: the `mleq` decision procedure (associativity/commutativity/…).
+  const le = proveMleq(a, b, 0);
+  if (le !== null) {
+    const ge = proveMleq(b, a, 0);
+    if (ge !== null) return app(atom("lvl-eq/le"), le, ge);
+  }
+  // Fallback: the legacy reduce-and-congruence prover, for the one case the
+  // structural `mleq` rules can't reach without variable elimination — reducing
+  // `imax(L, L) → L` under a congruence when `L` is a universe variable.
+  return proveLvlEqReduce(a, b);
+}
+
+// --- Legacy reduce-and-congruence level-equality prover (fallback) ---------
+// Retained only as the fallback for universe-variable `imax(L,L)` reduction
+// (see proveLvlEq and the lvl-eq fallback rules in tcb.elf).  `mleq` subsumes
+// it on the variable-free fragment; once `mleq/var-elim` lands this can go.
+
 function reduceLevel(l: Level): { result: Level; proof: Fmt } | null {
   if (l.kind === "imax" && l.r.kind === "zero") {
     return { result: { kind: "zero" }, proof: atom("lvl-eq/imax-zero") };
@@ -471,34 +612,34 @@ function stepLevel(l: Level): { result: Level; proof: Fmt } | null {
   }
 }
 
-export function proveLvlEq(a: Level, b: Level, depth = 0): Fmt | null {
+function proveLvlEqReduce(a: Level, b: Level, depth = 0): Fmt | null {
   if (depth > 12) return null;
   if (levelEq(a, b)) return atom("lvl-eq/refl");
 
   const ra = stepLevel(a);
   if (ra !== null) {
-    const rest = proveLvlEq(ra.result, b, depth + 1);
+    const rest = proveLvlEqReduce(ra.result, b, depth + 1);
     if (rest !== null) return app(atom("lvl-eq/trans"), ra.proof, rest);
   }
   const rb = stepLevel(b);
   if (rb !== null) {
-    const rest = proveLvlEq(a, rb.result, depth + 1);
+    const rest = proveLvlEqReduce(a, rb.result, depth + 1);
     if (rest !== null) {
       return app(atom("lvl-eq/trans"), rest, app(atom("lvl-eq/symm"), rb.proof));
     }
   }
   if (a.kind === "succ" && b.kind === "succ") {
-    const sub = proveLvlEq(a.arg, b.arg, depth + 1);
+    const sub = proveLvlEqReduce(a.arg, b.arg, depth + 1);
     return sub && app(atom("lvl-eq/lsucc-cong"), sub);
   }
   if (a.kind === "imax" && b.kind === "imax") {
-    const l = proveLvlEq(a.l, b.l, depth + 1);
-    const r = proveLvlEq(a.r, b.r, depth + 1);
+    const l = proveLvlEqReduce(a.l, b.l, depth + 1);
+    const r = proveLvlEqReduce(a.r, b.r, depth + 1);
     return l && r && app(atom("lvl-eq/limax-cong"), l, r);
   }
   if (a.kind === "max" && b.kind === "max") {
-    const l = proveLvlEq(a.l, b.l, depth + 1);
-    const r = proveLvlEq(a.r, b.r, depth + 1);
+    const l = proveLvlEqReduce(a.l, b.l, depth + 1);
+    const r = proveLvlEqReduce(a.r, b.r, depth + 1);
     return l && r && app(atom("lvl-eq/lmax-cong"), l, r);
   }
   return null;

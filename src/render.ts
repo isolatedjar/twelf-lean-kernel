@@ -34,7 +34,20 @@ export const levelParamBindings: Map<string, string> = new Map();
 // precision nat literals as strings already (`Expr.lit (Literal.natVal n)`
 // — see shared.ts), and Twelf accepts the same text as an integer literal.
 
+// Distinct non-negative integers that need a `%solve nonneg_<n> : <n> >= 0.`
+// witness in the generated prelude.  Populated both by nat literals (during
+// rendering) and by `mleq` leaves (during level-equality proving, see
+// `recordNonneg`); deduped here so the generator emits one witness per value.
 export const natLiteralsSeen: Set<string> = new Set();
+
+// Register a non-negative integer offset that needs an `n >= 0` witness (used
+// by `mleq/lz` / `mleq/self` leaves in level-equality proofs).  Returns the
+// witness name the proof term should reference.  The caller guarantees n >= 0;
+// the witness is emitted from the same `natLiteralsSeen` set as nat literals.
+export function recordNonneg(n: number): string {
+  natLiteralsSeen.add(String(n));
+  return `nonneg_${n}`;
+}
 
 // ---------------------------------------------------------------------------
 // Posited string-disequality facts

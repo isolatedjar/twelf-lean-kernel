@@ -1,5 +1,8 @@
 %%% Expected outcome: accept
 %%% Some level computation
+%solve nonneg_0 : 0 >= 0.
+%solve nonneg_1 : 1 >= 0.
+
 %% def levelComp3
 levelComp3/type-wf-sort : lvl
    = (lsucc (lsucc (lsucc (lsucc lzero)))).
@@ -8,7 +11,7 @@ levelComp3/type-wf : defeq (esort (lsucc (lsucc (lsucc lzero)))) (esort (lsucc (
    = defeq/sort-refl.
 
 levelComp3/value-typed : defeq (esort (limax (lsucc (lsucc lzero)) (lsucc lzero))) (esort (limax (lsucc (lsucc lzero)) (lsucc lzero))) (esort (lsucc (lsucc (lsucc lzero))))
-   = (defeq/conv (defeq/sort-eq (lvl-eq/trans (lvl-eq/lsucc-cong lvl-eq/imax-succ) (lvl-eq/trans (lvl-eq/lsucc-cong lvl-eq/max-succ) (lvl-eq/trans (lvl-eq/lsucc-cong (lvl-eq/lsucc-cong lvl-eq/max-zero-r)) lvl-eq/refl)))) defeq/sort-refl).
+   = (defeq/conv (defeq/sort-eq (lvl-eq/le (mleq/sL (mleq/imax-lsL (mleq/sR (mleq/sR (mleq/sR (mleq/maxL (mleq/sL (mleq/sL (mleq/self nonneg_0))) (mleq/sL (mleq/self nonneg_1)))))))) (mleq/sL (mleq/sL (mleq/sL (mleq/sR (mleq/imax-lsR (mleq/maxR-l (mleq/sR (mleq/sR (mleq/self nonneg_0))))))))))) defeq/sort-refl).
 
 levelComp3/name : name "levelComp3" (is-decl (esort (lsucc (lsucc (lsucc lzero)))) (defn (esort (limax (lsucc (lsucc lzero)) (lsucc lzero))))).
 

@@ -48,45 +48,103 @@ lis : lidx -> lidx.
 lvar : lidx -> lvl.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Algorithmic level inequality   ℓ ≤ ℓ' + n
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Carneiro's algorithmic level inequality (Type Theory of Lean thesis,
+%%% p.7): `mleq L L' N` holds iff ⟦L⟧_v ≤ ⟦L'⟧_v + N for every valuation v
+%%% of the universe variables, with N : integer (the offset, possibly
+%%% negative).  This is the *inference-rule* characterization — searchable
+%%% and checkable — NOT lean4lean's semantic `VLevel.LE` (universal over
+%%% valuations).  Level equality is recovered as the two-sided
+%%% `mleq L L' 0 ∧ mleq L' L 0` (see `lvl-eq/le`).
+%%%
+%%% The 13 structural rules below are a direct transcription of the thesis
+%%% algorithm.  They subsume the previous reactive table of `lvl-eq`
+%%% algebraic identities (idempotence, max/imax zero laws, succ-pushing) AND
+%%% give the identities that table was missing — associativity,
+%%% commutativity, distributivity — in one decision procedure.
+%%%
+%%% Integer handling: the (untrusted) prover supplies a CONCRETE offset at
+%%% every step, so every `mleq` node has a ground index.  Twelf never solves
+%%% for an integer; it only *checks* the ground `N-1` / `N+1` / `N >= 0`
+%%% constraints via the `inequality/integers` domain — the same
+%%% checked-not-solved mode `enatlit`'s `n >= 0` witnesses already use.  The
+%%% `N >= 0` premises of `mleq/lz` and `mleq/self` are discharged by the same
+%%% `%solve nonneg_<n>` witnesses the generator emits for nat literals.
+%%%
+%%% Not encoded: the thesis' 14th rule (universe-variable elimination by the
+%%% case split u ↦ 0 / u ↦ S u).  A goal needing it — e.g. `limax _ (lvar i)`
+%%% against a structurally different level — is simply unprovable here (a
+%%% HOLE), never unsound.  Adding it as the genuine completeness lemma
+%%% `mleq/var-elim` is tracked in completeness-plan.md §2.
+
+mleq : lvl -> lvl -> integer -> type.   %name mleq MLE.
+
+mleq/lz       : N >= 0 -> mleq lzero L N.
+mleq/self     : N >= 0 -> mleq L L N.
+mleq/sL       : mleq L L' (N - 1) -> mleq (lsucc L) L' N.
+mleq/sR       : mleq L L' (N + 1) -> mleq L (lsucc L') N.
+mleq/maxR-l   : mleq L L1 N -> mleq L (lmax L1 L2) N.
+mleq/maxR-r   : mleq L L2 N -> mleq L (lmax L1 L2) N.
+mleq/maxL     : mleq L1 L N -> mleq L2 L N -> mleq (lmax L1 L2) L N.
+%%% imax simplification, on both sides.  imax(L1, 0) = 0 and
+%%% imax(L1, S L2) = max(L1, S L2) hold for every valuation, so each has an
+%%% L- and an R-form (the thesis lists the L-forms; the R-duals are needed
+%%% whenever an offset has driven the comparison to put the imax on the right).
+mleq/imax-lzL : mleq lzero L N -> mleq (limax L1 lzero) L N.
+mleq/imax-lzR : mleq L lzero N -> mleq L (limax L1 lzero) N.
+mleq/imax-lsL : mleq (lmax L1 (lsucc L2)) L N -> mleq (limax L1 (lsucc L2)) L N.
+mleq/imax-lsR : mleq L (lmax L1 (lsucc L2)) N -> mleq L (limax L1 (lsucc L2)) N.
+mleq/imax-imL : mleq (lmax (limax L1 L3) (limax L2 L3)) L N
+                  -> mleq (limax L1 (limax L2 L3)) L N.
+mleq/imax-imR : mleq L (lmax (limax L1 L3) (limax L2 L3)) N
+                  -> mleq L (limax L1 (limax L2 L3)) N.
+mleq/imax-mxL : mleq (lmax (limax L1 L2) (limax L1 L3)) L N
+                  -> mleq (limax L1 (lmax L2 L3)) L N.
+mleq/imax-mxR : mleq L (lmax (limax L1 L2) (limax L1 L3)) N
+                  -> mleq L (limax L1 (lmax L2 L3)) N.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Level equivalence   ℓ ≈ ℓ'
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Currently an ad-hoc under approximation of level equivalence as defined
-%%% in the specification of Lean rather than a comprehensive artifact. This
-%%% will likely hit headwinds at some point.
+%%% `lvl-eq` is the interface consumed by `defeq/sort-eq`.  Two routes prove it:
+%%%
+%%%  * `lvl-eq/le` — the PRIMARY route: two-sided `mleq` at offset 0.  This is
+%%%    the decision procedure above; it gives the algebraic identities the old
+%%%    reactive table was missing (associativity, commutativity, distributivity
+%%%    of max/imax) for the universe-variable-free fragment.
+%%%
+%%%  * the algebraic/congruence rules below — a FALLBACK kept for the one case
+%%%    `mleq`'s structural rules can't reach without the (deferred) variable-
+%%%    elimination rule: reducing `imax(L, L) → L` under a congruence when `L`
+%%%    is a universe *variable* (e.g. `imax (imax u u) u ≡ imax (succ u) u` in a
+%%%    Peano encoding).  `mleq/imax-*` handle imax whose second argument is
+%%%    zero/succ/imax/max, but not a bare `lvar`; `lvl-eq/imax-idem` + congruence
+%%%    still discharge those.  These rules are all sound (each is a valid
+%%%    level identity); they are redundant with `mleq` on the variable-free
+%%%    fragment.  Once `mleq/var-elim` lands (completeness-plan.md §2) this
+%%%    fallback can be dropped.
 
 lvl-eq : lvl -> lvl -> type.   %name lvl-eq E.
 
-%%% --- equivalence relation ---
-lvl-eq/refl  : lvl-eq L L.
+%%% Primary: equality as two-sided `mleq` at offset 0; plus the syntactic
+%%% reflexivity primitive (used by derived.elf and the prover's fast path).
+lvl-eq/refl : lvl-eq L L.
+lvl-eq/le   : mleq L L' 0 -> mleq L' L 0 -> lvl-eq L L'.
+
+%%% Fallback equivalence + algebraic identities (see note above).  All sound
+%%% level identities; redundant with `mleq` on the variable-free fragment, but
+%%% the congruence rules + `imax-idem` reach the universe-variable `imax(L,L)`
+%%% case that `mleq`'s structural rules can't without variable elimination.
 lvl-eq/symm  : lvl-eq L1 L2 -> lvl-eq L2 L1.
 lvl-eq/trans : lvl-eq L1 L2 -> lvl-eq L2 L3 -> lvl-eq L1 L3.
-
-%%% --- algebraic identities (grow as forced) ---
-%%% lmax L L ≈ L
 lvl-eq/max-idem  : lvl-eq (lmax L L) L.
-
-%%% lmax 0 L ≈ L  and  lmax L 0 ≈ L
 lvl-eq/max-zero-l : lvl-eq (lmax lzero L) L.
 lvl-eq/max-zero-r : lvl-eq (lmax L lzero) L.
-
-%%% lmax (S L1) (S L2) ≈ S (lmax L1 L2)
 lvl-eq/max-succ : lvl-eq (lmax (lsucc L1) (lsucc L2)) (lsucc (lmax L1 L2)).
-
-%%% imax(L1, S L2) = max(L1, S L2)   (from thesis §2.2)
 lvl-eq/imax-succ : lvl-eq (limax L1 (lsucc L2)) (lmax L1 (lsucc L2)).
-
-%%% imax(L, 0) = 0   (from thesis §2.2)
 lvl-eq/imax-zero : lvl-eq (limax L lzero) lzero.
-
-%%% imax(L, L) = L  (Lean's semantic equality: for any L, imax L L = L
-%%% because if L = 0 then imax = 0 = L, else imax = max L L = L.)
 lvl-eq/imax-idem : lvl-eq (limax L L) L.
-
-%%% --- structural congruence rules ---
-%%% Needed because sort-level reductions chain through `defeq/trans`,
-%%% which requires its level indices to be syntactically identical;
-%%% Twelf doesn't see through `lvl-eq`.  These let us re-index a
-%%% derivation when the levels are equivalent but not syntactic.
 lvl-eq/lsucc-cong : lvl-eq L1 L2 -> lvl-eq (lsucc L1) (lsucc L2).
 lvl-eq/lmax-cong  : lvl-eq L1 L1' -> lvl-eq L2 L2' -> lvl-eq (lmax L1 L2) (lmax L1' L2').
 lvl-eq/limax-cong : lvl-eq L1 L1' -> lvl-eq L2 L2' -> lvl-eq (limax L1 L2) (limax L1' L2').

@@ -98,36 +98,37 @@ Mario's `ℓ ≡ ℓ'` is _extensional_: defined by `⟦ℓ⟧_v = ⟦ℓ'⟧_v`
 assignment `v : ℕ → ℕ` of nat values to universe variables (`VLevel.Equiv` in
 the formalization).
 
-Our `lvl-eq` is a derivability relation with explicit rules. Status:
+**Status: mostly closed by the `mleq` decision procedure (May 2026).** The
+old reactive table of `lvl-eq` algebraic rules has been superseded by a port
+of **Carneiro's algorithmic level inequality** (Type Theory of Lean thesis,
+p.7): the offset relation `mleq L L' N` (⟦L⟧ ≤ ⟦L'⟧ + N for every valuation),
+with `lvl-eq L L'` recovered as two-sided `mleq L L' 0 ∧ mleq L' L 0`
+(`lvl-eq/le`). It is the inference-rule algorithm (searchable/checkable), NOT
+the semantic `VLevel.Equiv`. The 15 structural rules (the thesis' 13 + the two
+RHS `imax` simplification duals `imax-lzR`/`imax-lsR`, which the comparison
+needs once an offset has put the imax on the right) decide the **universe-
+variable-free fragment completely** — including associativity, commutativity,
+distributivity, and the max/imax zero/succ/idempotence laws the old table had
+to special-case. The prover (`synth.ts`, `proveMleq`) supplies a concrete
+integer offset at every step, so Twelf only *checks* ground `N±1` / `N >= 0`
+constraints (the `enatlit` `nonneg` witness pattern), never solves for them.
 
-| Rule                             | Status                                              |
-| -------------------------------- | --------------------------------------------------- |
-| `lvl-eq/refl`                    | ✓                                                   |
-| `lvl-eq/symm`                    | ✓                                                   |
-| `lvl-eq/trans`                   | ✓                                                   |
-| `lvl-eq/max-comm`                | ✓                                                   |
-| `lvl-eq/max-self`                | ✓                                                   |
-| `lvl-eq/imax-zero`               | ✓                                                   |
-| `lvl-eq/zero-imax`               | ✓                                                   |
-| `lvl-eq/imax-succ`               | ✓ (`imax(a, S b) = max(a, S b)` — `b+1` is nonzero) |
-| `lvl-eq/imax-idem`               | ✓ (`imax(L, L) = L`)                                |
-| `lvl-eq/{lsucc,lmax,limax}-cong` | ✓                                                   |
-| max-assoc                        | ✗ missing                                           |
-| max-left-id (`max 0 L = L`)      | ✗ missing                                           |
-| max-right-id (`max L 0 = L`)     | ✗ missing                                           |
-| imax-with-max distributivity     | ✗ missing                                           |
-| general normalization            | ✗ missing                                           |
-
-**Completeness gap.** Our rules are sound but provably incomplete: e.g.,
-`max(max u v) w ≡ max u (max v w)` (associativity) isn't derivable. We've
-added rules reactively when the corpus forces them.
-
-**The decision-procedure alternative** (sketched in earlier conversation):
-replace this whole table with `eval : nats -> level -> nat -> type` and a
-finite-test-set quantifier. That gives TCB-completeness for `lvl-eq` in one
-move, relative to Mario's `VLevel.Equiv`. It's a refactor of working code
-rather than a fix to any of the failing corpus tests, so not the highest
-leverage right now, but it'd close this whole section as a single tick-box.
+**Remaining gap: universe-variable `imax`.** `mleq`'s structural rules cover
+`imax` whose second argument is `zero`/`succ`/`imax`/`max`, but not a bare
+universe variable (`limax _ (lvar i)`). The genuine fix is the thesis' 14th
+rule, variable elimination by the case split `u ↦ 0` / `u ↦ S u`. It is
+deferred: in this proof-checking setting the natural HOAS encoding
+(`mleq (LF U) (LG U) N` from the `u = 0` and `u = S u` branches) relies on a
+degenerate higher-order unification of `LF U = a` for concrete `U`, which is
+fragile. Pending it, the legacy reduce-and-congruence rules (`lvl-eq/imax-idem`
++ the `*-cong` / `symm` / `trans` family, still in `tcb.elf`) are kept as a
+**fallback** that reaches the common `imax(L, L) → L` case under a congruence
+for variable `L` (e.g. `imax (imax u u) u ≡ imax (succ u) u` in a Peano
+encoding — corpus tests 023–025). `proveLvlEq` tries `mleq` first, then this
+fallback. The fallback rules are all sound level identities, redundant with
+`mleq` on the variable-free fragment; once `mleq/var-elim` lands they can be
+dropped. As of this change 36 corpus tests prove their sort equalities via
+`mleq`; only the 3 Peano tests use the fallback.
 
 ## 3. Inductive-type acceptance (orthogonal to defeq)
 
