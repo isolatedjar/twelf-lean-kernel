@@ -615,10 +615,12 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
         T,
         false,
       );
-      // Find the parent inductive's rec-name reservation by computing IndN = recN[:-4].
-      // The TCB rule `declared/ok-irec` requires `name N (is-rec-for IndN)`, which was
-      // emitted by generateIndType.  If no matching inductive exists, emit a HOLE
-      // (bare decl rejected by %freeze) rather than using the old declared/ok path.
+      // A recursor is declared via `declared/ok-irec`, which requires the
+      // `name N (is-rec-for IndN)` reservation that generateIndType emits for
+      // its inductive.  Recover IndN by stripping the trailing ".rec" and find
+      // the inductive that reserved it.  If there's no such inductive (the name
+      // doesn't follow the <inductive>.rec convention), emit a HOLE — a bare
+      // decl with no reservation witness, which %freeze rejects.
       const IndN = declName.endsWith(".rec") ? declName.slice(0, -4) : null;
       const indType =
         IndN !== null ? ind.types.find((t) => nameToString(t.name) === IndN) : undefined;
