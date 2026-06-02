@@ -31,3 +31,99 @@ jobs:
 
       - name: Tests
         run: npm run test
+
+  arena-smoke:
+    # Smoke-test scripts/arena-check.sh against two arena tutorial NDJSONs:
+    # one expected-accept (001_basicDef → exit 0) and one expected-reject via
+    # the generator's fail-on-purpose path (002_badDef → exit 1).  This guards
+    # the arena interface — exit-code mapping, Twelf chain, parse/generate
+    # plumbing — so a regression doesn't sneak in between drive-by edits and
+    # the next time someone runs check-tests.sh manually.
+    #
+    # No NDJSONs are committed to this repo: we build them from a fresh
+    # checkout of leanprover/lean-kernel-arena, then drive the kernel
+    # against two of the 129 tutorial outputs.
+    name: arena smoke (tutorial 001 + 002)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout twelf-lean-kernel
+        uses: actions/checkout@v6
+        with:
+          path: twelf-lean-kernel
+
+      - name: Checkout lean-kernel-arena (sibling)
+        uses: actions/checkout@v6
+        with:
+          repository: leanprover/lean-kernel-arena
+          path: lean-kernel-arena
+
+      - name: Set up Node.js 24.x
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24.x"
+
+      - name: Install system deps (mlton + libgmp for Twelf)
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y --no-install-recommends \
+            mlton libgmp-dev libc6-dev gcc
+
+      - name: Set up uv (drives lka.py build-test)
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Set up elan (drives the tutorial Lean toolchain)
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Install Node deps
+        working-directory: twelf-lean-kernel
+        run: npm ci
+
+      - name: Cache Twelf (limited-thaw)
+        # Keyed on a literal version label.  Bump the suffix when upstream
+        # robsimmons/twelf limited-thaw changes in a way the kernel depends on.
+        id: twelf-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/twelf-src
+          key: twelf-limited-thaw-v1-${{ runner.os }}-${{ runner.arch }}
+
+      - name: Build Twelf (if not cached)
+        if: steps.twelf-cache.outputs.cache-hit != 'true'
+        working-directory: twelf-lean-kernel
+        run: ./scripts/build-twelf.sh "$HOME/twelf-src"
+
+      - name: Build arena tutorial NDJSONs
+        working-directory: twelf-lean-kernel
+        run: ./scripts/build-arena-ndjson.sh tutorial
+
+      - name: Smoke-test arena-check.sh on 001_basicDef + 002_badDef
+        working-directory: twelf-lean-kernel
+        run: |
+          export TWELF="$HOME/twelf-src/bin/twelf-server"
+          ARENA_BUILD="$GITHUB_WORKSPACE/lean-kernel-arena/_build/tests/tutorial"
+          fails=0
+          check() {
+            local name=$1 path=$2 want=$3
+            if [[ ! -f "$path" ]]; then
+              echo "::error::missing NDJSON: $path"
+              fails=$((fails+1)); return
+            fi
+            set +e
+            ./scripts/arena-check.sh "$path"
+            local got=$?
+            set -e
+            if [[ "$got" != "$want" ]]; then
+              echo "::error::$name: exit $got, expected $want"
+              fails=$((fails+1))
+            else
+              echo "OK $name: exit $got"
+            fi
+          }
+          check 001_basicDef "$ARENA_BUILD/good/001_basicDef.ndjson" 0
+          check 002_badDef  "$ARENA_BUILD/bad/002_badDef.ndjson"   1
+          exit "$fails"
