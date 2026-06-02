@@ -46,7 +46,11 @@ ARENA="$(cd "$ARENA" && pwd)"
 echo "Building arena test NDJSONs in: $ARENA"
 echo "  (skipping skip-on-ci tests: mathlib, std, cslib, mlir, cedar, init)"
 
-( cd "$ARENA" && uv run lka.py build-test --skip-ci "${TEST_FILTER[@]}" )
+# Note the `${arr[@]+"${arr[@]}"}` idiom: under `set -u`, expanding an empty
+# array as `"${TEST_FILTER[@]}"` throws "unbound variable" on bash < 4.4 (e.g.
+# macOS's stock /bin/bash 3.2).  This form expands to nothing when the array is
+# empty and to the quoted elements otherwise.
+( cd "$ARENA" && uv run lka.py build-test --skip-ci ${TEST_FILTER[@]+"${TEST_FILTER[@]}"} )
 
 echo ""
 echo "Done. NDJSONs are under $ARENA/_build/tests/"
