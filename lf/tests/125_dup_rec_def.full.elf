@@ -4,10 +4,10 @@
 dup_rec_def_rec/type-wf-sort : lvl
    = (lsucc (lsucc lzero)).
 
-dup_rec_def_rec/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort dup_rec_def_rec/type-wf-sort)
+dup_rec_def_rec/type-wf : of (esort (lsucc lzero)) (esort dup_rec_def_rec/type-wf-sort)
    = defeq/sort-refl.
 
-dup_rec_def_rec/value-typed : defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
+dup_rec_def_rec/value-typed : of (esort lzero) (esort (lsucc lzero))
    = defeq/sort-refl.
 
 dup_rec_def_rec/name : name "dup_rec_def.rec" (is-decl (esort (lsucc lzero)) (defn (esort lzero))).
@@ -19,7 +19,7 @@ dup_rec_def_rec/decl : declared "dup_rec_def.rec" (esort (lsucc lzero)) (defn (e
 dup_rec_def/type-wf-sort : lvl
    = (lsucc (lsucc lzero)).
 
-dup_rec_def/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort dup_rec_def/type-wf-sort)
+dup_rec_def/type-wf : of (esort (lsucc lzero)) (esort dup_rec_def/type-wf-sort)
    = defeq/sort-refl.
 
 dup_rec_def/ends-in-sort : ends-in-sort (esort (lsucc lzero))
@@ -36,7 +36,7 @@ dup_rec_def/decl : declared "dup_rec_def" (esort (lsucc lzero)) indt
 dup_rec_def_mk/type-wf-sort : lvl
    = (lsucc lzero).
 
-dup_rec_def_mk/type-wf : defeq (econst "dup_rec_def" lnil) (econst "dup_rec_def" lnil) (esort dup_rec_def_mk/type-wf-sort)
+dup_rec_def_mk/type-wf : of (econst "dup_rec_def" lnil) (esort dup_rec_def_mk/type-wf-sort)
    = (defeq/const dup_rec_def/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
 
 dup_rec_def_mk/positivity : ctor-positive "dup_rec_def" lnil (econst "dup_rec_def" lnil)
@@ -51,7 +51,7 @@ dup_rec_def_mk/decl : declared "dup_rec_def.mk" (econst "dup_rec_def" lnil) ctor
 dup_rec_def_rec/type-wf-sort : lvl
    = (limax (limax (lsucc lzero) (lsucc (lvar liz))) (limax (lvar liz) (limax (lsucc lzero) (lvar liz)))).
 
-dup_rec_def_rec/type-wf : defeq (eforall (eforall (econst "dup_rec_def" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_rec_def.mk" lnil)) ([y] (eforall (econst "dup_rec_def" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "dup_rec_def" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_rec_def.mk" lnil)) ([y] (eforall (econst "dup_rec_def" lnil) ([z] (eapp x z))))))) (esort dup_rec_def_rec/type-wf-sort)
+dup_rec_def_rec/type-wf : of (eforall (eforall (econst "dup_rec_def" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_rec_def.mk" lnil)) ([y] (eforall (econst "dup_rec_def" lnil) ([z] (eapp x z))))))) (esort dup_rec_def_rec/type-wf-sort)
    = (defeq/forall (defeq/forall (defeq/const dup_rec_def/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] defeq/sort-refl))) ([x] ([h] (defeq/forall (defeq/app h (defeq/const dup_rec_def_mk/decl (inst-expr/const lvls-inst/nil))) ([y] ([h1] (defeq/forall (defeq/const dup_rec_def/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([z] ([h2] (defeq/app h h2)))))))))).
 
 dup_rec_def_rec/decl : declared "dup_rec_def.rec" (eforall (eforall (econst "dup_rec_def" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_rec_def.mk" lnil)) ([y] (eforall (econst "dup_rec_def" lnil) ([z] (eapp x z))))))) irec

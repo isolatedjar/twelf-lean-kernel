@@ -6,6 +6,49 @@ specification is `VEnv.IsDefEq` (Figure 1 of the lean4lean paper, implemented
 in `Lean4Lean/Theory/Typing/Basic.lean`) plus the inductive and quotient
 extensions added via `t-extra`.
 
+## Status as of arena dry-run (2026-06)
+
+Running the kernel against the full Lean Kernel Arena tutorial corpus + the
+14 named singletons (143 tests total) via the new `scripts/arena-check.sh`
+wrapper gives:
+
+| outcome | count | meaning |
+|--------:|------:|---------|
+| ✅ accept | 54 | full pipeline (tcb + freeze + derived + final-checks) accepts |
+| 🩹 holes  | 62 | only unfilled HOLEs blocked acceptance (43% of the corpus) |
+| 🤷 shrug  | 19 | generator declined to represent the env |
+| ❌ fail   | 8  | `.full.elf` rejected even without freeze (concrete error / fail-on-purpose) |
+| 💥 sound  | 1  | **bad-test wrongly accepted: `tutorial/bad/066_BogusRecursor`** |
+
+The 1 💥 is the headline finding from this session. It is *not* a gap in
+the translator (the prover) — it is a gap in the **TCB**: `dkind-ok/irec`
+requires only that the supplied recursor type be well-formed, not that it
+match the type the inductive's declaration would mandate. The arena's
+`066_BogusRecursor` test exercises exactly this: it declares
+`inductive BogusRecursor where | mk` and then claims `BogusRecursor.rec` has
+type `Prop` (`esort lzero`). `Prop` is well-formed, so the rule fires and
+the load goes through. See §3.1 for the fix design.
+
+This was previously framed in §3 / §7.3 as a "we trust the export" choice
+under the assumption that the export is trustworthy. The arena's threat
+model includes adversarial exports, so what was incomplete-but-defensible
+under the prior framing is now demonstrated-unsound: bringing recursor-type
+checking inside the TCB is the **#0 priority** (above the existing
+completeness gaps, which are at worst loss-of-completeness).
+
+The wrapper, the YAML submission, and the standalone-soundness mapping
+(✅ → exit 0, 🩹/🤷/🔴 → exit 2, ❌/fail-on-purpose → exit 1) are documented
+in `arena-submission-plan.md`. A CI smoke test (`.github/workflows/main.yml`
+job `arena-smoke`) drives `arena-check.sh` against `tutorial/001_basicDef`
+(expects 0) and `tutorial/002_badDef` (expects 1) on every push, guarding
+the arena interface against regression.
+
+> **Test-number staleness.** Numbered tests cited below refer to the
+> post-`caf28eb` ("Revamp test infrastructure") corpus. Some references in
+> §5 use the older numbering and have not been mass-rewritten — when a
+> number looks wrong against the current `tutorial/`, treat the
+> *description* as authoritative and find the equivalent.
+
 **What "TCB-complete" means here.** For every defeq fact that holds in Mario's
 declarative relation, there exists an inhabitant of the corresponding LF type
 in our signature. **Translator-completeness is a separate question**: given a
@@ -144,7 +187,7 @@ NOT part of `IsDefEq`. They live in our TCB as separate closed families.
 | Constructor strict positivity                            | `ctor-positive` + `no-self-ref`   | ✓ (single-self, non-nested; sound in-TCB via `string-neq` + global `%query`)                            |
 | Mutual inductives                                        | —                                 | ✗ deferred — generalize `ctor-positive` to a _list_ of self-refs                                        |
 | Nested inductives                                        | —                                 | ✗ deferred — per-type-former "positivity-preserving" predicate                                          |
-| Recursor type well-formedness                            | none beyond `defeq T T (esort U)` | **✗ no kernel-side synthesis check — we trust the export**                                              |
+| Recursor type well-formedness                            | none beyond `defeq T T (esort U)` | **💥 demonstrated unsound on `066_BogusRecursor` — see §3.1**                                            |
 | Universe consistency (ctor field sorts ≤ inductive sort) | —                                 | **✗ missing**                                                                                           |
 | Subsingleton elimination check                           | generator pre-flight (check f)    | ◑ ≥2-ctor Prop large-elim rejected translator-side (127); ≤1-ctor subsingleton case not LF-verified     |
 | Positivity modulo defeq                                  | —                                 | **✗ deepest open issue: lifting `ctor-positive` through `defeq` stops being a closed-family operation** |
@@ -152,9 +195,97 @@ NOT part of `IsDefEq`. They live in our TCB as separate closed families.
 The recursor and universe-consistency cases are notable because Lean's kernel
 _constructs_ the recursor and _enforces_ universe consistency during inductive
 elaboration. We accept whatever the export gives us. This is sound (we
-type-check what we're given) but means we can't catch a malformed-recursor
-export. For our current threat model (the export is trustworthy), this is
-fine.
+type-check what we're given) only if the export is trustworthy; the arena's
+threat model is the opposite, and `066_BogusRecursor` (§3.1) demonstrates a
+concrete attack the TCB lets through.
+
+### 3.1 Recursor-type soundness gap (the `066_BogusRecursor` finding)
+
+**The attack.** The arena test
+`lean-kernel-arena/_build/tests/tutorial/bad/066_BogusRecursor.ndjson`
+declares a one-ctor inductive
+
+```lean
+inductive BogusRecursor : Type where
+  | mk : BogusRecursor
+```
+
+and then asserts `BogusRecursor.rec : Sort 0` (i.e. `Prop`). A genuine
+Lean export would synthesize the recursor type
+`{motive : BogusRecursor → Sort u} → motive mk → (t : BogusRecursor) → motive t`
+during elaboration. The bogus one just hands back `Prop`.
+
+**Why the TCB lets it through.** The relevant rule (`lf/tcb.elf`):
+
+```twelf
+dkind-ok/irec :
+   defeq T T (esort U) -> dkind-ok irec T.
+```
+
+This is only "T is *some* well-formed type". `Prop` qualifies, so the rule
+fires and `declared "BogusRecursor.rec" (esort lzero) irec` is admitted.
+The freeze step accepts it (the obligation has been discharged), and the
+load completes. The `%unique name` check at `final-checks.elf` doesn't help
+either — `name "BogusRecursor.rec" (is-rec-for "BogusRecursor")` is exactly
+the reservation the inductive's emission makes.
+
+**Two viable fixes, in increasing order of TCB ambition.**
+
+*Fix A — translator-synthesized canonical schema, checked TCB-side via
+`defeq`.* The translator already knows how to build the canonical recursor
+type from the inductive's payload (it would have to, to dispatch iota
+rules). Make it emit the canonical type `T_canon` alongside `T_supplied`
+and a `defeq T_supplied T_canon (esort U)` witness. Then `dkind-ok/irec`
+takes the defeq witness as a premise rather than just well-formedness:
+
+```twelf
+dkind-ok/irec :
+   defeq T T_canon (esort U)
+   -> rec-schema-canonical N T_canon  %% closed LF judgment
+   -> dkind-ok irec T.
+```
+
+The work is in `rec-schema-canonical`: a closed LF family that constructs
+the canonical recursor type from `declared "<ind>" Ts indt` + the ctor
+declarations. This is structurally large (motive binder, per-ctor minor
+premises with field IHs, major premise, result), but bounded — Mario's
+spec gives the recipe explicitly. The translator is untrusted for this
+construction: if it lies about `T_canon`, `rec-schema-canonical` won't
+inhabit, and the load fails.
+
+*Fix B — make recursor declaration not a `declared/ok-irec` at all.*
+Inductive emission already knows everything it needs. Replace
+`declared "<ind>.rec" T irec` with a derived family `rec-declared
+"<ind>.rec" "<ind>" T` whose only inhabitant comes from a rule that takes
+the inductive's `declared` witness, the ctor witnesses, and **builds T
+position-by-position** — no `T_supplied` ever crosses the boundary. The
+recursor's type ceases to be a translator input and becomes a derivation
+output. Cleaner soundness story; bigger refactor (every existing iota rule
+that pattern-matches `declared <rec> T irec` would migrate).
+
+Fix A is the path of least disruption and lands soundness in a
+self-contained edit to `dkind-ok/irec` + a new `rec-schema-canonical`
+family. Fix B is the asymptotically right design but pulls in the recursor
+across every iota-stage rule we eventually add.
+
+**Regression.** Whichever fix lands, mirror the attack in
+`lf/soundness/bogus-recursor.elf`: a hand-written `.elf` that declares
+`indtype` + `mk` correctly and then asserts a `Prop`-typed `.rec`, and
+gets ABORTed by the TCB on its own (no generator in the loop).
+`scripts/check-soundness.sh` runs it on every CI tick.
+
+**Cost of the fix.** 98 of 143 arena tests currently exercise
+`declared/ok-irec` (and so flow through `dkind-ok/irec`); 31 of those are
+currently ✅. The fix requires that every admitted recursor come with a
+canonical-schema witness, which means `rec-schema-canonical` must cover
+every inductive shape we admit (today: the `enum-rec-type` recognizer
+only handles 1-3 ctor enums with no params and no rec args). Until the
+canonical-schema family is extended to match every iota-supported shape
+(and stage 2+ shapes whose recursors we admit but don't iota on), the
+fix will convert a number of currently-✅ tests into 🩹 (decline). Net
+the right trade — the TCB stops admitting recursors it can't audit — but
+worth flagging that the immediate arena-accept count will fall before
+the completeness work catches it back up.
 
 ## 4. Other things in Mario's spec that aren't defeq rules
 
@@ -349,18 +480,31 @@ Bad  (expected reject):  ✅ N4   ⚠️ N5   💥 N6
 
 The bad ⚠️ column makes it visible when a translator-side decline is being
 substituted for a Twelf-verified rejection. Bad ✅ counts bad tests Twelf
-actually rejected via its LF-encoded checks. After this session: **Good 50 ✅
-/ 26 ⚠️ / 10 ❌, Bad 20 ✅ / 19 ⚠️ / 1 💥 = 70 Twelf-verified passes**.
+actually rejected via its LF-encoded checks.
 
-The 20 bad ✅ split:
+**Current full-corpus snapshot** (143 tests, 2026-06 arena run):
 
-- **10 from the LF encoding's own checks**: 002, 010, 011, 016, 041, 091, 092,
-  102, 103, 113 (defeq failures, `applies-self` rejections, etc., that the
-  translator emits directly and Twelf type-checks normally).
-- **10 from this session's migrations**: 039, 040, 045, 049, 120, 121, 122,
-  123, 125, 126 (via `%unique`, `%solve` on `ends-in-sort`, conditional
-  `%solve` on `ctor-positive` for head mismatches, level-substituted `%solve`
-  for polymorphic head mismatches, and dup-aware synth suppression).
+- **Good (93 tests):** 53 ✅ / 30 🩹 / 10 ❌
+- **Bad  (50 tests):** 17 ✅ / 32 🩹 / **1 💥** (`066_BogusRecursor` — see §3.1)
+- All 3 hand-written soundness regressions in `lf/soundness/` are still
+  correctly ABORTed.
+
+The previously-celebrated "10 migrations" from translator-decline to
+Twelf-decided rejection are still in place. The session that wrote the
+arena-submission story did not regress them; it surfaced the BogusRecursor
+gap that the prior corpus did not stress.
+
+**For the arena interface specifically** (different verdict mapping; see
+`arena-submission-plan.md` §3):
+
+- ✅ (54 tests) → exit 0 (accept) — *1 of these is wrong: `066_BogusRecursor`*
+- 🩹 / 🤷 / 🔴 (81 tests) → exit 2 (decline)
+- ❌ (8 tests) → exit 1 (reject) — *all 8 are correct*
+
+The arena cares only about (correct-accept, correct-reject, decline,
+wrong-accept, wrong-reject). It will report us as 53 correct accepts, 17
+correct rejects, 81 declines, 1 wrong accept (the soundness gap), 10 wrong
+rejects (good tests we couldn't verify and refused to claim accept on).
 
 ## Ranked gap list
 
@@ -418,25 +562,51 @@ The 20 bad ✅ split:
 
 ## 6. What this means for the project plan
 
-The "complete the TCB" obligation is finite and tractable. The items above are
-a finite list; ticking each off is well-defined work, not research. Once
-they're all ticked, we'd have a TCB that's declaratively complete relative to
-Mario's spec — meaning any Lean environment that the spec accepts, our TCB has
-a proof for.
+There are now two distinct project obligations on the TCB, with very
+different costs and very different consequences for missing them:
 
-What we'd give up by not pursuing this: the ability to say "the translator
-failing means Lean shouldn't have accepted this either". With gaps remaining,
-a translator failure can mean either (a) Lean shouldn't have accepted it, or
-(b) we just don't have the rule, or (c) the translator search heuristic gave
-up. Closing the TCB-completeness gaps reduces (b) to ∅.
+**A. Soundness.** The TCB must not admit an env Lean would have rejected.
+The arena run found exactly one such admission (`066_BogusRecursor`, §3.1).
+Other tests with `expect: reject` that we currently mishandle are *declines*
+(🩹), not soundness failures — the kernel refused to claim accept on them.
+
+A separate finding (`047`, addressed in May 2026 via `string-neq`) hardened
+the encoding for under-abstracted `T_HOAS` positivity attacks. That work
+sets the pattern for §3.1: a translator-side construction is allowed to
+*posit* facts, and the TCB's closed rules + a global audit (e.g. `%query`,
+`%unique`) make a lie fatal.
+
+**B. Completeness.** The TCB must admit every env Mario's spec admits. The
+arena run quantifies the gap as 30 holes-on-good-tests + 19 generator
+declines on good tests = 49 out of 93 good-tests we don't accept (47%).
+This is the work the rest of this document tracks.
+
+The pre-arena framing collapsed both into "complete the TCB" and assigned
+them comparable urgency. The arena run separates them: closing §3.1 (and
+auditing for other §7.3 "trusted-export" assumptions that the arena's
+threat model invalidates) is a *prerequisite* for taking the kernel
+seriously as a checker; completeness is a quality metric on top.
+
+The "complete the TCB" obligation, taken alone, is finite and tractable.
+The items in §5 are a finite list; ticking each off is well-defined work,
+not research. Once they're all ticked, we'd have a TCB that's declaratively
+complete relative to Mario's spec — meaning any Lean environment that the
+spec accepts, our TCB has a proof for.
+
+What we'd give up by not pursuing completeness: the ability to say "the
+translator failing means Lean shouldn't have accepted this either". With
+gaps remaining, a translator failure can mean either (a) Lean shouldn't
+have accepted it, (b) we just don't have the rule, or (c) the translator
+search heuristic gave up. Closing the TCB-completeness gaps reduces (b)
+to ∅.
 
 What we don't get even after closing them: a decision procedure. The
 translator can still time out, give up, or fail to find a proof that exists.
 That's an explicit non-goal — we're OK with handing off to a
 human/LLM/external procedure in the gap. The closure of the TCB just
-guarantees those handoffs are well-posed: the proof exists somewhere in the LF
-signature, the question is just whether someone (us, them, something else) can
-find it.
+guarantees those handoffs are well-posed: the proof exists somewhere in the
+LF signature, the question is just whether someone (us, them, something
+else) can find it.
 
 ---
 
@@ -540,7 +710,10 @@ uniqueness in the other direction).
 Carneiro's `lean.mm1` is a _complete_ declarative spec of the same `IsDefEq`;
 where our TCB is partial it reads as a checklist. No bug found in rules we
 already check; the gaps are exactly the things §3 marks "we trust the export",
-which flip from _incomplete_ to _unsound_ if the export isn't trustworthy:
+which flip from _incomplete_ to _unsound_ if the export isn't trustworthy.
+**The §3.1 BogusRecursor finding turns "if the export isn't trustworthy"
+into "as soon as we run against the arena"**: the same audit applies to
+the two siblings below.
 
 - **Ctor field-universe constraints** — `lean.mm1`'s `ctor_Pi` carries
   `l2 <=l l` (each field's sort ≤ the inductive's sort); `ctorR_S` carries

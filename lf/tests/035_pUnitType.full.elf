@@ -4,7 +4,7 @@
 PUnit/type-wf-sort : lvl
    = (lsucc (lvar liz)).
 
-PUnit/type-wf : defeq (esort (lvar liz)) (esort (lvar liz)) (esort PUnit/type-wf-sort)
+PUnit/type-wf : of (esort (lvar liz)) (esort PUnit/type-wf-sort)
    = defeq/sort-refl.
 
 PUnit/ends-in-sort : ends-in-sort (esort (lvar liz))
@@ -21,7 +21,7 @@ PUnit/decl : declared "PUnit" (esort (lvar liz)) indt
 PUnit_unit/type-wf-sort : lvl
    = (lvar liz).
 
-PUnit_unit/type-wf : defeq (econst "PUnit" (lcons (lvar liz) lnil)) (econst "PUnit" (lcons (lvar liz) lnil)) (esort PUnit_unit/type-wf-sort)
+PUnit_unit/type-wf : of (econst "PUnit" (lcons (lvar liz) lnil)) (esort PUnit_unit/type-wf-sort)
    = (defeq/const PUnit/decl (inst-expr/sort (lvl-inst/var lvl-nth/zero))).
 
 PUnit_unit/positivity : ctor-positive "PUnit" (lcons (lvar liz) lnil) (econst "PUnit" (lcons (lvar liz) lnil))
@@ -36,7 +36,7 @@ PUnit_unit/decl : declared "PUnit.unit" (econst "PUnit" (lcons (lvar liz) lnil))
 PUnit_rec/type-wf-sort : lvl
    = (limax (limax (lvar (lis liz)) (lsucc (lvar liz))) (limax (lvar liz) (limax (lvar (lis liz)) (lvar liz)))).
 
-PUnit_rec/type-wf : defeq (eforall (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z))))))) (eforall (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z))))))) (esort PUnit_rec/type-wf-sort)
+PUnit_rec/type-wf : of (eforall (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z))))))) (esort PUnit_rec/type-wf-sort)
    = (defeq/forall (defeq/forall (defeq/const PUnit/decl (inst-expr/sort (lvl-inst/var lvl-nth/zero))) ([x] ([h] defeq/sort-refl))) ([x] ([h] (defeq/forall (defeq/app h (defeq/const PUnit_unit/decl (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)))) ([y] ([h1] (defeq/forall (defeq/const PUnit/decl (inst-expr/sort (lvl-inst/var lvl-nth/zero))) ([z] ([h2] (defeq/app h h2)))))))))).
 
 PUnit_rec/decl : declared "PUnit.rec" (eforall (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z))))))) irec
@@ -46,10 +46,10 @@ PUnit_rec/decl : declared "PUnit.rec" (eforall (eforall (econst "PUnit" (lcons (
 pUnitType/type-wf-sort : lvl
    = (lsucc (lsucc lzero)).
 
-pUnitType/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort pUnitType/type-wf-sort)
+pUnitType/type-wf : of (esort (lsucc lzero)) (esort pUnitType/type-wf-sort)
    = defeq/sort-refl.
 
-pUnitType/value-typed : defeq (econst "PUnit" (lcons (lsucc lzero) lnil)) (econst "PUnit" (lcons (lsucc lzero) lnil)) (esort (lsucc lzero))
+pUnitType/value-typed : of (econst "PUnit" (lcons (lsucc lzero) lnil)) (esort (lsucc lzero))
    = (defeq/const PUnit/decl (inst-expr/sort (lvl-inst/var lvl-nth/zero))).
 
 pUnitType/name : name "pUnitType" (is-decl (esort (lsucc lzero)) (defn (econst "PUnit" (lcons (lsucc lzero) lnil)))).

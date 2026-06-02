@@ -4,7 +4,7 @@
 BoolProp/type-wf-sort : lvl
    = (lsucc lzero).
 
-BoolProp/type-wf : defeq (esort lzero) (esort lzero) (esort BoolProp/type-wf-sort)
+BoolProp/type-wf : of (esort lzero) (esort BoolProp/type-wf-sort)
    = defeq/sort-refl.
 
 BoolProp/ends-in-sort : ends-in-sort (esort lzero)
@@ -21,7 +21,7 @@ BoolProp/decl : declared "BoolProp" (esort lzero) indt
 BoolProp_a/type-wf-sort : lvl
    = lzero.
 
-BoolProp_a/type-wf : defeq (econst "BoolProp" lnil) (econst "BoolProp" lnil) (esort BoolProp_a/type-wf-sort)
+BoolProp_a/type-wf : of (econst "BoolProp" lnil) (esort BoolProp_a/type-wf-sort)
    = (defeq/const BoolProp/decl (inst-expr/sort lvl-inst/zero)).
 
 BoolProp_a/positivity : ctor-positive "BoolProp" lnil (econst "BoolProp" lnil)
@@ -36,7 +36,7 @@ BoolProp_a/decl : declared "BoolProp.a" (econst "BoolProp" lnil) ctor
 BoolProp_b/type-wf-sort : lvl
    = lzero.
 
-BoolProp_b/type-wf : defeq (econst "BoolProp" lnil) (econst "BoolProp" lnil) (esort BoolProp_b/type-wf-sort)
+BoolProp_b/type-wf : of (econst "BoolProp" lnil) (esort BoolProp_b/type-wf-sort)
    = (defeq/const BoolProp/decl (inst-expr/sort lvl-inst/zero)).
 
 BoolProp_b/positivity : ctor-positive "BoolProp" lnil (econst "BoolProp" lnil)
@@ -51,7 +51,7 @@ BoolProp_b/decl : declared "BoolProp.b" (econst "BoolProp" lnil) ctor
 BoolProp_rec/type-wf-sort : lvl
    = (limax (limax lzero (lsucc lzero)) (limax lzero (limax lzero (limax lzero lzero)))).
 
-BoolProp_rec/type-wf : defeq (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "BoolProp.a" lnil)) ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "BoolProp.a" lnil)) ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w))))))))) (esort BoolProp_rec/type-wf-sort)
+BoolProp_rec/type-wf : of (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "BoolProp.a" lnil)) ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w))))))))) (esort BoolProp_rec/type-wf-sort)
    = (defeq/forall (defeq/forall (defeq/const BoolProp/decl (inst-expr/sort lvl-inst/zero)) ([x] ([h] defeq/sort-refl))) ([x] ([h] (defeq/forall (defeq/app h (defeq/const BoolProp_a/decl (inst-expr/const lvls-inst/nil))) ([y] ([h1] (defeq/forall (defeq/app h (defeq/const BoolProp_b/decl (inst-expr/const lvls-inst/nil))) ([z] ([h2] (defeq/forall (defeq/const BoolProp/decl (inst-expr/sort lvl-inst/zero)) ([w] ([h3] (defeq/app h h3))))))))))))).
 
 BoolProp_rec/decl : declared "BoolProp.rec" (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "BoolProp.a" lnil)) ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w))))))))) irec
@@ -61,10 +61,10 @@ BoolProp_rec/decl : declared "BoolProp.rec" (eforall (eforall (econst "BoolProp"
 boolPropRec/type-wf-sort : lvl
    = (limax (limax lzero (lsucc lzero)) (limax lzero (limax lzero (limax lzero lzero)))).
 
-boolPropRec/type-wf : defeq (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "BoolProp.a" lnil)) ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "BoolProp.a" lnil)) ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w))))))))) (esort boolPropRec/type-wf-sort)
+boolPropRec/type-wf : of (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "BoolProp.a" lnil)) ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w))))))))) (esort boolPropRec/type-wf-sort)
    = (defeq/forall (defeq/forall (defeq/const BoolProp/decl (inst-expr/sort lvl-inst/zero)) ([x] ([h] defeq/sort-refl))) ([x] ([h] (defeq/forall (defeq/app h (defeq/const BoolProp_a/decl (inst-expr/const lvls-inst/nil))) ([y] ([h1] (defeq/forall (defeq/app h (defeq/const BoolProp_b/decl (inst-expr/const lvls-inst/nil))) ([z] ([h2] (defeq/forall (defeq/const BoolProp/decl (inst-expr/sort lvl-inst/zero)) ([w] ([h3] (defeq/app h h3))))))))))))).
 
-boolPropRec/value-typed : defeq (econst "BoolProp.rec" lnil) (econst "BoolProp.rec" lnil) (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "BoolProp.a" lnil)) ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w)))))))))
+boolPropRec/value-typed : of (econst "BoolProp.rec" lnil) (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "BoolProp.a" lnil)) ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w)))))))))
    = (defeq/const BoolProp_rec/decl (inst-expr/forall (inst-expr/forall (inst-expr/const lvls-inst/nil) ([x] ([h] (inst-expr/sort lvl-inst/zero)))) ([x] ([h] (inst-expr/forall (inst-expr/app h (inst-expr/const lvls-inst/nil)) ([y] ([h1] (inst-expr/forall (inst-expr/app h (inst-expr/const lvls-inst/nil)) ([z] ([h2] (inst-expr/forall (inst-expr/const lvls-inst/nil) ([w] ([h3] (inst-expr/app h h3)))))))))))))).
 
 boolPropRec/name : name "boolPropRec" (is-decl (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "BoolProp.a" lnil)) ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w))))))))) (defn (econst "BoolProp.rec" lnil))).

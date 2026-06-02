@@ -17,7 +17,7 @@
 False/type-wf-sort : lvl.
 
 %%% HOLE
-False/type-wf : defeq (esort lzero) (esort lzero) (esort False/type-wf-sort).
+False/type-wf : of (esort lzero) (esort False/type-wf-sort).
 
 %%% HOLE
 False/ends-in-sort : ends-in-sort (esort lzero).
@@ -34,7 +34,7 @@ False/decl : declared "False" (esort lzero) indt
 True/type-wf-sort : lvl.
 
 %%% HOLE
-True/type-wf : defeq (esort lzero) (esort lzero) (esort True/type-wf-sort).
+True/type-wf : of (esort lzero) (esort True/type-wf-sort).
 
 %%% HOLE
 True/ends-in-sort : ends-in-sort (esort lzero).
@@ -51,7 +51,7 @@ True/decl : declared "True" (esort lzero) indt
 True_intro/type-wf-sort : lvl.
 
 %%% HOLE
-True_intro/type-wf : defeq (econst "True" lnil) (econst "True" lnil) (esort True_intro/type-wf-sort).
+True_intro/type-wf : of (econst "True" lnil) (esort True_intro/type-wf-sort).
 
 %%% HOLE
 True_intro/positivity : ctor-positive "True" lnil (econst "True" lnil).
@@ -66,7 +66,7 @@ True_intro/decl : declared "True.intro" (econst "True" lnil) ctor
 MyBool/type-wf-sort : lvl.
 
 %%% HOLE
-MyBool/type-wf : defeq (esort (lvar liz)) (esort (lvar liz)) (esort MyBool/type-wf-sort).
+MyBool/type-wf : of (esort (lvar liz)) (esort MyBool/type-wf-sort).
 
 %%% HOLE
 MyBool/ends-in-sort : ends-in-sort (esort (lvar liz)).
@@ -83,7 +83,7 @@ MyBool/decl : declared "MyBool" (esort (lvar liz)) indt
 MyBool_tt/type-wf-sort : lvl.
 
 %%% HOLE
-MyBool_tt/type-wf : defeq (econst "MyBool" (lcons (lvar liz) lnil)) (econst "MyBool" (lcons (lvar liz) lnil)) (esort MyBool_tt/type-wf-sort).
+MyBool_tt/type-wf : of (econst "MyBool" (lcons (lvar liz) lnil)) (esort MyBool_tt/type-wf-sort).
 
 %%% HOLE
 MyBool_tt/positivity : ctor-positive "MyBool" (lcons (lvar liz) lnil) (econst "MyBool" (lcons (lvar liz) lnil)).
@@ -98,7 +98,7 @@ MyBool_tt/decl : declared "MyBool.tt" (econst "MyBool" (lcons (lvar liz) lnil)) 
 MyBool_ff/type-wf-sort : lvl.
 
 %%% HOLE
-MyBool_ff/type-wf : defeq (econst "MyBool" (lcons (lvar liz) lnil)) (econst "MyBool" (lcons (lvar liz) lnil)) (esort MyBool_ff/type-wf-sort).
+MyBool_ff/type-wf : of (econst "MyBool" (lcons (lvar liz) lnil)) (esort MyBool_ff/type-wf-sort).
 
 %%% HOLE
 MyBool_ff/positivity : ctor-positive "MyBool" (lcons (lvar liz) lnil) (econst "MyBool" (lcons (lvar liz) lnil)).
@@ -113,10 +113,10 @@ MyBool_ff/decl : declared "MyBool.ff" (econst "MyBool" (lcons (lvar liz) lnil)) 
 cast/type-wf-sort : lvl.
 
 %%% HOLE
-cast/type-wf : defeq (eforall (eforall (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "MyBool.tt" (lcons lzero lnil))) ([y] (eapp x (econst "MyBool.ff" (lcons lzero lnil))))))) (eforall (eforall (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "MyBool.tt" (lcons lzero lnil))) ([y] (eapp x (econst "MyBool.ff" (lcons lzero lnil))))))) (esort cast/type-wf-sort).
+cast/type-wf : of (eforall (eforall (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "MyBool.tt" (lcons lzero lnil))) ([y] (eapp x (econst "MyBool.ff" (lcons lzero lnil))))))) (esort cast/type-wf-sort).
 
 %%% HOLE
-cast/value-typed : defeq (elam (eforall (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero))) ([x] (elam (eapp x (econst "MyBool.tt" (lcons lzero lnil))) ([y] y)))) (elam (eforall (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero))) ([x] (elam (eapp x (econst "MyBool.tt" (lcons lzero lnil))) ([y] y)))) (eforall (eforall (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "MyBool.tt" (lcons lzero lnil))) ([y] (eapp x (econst "MyBool.ff" (lcons lzero lnil))))))).
+cast/value-typed : of (elam (eforall (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero))) ([x] (elam (eapp x (econst "MyBool.tt" (lcons lzero lnil))) ([y] y)))) (eforall (eforall (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "MyBool.tt" (lcons lzero lnil))) ([y] (eapp x (econst "MyBool.ff" (lcons lzero lnil))))))).
 
 cast/name : name "cast" (is-decl (eforall (eforall (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "MyBool.tt" (lcons lzero lnil))) ([y] (eapp x (econst "MyBool.ff" (lcons lzero lnil))))))) (defn (elam (eforall (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero))) ([x] (elam (eapp x (econst "MyBool.tt" (lcons lzero lnil))) ([y] y)))))).
 
@@ -125,10 +125,10 @@ cast/decl : declared "cast" (eforall (eforall (econst "MyBool" (lcons lzero lnil
 
 %% thm false_proof
 %%% HOLE
-false_proof/type-wf : defeq (econst "False" lnil) (econst "False" lnil) (esort lzero).
+false_proof/type-wf : of (econst "False" lnil) (esort lzero).
 
 %%% HOLE
-false_proof/value-typed : defeq (eapp (eapp (econst "cast" lnil) (eapp (eapp (eapp (econst "MyBool.rec" (lcons (lsucc lzero) (lcons lzero lnil))) (elam (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero)))) (econst "True" lnil)) (econst "False" lnil))) (econst "True.intro" lnil)) (eapp (eapp (econst "cast" lnil) (eapp (eapp (eapp (econst "MyBool.rec" (lcons (lsucc lzero) (lcons lzero lnil))) (elam (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero)))) (econst "True" lnil)) (econst "False" lnil))) (econst "True.intro" lnil)) (econst "False" lnil).
+false_proof/value-typed : of (eapp (eapp (econst "cast" lnil) (eapp (eapp (eapp (econst "MyBool.rec" (lcons (lsucc lzero) (lcons lzero lnil))) (elam (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero)))) (econst "True" lnil)) (econst "False" lnil))) (econst "True.intro" lnil)) (econst "False" lnil).
 
 false_proof/name : name "false_proof" (is-decl (econst "False" lnil) (thm (eapp (eapp (econst "cast" lnil) (eapp (eapp (eapp (econst "MyBool.rec" (lcons (lsucc lzero) (lcons lzero lnil))) (elam (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero)))) (econst "True" lnil)) (econst "False" lnil))) (econst "True.intro" lnil)))).
 

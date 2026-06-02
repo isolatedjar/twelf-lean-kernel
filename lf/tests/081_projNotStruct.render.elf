@@ -5,7 +5,7 @@
 N/type-wf-sort : lvl.
 
 %%% HOLE
-N/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort N/type-wf-sort).
+N/type-wf : of (esort (lsucc lzero)) (esort N/type-wf-sort).
 
 %%% HOLE
 N/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
@@ -22,7 +22,7 @@ N/decl : declared "N" (esort (lsucc lzero)) indt
 N_zero/type-wf-sort : lvl.
 
 %%% HOLE
-N_zero/type-wf : defeq (econst "N" lnil) (econst "N" lnil) (esort N_zero/type-wf-sort).
+N_zero/type-wf : of (econst "N" lnil) (esort N_zero/type-wf-sort).
 
 %%% HOLE
 N_zero/positivity : ctor-positive "N" lnil (econst "N" lnil).
@@ -37,7 +37,7 @@ N_zero/decl : declared "N.zero" (econst "N" lnil) ctor
 N_succ/type-wf-sort : lvl.
 
 %%% HOLE
-N_succ/type-wf : defeq (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (esort N_succ/type-wf-sort).
+N_succ/type-wf : of (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (esort N_succ/type-wf-sort).
 
 %%% HOLE
 N_succ/positivity : ctor-positive "N" lnil (eforall (econst "N" lnil) ([x] (econst "N" lnil))).
@@ -52,7 +52,7 @@ N_succ/decl : declared "N.succ" (eforall (econst "N" lnil) ([x] (econst "N" lnil
 N_rec/type-wf-sort : lvl.
 
 %%% HOLE
-N_rec/type-wf : defeq (eforall (eforall (econst "N" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "N" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) (esort N_rec/type-wf-sort).
+N_rec/type-wf : of (eforall (eforall (econst "N" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) (esort N_rec/type-wf-sort).
 
 N_rec/decl : declared "N.rec" (eforall (eforall (econst "N" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) irec
    = declared/ok-irec N/rec-name (dkind-ok/irec N_rec/type-wf).
@@ -62,10 +62,10 @@ N_rec/decl : declared "N.rec" (eforall (eforall (econst "N" lnil) ([x] (esort (l
 projNotStruct/type-wf-sort : lvl.
 
 %%% HOLE
-projNotStruct/type-wf : defeq (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (esort projNotStruct/type-wf-sort).
+projNotStruct/type-wf : of (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (esort projNotStruct/type-wf-sort).
 
 %%% HOLE
-projNotStruct/value-typed : defeq (elam (econst "N" lnil) ([x] (eproj "N" 0 x))) (elam (econst "N" lnil) ([x] (eproj "N" 0 x))) (eforall (econst "N" lnil) ([x] (econst "N" lnil))).
+projNotStruct/value-typed : of (elam (econst "N" lnil) ([x] (eproj "N" 0 x))) (eforall (econst "N" lnil) ([x] (econst "N" lnil))).
 
 projNotStruct/name : name "projNotStruct" (is-decl (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (defn (elam (econst "N" lnil) ([x] (eproj "N" 0 x))))).
 

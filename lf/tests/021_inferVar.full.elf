@@ -4,10 +4,10 @@
 inferVar/type-wf-sort : lvl
    = (limax (lsucc lzero) (limax lzero lzero)).
 
-inferVar/type-wf : defeq (eforall (esort lzero) ([x] (eforall x ([y] x)))) (eforall (esort lzero) ([x] (eforall x ([y] x)))) (esort inferVar/type-wf-sort)
+inferVar/type-wf : of (eforall (esort lzero) ([x] (eforall x ([y] x)))) (esort inferVar/type-wf-sort)
    = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall h ([y] ([h1] h)))))).
 
-inferVar/value-typed : defeq (elam (esort lzero) ([x] (elam x ([y] y)))) (elam (esort lzero) ([x] (elam x ([y] y)))) (eforall (esort lzero) ([x] (eforall x ([y] x))))
+inferVar/value-typed : of (elam (esort lzero) ([x] (elam x ([y] y)))) (eforall (esort lzero) ([x] (eforall x ([y] x))))
    = (defeq/lam defeq/sort-refl ([x] ([h] (defeq/lam h ([y] ([h1] h1)))))).
 
 inferVar/name : name "inferVar" (is-decl (eforall (esort lzero) ([x] (eforall x ([y] x)))) (defn (elam (esort lzero) ([x] (elam x ([y] y)))))).

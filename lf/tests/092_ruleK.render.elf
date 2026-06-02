@@ -7,7 +7,7 @@
 Eq/type-wf-sort : lvl.
 
 %%% HOLE
-Eq/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (esort Eq/type-wf-sort).
+Eq/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (esort Eq/type-wf-sort).
 
 %%% HOLE
 Eq/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))).
@@ -24,7 +24,7 @@ Eq/decl : declared "Eq" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforal
 Eq_refl/type-wf-sort : lvl.
 
 %%% HOLE
-Eq_refl/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (esort Eq_refl/type-wf-sort).
+Eq_refl/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (esort Eq_refl/type-wf-sort).
 
 %%% HOLE
 Eq_refl/positivity : ctor-positive "Eq" (lcons (lvar liz) lnil) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))).
@@ -39,7 +39,7 @@ Eq_refl/decl : declared "Eq.refl" (eforall (esort (lvar liz)) ([x] (eforall x ([
 Eq_rec/type-wf-sort : lvl.
 
 %%% HOLE
-Eq_rec/type-wf : defeq (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Eq_rec/type-wf-sort).
+Eq_rec/type-wf : of (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Eq_rec/type-wf-sort).
 
 Eq_rec/decl : declared "Eq.rec" (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) irec
    = declared/ok-irec Eq/rec-name (dkind-ok/irec Eq_rec/type-wf).
@@ -49,7 +49,7 @@ Eq_rec/decl : declared "Eq.rec" (eforall (esort (lvar (lis liz))) ([x] (eforall 
 Bool/type-wf-sort : lvl.
 
 %%% HOLE
-Bool/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort Bool/type-wf-sort).
+Bool/type-wf : of (esort (lsucc lzero)) (esort Bool/type-wf-sort).
 
 %%% HOLE
 Bool/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
@@ -66,7 +66,7 @@ Bool/decl : declared "Bool" (esort (lsucc lzero)) indt
 Bool_false/type-wf-sort : lvl.
 
 %%% HOLE
-Bool_false/type-wf : defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort Bool_false/type-wf-sort).
+Bool_false/type-wf : of (econst "Bool" lnil) (esort Bool_false/type-wf-sort).
 
 %%% HOLE
 Bool_false/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil).
@@ -81,7 +81,7 @@ Bool_false/decl : declared "Bool.false" (econst "Bool" lnil) ctor
 Bool_true/type-wf-sort : lvl.
 
 %%% HOLE
-Bool_true/type-wf : defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort Bool_true/type-wf-sort).
+Bool_true/type-wf : of (econst "Bool" lnil) (esort Bool_true/type-wf-sort).
 
 %%% HOLE
 Bool_true/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil).
@@ -96,17 +96,17 @@ Bool_true/decl : declared "Bool.true" (econst "Bool" lnil) ctor
 Bool_rec/type-wf-sort : lvl.
 
 %%% HOLE
-Bool_rec/type-wf : defeq (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort Bool_rec/type-wf-sort).
+Bool_rec/type-wf : of (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort Bool_rec/type-wf-sort).
 
 Bool_rec/decl : declared "Bool.rec" (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) irec
    = declared/ok-irec Bool/rec-name (dkind-ok/irec Bool_rec/type-wf).
 
 %% thm ruleK
 %%% HOLE
-ruleK/type-wf : defeq (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (econst "Bool.true" lnil)) ([x] (eforall (econst "Bool" lnil) ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons (lsucc lzero) (lcons (lsucc lzero) lnil))) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (elam (econst "Bool" lnil) ([z] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) z) ([w] (econst "Bool" lnil)))))) y) (econst "Bool.true" lnil)) x)) y))))) (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (econst "Bool.true" lnil)) ([x] (eforall (econst "Bool" lnil) ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons (lsucc lzero) (lcons (lsucc lzero) lnil))) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (elam (econst "Bool" lnil) ([z] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) z) ([w] (econst "Bool" lnil)))))) y) (econst "Bool.true" lnil)) x)) y))))) (esort lzero).
+ruleK/type-wf : of (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (econst "Bool.true" lnil)) ([x] (eforall (econst "Bool" lnil) ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons (lsucc lzero) (lcons (lsucc lzero) lnil))) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (elam (econst "Bool" lnil) ([z] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) z) ([w] (econst "Bool" lnil)))))) y) (econst "Bool.true" lnil)) x)) y))))) (esort lzero).
 
 %%% HOLE
-ruleK/value-typed : defeq (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (econst "Bool.true" lnil)) ([x] (elam (econst "Bool" lnil) ([y] (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) y))))) (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (econst "Bool.true" lnil)) ([x] (elam (econst "Bool" lnil) ([y] (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) y))))) (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (econst "Bool.true" lnil)) ([x] (eforall (econst "Bool" lnil) ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons (lsucc lzero) (lcons (lsucc lzero) lnil))) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (elam (econst "Bool" lnil) ([z] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) z) ([w] (econst "Bool" lnil)))))) y) (econst "Bool.true" lnil)) x)) y))))).
+ruleK/value-typed : of (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (econst "Bool.true" lnil)) ([x] (elam (econst "Bool" lnil) ([y] (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) y))))) (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (econst "Bool.true" lnil)) ([x] (eforall (econst "Bool" lnil) ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons (lsucc lzero) (lcons (lsucc lzero) lnil))) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (elam (econst "Bool" lnil) ([z] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) z) ([w] (econst "Bool" lnil)))))) y) (econst "Bool.true" lnil)) x)) y))))).
 
 ruleK/name : name "ruleK" (is-decl (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (econst "Bool.true" lnil)) ([x] (eforall (econst "Bool" lnil) ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons (lsucc lzero) (lcons (lsucc lzero) lnil))) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (elam (econst "Bool" lnil) ([z] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) z) ([w] (econst "Bool" lnil)))))) y) (econst "Bool.true" lnil)) x)) y))))) (thm (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (econst "Bool.true" lnil)) ([x] (elam (econst "Bool" lnil) ([y] (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) y))))))).
 

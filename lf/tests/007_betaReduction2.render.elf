@@ -5,10 +5,10 @@
 constType/type-wf-sort : lvl.
 
 %%% HOLE
-constType/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort constType/type-wf-sort).
+constType/type-wf : of (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort constType/type-wf-sort).
 
 %%% HOLE
-constType/value-typed : defeq (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))).
+constType/value-typed : of (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))).
 
 constType/name : name "constType" (is-decl (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))).
 
@@ -20,10 +20,10 @@ constType/decl : declared "constType" (eforall (esort (lsucc lzero)) ([x] (efora
 betaReduction2/type-wf-sort : lvl.
 
 %%% HOLE
-betaReduction2/type-wf : defeq (eforall (esort lzero) ([x] (eapp (eapp (econst "constType" lnil) (esort lzero)) (eforall (esort lzero) ([y] (esort lzero)))))) (eforall (esort lzero) ([x] (eapp (eapp (econst "constType" lnil) (esort lzero)) (eforall (esort lzero) ([y] (esort lzero)))))) (esort betaReduction2/type-wf-sort).
+betaReduction2/type-wf : of (eforall (esort lzero) ([x] (eapp (eapp (econst "constType" lnil) (esort lzero)) (eforall (esort lzero) ([y] (esort lzero)))))) (esort betaReduction2/type-wf-sort).
 
 %%% HOLE
-betaReduction2/value-typed : defeq (elam (esort lzero) ([x] x)) (elam (esort lzero) ([x] x)) (eforall (esort lzero) ([x] (eapp (eapp (econst "constType" lnil) (esort lzero)) (eforall (esort lzero) ([y] (esort lzero)))))).
+betaReduction2/value-typed : of (elam (esort lzero) ([x] x)) (eforall (esort lzero) ([x] (eapp (eapp (econst "constType" lnil) (esort lzero)) (eforall (esort lzero) ([y] (esort lzero)))))).
 
 betaReduction2/name : name "betaReduction2" (is-decl (eforall (esort lzero) ([x] (eapp (eapp (econst "constType" lnil) (esort lzero)) (eforall (esort lzero) ([y] (esort lzero)))))) (defn (elam (esort lzero) ([x] x)))).
 

@@ -5,7 +5,7 @@
 Eq/type-wf-sort : lvl.
 
 %%% HOLE
-Eq/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (esort Eq/type-wf-sort).
+Eq/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (esort Eq/type-wf-sort).
 
 %%% HOLE
 Eq/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))).
@@ -22,7 +22,7 @@ Eq/decl : declared "Eq" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforal
 Eq_refl/type-wf-sort : lvl.
 
 %%% HOLE
-Eq_refl/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (esort Eq_refl/type-wf-sort).
+Eq_refl/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (esort Eq_refl/type-wf-sort).
 
 %%% HOLE
 Eq_refl/positivity : ctor-positive "Eq" (lcons (lvar liz) lnil) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))).
@@ -37,7 +37,7 @@ Eq_refl/decl : declared "Eq.refl" (eforall (esort (lvar liz)) ([x] (eforall x ([
 Eq_rec/type-wf-sort : lvl.
 
 %%% HOLE
-Eq_rec/type-wf : defeq (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Eq_rec/type-wf-sort).
+Eq_rec/type-wf : of (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Eq_rec/type-wf-sort).
 
 Eq_rec/decl : declared "Eq.rec" (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) irec
    = declared/ok-irec Eq/rec-name (dkind-ok/irec Eq_rec/type-wf).
@@ -55,10 +55,10 @@ Eq_rec/decl : declared "Eq.rec" (eforall (esort (lvar (lis liz))) ([x] (eforall 
 quotIndType/type-wf-sort : lvl.
 
 %%% HOLE
-quotIndType/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eapp z (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar liz) lnil)) x) y) w)))) ([w] (eforall (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y) ([x1] (eapp z x1))))))))))) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eapp z (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar liz) lnil)) x) y) w)))) ([w] (eforall (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y) ([x1] (eapp z x1))))))))))) (esort quotIndType/type-wf-sort).
+quotIndType/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eapp z (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar liz) lnil)) x) y) w)))) ([w] (eforall (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y) ([x1] (eapp z x1))))))))))) (esort quotIndType/type-wf-sort).
 
 %%% HOLE
-quotIndType/value-typed : defeq (econst "Quot.ind" (lcons (lvar liz) lnil)) (econst "Quot.ind" (lcons (lvar liz) lnil)) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eapp z (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar liz) lnil)) x) y) w)))) ([w] (eforall (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y) ([x1] (eapp z x1))))))))))).
+quotIndType/value-typed : of (econst "Quot.ind" (lcons (lvar liz) lnil)) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eapp z (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar liz) lnil)) x) y) w)))) ([w] (eforall (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y) ([x1] (eapp z x1))))))))))).
 
 quotIndType/name : name "quotIndType" (is-decl (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eapp z (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar liz) lnil)) x) y) w)))) ([w] (eforall (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y) ([x1] (eapp z x1))))))))))) (defn (econst "Quot.ind" (lcons (lvar liz) lnil)))).
 

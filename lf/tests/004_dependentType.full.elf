@@ -6,10 +6,10 @@
 dependentType/type-wf-sort : lvl
    = (lsucc lzero).
 
-dependentType/type-wf : defeq (esort lzero) (esort lzero) (esort dependentType/type-wf-sort)
+dependentType/type-wf : of (esort lzero) (esort dependentType/type-wf-sort)
    = defeq/sort-refl.
 
-dependentType/value-typed : defeq (eforall (esort lzero) ([x] x)) (eforall (esort lzero) ([x] x)) (esort lzero)
+dependentType/value-typed : of (eforall (esort lzero) ([x] x)) (esort lzero)
    = (defeq/conv (defeq/sort-eq (lvl-eq/le (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/lz nonneg_0))) (defeq/forall defeq/sort-refl ([x] ([h] h)))).
 
 dependentType/name : name "dependentType" (is-decl (esort lzero) (defn (eforall (esort lzero) ([x] x)))).

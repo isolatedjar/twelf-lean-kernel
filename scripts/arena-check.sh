@@ -71,7 +71,11 @@ if ! "$GENERATE" --prover real < "$JSON" > "$FULL" 2>/dev/null; then
     exit 2
 fi
 # Generator's own self-skip marker (env outside what the translator handles).
-if head -1 "$FULL" | grep -q "^%%% SKIP"; then
+# The marker can appear on any line (the generator emits axiom/inductive
+# preamble before deciding to skip a later declaration), so scan the whole
+# file — matching scripts/check-tests.sh's `grep -qa "^%%% SKIP"`.  Checking
+# only `head -1` here silently misclassified such declines as accepts.
+if grep -q "^%%% SKIP" "$FULL"; then
     exit 2
 fi
 

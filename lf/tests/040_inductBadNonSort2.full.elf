@@ -4,7 +4,7 @@
 aType/type-wf-sort : lvl
    = (lsucc (lsucc lzero)).
 
-aType/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort aType/type-wf-sort)
+aType/type-wf : of (esort (lsucc lzero)) (esort aType/type-wf-sort)
    = defeq/sort-refl.
 
 aType/name : name "aType" (is-decl (esort (lsucc lzero)) ax).
@@ -16,7 +16,7 @@ aType/decl : declared "aType" (esort (lsucc lzero)) ax
 inductBadNonSort2/type-wf-sort : lvl
    = (lsucc lzero).
 
-inductBadNonSort2/type-wf : defeq (econst "aType" lnil) (econst "aType" lnil) (esort inductBadNonSort2/type-wf-sort)
+inductBadNonSort2/type-wf : of (econst "aType" lnil) (esort inductBadNonSort2/type-wf-sort)
    = (defeq/const aType/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
 
 %%% HOLE

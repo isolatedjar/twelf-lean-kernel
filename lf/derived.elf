@@ -1,5 +1,14 @@
 %%% derived.elf — convenience lemmas built on top of tcb.elf.
 
+%%% `of E T` : E has type T.  Type-level abbreviation for the diagonal
+%%% `defeq E E T`; Twelf unfolds it transparently, so any consumer of a
+%%% `defeq T T (esort U)` premise — `dkind-ok/indt`, `dkind-ok/ctor`,
+%%% `dkind-ok/irec`, `dkind-ok/quot` — accepts an `of T (esort U)` proof
+%%% without further coercion.  Cuts emitted-code size roughly in half on
+%%% type-wf and value-typed obligations (the term T no longer appears twice).
+%abbrev of : expr -> expr -> type
+   = [E:expr] [T:expr] defeq E E T.
+
 %%% Diagonal sortDF: U_ℓ ≡ U_ℓ : U_{S ℓ}.
 %%% Derived from `defeq/sort-eq lvl-eq/refl`.
 defeq/sort-refl : defeq (esort L) (esort L) (esort (lsucc L))

@@ -146,7 +146,12 @@ function emitObligation(result: Fmt | null, constName: string, judgmentType: str
   return constName;
 }
 
-// Emit the type-wf obligation `defeq T T (esort U)`.
+// Emit the type-wf obligation `of T (esort U)` — i.e. T is a well-formed
+// type at sort U.  `of` is `derived.elf`'s transparent abbreviation for the
+// diagonal `defeq T T (esort U)`; Twelf unfolds it when feeding the witness
+// into `dkind-ok/{indt,ctor,irec,quot}`, which still take `defeq` premises.
+// We use the abbreviation to halve the surface size of every type-wf line
+// (T no longer appears twice) without changing any TCB rule.
 //
 // For `thm` the kernel forces U = lzero (the type must be a Prop), so we emit
 // the literal and no universe obligation.  Otherwise U is *synthesized* (the
@@ -157,13 +162,13 @@ function emitObligation(result: Fmt | null, constName: string, judgmentType: str
 function emitTypeWf(result: TypeWfResult, mn: string, T: string, isThm: boolean): string {
   if (isThm) {
     const proof = result === null ? null : result.proof;
-    return emitObligation(proof, `${mn}/type-wf`, `defeq ${T} ${T} (esort lzero)`);
+    return emitObligation(proof, `${mn}/type-wf`, `of ${T} (esort lzero)`);
   }
   const sortRef = emitObligation(result === null ? null : result.sort, `${mn}/type-wf-sort`, `lvl`);
   return emitObligation(
     result === null ? null : result.proof,
     `${mn}/type-wf`,
-    `defeq ${T} ${T} (esort ${sortRef})`,
+    `of ${T} (esort ${sortRef})`,
   );
 }
 
@@ -327,7 +332,7 @@ function generateValDecl(prover: Prover, d: Decl & { kind: "def" | "opaque" | "t
     const vt = emitObligation(
       prover.valueHasType({ value: d.value, type: d.type, levelParams: d.levelParams }),
       `${mn}/value-typed`,
-      `defeq ${V} ${V} ${T}`,
+      `of ${V} ${T}`,
     );
 
     const dkindCtor = d.kind === "def" ? "defn" : d.kind === "opaque" ? "opq" : "thm";

@@ -4,7 +4,7 @@
 indNeg/type-wf-sort : lvl
    = (lsucc (lsucc lzero)).
 
-indNeg/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort indNeg/type-wf-sort)
+indNeg/type-wf : of (esort (lsucc lzero)) (esort indNeg/type-wf-sort)
    = defeq/sort-refl.
 
 indNeg/ends-in-sort : ends-in-sort (esort (lsucc lzero))
@@ -21,7 +21,7 @@ indNeg/decl : declared "indNeg" (esort (lsucc lzero)) indt
 indNeg_mk/type-wf-sort : lvl
    = (limax (limax (lsucc lzero) (lsucc lzero)) (lsucc lzero)).
 
-indNeg_mk/type-wf : defeq (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (esort indNeg_mk/type-wf-sort)
+indNeg_mk/type-wf : of (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (esort indNeg_mk/type-wf-sort)
    = (defeq/forall (defeq/forall (defeq/const indNeg/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] (defeq/const indNeg/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))) ([x] ([h] (defeq/const indNeg/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))).
 
 %%% HOLE
@@ -36,7 +36,7 @@ indNeg_mk/decl : declared "indNeg.mk" (eforall (eforall (econst "indNeg" lnil) (
 indNeg_rec/type-wf-sort : lvl
    = (lsucc lzero).
 
-indNeg_rec/type-wf : defeq (esort lzero) (esort lzero) (esort indNeg_rec/type-wf-sort)
+indNeg_rec/type-wf : of (esort lzero) (esort indNeg_rec/type-wf-sort)
    = defeq/sort-refl.
 
 indNeg_rec/decl : declared "indNeg.rec" (esort lzero) irec

@@ -5,7 +5,7 @@
 aDepProp/type-wf-sort : lvl.
 
 %%% HOLE
-aDepProp/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (esort lzero))) (eforall (esort (lsucc lzero)) ([x] (esort lzero))) (esort aDepProp/type-wf-sort).
+aDepProp/type-wf : of (eforall (esort (lsucc lzero)) ([x] (esort lzero))) (esort aDepProp/type-wf-sort).
 
 aDepProp/name : name "aDepProp" (is-decl (eforall (esort (lsucc lzero)) ([x] (esort lzero))) ax).
 
@@ -17,7 +17,7 @@ aDepProp/decl : declared "aDepProp" (eforall (esort (lsucc lzero)) ([x] (esort l
 mkADepProp/type-wf-sort : lvl.
 
 %%% HOLE
-mkADepProp/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (eapp (econst "aDepProp" lnil) x))) (eforall (esort (lsucc lzero)) ([x] (eapp (econst "aDepProp" lnil) x))) (esort mkADepProp/type-wf-sort).
+mkADepProp/type-wf : of (eforall (esort (lsucc lzero)) ([x] (eapp (econst "aDepProp" lnil) x))) (esort mkADepProp/type-wf-sort).
 
 mkADepProp/name : name "mkADepProp" (is-decl (eforall (esort (lsucc lzero)) ([x] (eapp (econst "aDepProp" lnil) x))) ax).
 
@@ -29,10 +29,10 @@ mkADepProp/decl : declared "mkADepProp" (eforall (esort (lsucc lzero)) ([x] (eap
 letTypeDep/type-wf-sort : lvl.
 
 %%% HOLE
-letTypeDep/type-wf : defeq (eapp (econst "aDepProp" lnil) (esort lzero)) (eapp (econst "aDepProp" lnil) (esort lzero)) (esort letTypeDep/type-wf-sort).
+letTypeDep/type-wf : of (eapp (econst "aDepProp" lnil) (esort lzero)) (esort letTypeDep/type-wf-sort).
 
 %%% HOLE
-letTypeDep/value-typed : defeq (eapp (elam (esort (lsucc lzero)) ([x] (eapp (econst "mkADepProp" lnil) x))) (esort lzero)) (eapp (elam (esort (lsucc lzero)) ([x] (eapp (econst "mkADepProp" lnil) x))) (esort lzero)) (eapp (econst "aDepProp" lnil) (esort lzero)).
+letTypeDep/value-typed : of (eapp (elam (esort (lsucc lzero)) ([x] (eapp (econst "mkADepProp" lnil) x))) (esort lzero)) (eapp (econst "aDepProp" lnil) (esort lzero)).
 
 letTypeDep/name : name "letTypeDep" (is-decl (eapp (econst "aDepProp" lnil) (esort lzero)) (defn (eapp (elam (esort (lsucc lzero)) ([x] (eapp (econst "mkADepProp" lnil) x))) (esort lzero)))).
 

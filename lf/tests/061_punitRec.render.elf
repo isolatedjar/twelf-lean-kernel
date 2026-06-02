@@ -5,7 +5,7 @@
 PUnit/type-wf-sort : lvl.
 
 %%% HOLE
-PUnit/type-wf : defeq (esort (lvar liz)) (esort (lvar liz)) (esort PUnit/type-wf-sort).
+PUnit/type-wf : of (esort (lvar liz)) (esort PUnit/type-wf-sort).
 
 %%% HOLE
 PUnit/ends-in-sort : ends-in-sort (esort (lvar liz)).
@@ -22,7 +22,7 @@ PUnit/decl : declared "PUnit" (esort (lvar liz)) indt
 PUnit_unit/type-wf-sort : lvl.
 
 %%% HOLE
-PUnit_unit/type-wf : defeq (econst "PUnit" (lcons (lvar liz) lnil)) (econst "PUnit" (lcons (lvar liz) lnil)) (esort PUnit_unit/type-wf-sort).
+PUnit_unit/type-wf : of (econst "PUnit" (lcons (lvar liz) lnil)) (esort PUnit_unit/type-wf-sort).
 
 %%% HOLE
 PUnit_unit/positivity : ctor-positive "PUnit" (lcons (lvar liz) lnil) (econst "PUnit" (lcons (lvar liz) lnil)).
@@ -37,7 +37,7 @@ PUnit_unit/decl : declared "PUnit.unit" (econst "PUnit" (lcons (lvar liz) lnil))
 PUnit_rec/type-wf-sort : lvl.
 
 %%% HOLE
-PUnit_rec/type-wf : defeq (eforall (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z))))))) (eforall (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z))))))) (esort PUnit_rec/type-wf-sort).
+PUnit_rec/type-wf : of (eforall (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z))))))) (esort PUnit_rec/type-wf-sort).
 
 PUnit_rec/decl : declared "PUnit.rec" (eforall (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z))))))) irec
    = declared/ok-irec PUnit/rec-name (dkind-ok/irec PUnit_rec/type-wf).
@@ -47,10 +47,10 @@ PUnit_rec/decl : declared "PUnit.rec" (eforall (eforall (econst "PUnit" (lcons (
 punitRec/type-wf-sort : lvl.
 
 %%% HOLE
-punitRec/type-wf : defeq (eforall (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([x] (esort (lvar (lis liz))))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar liz) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([z] (eapp x z))))))) (eforall (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([x] (esort (lvar (lis liz))))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar liz) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([z] (eapp x z))))))) (esort punitRec/type-wf-sort).
+punitRec/type-wf : of (eforall (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([x] (esort (lvar (lis liz))))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar liz) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([z] (eapp x z))))))) (esort punitRec/type-wf-sort).
 
 %%% HOLE
-punitRec/value-typed : defeq (econst "PUnit.rec" (lcons (lvar (lis liz)) (lcons (lvar liz) lnil))) (econst "PUnit.rec" (lcons (lvar (lis liz)) (lcons (lvar liz) lnil))) (eforall (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([x] (esort (lvar (lis liz))))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar liz) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([z] (eapp x z))))))).
+punitRec/value-typed : of (econst "PUnit.rec" (lcons (lvar (lis liz)) (lcons (lvar liz) lnil))) (eforall (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([x] (esort (lvar (lis liz))))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar liz) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([z] (eapp x z))))))).
 
 punitRec/name : name "punitRec" (is-decl (eforall (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([x] (esort (lvar (lis liz))))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar liz) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([z] (eapp x z))))))) (defn (econst "PUnit.rec" (lcons (lvar (lis liz)) (lcons (lvar liz) lnil))))).
 

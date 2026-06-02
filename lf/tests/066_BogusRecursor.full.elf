@@ -15,7 +15,7 @@
 BogusRecursor/type-wf-sort : lvl
    = (lsucc (lsucc lzero)).
 
-BogusRecursor/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort BogusRecursor/type-wf-sort)
+BogusRecursor/type-wf : of (esort (lsucc lzero)) (esort BogusRecursor/type-wf-sort)
    = defeq/sort-refl.
 
 BogusRecursor/ends-in-sort : ends-in-sort (esort (lsucc lzero))
@@ -32,7 +32,7 @@ BogusRecursor/decl : declared "BogusRecursor" (esort (lsucc lzero)) indt
 BogusRecursor_mk/type-wf-sort : lvl
    = (lsucc lzero).
 
-BogusRecursor_mk/type-wf : defeq (econst "BogusRecursor" lnil) (econst "BogusRecursor" lnil) (esort BogusRecursor_mk/type-wf-sort)
+BogusRecursor_mk/type-wf : of (econst "BogusRecursor" lnil) (esort BogusRecursor_mk/type-wf-sort)
    = (defeq/const BogusRecursor/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
 
 BogusRecursor_mk/positivity : ctor-positive "BogusRecursor" lnil (econst "BogusRecursor" lnil)
@@ -47,7 +47,7 @@ BogusRecursor_mk/decl : declared "BogusRecursor.mk" (econst "BogusRecursor" lnil
 BogusRecursor_rec/type-wf-sort : lvl
    = (lsucc lzero).
 
-BogusRecursor_rec/type-wf : defeq (esort lzero) (esort lzero) (esort BogusRecursor_rec/type-wf-sort)
+BogusRecursor_rec/type-wf : of (esort lzero) (esort BogusRecursor_rec/type-wf-sort)
    = defeq/sort-refl.
 
 BogusRecursor_rec/decl : declared "BogusRecursor.rec" (esort lzero) irec

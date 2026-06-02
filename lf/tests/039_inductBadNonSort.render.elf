@@ -5,10 +5,10 @@
 constType/type-wf-sort : lvl.
 
 %%% HOLE
-constType/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort constType/type-wf-sort).
+constType/type-wf : of (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort constType/type-wf-sort).
 
 %%% HOLE
-constType/value-typed : defeq (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))).
+constType/value-typed : of (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))).
 
 constType/name : name "constType" (is-decl (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))).
 
@@ -20,7 +20,7 @@ constType/decl : declared "constType" (eforall (esort (lsucc lzero)) ([x] (efora
 inductBadNonSort/type-wf-sort : lvl.
 
 %%% HOLE
-inductBadNonSort/type-wf : defeq (econst "constType" lnil) (econst "constType" lnil) (esort inductBadNonSort/type-wf-sort).
+inductBadNonSort/type-wf : of (econst "constType" lnil) (esort inductBadNonSort/type-wf-sort).
 
 %%% HOLE
 inductBadNonSort/ends-in-sort : ends-in-sort (econst "constType" lnil).
