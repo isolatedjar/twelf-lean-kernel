@@ -34,7 +34,15 @@ False_rec/type-wf-sort : lvl
    = (limax (limax lzero (lsucc (lvar liz))) (limax lzero (lvar liz))).
 
 False_rec/type-wf : of (eforall (eforall (econst "False" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "False" lnil) ([y] (eapp x y))))) (esort False_rec/type-wf-sort)
-   = (defeq/forall (defeq/forall (defeq/const False/decl (inst-expr/sort lvl-inst/zero)) ([x] ([h] defeq/sort-refl))) ([x] ([h] (defeq/forall (defeq/const False/decl (inst-expr/sort lvl-inst/zero)) ([y] ([h1] (defeq/app h h1))))))).
+   = (defeq/forall
+       (defeq/forall
+         (defeq/const False/decl (inst-expr/sort lvl-inst/zero))
+         ([x] ([h] defeq/sort-refl)))
+       ([x]
+         ([h]
+           (defeq/forall
+             (defeq/const False/decl (inst-expr/sort lvl-inst/zero))
+             ([y] ([h1] (defeq/app h h1))))))).
 
 False_rec/decl : declared "False.rec" (eforall (eforall (econst "False" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "False" lnil) ([y] (eapp x y))))) irec
    = declared/ok-irec False/rec-name (dkind-ok/irec False_rec/type-wf).
@@ -73,10 +81,26 @@ True_intro/decl : declared "True.intro" (econst "True" lnil) ctor
 
 %% recursor True.rec
 True_rec/type-wf-sort : lvl
-   = (limax (limax lzero (lsucc (lvar liz))) (limax (lvar liz) (limax lzero (lvar liz)))).
+   = (limax
+       (limax lzero (lsucc (lvar liz)))
+       (limax (lvar liz) (limax lzero (lvar liz)))).
 
 True_rec/type-wf : of (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) (esort True_rec/type-wf-sort)
-   = (defeq/forall (defeq/forall (defeq/const True/decl (inst-expr/sort lvl-inst/zero)) ([x] ([h] defeq/sort-refl))) ([x] ([h] (defeq/forall (defeq/app h (defeq/const True_intro/decl (inst-expr/const lvls-inst/nil))) ([y] ([h1] (defeq/forall (defeq/const True/decl (inst-expr/sort lvl-inst/zero)) ([z] ([h2] (defeq/app h h2)))))))))).
+   = (defeq/forall
+       (defeq/forall
+         (defeq/const True/decl (inst-expr/sort lvl-inst/zero))
+         ([x] ([h] defeq/sort-refl)))
+       ([x]
+         ([h]
+           (defeq/forall
+             (defeq/app
+               h
+               (defeq/const True_intro/decl (inst-expr/const lvls-inst/nil)))
+             ([y]
+               ([h1]
+                 (defeq/forall
+                   (defeq/const True/decl (inst-expr/sort lvl-inst/zero))
+                   ([z] ([h2] (defeq/app h h2)))))))))).
 
 True_rec/decl : declared "True.rec" (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) irec
    = declared/ok-irec True/rec-name (dkind-ok/irec True_rec/type-wf).
@@ -130,17 +154,45 @@ Bool_true/decl : declared "Bool.true" (econst "Bool" lnil) ctor
 
 %% recursor Bool.rec
 Bool_rec/type-wf-sort : lvl
-   = (limax (limax (lsucc lzero) (lsucc (lvar liz))) (limax (lvar liz) (limax (lvar liz) (limax (lsucc lzero) (lvar liz))))).
+   = (limax
+       (limax (lsucc lzero) (lsucc (lvar liz)))
+       (limax (lvar liz) (limax (lvar liz) (limax (lsucc lzero) (lvar liz))))).
 
 Bool_rec/type-wf : of (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort Bool_rec/type-wf-sort)
-   = (defeq/forall (defeq/forall (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] defeq/sort-refl))) ([x] ([h] (defeq/forall (defeq/app h (defeq/const Bool_false/decl (inst-expr/const lvls-inst/nil))) ([y] ([h1] (defeq/forall (defeq/app h (defeq/const Bool_true/decl (inst-expr/const lvls-inst/nil))) ([z] ([h2] (defeq/forall (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([w] ([h3] (defeq/app h h3))))))))))))).
+   = (defeq/forall
+       (defeq/forall
+         (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+         ([x] ([h] defeq/sort-refl)))
+       ([x]
+         ([h]
+           (defeq/forall
+             (defeq/app
+               h
+               (defeq/const Bool_false/decl (inst-expr/const lvls-inst/nil)))
+             ([y]
+               ([h1]
+                 (defeq/forall
+                   (defeq/app
+                     h
+                     (defeq/const
+                       Bool_true/decl
+                       (inst-expr/const lvls-inst/nil)))
+                   ([z]
+                     ([h2]
+                       (defeq/forall
+                         (defeq/const
+                           Bool/decl
+                           (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+                         ([w] ([h3] (defeq/app h h3))))))))))))).
 
 Bool_rec/decl : declared "Bool.rec" (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) irec
    = declared/ok-irec Bool/rec-name (dkind-ok/irec Bool_rec/type-wf).
 
 %% def down
 down/type-wf-sort : lvl
-   = (limax (lsucc (lsucc (limax lzero (lvar liz)))) (lsucc (limax lzero (lvar liz)))).
+   = (limax
+       (lsucc (lsucc (limax lzero (lvar liz))))
+       (lsucc (limax lzero (lvar liz)))).
 
 down/type-wf : of (eforall (esort (lsucc (limax lzero (lvar liz)))) ([x] (esort (limax lzero (lvar liz))))) (esort down/type-wf-sort)
    = (defeq/forall defeq/sort-refl ([x] ([h] defeq/sort-refl))).
@@ -161,7 +213,30 @@ myProp/type-wf : of (esort lzero) (esort myProp/type-wf-sort)
    = defeq/sort-refl.
 
 myProp/value-typed : of (eapp (econst "down" (lcons lzero lnil)) (econst "Bool" lnil)) (esort lzero)
-   = (defeq/conv (defeq/sort-eq (lvl-eq/le (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/lz nonneg_0))) (defeq/app (defeq/const down/decl (inst-expr/forall (inst-expr/sort (lvl-inst/succ (lvl-inst/imax lvl-inst/zero (lvl-inst/var lvl-nth/zero)))) ([x] ([h] (inst-expr/sort (lvl-inst/imax lvl-inst/zero (lvl-inst/var lvl-nth/zero))))))) (defeq/conv (defeq/sort-eq (lvl-eq/le (mleq/sL (mleq/sR (mleq/lz nonneg_0))) (mleq/sL (mleq/imax-lzL (mleq/sR (mleq/self nonneg_0)))))) (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))).
+   = (defeq/conv
+       (defeq/sort-eq
+         (lvl-eq/le (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/lz nonneg_0)))
+       (defeq/app
+         (defeq/const
+           down/decl
+           (inst-expr/forall
+             (inst-expr/sort
+               (lvl-inst/succ
+                 (lvl-inst/imax lvl-inst/zero (lvl-inst/var lvl-nth/zero))))
+             ([x]
+               ([h]
+                 (inst-expr/sort
+                   (lvl-inst/imax
+                     lvl-inst/zero
+                     (lvl-inst/var lvl-nth/zero)))))))
+         (defeq/conv
+           (defeq/sort-eq
+             (lvl-eq/le
+               (mleq/sL (mleq/sR (mleq/lz nonneg_0)))
+               (mleq/sL (mleq/imax-lzL (mleq/sR (mleq/self nonneg_0))))))
+           (defeq/const
+             Bool/decl
+             (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))).
 
 myProp/name : name "myProp" (is-decl (esort lzero) (defn (eapp (econst "down" (lcons lzero lnil)) (econst "Bool" lnil)))).
 

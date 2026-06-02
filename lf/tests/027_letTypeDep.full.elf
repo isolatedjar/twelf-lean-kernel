@@ -17,7 +17,17 @@ mkADepProp/type-wf-sort : lvl
    = (limax (lsucc (lsucc lzero)) lzero).
 
 mkADepProp/type-wf : of (eforall (esort (lsucc lzero)) ([x] (eapp (econst "aDepProp" lnil) x))) (esort mkADepProp/type-wf-sort)
-   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/app (defeq/const aDepProp/decl (inst-expr/forall (inst-expr/sort (lvl-inst/succ lvl-inst/zero)) ([x] ([h] (inst-expr/sort lvl-inst/zero))))) h)))).
+   = (defeq/forall
+       defeq/sort-refl
+       ([x]
+         ([h]
+           (defeq/app
+             (defeq/const
+               aDepProp/decl
+               (inst-expr/forall
+                 (inst-expr/sort (lvl-inst/succ lvl-inst/zero))
+                 ([x] ([h] (inst-expr/sort lvl-inst/zero)))))
+             h)))).
 
 mkADepProp/name : name "mkADepProp" (is-decl (eforall (esort (lsucc lzero)) ([x] (eapp (econst "aDepProp" lnil) x))) ax).
 
@@ -29,10 +39,29 @@ letTypeDep/type-wf-sort : lvl
    = lzero.
 
 letTypeDep/type-wf : of (eapp (econst "aDepProp" lnil) (esort lzero)) (esort letTypeDep/type-wf-sort)
-   = (defeq/app (defeq/const aDepProp/decl (inst-expr/forall (inst-expr/sort (lvl-inst/succ lvl-inst/zero)) ([x] ([h] (inst-expr/sort lvl-inst/zero))))) defeq/sort-refl).
+   = (defeq/app
+       (defeq/const
+         aDepProp/decl
+         (inst-expr/forall
+           (inst-expr/sort (lvl-inst/succ lvl-inst/zero))
+           ([x] ([h] (inst-expr/sort lvl-inst/zero)))))
+       defeq/sort-refl).
 
 letTypeDep/value-typed : of (eapp (elam (esort (lsucc lzero)) ([x] (eapp (econst "mkADepProp" lnil) x))) (esort lzero)) (eapp (econst "aDepProp" lnil) (esort lzero))
-   = (defeq/app (defeq/lam defeq/sort-refl ([x] ([h] (defeq/app (defeq/const mkADepProp/decl (inst-expr/forall (inst-expr/sort (lvl-inst/succ lvl-inst/zero)) ([x] ([h] (inst-expr/app (inst-expr/const lvls-inst/nil) h))))) h)))) defeq/sort-refl).
+   = (defeq/app
+       (defeq/lam
+         defeq/sort-refl
+         ([x]
+           ([h]
+             (defeq/app
+               (defeq/const
+                 mkADepProp/decl
+                 (inst-expr/forall
+                   (inst-expr/sort (lvl-inst/succ lvl-inst/zero))
+                   ([x]
+                     ([h] (inst-expr/app (inst-expr/const lvls-inst/nil) h)))))
+               h))))
+       defeq/sort-refl).
 
 letTypeDep/name : name "letTypeDep" (is-decl (eapp (econst "aDepProp" lnil) (esort lzero)) (defn (eapp (elam (esort (lsucc lzero)) ([x] (eapp (econst "mkADepProp" lnil) x))) (esort lzero)))).
 

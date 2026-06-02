@@ -10,7 +10,18 @@ imax1/type-wf : of (eforall (esort lzero) ([x] (esort lzero))) (esort imax1/type
    = (defeq/forall defeq/sort-refl ([x] ([h] defeq/sort-refl))).
 
 imax1/value-typed : of (elam (esort lzero) ([x] (eforall (esort (lsucc lzero)) ([y] x)))) (eforall (esort lzero) ([x] (esort lzero)))
-   = (defeq/conv (defeq/forall (defeq/sort-eq lvl-eq/refl) ([x] ([h] (defeq/sort-eq (lvl-eq/le (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/lz nonneg_0)))))) (defeq/lam defeq/sort-refl ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] h))))))).
+   = (defeq/conv
+       (defeq/forall
+         (defeq/sort-eq lvl-eq/refl)
+         ([x]
+           ([h]
+             (defeq/sort-eq
+               (lvl-eq/le
+                 (mleq/imax-lzL (mleq/self nonneg_0))
+                 (mleq/lz nonneg_0))))))
+       (defeq/lam
+         defeq/sort-refl
+         ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] h))))))).
 
 imax1/name : name "imax1" (is-decl (eforall (esort lzero) ([x] (esort lzero))) (defn (elam (esort lzero) ([x] (eforall (esort (lsucc lzero)) ([y] x)))))).
 

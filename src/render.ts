@@ -10,7 +10,9 @@
 // freshVar (to avoid colliding with binder names). Keeping it module-local
 // here avoids threading it through every call site.
 
-import type { Expr, Level, Name } from "./shared.ts";
+import type { Doc } from "./pp.ts";
+import { concat, group, line, nest, text } from "./pp.ts";
+import type { Expr, Fmt, Level, Name } from "./shared.ts";
 import { nameToString } from "./shared.ts";
 
 // =====================================================================
@@ -98,6 +100,71 @@ export function clearStringNeqFacts(): void {
 export function mangle(n: Name): string {
   // Replace dots and disallowed chars for use as Twelf identifiers.
   return nameToString(n).replace(/[^A-Za-z0-9_]/g, "_");
+}
+
+// =====================================================================
+// Fmt → Doc — pretty-printable form of an untrusted prover's proof term.
+// =====================================================================
+
+// Validate an atom string and return its `text` Doc.  The validation regex is
+// the trust boundary: it stops an untrusted prover from smuggling a `.`,
+// whitespace, or a newline into the output (any of which could terminate the
+// current declaration or insert a new one).  Identifiers use the same atom
+// character class Twelf accepts; quoted-string literals are admitted on the
+// same line and may not contain `"`, backslash, or newline.
+//
+// Was previously inline in generate-twelf.ts:ppFmt; lifted here so the
+// Fmt-to-Doc translation lives next to expr-to-Doc (when that lands), and so
+// the audit surface for "what the prover can emit" is a single function.
+function fmtAtomToDoc(t: string): Doc {
+  const okIdent = /^[A-Za-z0-9_/+*<>=~^!?-]+$/.test(t);
+  const okString = /^"[^"\\\n]*"$/.test(t);
+  if (!okIdent && !okString) {
+    throw new Error(`Fmt atom rejected (possible injection): ${JSON.stringify(t)}`);
+  }
+  return text(t);
+}
+
+export function fmtToDoc(f: Fmt): Doc {
+  switch (f.kind) {
+    case "atom":
+      return fmtAtomToDoc(f.text);
+    case "app": {
+      const fnDoc = fmtToDoc(f.fn);
+      if (f.args.length === 0) {
+        // Defensive: callers usually have ≥1 arg, but emit `(fn)` rather than
+        // `(fn )` with a trailing space if not.
+        return concat(text("("), fnDoc, text(")"));
+      }
+      // `(fn arg1 arg2 ...)` flat; broken form puts each arg on its own line
+      // at indent +2 from the column of `(`.
+      const argDocs = f.args.map(fmtToDoc);
+      return group(
+        concat(
+          text("("),
+          fnDoc,
+          nest(2, concat(...argDocs.flatMap((d): Doc[] => [line, d]))),
+          text(")"),
+        ),
+      );
+    }
+    case "lam": {
+      if (!/^[A-Za-z0-9_]+$/.test(f.binder)) {
+        throw new Error(`Fmt binder rejected: ${JSON.stringify(f.binder)}`);
+      }
+      // `([x] body)` flat; broken form is `([x]\n  body)`.  Outer parens match
+      // the legacy ppFmt to keep parsing unambiguous in Twelf.
+      return group(
+        concat(
+          text("(["),
+          text(f.binder),
+          text("]"),
+          nest(2, concat(line, fmtToDoc(f.body))),
+          text(")"),
+        ),
+      );
+    }
+  }
 }
 
 // =====================================================================

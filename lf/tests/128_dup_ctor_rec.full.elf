@@ -22,7 +22,9 @@ dup_ctor_rec_rec/type-wf-sort : lvl
    = (lsucc lzero).
 
 dup_ctor_rec_rec/type-wf : of (econst "dup_ctor_rec" lnil) (esort dup_ctor_rec_rec/type-wf-sort)
-   = (defeq/const dup_ctor_rec/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
+   = (defeq/const
+       dup_ctor_rec/decl
+       (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
 
 dup_ctor_rec_rec/positivity : ctor-positive "dup_ctor_rec" lnil (econst "dup_ctor_rec" lnil)
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).

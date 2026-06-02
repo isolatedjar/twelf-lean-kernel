@@ -40,10 +40,18 @@ N_succ/type-wf-sort : lvl
    = (limax (lsucc lzero) (lsucc lzero)).
 
 N_succ/type-wf : of (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (esort N_succ/type-wf-sort)
-   = (defeq/forall (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))).
+   = (defeq/forall
+       (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+       ([x]
+         ([h]
+           (defeq/const
+             N/decl
+             (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))).
 
 N_succ/positivity : ctor-positive "N" lnil (eforall (econst "N" lnil) ([x] (econst "N" lnil)))
-   = (ctor-positive/intro ([S] (eforall S ([x] S))) (ctor-spine/arg (strict-pos/head applies-self/refl) ([x] ([y] (ctor-spine/result applies-self/refl))))).
+   = (ctor-positive/intro ([S] (eforall S ([x] S))) (ctor-spine/arg
+       (strict-pos/head applies-self/refl)
+       ([x] ([y] (ctor-spine/result applies-self/refl))))).
 
 N_succ/name : name "N.succ" (is-decl (eforall (econst "N" lnil) ([x] (econst "N" lnil))) ctor).
 
@@ -52,10 +60,56 @@ N_succ/decl : declared "N.succ" (eforall (econst "N" lnil) ([x] (econst "N" lnil
 
 %% recursor N.rec
 N_rec/type-wf-sort : lvl
-   = (limax (limax (lsucc lzero) (lsucc (lvar liz))) (limax (lvar liz) (limax (limax (lsucc lzero) (limax (lvar liz) (lvar liz))) (limax (lsucc lzero) (lvar liz))))).
+   = (limax
+       (limax (lsucc lzero) (lsucc (lvar liz)))
+       (limax
+         (lvar liz)
+         (limax
+           (limax (lsucc lzero) (limax (lvar liz) (lvar liz)))
+           (limax (lsucc lzero) (lvar liz))))).
 
 N_rec/type-wf : of (eforall (eforall (econst "N" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) (esort N_rec/type-wf-sort)
-   = (defeq/forall (defeq/forall (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] defeq/sort-refl))) ([x] ([h] (defeq/forall (defeq/app h (defeq/const N_zero/decl (inst-expr/const lvls-inst/nil))) ([y] ([h1] (defeq/forall (defeq/forall (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([z] ([h2] (defeq/forall (defeq/app h h2) ([w] ([h3] (defeq/app h (defeq/app (defeq/const N_succ/decl (inst-expr/forall (inst-expr/const lvls-inst/nil) ([x] ([h] (inst-expr/const lvls-inst/nil))))) h2)))))))) ([z] ([h2] (defeq/forall (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([w] ([h3] (defeq/app h h3))))))))))))).
+   = (defeq/forall
+       (defeq/forall
+         (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+         ([x] ([h] defeq/sort-refl)))
+       ([x]
+         ([h]
+           (defeq/forall
+             (defeq/app
+               h
+               (defeq/const N_zero/decl (inst-expr/const lvls-inst/nil)))
+             ([y]
+               ([h1]
+                 (defeq/forall
+                   (defeq/forall
+                     (defeq/const
+                       N/decl
+                       (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+                     ([z]
+                       ([h2]
+                         (defeq/forall
+                           (defeq/app h h2)
+                           ([w]
+                             ([h3]
+                               (defeq/app
+                                 h
+                                 (defeq/app
+                                   (defeq/const
+                                     N_succ/decl
+                                     (inst-expr/forall
+                                       (inst-expr/const lvls-inst/nil)
+                                       ([x]
+                                         ([h]
+                                           (inst-expr/const lvls-inst/nil)))))
+                                   h2))))))))
+                   ([z]
+                     ([h2]
+                       (defeq/forall
+                         (defeq/const
+                           N/decl
+                           (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+                         ([w] ([h3] (defeq/app h h3))))))))))))).
 
 N_rec/decl : declared "N.rec" (eforall (eforall (econst "N" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) irec
    = declared/ok-irec N/rec-name (dkind-ok/irec N_rec/type-wf).
@@ -94,10 +148,26 @@ True_intro/decl : declared "True.intro" (econst "True" lnil) ctor
 
 %% recursor True.rec
 True_rec/type-wf-sort : lvl
-   = (limax (limax lzero (lsucc (lvar liz))) (limax (lvar liz) (limax lzero (lvar liz)))).
+   = (limax
+       (limax lzero (lsucc (lvar liz)))
+       (limax (lvar liz) (limax lzero (lvar liz)))).
 
 True_rec/type-wf : of (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) (esort True_rec/type-wf-sort)
-   = (defeq/forall (defeq/forall (defeq/const True/decl (inst-expr/sort lvl-inst/zero)) ([x] ([h] defeq/sort-refl))) ([x] ([h] (defeq/forall (defeq/app h (defeq/const True_intro/decl (inst-expr/const lvls-inst/nil))) ([y] ([h1] (defeq/forall (defeq/const True/decl (inst-expr/sort lvl-inst/zero)) ([z] ([h2] (defeq/app h h2)))))))))).
+   = (defeq/forall
+       (defeq/forall
+         (defeq/const True/decl (inst-expr/sort lvl-inst/zero))
+         ([x] ([h] defeq/sort-refl)))
+       ([x]
+         ([h]
+           (defeq/forall
+             (defeq/app
+               h
+               (defeq/const True_intro/decl (inst-expr/const lvls-inst/nil)))
+             ([y]
+               ([h1]
+                 (defeq/forall
+                   (defeq/const True/decl (inst-expr/sort lvl-inst/zero))
+                   ([z] ([h2] (defeq/app h h2)))))))))).
 
 True_rec/decl : declared "True.rec" (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) irec
    = declared/ok-irec True/rec-name (dkind-ok/irec True_rec/type-wf).
@@ -107,7 +177,9 @@ ProjDataIndex/type-wf-sort : lvl
    = (limax (lsucc lzero) (lsucc lzero)).
 
 ProjDataIndex/type-wf : of (eforall (econst "N" lnil) ([x] (esort lzero))) (esort ProjDataIndex/type-wf-sort)
-   = (defeq/forall (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] defeq/sort-refl))).
+   = (defeq/forall
+       (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+       ([x] ([h] defeq/sort-refl))).
 
 ProjDataIndex/ends-in-sort : ends-in-sort (eforall (econst "N" lnil) ([x] (esort lzero)))
    = (ends-in-sort/forall ([x] ends-in-sort/sort)).
@@ -124,10 +196,34 @@ ProjDataIndex_mk/type-wf-sort : lvl
    = (limax (lsucc lzero) (limax lzero lzero)).
 
 ProjDataIndex_mk/type-wf : of (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp (econst "ProjDataIndex" lnil) x))))) (esort ProjDataIndex_mk/type-wf-sort)
-   = (defeq/forall (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] (defeq/forall (defeq/const True/decl (inst-expr/sort lvl-inst/zero)) ([y] ([h1] (defeq/app (defeq/const ProjDataIndex/decl (inst-expr/forall (inst-expr/const lvls-inst/nil) ([x] ([h] (inst-expr/sort lvl-inst/zero))))) h))))))).
+   = (defeq/forall
+       (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+       ([x]
+         ([h]
+           (defeq/forall
+             (defeq/const True/decl (inst-expr/sort lvl-inst/zero))
+             ([y]
+               ([h1]
+                 (defeq/app
+                   (defeq/const
+                     ProjDataIndex/decl
+                     (inst-expr/forall
+                       (inst-expr/const lvls-inst/nil)
+                       ([x] ([h] (inst-expr/sort lvl-inst/zero)))))
+                   h))))))).
 
 ProjDataIndex_mk/positivity : ctor-positive "ProjDataIndex" lnil (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp (econst "ProjDataIndex" lnil) x)))))
-   = (ctor-positive/intro ([S] (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp S x)))))) (ctor-spine/arg (strict-pos/no-occur (econst "N" lnil) (no-self-ref/const sneq/0)) ([x] ([y] (ctor-spine/arg (strict-pos/no-occur (econst "True" lnil) (no-self-ref/const sneq/1)) ([z] ([w] (ctor-spine/result (applies-self/app applies-self/refl))))))))).
+   = (ctor-positive/intro ([S] (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp S x)))))) (ctor-spine/arg
+       (strict-pos/no-occur (econst "N" lnil) (no-self-ref/const sneq/0))
+       ([x]
+         ([y]
+           (ctor-spine/arg
+             (strict-pos/no-occur
+               (econst "True" lnil)
+               (no-self-ref/const sneq/1))
+             ([z]
+               ([w]
+                 (ctor-spine/result (applies-self/app applies-self/refl))))))))).
 
 ProjDataIndex_mk/name : name "ProjDataIndex.mk" (is-decl (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp (econst "ProjDataIndex" lnil) x))))) ctor).
 
@@ -136,23 +232,157 @@ ProjDataIndex_mk/decl : declared "ProjDataIndex.mk" (eforall (econst "N" lnil) (
 
 %% recursor ProjDataIndex.rec
 ProjDataIndex_rec/type-wf-sort : lvl
-   = (limax (lsucc lzero) (limax (limax lzero (lsucc (lvar liz))) (limax (limax lzero (lvar liz)) (limax lzero (lvar liz))))).
+   = (limax
+       (lsucc lzero)
+       (limax
+         (limax lzero (lsucc (lvar liz)))
+         (limax (limax lzero (lvar liz)) (limax lzero (lvar liz))))).
 
 ProjDataIndex_rec/type-wf : of (eforall (econst "N" lnil) ([x] (eforall (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (esort (lvar liz)))) ([y] (eforall (eforall (econst "True" lnil) ([z] (eapp y (eapp (eapp (econst "ProjDataIndex.mk" lnil) x) z)))) ([z] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([w] (eapp y w))))))))) (esort ProjDataIndex_rec/type-wf-sort)
-   = (defeq/forall (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] (defeq/forall (defeq/forall (defeq/app (defeq/const ProjDataIndex/decl (inst-expr/forall (inst-expr/const lvls-inst/nil) ([x] ([h] (inst-expr/sort lvl-inst/zero))))) h) ([y] ([h1] defeq/sort-refl))) ([y] ([h1] (defeq/forall (defeq/forall (defeq/const True/decl (inst-expr/sort lvl-inst/zero)) ([z] ([h2] (defeq/app h1 (defeq/app (defeq/app (defeq/const ProjDataIndex_mk/decl (inst-expr/forall (inst-expr/const lvls-inst/nil) ([x] ([h] (inst-expr/forall (inst-expr/const lvls-inst/nil) ([y] ([h1] (inst-expr/app (inst-expr/const lvls-inst/nil) h)))))))) h) h2))))) ([z] ([h2] (defeq/forall (defeq/app (defeq/const ProjDataIndex/decl (inst-expr/forall (inst-expr/const lvls-inst/nil) ([x] ([h] (inst-expr/sort lvl-inst/zero))))) h) ([w] ([h3] (defeq/app h1 h3))))))))))))).
+   = (defeq/forall
+       (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+       ([x]
+         ([h]
+           (defeq/forall
+             (defeq/forall
+               (defeq/app
+                 (defeq/const
+                   ProjDataIndex/decl
+                   (inst-expr/forall
+                     (inst-expr/const lvls-inst/nil)
+                     ([x] ([h] (inst-expr/sort lvl-inst/zero)))))
+                 h)
+               ([y] ([h1] defeq/sort-refl)))
+             ([y]
+               ([h1]
+                 (defeq/forall
+                   (defeq/forall
+                     (defeq/const True/decl (inst-expr/sort lvl-inst/zero))
+                     ([z]
+                       ([h2]
+                         (defeq/app
+                           h1
+                           (defeq/app
+                             (defeq/app
+                               (defeq/const
+                                 ProjDataIndex_mk/decl
+                                 (inst-expr/forall
+                                   (inst-expr/const lvls-inst/nil)
+                                   ([x]
+                                     ([h]
+                                       (inst-expr/forall
+                                         (inst-expr/const lvls-inst/nil)
+                                         ([y]
+                                           ([h1]
+                                             (inst-expr/app
+                                               (inst-expr/const lvls-inst/nil)
+                                               h))))))))
+                               h)
+                             h2)))))
+                   ([z]
+                     ([h2]
+                       (defeq/forall
+                         (defeq/app
+                           (defeq/const
+                             ProjDataIndex/decl
+                             (inst-expr/forall
+                               (inst-expr/const lvls-inst/nil)
+                               ([x] ([h] (inst-expr/sort lvl-inst/zero)))))
+                           h)
+                         ([w] ([h3] (defeq/app h1 h3))))))))))))).
 
 ProjDataIndex_rec/decl : declared "ProjDataIndex.rec" (eforall (econst "N" lnil) ([x] (eforall (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (esort (lvar liz)))) ([y] (eforall (eforall (econst "True" lnil) ([z] (eapp y (eapp (eapp (econst "ProjDataIndex.mk" lnil) x) z)))) ([z] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([w] (eapp y w))))))))) irec
    = declared/ok-irec ProjDataIndex/rec-name (dkind-ok/irec ProjDataIndex_rec/type-wf).
 
 %% def projDataIndexRec
 projDataIndexRec/type-wf-sort : lvl
-   = (limax (lsucc lzero) (limax (limax lzero (lsucc (lvar liz))) (limax (limax lzero (lvar liz)) (limax lzero (lvar liz))))).
+   = (limax
+       (lsucc lzero)
+       (limax
+         (limax lzero (lsucc (lvar liz)))
+         (limax (limax lzero (lvar liz)) (limax lzero (lvar liz))))).
 
 projDataIndexRec/type-wf : of (eforall (econst "N" lnil) ([x] (eforall (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (esort (lvar liz)))) ([y] (eforall (eforall (econst "True" lnil) ([z] (eapp y (eapp (eapp (econst "ProjDataIndex.mk" lnil) x) z)))) ([z] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([w] (eapp y w))))))))) (esort projDataIndexRec/type-wf-sort)
-   = (defeq/forall (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] (defeq/forall (defeq/forall (defeq/app (defeq/const ProjDataIndex/decl (inst-expr/forall (inst-expr/const lvls-inst/nil) ([x] ([h] (inst-expr/sort lvl-inst/zero))))) h) ([y] ([h1] defeq/sort-refl))) ([y] ([h1] (defeq/forall (defeq/forall (defeq/const True/decl (inst-expr/sort lvl-inst/zero)) ([z] ([h2] (defeq/app h1 (defeq/app (defeq/app (defeq/const ProjDataIndex_mk/decl (inst-expr/forall (inst-expr/const lvls-inst/nil) ([x] ([h] (inst-expr/forall (inst-expr/const lvls-inst/nil) ([y] ([h1] (inst-expr/app (inst-expr/const lvls-inst/nil) h)))))))) h) h2))))) ([z] ([h2] (defeq/forall (defeq/app (defeq/const ProjDataIndex/decl (inst-expr/forall (inst-expr/const lvls-inst/nil) ([x] ([h] (inst-expr/sort lvl-inst/zero))))) h) ([w] ([h3] (defeq/app h1 h3))))))))))))).
+   = (defeq/forall
+       (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+       ([x]
+         ([h]
+           (defeq/forall
+             (defeq/forall
+               (defeq/app
+                 (defeq/const
+                   ProjDataIndex/decl
+                   (inst-expr/forall
+                     (inst-expr/const lvls-inst/nil)
+                     ([x] ([h] (inst-expr/sort lvl-inst/zero)))))
+                 h)
+               ([y] ([h1] defeq/sort-refl)))
+             ([y]
+               ([h1]
+                 (defeq/forall
+                   (defeq/forall
+                     (defeq/const True/decl (inst-expr/sort lvl-inst/zero))
+                     ([z]
+                       ([h2]
+                         (defeq/app
+                           h1
+                           (defeq/app
+                             (defeq/app
+                               (defeq/const
+                                 ProjDataIndex_mk/decl
+                                 (inst-expr/forall
+                                   (inst-expr/const lvls-inst/nil)
+                                   ([x]
+                                     ([h]
+                                       (inst-expr/forall
+                                         (inst-expr/const lvls-inst/nil)
+                                         ([y]
+                                           ([h1]
+                                             (inst-expr/app
+                                               (inst-expr/const lvls-inst/nil)
+                                               h))))))))
+                               h)
+                             h2)))))
+                   ([z]
+                     ([h2]
+                       (defeq/forall
+                         (defeq/app
+                           (defeq/const
+                             ProjDataIndex/decl
+                             (inst-expr/forall
+                               (inst-expr/const lvls-inst/nil)
+                               ([x] ([h] (inst-expr/sort lvl-inst/zero)))))
+                           h)
+                         ([w] ([h3] (defeq/app h1 h3))))))))))))).
 
 projDataIndexRec/value-typed : of (econst "ProjDataIndex.rec" (lcons (lvar liz) lnil)) (eforall (econst "N" lnil) ([x] (eforall (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (esort (lvar liz)))) ([y] (eforall (eforall (econst "True" lnil) ([z] (eapp y (eapp (eapp (econst "ProjDataIndex.mk" lnil) x) z)))) ([z] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([w] (eapp y w)))))))))
-   = (defeq/const ProjDataIndex_rec/decl (inst-expr/forall (inst-expr/const lvls-inst/nil) ([x] ([h] (inst-expr/forall (inst-expr/forall (inst-expr/app (inst-expr/const lvls-inst/nil) h) ([y] ([h1] (inst-expr/sort (lvl-inst/var lvl-nth/zero))))) ([y] ([h1] (inst-expr/forall (inst-expr/forall (inst-expr/const lvls-inst/nil) ([z] ([h2] (inst-expr/app h1 (inst-expr/app (inst-expr/app (inst-expr/const lvls-inst/nil) h) h2))))) ([z] ([h2] (inst-expr/forall (inst-expr/app (inst-expr/const lvls-inst/nil) h) ([w] ([h3] (inst-expr/app h1 h3)))))))))))))).
+   = (defeq/const
+       ProjDataIndex_rec/decl
+       (inst-expr/forall
+         (inst-expr/const lvls-inst/nil)
+         ([x]
+           ([h]
+             (inst-expr/forall
+               (inst-expr/forall
+                 (inst-expr/app (inst-expr/const lvls-inst/nil) h)
+                 ([y] ([h1] (inst-expr/sort (lvl-inst/var lvl-nth/zero)))))
+               ([y]
+                 ([h1]
+                   (inst-expr/forall
+                     (inst-expr/forall
+                       (inst-expr/const lvls-inst/nil)
+                       ([z]
+                         ([h2]
+                           (inst-expr/app
+                             h1
+                             (inst-expr/app
+                               (inst-expr/app (inst-expr/const lvls-inst/nil) h)
+                               h2)))))
+                     ([z]
+                       ([h2]
+                         (inst-expr/forall
+                           (inst-expr/app (inst-expr/const lvls-inst/nil) h)
+                           ([w] ([h3] (inst-expr/app h1 h3)))))))))))))).
 
 projDataIndexRec/name : name "projDataIndexRec" (is-decl (eforall (econst "N" lnil) ([x] (eforall (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (esort (lvar liz)))) ([y] (eforall (eforall (econst "True" lnil) ([z] (eapp y (eapp (eapp (econst "ProjDataIndex.mk" lnil) x) z)))) ([z] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([w] (eapp y w))))))))) (defn (econst "ProjDataIndex.rec" (lcons (lvar liz) lnil)))).
 

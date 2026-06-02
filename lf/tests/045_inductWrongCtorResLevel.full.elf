@@ -5,7 +5,9 @@ inductWrongCtorResLevel/type-wf-sort : lvl
    = (limax (lsucc lzero) (limax (lsucc lzero) (lsucc (lsucc lzero)))).
 
 inductWrongCtorResLevel/type-wf : of (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) (esort inductWrongCtorResLevel/type-wf-sort)
-   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] defeq/sort-refl)))))).
+   = (defeq/forall
+       defeq/sort-refl
+       ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] defeq/sort-refl)))))).
 
 inductWrongCtorResLevel/ends-in-sort : ends-in-sort (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero))))))
    = (ends-in-sort/forall ([x] (ends-in-sort/forall ([y] ends-in-sort/sort)))).
@@ -22,7 +24,30 @@ inductWrongCtorResLevel_mk/type-wf-sort : lvl
    = (limax (lsucc lzero) (limax (lsucc lzero) (lsucc lzero))).
 
 inductWrongCtorResLevel_mk/type-wf : of (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResLevel" (lcons (lvar (lis liz)) (lcons (lvar liz) lnil))) x) y))))) (esort inductWrongCtorResLevel_mk/type-wf-sort)
-   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] (defeq/app (defeq/app (defeq/const inductWrongCtorResLevel/decl (inst-expr/forall (inst-expr/sort lvl-inst/zero) ([x] ([h] (inst-expr/forall (inst-expr/sort lvl-inst/zero) ([y] ([h1] (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))))))) h) h1))))))).
+   = (defeq/forall
+       defeq/sort-refl
+       ([x]
+         ([h]
+           (defeq/forall
+             defeq/sort-refl
+             ([y]
+               ([h1]
+                 (defeq/app
+                   (defeq/app
+                     (defeq/const
+                       inductWrongCtorResLevel/decl
+                       (inst-expr/forall
+                         (inst-expr/sort lvl-inst/zero)
+                         ([x]
+                           ([h]
+                             (inst-expr/forall
+                               (inst-expr/sort lvl-inst/zero)
+                               ([y]
+                                 ([h1]
+                                   (inst-expr/sort
+                                     (lvl-inst/succ lvl-inst/zero)))))))))
+                     h)
+                   h1))))))).
 
 %%% HOLE
 inductWrongCtorResLevel_mk/positivity : ctor-positive "inductWrongCtorResLevel" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil)) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResLevel" (lcons (lvar (lis liz)) (lcons (lvar liz) lnil))) x) y))))).

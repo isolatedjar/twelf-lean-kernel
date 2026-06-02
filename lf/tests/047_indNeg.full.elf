@@ -22,7 +22,21 @@ indNeg_mk/type-wf-sort : lvl
    = (limax (limax (lsucc lzero) (lsucc lzero)) (lsucc lzero)).
 
 indNeg_mk/type-wf : of (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (esort indNeg_mk/type-wf-sort)
-   = (defeq/forall (defeq/forall (defeq/const indNeg/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] (defeq/const indNeg/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))) ([x] ([h] (defeq/const indNeg/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))).
+   = (defeq/forall
+       (defeq/forall
+         (defeq/const
+           indNeg/decl
+           (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+         ([x]
+           ([h]
+             (defeq/const
+               indNeg/decl
+               (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))))
+       ([x]
+         ([h]
+           (defeq/const
+             indNeg/decl
+             (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))).
 
 %%% HOLE
 indNeg_mk/positivity : ctor-positive "indNeg" lnil (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))).

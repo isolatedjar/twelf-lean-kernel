@@ -22,6 +22,7 @@
 import { makeRealProver, NullProver } from "./prover.ts";
 import {
   clearStringNeqFacts,
+  fmtToDoc,
   levelParamBindings,
   levelParamIndices,
   lfExpr,
@@ -29,6 +30,7 @@ import {
   natLiteralsSeen,
   stringNeqFacts,
 } from "./render.ts";
+import { render } from "./pp.ts";
 import type {
   Decl,
   Expr,
@@ -51,30 +53,19 @@ function emit(s: string): void {
   out.push(s);
 }
 
-// Pretty-print an Fmt proof term.  Validates every atom and binder so an
-// untrusted prover cannot smuggle a declaration terminator (`.`), whitespace,
-// or a newline into the output: atoms are either Twelf identifiers (which use
-// `/`, never `.`) or quoted string literals; binders are plain identifiers.
-function ppFmt(f: Fmt): string {
-  switch (f.kind) {
-    case "atom": {
-      const t = f.text;
-      const okIdent = /^[A-Za-z0-9_/+*<>=~^!?-]+$/.test(t);
-      const okString = /^"[^"\\\n]*"$/.test(t);
-      if (!okIdent && !okString) {
-        throw new Error(`Fmt atom rejected (possible injection): ${JSON.stringify(t)}`);
-      }
-      return t;
-    }
-    case "app":
-      return `(${ppFmt(f.fn)} ${f.args.map(ppFmt).join(" ")})`;
-    case "lam": {
-      if (!/^[A-Za-z0-9_]+$/.test(f.binder)) {
-        throw new Error(`Fmt binder rejected: ${JSON.stringify(f.binder)}`);
-      }
-      return `([${f.binder}] ${ppFmt(f.body)})`;
-    }
-  }
+// Pretty-print an Fmt proof term.  Validation lives in render.ts:fmtToDoc,
+// layout in pp.ts:render.
+//
+// `hang` is the column the proof's first character will land at in the
+// emitted file — i.e. the length of whatever prefix the caller has already
+// printed on the current line.  We pass `80 - hang` as the budget so the
+// fits-lookahead correctly accounts for the prefix, and we prepend `hang`
+// spaces to every break the renderer emits so subsequent lines align under
+// the proof's start rather than at column 0.
+function ppFmt(f: Fmt, hang = 0): string {
+  const raw = render(80 - hang, fmtToDoc(f));
+  if (hang === 0) return raw;
+  return raw.replace(/\n/g, "\n" + " ".repeat(hang));
 }
 
 // =====================================================================
@@ -129,7 +120,8 @@ function emitDefn(constName: string, type: string, term: Fmt | null): void {
     emit(`${constName} : ${type}.`);
   } else {
     emit(`${constName} : ${type}`);
-    emit(`   = ${ppFmt(term)}.`);
+    // "   = " is 5 chars; hang multi-line proofs under that column.
+    emit(`   = ${ppFmt(term, 5)}.`);
   }
   emit(``);
 }
@@ -223,7 +215,12 @@ function emitCtorPositive(
     return posName;
   }
   emit(`${posName} : ${posType}`);
-  emit(`   = (ctor-positive/intro ([S] ${hoasBody}) ${ppFmt(spine)}).`);
+  // The spine sits mid-line after `(ctor-positive/intro ([S] {hoasBody}) `.
+  // We can't easily know that column without measuring hoasBody, so hang
+  // multi-line spines under the proof-equals column (5) — slight under-
+  // alignment, but readable; step 3 will dissolve this when hoasBody and
+  // the whole emit move to Docs.
+  emit(`   = (ctor-positive/intro ([S] ${hoasBody}) ${ppFmt(spine, 5)}).`);
   emit(``);
   return posName;
 }

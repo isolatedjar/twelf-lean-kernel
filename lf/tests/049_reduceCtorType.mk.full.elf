@@ -38,7 +38,17 @@ reduceCtorType_mk/type-wf-sort : lvl
    = (lsucc lzero).
 
 reduceCtorType_mk/type-wf : of (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil)) (esort reduceCtorType_mk/type-wf-sort)
-   = (defeq/app (defeq/app (defeq/const id/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] h))))))) defeq/sort-refl) (defeq/const reduceCtorType/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))).
+   = (defeq/app
+       (defeq/app
+         (defeq/const
+           id/decl
+           (inst-expr/forall
+             (inst-expr/sort (lvl-inst/var lvl-nth/zero))
+             ([x] ([h] (inst-expr/forall h ([y] ([h1] h)))))))
+         defeq/sort-refl)
+       (defeq/const
+         reduceCtorType/decl
+         (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))).
 
 %%% HOLE
 reduceCtorType_mk/positivity : ctor-positive "reduceCtorType" lnil (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil)).

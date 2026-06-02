@@ -33,7 +33,9 @@ BogusRecursor_mk/type-wf-sort : lvl
    = (lsucc lzero).
 
 BogusRecursor_mk/type-wf : of (econst "BogusRecursor" lnil) (esort BogusRecursor_mk/type-wf-sort)
-   = (defeq/const BogusRecursor/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
+   = (defeq/const
+       BogusRecursor/decl
+       (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
 
 BogusRecursor_mk/positivity : ctor-positive "BogusRecursor" lnil (econst "BogusRecursor" lnil)
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).

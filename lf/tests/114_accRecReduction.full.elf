@@ -4,13 +4,28 @@
 
 %% inductive Acc
 Acc/type-wf-sort : lvl
-   = (limax (lsucc (lvar liz)) (limax (limax (lvar liz) (limax (lvar liz) (lsucc lzero))) (limax (lvar liz) (lsucc lzero)))).
+   = (limax
+       (lsucc (lvar liz))
+       (limax
+         (limax (lvar liz) (limax (lvar liz) (lsucc lzero)))
+         (limax (lvar liz) (lsucc lzero)))).
 
 Acc/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (esort lzero))))))) (esort Acc/type-wf-sort)
-   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall (defeq/forall h ([y] ([h1] (defeq/forall h ([z] ([h2] defeq/sort-refl)))))) ([y] ([h1] (defeq/forall h ([z] ([h2] defeq/sort-refl))))))))).
+   = (defeq/forall
+       defeq/sort-refl
+       ([x]
+         ([h]
+           (defeq/forall
+             (defeq/forall
+               h
+               ([y] ([h1] (defeq/forall h ([z] ([h2] defeq/sort-refl))))))
+             ([y] ([h1] (defeq/forall h ([z] ([h2] defeq/sort-refl))))))))).
 
 Acc/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (esort lzero)))))))
-   = (ends-in-sort/forall ([x] (ends-in-sort/forall ([y] (ends-in-sort/forall ([z] ends-in-sort/sort)))))).
+   = (ends-in-sort/forall
+       ([x]
+         (ends-in-sort/forall
+           ([y] (ends-in-sort/forall ([z] ends-in-sort/sort)))))).
 
 Acc/rec-name : name "Acc.rec" (is-rec-for "Acc").
 
@@ -21,13 +36,147 @@ Acc/decl : declared "Acc" (eforall (esort (lvar liz)) ([x] (eforall (eforall x (
 
 %% ctor Acc.intro (of Acc)
 Acc_intro/type-wf-sort : lvl
-   = (limax (lsucc (lvar liz)) (limax (limax (lvar liz) (limax (lvar liz) (lsucc lzero))) (limax (lvar liz) (limax (limax (lvar liz) (limax lzero lzero)) lzero)))).
+   = (limax
+       (lsucc (lvar liz))
+       (limax
+         (limax (lvar liz) (limax (lvar liz) (lsucc lzero)))
+         (limax
+           (lvar liz)
+           (limax (limax (lvar liz) (limax lzero lzero)) lzero)))).
 
 Acc_intro/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eforall (eforall x ([w] (eforall (eapp (eapp y w) z) ([x1] (eapp (eapp (eapp (econst "Acc" (lcons (lvar liz) lnil)) x) y) w))))) ([w] (eapp (eapp (eapp (econst "Acc" (lcons (lvar liz) lnil)) x) y) z))))))))) (esort Acc_intro/type-wf-sort)
-   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall (defeq/forall h ([y] ([h1] (defeq/forall h ([z] ([h2] defeq/sort-refl)))))) ([y] ([h1] (defeq/forall h ([z] ([h2] (defeq/forall (defeq/forall h ([w] ([h3] (defeq/forall (defeq/app (defeq/app h1 h3) h2) ([x1] ([h4] (defeq/app (defeq/app (defeq/app (defeq/const Acc/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))) ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h3))))))) ([w] ([h3] (defeq/app (defeq/app (defeq/app (defeq/const Acc/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))) ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h2))))))))))))).
+   = (defeq/forall
+       defeq/sort-refl
+       ([x]
+         ([h]
+           (defeq/forall
+             (defeq/forall
+               h
+               ([y] ([h1] (defeq/forall h ([z] ([h2] defeq/sort-refl))))))
+             ([y]
+               ([h1]
+                 (defeq/forall
+                   h
+                   ([z]
+                     ([h2]
+                       (defeq/forall
+                         (defeq/forall
+                           h
+                           ([w]
+                             ([h3]
+                               (defeq/forall
+                                 (defeq/app (defeq/app h1 h3) h2)
+                                 ([x1]
+                                   ([h4]
+                                     (defeq/app
+                                       (defeq/app
+                                         (defeq/app
+                                           (defeq/const
+                                             Acc/decl
+                                             (inst-expr/forall
+                                               (inst-expr/sort
+                                                 (lvl-inst/var lvl-nth/zero))
+                                               ([x]
+                                                 ([h]
+                                                   (inst-expr/forall
+                                                     (inst-expr/forall
+                                                       h
+                                                       ([y]
+                                                         ([h1]
+                                                           (inst-expr/forall
+                                                             h
+                                                             ([z]
+                                                               ([h2]
+                                                                 (inst-expr/sort
+                                                                   lvl-inst/zero)))))))
+                                                     ([y]
+                                                       ([h1]
+                                                         (inst-expr/forall
+                                                           h
+                                                           ([z]
+                                                             ([h2]
+                                                               (inst-expr/sort
+                                                                 lvl-inst/zero)))))))))))
+                                           h)
+                                         h1)
+                                       h3)))))))
+                         ([w]
+                           ([h3]
+                             (defeq/app
+                               (defeq/app
+                                 (defeq/app
+                                   (defeq/const
+                                     Acc/decl
+                                     (inst-expr/forall
+                                       (inst-expr/sort
+                                         (lvl-inst/var lvl-nth/zero))
+                                       ([x]
+                                         ([h]
+                                           (inst-expr/forall
+                                             (inst-expr/forall
+                                               h
+                                               ([y]
+                                                 ([h1]
+                                                   (inst-expr/forall
+                                                     h
+                                                     ([z]
+                                                       ([h2]
+                                                         (inst-expr/sort
+                                                           lvl-inst/zero)))))))
+                                             ([y]
+                                               ([h1]
+                                                 (inst-expr/forall
+                                                   h
+                                                   ([z]
+                                                     ([h2]
+                                                       (inst-expr/sort
+                                                         lvl-inst/zero)))))))))))
+                                   h)
+                                 h1)
+                               h2))))))))))))).
 
 Acc_intro/positivity : ctor-positive "Acc" (lcons (lvar liz) lnil) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eforall (eforall x ([w] (eforall (eapp (eapp y w) z) ([x1] (eapp (eapp (eapp (econst "Acc" (lcons (lvar liz) lnil)) x) y) w))))) ([w] (eapp (eapp (eapp (econst "Acc" (lcons (lvar liz) lnil)) x) y) z)))))))))
-   = (ctor-positive/intro ([S] (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eforall (eforall x ([w] (eforall (eapp (eapp y w) z) ([x1] (eapp (eapp (eapp S x) y) w))))) ([w] (eapp (eapp (eapp S x) y) z)))))))))) (ctor-spine/arg (strict-pos/no-occur (esort (lvar liz)) no-self-ref/sort) ([x] ([y] (ctor-spine/arg (strict-pos/no-occur (eforall x ([y] (eforall x ([z] (esort lzero))))) (no-self-ref/forall y ([z] ([w] (no-self-ref/forall y ([x1] ([y1] no-self-ref/sort))))))) ([z] ([w] (ctor-spine/arg (strict-pos/no-occur x y) ([x1] ([y1] (ctor-spine/arg (strict-pos/forall x y ([z1] ([w1] (strict-pos/forall (eapp (eapp z z1) x1) (no-self-ref/app (no-self-ref/app w w1) y1) ([x2] ([y2] (strict-pos/head (applies-self/app (applies-self/app (applies-self/app applies-self/refl)))))))))) ([z1] ([w1] (ctor-spine/result (applies-self/app (applies-self/app (applies-self/app applies-self/refl))))))))))))))))).
+   = (ctor-positive/intro ([S] (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eforall (eforall x ([w] (eforall (eapp (eapp y w) z) ([x1] (eapp (eapp (eapp S x) y) w))))) ([w] (eapp (eapp (eapp S x) y) z)))))))))) (ctor-spine/arg
+       (strict-pos/no-occur (esort (lvar liz)) no-self-ref/sort)
+       ([x]
+         ([y]
+           (ctor-spine/arg
+             (strict-pos/no-occur
+               (eforall x ([y] (eforall x ([z] (esort lzero)))))
+               (no-self-ref/forall
+                 y
+                 ([z]
+                   ([w]
+                     (no-self-ref/forall y ([x1] ([y1] no-self-ref/sort)))))))
+             ([z]
+               ([w]
+                 (ctor-spine/arg
+                   (strict-pos/no-occur x y)
+                   ([x1]
+                     ([y1]
+                       (ctor-spine/arg
+                         (strict-pos/forall
+                           x
+                           y
+                           ([z1]
+                             ([w1]
+                               (strict-pos/forall
+                                 (eapp (eapp z z1) x1)
+                                 (no-self-ref/app (no-self-ref/app w w1) y1)
+                                 ([x2]
+                                   ([y2]
+                                     (strict-pos/head
+                                       (applies-self/app
+                                         (applies-self/app
+                                           (applies-self/app
+                                             applies-self/refl))))))))))
+                         ([z1]
+                           ([w1]
+                             (ctor-spine/result
+                               (applies-self/app
+                                 (applies-self/app
+                                   (applies-self/app
+                                     applies-self/refl))))))))))))))))).
 
 Acc_intro/name : name "Acc.intro" (is-decl (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eforall (eforall x ([w] (eforall (eapp (eapp y w) z) ([x1] (eapp (eapp (eapp (econst "Acc" (lcons (lvar liz) lnil)) x) y) w))))) ([w] (eapp (eapp (eapp (econst "Acc" (lcons (lvar liz) lnil)) x) y) z))))))))) ctor).
 
@@ -36,10 +185,255 @@ Acc_intro/decl : declared "Acc.intro" (eforall (esort (lvar liz)) ([x] (eforall 
 
 %% recursor Acc.rec
 Acc_rec/type-wf-sort : lvl
-   = (limax (lsucc (lvar (lis liz))) (limax (limax (lvar (lis liz)) (limax (lvar (lis liz)) (lsucc lzero))) (limax (limax (lvar (lis liz)) (limax lzero (lsucc (lvar liz)))) (limax (limax (lvar (lis liz)) (limax (limax (lvar (lis liz)) (limax lzero lzero)) (limax (limax (lvar (lis liz)) (limax lzero (lvar liz))) (lvar liz)))) (limax (lvar (lis liz)) (limax lzero (lvar liz))))))).
+   = (limax
+       (lsucc (lvar (lis liz)))
+       (limax
+         (limax (lvar (lis liz)) (limax (lvar (lis liz)) (lsucc lzero)))
+         (limax
+           (limax (lvar (lis liz)) (limax lzero (lsucc (lvar liz))))
+           (limax
+             (limax
+               (lvar (lis liz))
+               (limax
+                 (limax (lvar (lis liz)) (limax lzero lzero))
+                 (limax
+                   (limax (lvar (lis liz)) (limax lzero (lvar liz)))
+                   (lvar liz))))
+             (limax (lvar (lis liz)) (limax lzero (lvar liz))))))).
 
 Acc_rec/type-wf : of (eforall (esort (lvar (lis liz))) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Acc" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eforall x ([w] (eforall (eforall x ([x1] (eforall (eapp (eapp y x1) w) ([y1] (eapp (eapp (eapp (econst "Acc" (lcons (lvar (lis liz)) lnil)) x) y) x1))))) ([x1] (eforall (eforall x ([y1] (eforall (eapp (eapp y y1) w) ([z1] (eapp (eapp z y1) (eapp (eapp x1 y1) z1)))))) ([y1] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "Acc.intro" (lcons (lvar (lis liz)) lnil)) x) y) w) x1)))))))) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Acc" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Acc_rec/type-wf-sort)
-   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall (defeq/forall h ([y] ([h1] (defeq/forall h ([z] ([h2] defeq/sort-refl)))))) ([y] ([h1] (defeq/forall (defeq/forall h ([z] ([h2] (defeq/forall (defeq/app (defeq/app (defeq/app (defeq/const Acc/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))) ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h2) ([w] ([h3] defeq/sort-refl)))))) ([z] ([h2] (defeq/forall (defeq/forall h ([w] ([h3] (defeq/forall (defeq/forall h ([x1] ([h4] (defeq/forall (defeq/app (defeq/app h1 h4) h3) ([y1] ([h5] (defeq/app (defeq/app (defeq/app (defeq/const Acc/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))) ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h4))))))) ([x1] ([h4] (defeq/forall (defeq/forall h ([y1] ([h5] (defeq/forall (defeq/app (defeq/app h1 h5) h3) ([z1] ([h6] (defeq/app (defeq/app h2 h5) (defeq/app (defeq/app h4 h5) h6)))))))) ([y1] ([h5] (defeq/app (defeq/app h2 h3) (defeq/app (defeq/app (defeq/app (defeq/app (defeq/const Acc_intro/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))) ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/forall (inst-expr/forall h ([w] ([h3] (inst-expr/forall (inst-expr/app (inst-expr/app h1 h3) h2) ([x1] ([h4] (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)) h) h1) h3))))))) ([w] ([h3] (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)) h) h1) h2)))))))))))))) h) h1) h3) h4))))))))))) ([w] ([h3] (defeq/forall h ([x1] ([h4] (defeq/forall (defeq/app (defeq/app (defeq/app (defeq/const Acc/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))) ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h4) ([y1] ([h5] (defeq/app (defeq/app h2 h4) h5))))))))))))))))))).
+   = (defeq/forall
+       defeq/sort-refl
+       ([x]
+         ([h]
+           (defeq/forall
+             (defeq/forall
+               h
+               ([y] ([h1] (defeq/forall h ([z] ([h2] defeq/sort-refl))))))
+             ([y]
+               ([h1]
+                 (defeq/forall
+                   (defeq/forall
+                     h
+                     ([z]
+                       ([h2]
+                         (defeq/forall
+                           (defeq/app
+                             (defeq/app
+                               (defeq/app
+                                 (defeq/const
+                                   Acc/decl
+                                   (inst-expr/forall
+                                     (inst-expr/sort
+                                       (lvl-inst/var lvl-nth/zero))
+                                     ([x]
+                                       ([h]
+                                         (inst-expr/forall
+                                           (inst-expr/forall
+                                             h
+                                             ([y]
+                                               ([h1]
+                                                 (inst-expr/forall
+                                                   h
+                                                   ([z]
+                                                     ([h2]
+                                                       (inst-expr/sort
+                                                         lvl-inst/zero)))))))
+                                           ([y]
+                                             ([h1]
+                                               (inst-expr/forall
+                                                 h
+                                                 ([z]
+                                                   ([h2]
+                                                     (inst-expr/sort
+                                                       lvl-inst/zero)))))))))))
+                                 h)
+                               h1)
+                             h2)
+                           ([w] ([h3] defeq/sort-refl))))))
+                   ([z]
+                     ([h2]
+                       (defeq/forall
+                         (defeq/forall
+                           h
+                           ([w]
+                             ([h3]
+                               (defeq/forall
+                                 (defeq/forall
+                                   h
+                                   ([x1]
+                                     ([h4]
+                                       (defeq/forall
+                                         (defeq/app (defeq/app h1 h4) h3)
+                                         ([y1]
+                                           ([h5]
+                                             (defeq/app
+                                               (defeq/app
+                                                 (defeq/app
+                                                   (defeq/const
+                                                     Acc/decl
+                                                     (inst-expr/forall
+                                                       (inst-expr/sort
+                                                         (lvl-inst/var
+                                                           lvl-nth/zero))
+                                                       ([x]
+                                                         ([h]
+                                                           (inst-expr/forall
+                                                             (inst-expr/forall
+                                                               h
+                                                               ([y]
+                                                                 ([h1]
+                                                                   (inst-expr/forall
+                                                                     h
+                                                                     ([z]
+                                                                       ([h2]
+                                                                         (inst-expr/sort
+                                                                           lvl-inst/zero)))))))
+                                                             ([y]
+                                                               ([h1]
+                                                                 (inst-expr/forall
+                                                                   h
+                                                                   ([z]
+                                                                     ([h2]
+                                                                       (inst-expr/sort
+                                                                         lvl-inst/zero)))))))))))
+                                                   h)
+                                                 h1)
+                                               h4)))))))
+                                 ([x1]
+                                   ([h4]
+                                     (defeq/forall
+                                       (defeq/forall
+                                         h
+                                         ([y1]
+                                           ([h5]
+                                             (defeq/forall
+                                               (defeq/app (defeq/app h1 h5) h3)
+                                               ([z1]
+                                                 ([h6]
+                                                   (defeq/app
+                                                     (defeq/app h2 h5)
+                                                     (defeq/app
+                                                       (defeq/app h4 h5)
+                                                       h6))))))))
+                                       ([y1]
+                                         ([h5]
+                                           (defeq/app
+                                             (defeq/app h2 h3)
+                                             (defeq/app
+                                               (defeq/app
+                                                 (defeq/app
+                                                   (defeq/app
+                                                     (defeq/const
+                                                       Acc_intro/decl
+                                                       (inst-expr/forall
+                                                         (inst-expr/sort
+                                                           (lvl-inst/var
+                                                             lvl-nth/zero))
+                                                         ([x]
+                                                           ([h]
+                                                             (inst-expr/forall
+                                                               (inst-expr/forall
+                                                                 h
+                                                                 ([y]
+                                                                   ([h1]
+                                                                     (inst-expr/forall
+                                                                       h
+                                                                       ([z]
+                                                                         ([h2]
+                                                                           (inst-expr/sort
+                                                                             lvl-inst/zero)))))))
+                                                               ([y]
+                                                                 ([h1]
+                                                                   (inst-expr/forall
+                                                                     h
+                                                                     ([z]
+                                                                       ([h2]
+                                                                         (inst-expr/forall
+                                                                           (inst-expr/forall
+                                                                             h
+                                                                             ([w]
+                                                                               ([h3]
+                                                                                 (inst-expr/forall
+                                                                                   (inst-expr/app
+                                                                                     (inst-expr/app
+                                                                                       h1
+                                                                                       h3)
+                                                                                     h2)
+                                                                                   ([x1]
+                                                                                     ([h4]
+                                                                                       (inst-expr/app
+                                                                                         (inst-expr/app
+                                                                                           (inst-expr/app
+                                                                                             (inst-expr/const
+                                                                                               (lvls-inst/cons
+                                                                                                 (lvl-inst/var
+                                                                                                   lvl-nth/zero)
+                                                                                                 lvls-inst/nil))
+                                                                                             h)
+                                                                                           h1)
+                                                                                         h3)))))))
+                                                                           ([w]
+                                                                             ([h3]
+                                                                               (inst-expr/app
+                                                                                 (inst-expr/app
+                                                                                   (inst-expr/app
+                                                                                     (inst-expr/const
+                                                                                       (lvls-inst/cons
+                                                                                         (lvl-inst/var
+                                                                                           lvl-nth/zero)
+                                                                                         lvls-inst/nil))
+                                                                                     h)
+                                                                                   h1)
+                                                                                 h2))))))))))))))
+                                                     h)
+                                                   h1)
+                                                 h3)
+                                               h4)))))))))))
+                         ([w]
+                           ([h3]
+                             (defeq/forall
+                               h
+                               ([x1]
+                                 ([h4]
+                                   (defeq/forall
+                                     (defeq/app
+                                       (defeq/app
+                                         (defeq/app
+                                           (defeq/const
+                                             Acc/decl
+                                             (inst-expr/forall
+                                               (inst-expr/sort
+                                                 (lvl-inst/var lvl-nth/zero))
+                                               ([x]
+                                                 ([h]
+                                                   (inst-expr/forall
+                                                     (inst-expr/forall
+                                                       h
+                                                       ([y]
+                                                         ([h1]
+                                                           (inst-expr/forall
+                                                             h
+                                                             ([z]
+                                                               ([h2]
+                                                                 (inst-expr/sort
+                                                                   lvl-inst/zero)))))))
+                                                     ([y]
+                                                       ([h1]
+                                                         (inst-expr/forall
+                                                           h
+                                                           ([z]
+                                                             ([h2]
+                                                               (inst-expr/sort
+                                                                 lvl-inst/zero)))))))))))
+                                           h)
+                                         h1)
+                                       h4)
+                                     ([y1]
+                                       ([h5]
+                                         (defeq/app
+                                           (defeq/app h2 h4)
+                                           h5))))))))))))))))))).
 
 Acc_rec/decl : declared "Acc.rec" (eforall (esort (lvar (lis liz))) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Acc" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eforall x ([w] (eforall (eforall x ([x1] (eforall (eapp (eapp y x1) w) ([y1] (eapp (eapp (eapp (econst "Acc" (lcons (lvar (lis liz)) lnil)) x) y) x1))))) ([x1] (eforall (eforall x ([y1] (eforall (eapp (eapp y y1) w) ([z1] (eapp (eapp z y1) (eapp (eapp x1 y1) z1)))))) ([y1] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "Acc.intro" (lcons (lvar (lis liz)) lnil)) x) y) w) x1)))))))) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Acc" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) irec
    = declared/ok-irec Acc/rec-name (dkind-ok/irec Acc_rec/type-wf).
@@ -93,23 +487,60 @@ Bool_true/decl : declared "Bool.true" (econst "Bool" lnil) ctor
 
 %% recursor Bool.rec
 Bool_rec/type-wf-sort : lvl
-   = (limax (limax (lsucc lzero) (lsucc (lvar liz))) (limax (lvar liz) (limax (lvar liz) (limax (lsucc lzero) (lvar liz))))).
+   = (limax
+       (limax (lsucc lzero) (lsucc (lvar liz)))
+       (limax (lvar liz) (limax (lvar liz) (limax (lsucc lzero) (lvar liz))))).
 
 Bool_rec/type-wf : of (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort Bool_rec/type-wf-sort)
-   = (defeq/forall (defeq/forall (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] defeq/sort-refl))) ([x] ([h] (defeq/forall (defeq/app h (defeq/const Bool_false/decl (inst-expr/const lvls-inst/nil))) ([y] ([h1] (defeq/forall (defeq/app h (defeq/const Bool_true/decl (inst-expr/const lvls-inst/nil))) ([z] ([h2] (defeq/forall (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([w] ([h3] (defeq/app h h3))))))))))))).
+   = (defeq/forall
+       (defeq/forall
+         (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+         ([x] ([h] defeq/sort-refl)))
+       ([x]
+         ([h]
+           (defeq/forall
+             (defeq/app
+               h
+               (defeq/const Bool_false/decl (inst-expr/const lvls-inst/nil)))
+             ([y]
+               ([h1]
+                 (defeq/forall
+                   (defeq/app
+                     h
+                     (defeq/const
+                       Bool_true/decl
+                       (inst-expr/const lvls-inst/nil)))
+                   ([z]
+                     ([h2]
+                       (defeq/forall
+                         (defeq/const
+                           Bool/decl
+                           (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+                         ([w] ([h3] (defeq/app h h3))))))))))))).
 
 Bool_rec/decl : declared "Bool.rec" (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) irec
    = declared/ok-irec Bool/rec-name (dkind-ok/irec Bool_rec/type-wf).
 
 %% inductive Eq
 Eq/type-wf-sort : lvl
-   = (limax (lsucc (lvar liz)) (limax (lvar liz) (limax (lvar liz) (lsucc lzero)))).
+   = (limax
+       (lsucc (lvar liz))
+       (limax (lvar liz) (limax (lvar liz) (lsucc lzero)))).
 
 Eq/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (esort Eq/type-wf-sort)
-   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall h ([y] ([h1] (defeq/forall h ([z] ([h2] defeq/sort-refl))))))))).
+   = (defeq/forall
+       defeq/sort-refl
+       ([x]
+         ([h]
+           (defeq/forall
+             h
+             ([y] ([h1] (defeq/forall h ([z] ([h2] defeq/sort-refl))))))))).
 
 Eq/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero)))))))
-   = (ends-in-sort/forall ([x] (ends-in-sort/forall ([y] (ends-in-sort/forall ([z] ends-in-sort/sort)))))).
+   = (ends-in-sort/forall
+       ([x]
+         (ends-in-sort/forall
+           ([y] (ends-in-sort/forall ([z] ends-in-sort/sort)))))).
 
 Eq/rec-name : name "Eq.rec" (is-rec-for "Eq").
 
@@ -123,10 +554,50 @@ Eq_refl/type-wf-sort : lvl
    = (limax (lsucc (lvar liz)) (limax (lvar liz) lzero)).
 
 Eq_refl/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (esort Eq_refl/type-wf-sort)
-   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall h ([y] ([h1] (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h1))))))).
+   = (defeq/forall
+       defeq/sort-refl
+       ([x]
+         ([h]
+           (defeq/forall
+             h
+             ([y]
+               ([h1]
+                 (defeq/app
+                   (defeq/app
+                     (defeq/app
+                       (defeq/const
+                         Eq/decl
+                         (inst-expr/forall
+                           (inst-expr/sort (lvl-inst/var lvl-nth/zero))
+                           ([x]
+                             ([h]
+                               (inst-expr/forall
+                                 h
+                                 ([y]
+                                   ([h1]
+                                     (inst-expr/forall
+                                       h
+                                       ([z]
+                                         ([h2]
+                                           (inst-expr/sort
+                                             lvl-inst/zero)))))))))))
+                       h)
+                     h1)
+                   h1))))))).
 
 Eq_refl/positivity : ctor-positive "Eq" (lcons (lvar liz) lnil) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y)))))
-   = (ctor-positive/intro ([S] (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp S x) y) y)))))) (ctor-spine/arg (strict-pos/no-occur (esort (lvar liz)) no-self-ref/sort) ([x] ([y] (ctor-spine/arg (strict-pos/no-occur x y) ([z] ([w] (ctor-spine/result (applies-self/app (applies-self/app (applies-self/app applies-self/refl))))))))))).
+   = (ctor-positive/intro ([S] (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp S x) y) y)))))) (ctor-spine/arg
+       (strict-pos/no-occur (esort (lvar liz)) no-self-ref/sort)
+       ([x]
+         ([y]
+           (ctor-spine/arg
+             (strict-pos/no-occur x y)
+             ([z]
+               ([w]
+                 (ctor-spine/result
+                   (applies-self/app
+                     (applies-self/app
+                       (applies-self/app applies-self/refl))))))))))).
 
 Eq_refl/name : name "Eq.refl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) ctor).
 
@@ -135,17 +606,1183 @@ Eq_refl/decl : declared "Eq.refl" (eforall (esort (lvar liz)) ([x] (eforall x ([
 
 %% recursor Eq.rec
 Eq_rec/type-wf-sort : lvl
-   = (limax (lsucc (lvar (lis liz))) (limax (lvar (lis liz)) (limax (limax (lvar (lis liz)) (limax lzero (lsucc (lvar liz)))) (limax (lvar liz) (limax (lvar (lis liz)) (limax lzero (lvar liz))))))).
+   = (limax
+       (lsucc (lvar (lis liz)))
+       (limax
+         (lvar (lis liz))
+         (limax
+           (limax (lvar (lis liz)) (limax lzero (lsucc (lvar liz))))
+           (limax
+             (lvar liz)
+             (limax (lvar (lis liz)) (limax lzero (lvar liz))))))).
 
 Eq_rec/type-wf : of (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Eq_rec/type-wf-sort)
-   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall h ([y] ([h1] (defeq/forall (defeq/forall h ([z] ([h2] (defeq/forall (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h2) ([w] ([h3] defeq/sort-refl)))))) ([z] ([h2] (defeq/forall (defeq/app (defeq/app h2 h1) (defeq/app (defeq/app (defeq/const Eq_refl/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)) h) h1) h1)))))))) h) h1)) ([w] ([h3] (defeq/forall h ([x1] ([h4] (defeq/forall (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h4) ([y1] ([h5] (defeq/app (defeq/app h2 h4) h5))))))))))))))))))).
+   = (defeq/forall
+       defeq/sort-refl
+       ([x]
+         ([h]
+           (defeq/forall
+             h
+             ([y]
+               ([h1]
+                 (defeq/forall
+                   (defeq/forall
+                     h
+                     ([z]
+                       ([h2]
+                         (defeq/forall
+                           (defeq/app
+                             (defeq/app
+                               (defeq/app
+                                 (defeq/const
+                                   Eq/decl
+                                   (inst-expr/forall
+                                     (inst-expr/sort
+                                       (lvl-inst/var lvl-nth/zero))
+                                     ([x]
+                                       ([h]
+                                         (inst-expr/forall
+                                           h
+                                           ([y]
+                                             ([h1]
+                                               (inst-expr/forall
+                                                 h
+                                                 ([z]
+                                                   ([h2]
+                                                     (inst-expr/sort
+                                                       lvl-inst/zero)))))))))))
+                                 h)
+                               h1)
+                             h2)
+                           ([w] ([h3] defeq/sort-refl))))))
+                   ([z]
+                     ([h2]
+                       (defeq/forall
+                         (defeq/app
+                           (defeq/app h2 h1)
+                           (defeq/app
+                             (defeq/app
+                               (defeq/const
+                                 Eq_refl/decl
+                                 (inst-expr/forall
+                                   (inst-expr/sort (lvl-inst/var lvl-nth/zero))
+                                   ([x]
+                                     ([h]
+                                       (inst-expr/forall
+                                         h
+                                         ([y]
+                                           ([h1]
+                                             (inst-expr/app
+                                               (inst-expr/app
+                                                 (inst-expr/app
+                                                   (inst-expr/const
+                                                     (lvls-inst/cons
+                                                       (lvl-inst/var
+                                                         lvl-nth/zero)
+                                                       lvls-inst/nil))
+                                                   h)
+                                                 h1)
+                                               h1))))))))
+                               h)
+                             h1))
+                         ([w]
+                           ([h3]
+                             (defeq/forall
+                               h
+                               ([x1]
+                                 ([h4]
+                                   (defeq/forall
+                                     (defeq/app
+                                       (defeq/app
+                                         (defeq/app
+                                           (defeq/const
+                                             Eq/decl
+                                             (inst-expr/forall
+                                               (inst-expr/sort
+                                                 (lvl-inst/var lvl-nth/zero))
+                                               ([x]
+                                                 ([h]
+                                                   (inst-expr/forall
+                                                     h
+                                                     ([y]
+                                                       ([h1]
+                                                         (inst-expr/forall
+                                                           h
+                                                           ([z]
+                                                             ([h2]
+                                                               (inst-expr/sort
+                                                                 lvl-inst/zero)))))))))))
+                                           h)
+                                         h1)
+                                       h4)
+                                     ([y1]
+                                       ([h5]
+                                         (defeq/app
+                                           (defeq/app h2 h4)
+                                           h5))))))))))))))))))).
 
 Eq_rec/decl : declared "Eq.rec" (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) irec
    = declared/ok-irec Eq/rec-name (dkind-ok/irec Eq_rec/type-wf).
 
 %% thm accRecReduction
 accRecReduction/type-wf : of (eforall (esort (lsucc lzero)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eforall (eforall x ([w] (eforall (eapp (eapp y w) z) ([x1] (eapp (eapp (eapp (econst "Acc" (lcons (lsucc lzero) lnil)) x) y) w))))) ([w] (eforall (econst "Bool" lnil) ([x1] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (eapp (eapp (eapp (econst "Acc.rec" (lcons (lsucc lzero) (lcons (lsucc lzero) lnil))) x) y) (elam x ([y1] (elam (eapp (eapp (eapp (econst "Acc" (lcons (lsucc lzero) lnil)) x) y) y1) ([z1] (econst "Bool" lnil)))))) (elam x ([y1] (elam (eforall x ([z1] (eforall (eapp (eapp y z1) y1) ([w1] (eapp (eapp (eapp (econst "Acc" (lcons (lsucc lzero) lnil)) x) y) z1))))) ([z1] (elam (eforall x ([w1] (eforall (eapp (eapp y w1) y1) ([x2] (eapp (eapp (elam x ([y2] (elam (eapp (eapp (eapp (econst "Acc" (lcons (lsucc lzero) lnil)) x) y) y2) ([z2] (econst "Bool" lnil))))) w1) (eapp (eapp z1 w1) x2)))))) ([w1] x1))))))) z) (eapp (eapp (eapp (eapp (econst "Acc.intro" (lcons (lsucc lzero) lnil)) x) y) z) w))) x1))))))))))) (esort lzero)
-   = (defeq/conv (defeq/sort-eq (lvl-eq/le (mleq/imax-imL (mleq/maxL (mleq/imax-imL (mleq/maxL (mleq/imax-imL (mleq/maxL (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))) (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))))) (mleq/imax-imL (mleq/maxL (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))) (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))))))) (mleq/imax-imL (mleq/maxL (mleq/imax-imL (mleq/maxL (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))) (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))))) (mleq/imax-imL (mleq/maxL (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))) (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))))))))) (mleq/lz nonneg_0))) (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall (defeq/forall h ([y] ([h1] (defeq/forall h ([z] ([h2] defeq/sort-refl)))))) ([y] ([h1] (defeq/forall h ([z] ([h2] (defeq/forall (defeq/forall h ([w] ([h3] (defeq/forall (defeq/app (defeq/app h1 h3) h2) ([x1] ([h4] (defeq/app (defeq/app (defeq/app (defeq/const Acc/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))) ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h3))))))) ([w] ([h3] (defeq/forall (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x1] ([h4] (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))) (defeq/conv (defeq/trans (defeq/app (defeq/beta ([y1] ([h5] (defeq/lam (defeq/app (defeq/app (defeq/app (defeq/const Acc/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))) ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h5) ([z1] ([h6] (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))))) h2) (defeq/app (defeq/app (defeq/app (defeq/app (defeq/const Acc_intro/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))) ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/forall (inst-expr/forall h ([w] ([h3] (inst-expr/forall (inst-expr/app (inst-expr/app h1 h3) h2) ([x1] ([h4] (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)) h) h1) h3))))))) ([w] ([h3] (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)) h) h1) h2)))))))))))))) h) h1) h2) h3)) (defeq/trans (defeq/beta ([y1] ([h5] (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))) (defeq/app (defeq/app (defeq/app (defeq/app (defeq/const Acc_intro/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))) ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/forall (inst-expr/forall h ([w] ([h3] (inst-expr/forall (inst-expr/app (inst-expr/app h1 h3) h2) ([x1] ([h4] (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)) h) h1) h3))))))) ([w] ([h3] (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)) h) h1) h2)))))))))))))) h) h1) h2) h3)) (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))) (defeq/app (defeq/app (defeq/app (defeq/app (defeq/app (defeq/app (defeq/const Acc_rec/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var (lvl-nth/succ lvl-nth/zero))) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))) ([y] ([h1] (inst-expr/forall (inst-expr/forall h ([z] ([h2] (inst-expr/forall (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var (lvl-nth/succ lvl-nth/zero)) lvls-inst/nil)) h) h1) h2) ([w] ([h3] (inst-expr/sort (lvl-inst/var lvl-nth/zero)))))))) ([z] ([h2] (inst-expr/forall (inst-expr/forall h ([w] ([h3] (inst-expr/forall (inst-expr/forall h ([x1] ([h4] (inst-expr/forall (inst-expr/app (inst-expr/app h1 h4) h3) ([y1] ([h5] (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var (lvl-nth/succ lvl-nth/zero)) lvls-inst/nil)) h) h1) h4))))))) ([x1] ([h4] (inst-expr/forall (inst-expr/forall h ([y1] ([h5] (inst-expr/forall (inst-expr/app (inst-expr/app h1 h5) h3) ([z1] ([h6] (inst-expr/app (inst-expr/app h2 h5) (inst-expr/app (inst-expr/app h4 h5) h6)))))))) ([y1] ([h5] (inst-expr/app (inst-expr/app h2 h3) (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var (lvl-nth/succ lvl-nth/zero)) lvls-inst/nil)) h) h1) h3) h4))))))))))) ([w] ([h3] (inst-expr/forall h ([x1] ([h4] (inst-expr/forall (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var (lvl-nth/succ lvl-nth/zero)) lvls-inst/nil)) h) h1) h4) ([y1] ([h5] (inst-expr/app (inst-expr/app h2 h4) h5)))))))))))))))))))) h) h1) (defeq/lam h ([y1] ([h5] (defeq/lam (defeq/app (defeq/app (defeq/app (defeq/const Acc/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))) ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h5) ([z1] ([h6] (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))))))) (defeq/conv (defeq/forall h ([y1] ([h5] (defeq/forall (defeq/forall h ([z1] ([h6] (defeq/forall (defeq/app (defeq/app h1 h6) h5) ([w1] ([h7] (defeq/app (defeq/app (defeq/app (defeq/const Acc/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))) ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h6))))))) ([z1] ([h6] (defeq/forall (defeq/forall h ([w1] ([h7] (defeq/forall (defeq/app (defeq/app h1 h7) h5) ([x2] ([h8] (defeq/app (defeq/app (defeq/lam h ([y2] ([h9] (defeq/lam (defeq/app (defeq/app (defeq/app (defeq/const Acc/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))) ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h9) ([z2] ([h10] (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))))))) h7) (defeq/app (defeq/app h6 h7) h8)))))))) ([w1] ([h7] (defeq/trans (defeq/trans (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) (defeq/symm (defeq/beta ([x2] ([h8] (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))) (defeq/app (defeq/app (defeq/app (defeq/app (defeq/const Acc_intro/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))) ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/forall (inst-expr/forall h ([w] ([h3] (inst-expr/forall (inst-expr/app (inst-expr/app h1 h3) h2) ([x1] ([h4] (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)) h) h1) h3))))))) ([w] ([h3] (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)) h) h1) h2)))))))))))))) h) h1) h5) h6)))) (defeq/symm (defeq/app (defeq/beta ([x2] ([h8] (defeq/lam (defeq/app (defeq/app (defeq/app (defeq/const Acc/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))) ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h8) ([y2] ([h9] (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))))) h5) (defeq/app (defeq/app (defeq/app (defeq/app (defeq/const Acc_intro/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))) ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/forall (inst-expr/forall h ([w] ([h3] (inst-expr/forall (inst-expr/app (inst-expr/app h1 h3) h2) ([x1] ([h4] (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)) h) h1) h3))))))) ([w] ([h3] (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)) h) h1) h2)))))))))))))) h) h1) h5) h6))))))))))))) (defeq/lam h ([y1] ([h5] (defeq/lam (defeq/forall h ([z1] ([h6] (defeq/forall (defeq/app (defeq/app h1 h6) h5) ([w1] ([h7] (defeq/app (defeq/app (defeq/app (defeq/const Acc/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))) ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h6))))))) ([z1] ([h6] (defeq/lam (defeq/forall h ([w1] ([h7] (defeq/forall (defeq/app (defeq/app h1 h7) h5) ([x2] ([h8] (defeq/app (defeq/app (defeq/lam h ([y2] ([h9] (defeq/lam (defeq/app (defeq/app (defeq/app (defeq/const Acc/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))) ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h9) ([z2] ([h10] (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))))))) h7) (defeq/app (defeq/app h6 h7) h8)))))))) ([w1] ([h7] h4))))))))))) h2) (defeq/app (defeq/app (defeq/app (defeq/app (defeq/const Acc_intro/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))) ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/forall (inst-expr/forall h ([w] ([h3] (inst-expr/forall (inst-expr/app (inst-expr/app h1 h3) h2) ([x1] ([h4] (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)) h) h1) h3))))))) ([w] ([h3] (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)) h) h1) h2)))))))))))))) h) h1) h2) h3)))) h4))))))))))))))))).
+   = (defeq/conv
+       (defeq/sort-eq
+         (lvl-eq/le
+           (mleq/imax-imL
+             (mleq/maxL
+               (mleq/imax-imL
+                 (mleq/maxL
+                   (mleq/imax-imL
+                     (mleq/maxL
+                       (mleq/imax-imL
+                         (mleq/maxL
+                           (mleq/imax-lzL (mleq/self nonneg_0))
+                           (mleq/imax-lzL (mleq/self nonneg_0))))
+                       (mleq/imax-imL
+                         (mleq/maxL
+                           (mleq/imax-lzL (mleq/self nonneg_0))
+                           (mleq/imax-lzL (mleq/self nonneg_0))))))
+                   (mleq/imax-imL
+                     (mleq/maxL
+                       (mleq/imax-imL
+                         (mleq/maxL
+                           (mleq/imax-lzL (mleq/self nonneg_0))
+                           (mleq/imax-lzL (mleq/self nonneg_0))))
+                       (mleq/imax-imL
+                         (mleq/maxL
+                           (mleq/imax-lzL (mleq/self nonneg_0))
+                           (mleq/imax-lzL (mleq/self nonneg_0))))))))
+               (mleq/imax-imL
+                 (mleq/maxL
+                   (mleq/imax-imL
+                     (mleq/maxL
+                       (mleq/imax-imL
+                         (mleq/maxL
+                           (mleq/imax-lzL (mleq/self nonneg_0))
+                           (mleq/imax-lzL (mleq/self nonneg_0))))
+                       (mleq/imax-imL
+                         (mleq/maxL
+                           (mleq/imax-lzL (mleq/self nonneg_0))
+                           (mleq/imax-lzL (mleq/self nonneg_0))))))
+                   (mleq/imax-imL
+                     (mleq/maxL
+                       (mleq/imax-imL
+                         (mleq/maxL
+                           (mleq/imax-lzL (mleq/self nonneg_0))
+                           (mleq/imax-lzL (mleq/self nonneg_0))))
+                       (mleq/imax-imL
+                         (mleq/maxL
+                           (mleq/imax-lzL (mleq/self nonneg_0))
+                           (mleq/imax-lzL (mleq/self nonneg_0))))))))))
+           (mleq/lz nonneg_0)))
+       (defeq/forall
+         defeq/sort-refl
+         ([x]
+           ([h]
+             (defeq/forall
+               (defeq/forall
+                 h
+                 ([y] ([h1] (defeq/forall h ([z] ([h2] defeq/sort-refl))))))
+               ([y]
+                 ([h1]
+                   (defeq/forall
+                     h
+                     ([z]
+                       ([h2]
+                         (defeq/forall
+                           (defeq/forall
+                             h
+                             ([w]
+                               ([h3]
+                                 (defeq/forall
+                                   (defeq/app (defeq/app h1 h3) h2)
+                                   ([x1]
+                                     ([h4]
+                                       (defeq/app
+                                         (defeq/app
+                                           (defeq/app
+                                             (defeq/const
+                                               Acc/decl
+                                               (inst-expr/forall
+                                                 (inst-expr/sort
+                                                   (lvl-inst/var lvl-nth/zero))
+                                                 ([x]
+                                                   ([h]
+                                                     (inst-expr/forall
+                                                       (inst-expr/forall
+                                                         h
+                                                         ([y]
+                                                           ([h1]
+                                                             (inst-expr/forall
+                                                               h
+                                                               ([z]
+                                                                 ([h2]
+                                                                   (inst-expr/sort
+                                                                     lvl-inst/zero)))))))
+                                                       ([y]
+                                                         ([h1]
+                                                           (inst-expr/forall
+                                                             h
+                                                             ([z]
+                                                               ([h2]
+                                                                 (inst-expr/sort
+                                                                   lvl-inst/zero)))))))))))
+                                             h)
+                                           h1)
+                                         h3)))))))
+                           ([w]
+                             ([h3]
+                               (defeq/forall
+                                 (defeq/const
+                                   Bool/decl
+                                   (inst-expr/sort
+                                     (lvl-inst/succ lvl-inst/zero)))
+                                 ([x1]
+                                   ([h4]
+                                     (defeq/app
+                                       (defeq/app
+                                         (defeq/app
+                                           (defeq/const
+                                             Eq/decl
+                                             (inst-expr/forall
+                                               (inst-expr/sort
+                                                 (lvl-inst/var lvl-nth/zero))
+                                               ([x]
+                                                 ([h]
+                                                   (inst-expr/forall
+                                                     h
+                                                     ([y]
+                                                       ([h1]
+                                                         (inst-expr/forall
+                                                           h
+                                                           ([z]
+                                                             ([h2]
+                                                               (inst-expr/sort
+                                                                 lvl-inst/zero)))))))))))
+                                           (defeq/const
+                                             Bool/decl
+                                             (inst-expr/sort
+                                               (lvl-inst/succ lvl-inst/zero))))
+                                         (defeq/conv
+                                           (defeq/trans
+                                             (defeq/app
+                                               (defeq/beta
+                                                 ([y1]
+                                                   ([h5]
+                                                     (defeq/lam
+                                                       (defeq/app
+                                                         (defeq/app
+                                                           (defeq/app
+                                                             (defeq/const
+                                                               Acc/decl
+                                                               (inst-expr/forall
+                                                                 (inst-expr/sort
+                                                                   (lvl-inst/var
+                                                                     lvl-nth/zero))
+                                                                 ([x]
+                                                                   ([h]
+                                                                     (inst-expr/forall
+                                                                       (inst-expr/forall
+                                                                         h
+                                                                         ([y]
+                                                                           ([h1]
+                                                                             (inst-expr/forall
+                                                                               h
+                                                                               ([z]
+                                                                                 ([h2]
+                                                                                   (inst-expr/sort
+                                                                                     lvl-inst/zero)))))))
+                                                                       ([y]
+                                                                         ([h1]
+                                                                           (inst-expr/forall
+                                                                             h
+                                                                             ([z]
+                                                                               ([h2]
+                                                                                 (inst-expr/sort
+                                                                                   lvl-inst/zero)))))))))))
+                                                             h)
+                                                           h1)
+                                                         h5)
+                                                       ([z1]
+                                                         ([h6]
+                                                           (defeq/const
+                                                             Bool/decl
+                                                             (inst-expr/sort
+                                                               (lvl-inst/succ
+                                                                 lvl-inst/zero))))))))
+                                                 h2)
+                                               (defeq/app
+                                                 (defeq/app
+                                                   (defeq/app
+                                                     (defeq/app
+                                                       (defeq/const
+                                                         Acc_intro/decl
+                                                         (inst-expr/forall
+                                                           (inst-expr/sort
+                                                             (lvl-inst/var
+                                                               lvl-nth/zero))
+                                                           ([x]
+                                                             ([h]
+                                                               (inst-expr/forall
+                                                                 (inst-expr/forall
+                                                                   h
+                                                                   ([y]
+                                                                     ([h1]
+                                                                       (inst-expr/forall
+                                                                         h
+                                                                         ([z]
+                                                                           ([h2]
+                                                                             (inst-expr/sort
+                                                                               lvl-inst/zero)))))))
+                                                                 ([y]
+                                                                   ([h1]
+                                                                     (inst-expr/forall
+                                                                       h
+                                                                       ([z]
+                                                                         ([h2]
+                                                                           (inst-expr/forall
+                                                                             (inst-expr/forall
+                                                                               h
+                                                                               ([w]
+                                                                                 ([h3]
+                                                                                   (inst-expr/forall
+                                                                                     (inst-expr/app
+                                                                                       (inst-expr/app
+                                                                                         h1
+                                                                                         h3)
+                                                                                       h2)
+                                                                                     ([x1]
+                                                                                       ([h4]
+                                                                                         (inst-expr/app
+                                                                                           (inst-expr/app
+                                                                                             (inst-expr/app
+                                                                                               (inst-expr/const
+                                                                                                 (lvls-inst/cons
+                                                                                                   (lvl-inst/var
+                                                                                                     lvl-nth/zero)
+                                                                                                   lvls-inst/nil))
+                                                                                               h)
+                                                                                             h1)
+                                                                                           h3)))))))
+                                                                             ([w]
+                                                                               ([h3]
+                                                                                 (inst-expr/app
+                                                                                   (inst-expr/app
+                                                                                     (inst-expr/app
+                                                                                       (inst-expr/const
+                                                                                         (lvls-inst/cons
+                                                                                           (lvl-inst/var
+                                                                                             lvl-nth/zero)
+                                                                                           lvls-inst/nil))
+                                                                                       h)
+                                                                                     h1)
+                                                                                   h2))))))))))))))
+                                                       h)
+                                                     h1)
+                                                   h2)
+                                                 h3))
+                                             (defeq/trans
+                                               (defeq/beta
+                                                 ([y1]
+                                                   ([h5]
+                                                     (defeq/const
+                                                       Bool/decl
+                                                       (inst-expr/sort
+                                                         (lvl-inst/succ
+                                                           lvl-inst/zero)))))
+                                                 (defeq/app
+                                                   (defeq/app
+                                                     (defeq/app
+                                                       (defeq/app
+                                                         (defeq/const
+                                                           Acc_intro/decl
+                                                           (inst-expr/forall
+                                                             (inst-expr/sort
+                                                               (lvl-inst/var
+                                                                 lvl-nth/zero))
+                                                             ([x]
+                                                               ([h]
+                                                                 (inst-expr/forall
+                                                                   (inst-expr/forall
+                                                                     h
+                                                                     ([y]
+                                                                       ([h1]
+                                                                         (inst-expr/forall
+                                                                           h
+                                                                           ([z]
+                                                                             ([h2]
+                                                                               (inst-expr/sort
+                                                                                 lvl-inst/zero)))))))
+                                                                   ([y]
+                                                                     ([h1]
+                                                                       (inst-expr/forall
+                                                                         h
+                                                                         ([z]
+                                                                           ([h2]
+                                                                             (inst-expr/forall
+                                                                               (inst-expr/forall
+                                                                                 h
+                                                                                 ([w]
+                                                                                   ([h3]
+                                                                                     (inst-expr/forall
+                                                                                       (inst-expr/app
+                                                                                         (inst-expr/app
+                                                                                           h1
+                                                                                           h3)
+                                                                                         h2)
+                                                                                       ([x1]
+                                                                                         ([h4]
+                                                                                           (inst-expr/app
+                                                                                             (inst-expr/app
+                                                                                               (inst-expr/app
+                                                                                                 (inst-expr/const
+                                                                                                   (lvls-inst/cons
+                                                                                                     (lvl-inst/var
+                                                                                                       lvl-nth/zero)
+                                                                                                     lvls-inst/nil))
+                                                                                                 h)
+                                                                                               h1)
+                                                                                             h3)))))))
+                                                                               ([w]
+                                                                                 ([h3]
+                                                                                   (inst-expr/app
+                                                                                     (inst-expr/app
+                                                                                       (inst-expr/app
+                                                                                         (inst-expr/const
+                                                                                           (lvls-inst/cons
+                                                                                             (lvl-inst/var
+                                                                                               lvl-nth/zero)
+                                                                                             lvls-inst/nil))
+                                                                                         h)
+                                                                                       h1)
+                                                                                     h2))))))))))))))
+                                                         h)
+                                                       h1)
+                                                     h2)
+                                                   h3))
+                                               (defeq/const
+                                                 Bool/decl
+                                                 (inst-expr/sort
+                                                   (lvl-inst/succ
+                                                     lvl-inst/zero)))))
+                                           (defeq/app
+                                             (defeq/app
+                                               (defeq/app
+                                                 (defeq/app
+                                                   (defeq/app
+                                                     (defeq/app
+                                                       (defeq/const
+                                                         Acc_rec/decl
+                                                         (inst-expr/forall
+                                                           (inst-expr/sort
+                                                             (lvl-inst/var
+                                                               (lvl-nth/succ
+                                                                 lvl-nth/zero)))
+                                                           ([x]
+                                                             ([h]
+                                                               (inst-expr/forall
+                                                                 (inst-expr/forall
+                                                                   h
+                                                                   ([y]
+                                                                     ([h1]
+                                                                       (inst-expr/forall
+                                                                         h
+                                                                         ([z]
+                                                                           ([h2]
+                                                                             (inst-expr/sort
+                                                                               lvl-inst/zero)))))))
+                                                                 ([y]
+                                                                   ([h1]
+                                                                     (inst-expr/forall
+                                                                       (inst-expr/forall
+                                                                         h
+                                                                         ([z]
+                                                                           ([h2]
+                                                                             (inst-expr/forall
+                                                                               (inst-expr/app
+                                                                                 (inst-expr/app
+                                                                                   (inst-expr/app
+                                                                                     (inst-expr/const
+                                                                                       (lvls-inst/cons
+                                                                                         (lvl-inst/var
+                                                                                           (lvl-nth/succ
+                                                                                             lvl-nth/zero))
+                                                                                         lvls-inst/nil))
+                                                                                     h)
+                                                                                   h1)
+                                                                                 h2)
+                                                                               ([w]
+                                                                                 ([h3]
+                                                                                   (inst-expr/sort
+                                                                                     (lvl-inst/var
+                                                                                       lvl-nth/zero))))))))
+                                                                       ([z]
+                                                                         ([h2]
+                                                                           (inst-expr/forall
+                                                                             (inst-expr/forall
+                                                                               h
+                                                                               ([w]
+                                                                                 ([h3]
+                                                                                   (inst-expr/forall
+                                                                                     (inst-expr/forall
+                                                                                       h
+                                                                                       ([x1]
+                                                                                         ([h4]
+                                                                                           (inst-expr/forall
+                                                                                             (inst-expr/app
+                                                                                               (inst-expr/app
+                                                                                                 h1
+                                                                                                 h4)
+                                                                                               h3)
+                                                                                             ([y1]
+                                                                                               ([h5]
+                                                                                                 (inst-expr/app
+                                                                                                   (inst-expr/app
+                                                                                                     (inst-expr/app
+                                                                                                       (inst-expr/const
+                                                                                                         (lvls-inst/cons
+                                                                                                           (lvl-inst/var
+                                                                                                             (lvl-nth/succ
+                                                                                                               lvl-nth/zero))
+                                                                                                           lvls-inst/nil))
+                                                                                                       h)
+                                                                                                     h1)
+                                                                                                   h4)))))))
+                                                                                     ([x1]
+                                                                                       ([h4]
+                                                                                         (inst-expr/forall
+                                                                                           (inst-expr/forall
+                                                                                             h
+                                                                                             ([y1]
+                                                                                               ([h5]
+                                                                                                 (inst-expr/forall
+                                                                                                   (inst-expr/app
+                                                                                                     (inst-expr/app
+                                                                                                       h1
+                                                                                                       h5)
+                                                                                                     h3)
+                                                                                                   ([z1]
+                                                                                                     ([h6]
+                                                                                                       (inst-expr/app
+                                                                                                         (inst-expr/app
+                                                                                                           h2
+                                                                                                           h5)
+                                                                                                         (inst-expr/app
+                                                                                                           (inst-expr/app
+                                                                                                             h4
+                                                                                                             h5)
+                                                                                                           h6))))))))
+                                                                                           ([y1]
+                                                                                             ([h5]
+                                                                                               (inst-expr/app
+                                                                                                 (inst-expr/app
+                                                                                                   h2
+                                                                                                   h3)
+                                                                                                 (inst-expr/app
+                                                                                                   (inst-expr/app
+                                                                                                     (inst-expr/app
+                                                                                                       (inst-expr/app
+                                                                                                         (inst-expr/const
+                                                                                                           (lvls-inst/cons
+                                                                                                             (lvl-inst/var
+                                                                                                               (lvl-nth/succ
+                                                                                                                 lvl-nth/zero))
+                                                                                                             lvls-inst/nil))
+                                                                                                         h)
+                                                                                                       h1)
+                                                                                                     h3)
+                                                                                                   h4)))))))))))
+                                                                             ([w]
+                                                                               ([h3]
+                                                                                 (inst-expr/forall
+                                                                                   h
+                                                                                   ([x1]
+                                                                                     ([h4]
+                                                                                       (inst-expr/forall
+                                                                                         (inst-expr/app
+                                                                                           (inst-expr/app
+                                                                                             (inst-expr/app
+                                                                                               (inst-expr/const
+                                                                                                 (lvls-inst/cons
+                                                                                                   (lvl-inst/var
+                                                                                                     (lvl-nth/succ
+                                                                                                       lvl-nth/zero))
+                                                                                                   lvls-inst/nil))
+                                                                                               h)
+                                                                                             h1)
+                                                                                           h4)
+                                                                                         ([y1]
+                                                                                           ([h5]
+                                                                                             (inst-expr/app
+                                                                                               (inst-expr/app
+                                                                                                 h2
+                                                                                                 h4)
+                                                                                               h5))))))))))))))))))))
+                                                       h)
+                                                     h1)
+                                                   (defeq/lam
+                                                     h
+                                                     ([y1]
+                                                       ([h5]
+                                                         (defeq/lam
+                                                           (defeq/app
+                                                             (defeq/app
+                                                               (defeq/app
+                                                                 (defeq/const
+                                                                   Acc/decl
+                                                                   (inst-expr/forall
+                                                                     (inst-expr/sort
+                                                                       (lvl-inst/var
+                                                                         lvl-nth/zero))
+                                                                     ([x]
+                                                                       ([h]
+                                                                         (inst-expr/forall
+                                                                           (inst-expr/forall
+                                                                             h
+                                                                             ([y]
+                                                                               ([h1]
+                                                                                 (inst-expr/forall
+                                                                                   h
+                                                                                   ([z]
+                                                                                     ([h2]
+                                                                                       (inst-expr/sort
+                                                                                         lvl-inst/zero)))))))
+                                                                           ([y]
+                                                                             ([h1]
+                                                                               (inst-expr/forall
+                                                                                 h
+                                                                                 ([z]
+                                                                                   ([h2]
+                                                                                     (inst-expr/sort
+                                                                                       lvl-inst/zero)))))))))))
+                                                                 h)
+                                                               h1)
+                                                             h5)
+                                                           ([z1]
+                                                             ([h6]
+                                                               (defeq/const
+                                                                 Bool/decl
+                                                                 (inst-expr/sort
+                                                                   (lvl-inst/succ
+                                                                     lvl-inst/zero))))))))))
+                                                 (defeq/conv
+                                                   (defeq/forall
+                                                     h
+                                                     ([y1]
+                                                       ([h5]
+                                                         (defeq/forall
+                                                           (defeq/forall
+                                                             h
+                                                             ([z1]
+                                                               ([h6]
+                                                                 (defeq/forall
+                                                                   (defeq/app
+                                                                     (defeq/app
+                                                                       h1
+                                                                       h6)
+                                                                     h5)
+                                                                   ([w1]
+                                                                     ([h7]
+                                                                       (defeq/app
+                                                                         (defeq/app
+                                                                           (defeq/app
+                                                                             (defeq/const
+                                                                               Acc/decl
+                                                                               (inst-expr/forall
+                                                                                 (inst-expr/sort
+                                                                                   (lvl-inst/var
+                                                                                     lvl-nth/zero))
+                                                                                 ([x]
+                                                                                   ([h]
+                                                                                     (inst-expr/forall
+                                                                                       (inst-expr/forall
+                                                                                         h
+                                                                                         ([y]
+                                                                                           ([h1]
+                                                                                             (inst-expr/forall
+                                                                                               h
+                                                                                               ([z]
+                                                                                                 ([h2]
+                                                                                                   (inst-expr/sort
+                                                                                                     lvl-inst/zero)))))))
+                                                                                       ([y]
+                                                                                         ([h1]
+                                                                                           (inst-expr/forall
+                                                                                             h
+                                                                                             ([z]
+                                                                                               ([h2]
+                                                                                                 (inst-expr/sort
+                                                                                                   lvl-inst/zero)))))))))))
+                                                                             h)
+                                                                           h1)
+                                                                         h6)))))))
+                                                           ([z1]
+                                                             ([h6]
+                                                               (defeq/forall
+                                                                 (defeq/forall
+                                                                   h
+                                                                   ([w1]
+                                                                     ([h7]
+                                                                       (defeq/forall
+                                                                         (defeq/app
+                                                                           (defeq/app
+                                                                             h1
+                                                                             h7)
+                                                                           h5)
+                                                                         ([x2]
+                                                                           ([h8]
+                                                                             (defeq/app
+                                                                               (defeq/app
+                                                                                 (defeq/lam
+                                                                                   h
+                                                                                   ([y2]
+                                                                                     ([h9]
+                                                                                       (defeq/lam
+                                                                                         (defeq/app
+                                                                                           (defeq/app
+                                                                                             (defeq/app
+                                                                                               (defeq/const
+                                                                                                 Acc/decl
+                                                                                                 (inst-expr/forall
+                                                                                                   (inst-expr/sort
+                                                                                                     (lvl-inst/var
+                                                                                                       lvl-nth/zero))
+                                                                                                   ([x]
+                                                                                                     ([h]
+                                                                                                       (inst-expr/forall
+                                                                                                         (inst-expr/forall
+                                                                                                           h
+                                                                                                           ([y]
+                                                                                                             ([h1]
+                                                                                                               (inst-expr/forall
+                                                                                                                 h
+                                                                                                                 ([z]
+                                                                                                                   ([h2]
+                                                                                                                     (inst-expr/sort
+                                                                                                                       lvl-inst/zero)))))))
+                                                                                                         ([y]
+                                                                                                           ([h1]
+                                                                                                             (inst-expr/forall
+                                                                                                               h
+                                                                                                               ([z]
+                                                                                                                 ([h2]
+                                                                                                                   (inst-expr/sort
+                                                                                                                     lvl-inst/zero)))))))))))
+                                                                                               h)
+                                                                                             h1)
+                                                                                           h9)
+                                                                                         ([z2]
+                                                                                           ([h10]
+                                                                                             (defeq/const
+                                                                                               Bool/decl
+                                                                                               (inst-expr/sort
+                                                                                                 (lvl-inst/succ
+                                                                                                   lvl-inst/zero)))))))))
+                                                                                 h7)
+                                                                               (defeq/app
+                                                                                 (defeq/app
+                                                                                   h6
+                                                                                   h7)
+                                                                                 h8))))))))
+                                                                 ([w1]
+                                                                   ([h7]
+                                                                     (defeq/trans
+                                                                       (defeq/trans
+                                                                         (defeq/const
+                                                                           Bool/decl
+                                                                           (inst-expr/sort
+                                                                             (lvl-inst/succ
+                                                                               lvl-inst/zero)))
+                                                                         (defeq/symm
+                                                                           (defeq/beta
+                                                                             ([x2]
+                                                                               ([h8]
+                                                                                 (defeq/const
+                                                                                   Bool/decl
+                                                                                   (inst-expr/sort
+                                                                                     (lvl-inst/succ
+                                                                                       lvl-inst/zero)))))
+                                                                             (defeq/app
+                                                                               (defeq/app
+                                                                                 (defeq/app
+                                                                                   (defeq/app
+                                                                                     (defeq/const
+                                                                                       Acc_intro/decl
+                                                                                       (inst-expr/forall
+                                                                                         (inst-expr/sort
+                                                                                           (lvl-inst/var
+                                                                                             lvl-nth/zero))
+                                                                                         ([x]
+                                                                                           ([h]
+                                                                                             (inst-expr/forall
+                                                                                               (inst-expr/forall
+                                                                                                 h
+                                                                                                 ([y]
+                                                                                                   ([h1]
+                                                                                                     (inst-expr/forall
+                                                                                                       h
+                                                                                                       ([z]
+                                                                                                         ([h2]
+                                                                                                           (inst-expr/sort
+                                                                                                             lvl-inst/zero)))))))
+                                                                                               ([y]
+                                                                                                 ([h1]
+                                                                                                   (inst-expr/forall
+                                                                                                     h
+                                                                                                     ([z]
+                                                                                                       ([h2]
+                                                                                                         (inst-expr/forall
+                                                                                                           (inst-expr/forall
+                                                                                                             h
+                                                                                                             ([w]
+                                                                                                               ([h3]
+                                                                                                                 (inst-expr/forall
+                                                                                                                   (inst-expr/app
+                                                                                                                     (inst-expr/app
+                                                                                                                       h1
+                                                                                                                       h3)
+                                                                                                                     h2)
+                                                                                                                   ([x1]
+                                                                                                                     ([h4]
+                                                                                                                       (inst-expr/app
+                                                                                                                         (inst-expr/app
+                                                                                                                           (inst-expr/app
+                                                                                                                             (inst-expr/const
+                                                                                                                               (lvls-inst/cons
+                                                                                                                                 (lvl-inst/var
+                                                                                                                                   lvl-nth/zero)
+                                                                                                                                 lvls-inst/nil))
+                                                                                                                             h)
+                                                                                                                           h1)
+                                                                                                                         h3)))))))
+                                                                                                           ([w]
+                                                                                                             ([h3]
+                                                                                                               (inst-expr/app
+                                                                                                                 (inst-expr/app
+                                                                                                                   (inst-expr/app
+                                                                                                                     (inst-expr/const
+                                                                                                                       (lvls-inst/cons
+                                                                                                                         (lvl-inst/var
+                                                                                                                           lvl-nth/zero)
+                                                                                                                         lvls-inst/nil))
+                                                                                                                     h)
+                                                                                                                   h1)
+                                                                                                                 h2))))))))))))))
+                                                                                     h)
+                                                                                   h1)
+                                                                                 h5)
+                                                                               h6))))
+                                                                       (defeq/symm
+                                                                         (defeq/app
+                                                                           (defeq/beta
+                                                                             ([x2]
+                                                                               ([h8]
+                                                                                 (defeq/lam
+                                                                                   (defeq/app
+                                                                                     (defeq/app
+                                                                                       (defeq/app
+                                                                                         (defeq/const
+                                                                                           Acc/decl
+                                                                                           (inst-expr/forall
+                                                                                             (inst-expr/sort
+                                                                                               (lvl-inst/var
+                                                                                                 lvl-nth/zero))
+                                                                                             ([x]
+                                                                                               ([h]
+                                                                                                 (inst-expr/forall
+                                                                                                   (inst-expr/forall
+                                                                                                     h
+                                                                                                     ([y]
+                                                                                                       ([h1]
+                                                                                                         (inst-expr/forall
+                                                                                                           h
+                                                                                                           ([z]
+                                                                                                             ([h2]
+                                                                                                               (inst-expr/sort
+                                                                                                                 lvl-inst/zero)))))))
+                                                                                                   ([y]
+                                                                                                     ([h1]
+                                                                                                       (inst-expr/forall
+                                                                                                         h
+                                                                                                         ([z]
+                                                                                                           ([h2]
+                                                                                                             (inst-expr/sort
+                                                                                                               lvl-inst/zero)))))))))))
+                                                                                         h)
+                                                                                       h1)
+                                                                                     h8)
+                                                                                   ([y2]
+                                                                                     ([h9]
+                                                                                       (defeq/const
+                                                                                         Bool/decl
+                                                                                         (inst-expr/sort
+                                                                                           (lvl-inst/succ
+                                                                                             lvl-inst/zero))))))))
+                                                                             h5)
+                                                                           (defeq/app
+                                                                             (defeq/app
+                                                                               (defeq/app
+                                                                                 (defeq/app
+                                                                                   (defeq/const
+                                                                                     Acc_intro/decl
+                                                                                     (inst-expr/forall
+                                                                                       (inst-expr/sort
+                                                                                         (lvl-inst/var
+                                                                                           lvl-nth/zero))
+                                                                                       ([x]
+                                                                                         ([h]
+                                                                                           (inst-expr/forall
+                                                                                             (inst-expr/forall
+                                                                                               h
+                                                                                               ([y]
+                                                                                                 ([h1]
+                                                                                                   (inst-expr/forall
+                                                                                                     h
+                                                                                                     ([z]
+                                                                                                       ([h2]
+                                                                                                         (inst-expr/sort
+                                                                                                           lvl-inst/zero)))))))
+                                                                                             ([y]
+                                                                                               ([h1]
+                                                                                                 (inst-expr/forall
+                                                                                                   h
+                                                                                                   ([z]
+                                                                                                     ([h2]
+                                                                                                       (inst-expr/forall
+                                                                                                         (inst-expr/forall
+                                                                                                           h
+                                                                                                           ([w]
+                                                                                                             ([h3]
+                                                                                                               (inst-expr/forall
+                                                                                                                 (inst-expr/app
+                                                                                                                   (inst-expr/app
+                                                                                                                     h1
+                                                                                                                     h3)
+                                                                                                                   h2)
+                                                                                                                 ([x1]
+                                                                                                                   ([h4]
+                                                                                                                     (inst-expr/app
+                                                                                                                       (inst-expr/app
+                                                                                                                         (inst-expr/app
+                                                                                                                           (inst-expr/const
+                                                                                                                             (lvls-inst/cons
+                                                                                                                               (lvl-inst/var
+                                                                                                                                 lvl-nth/zero)
+                                                                                                                               lvls-inst/nil))
+                                                                                                                           h)
+                                                                                                                         h1)
+                                                                                                                       h3)))))))
+                                                                                                         ([w]
+                                                                                                           ([h3]
+                                                                                                             (inst-expr/app
+                                                                                                               (inst-expr/app
+                                                                                                                 (inst-expr/app
+                                                                                                                   (inst-expr/const
+                                                                                                                     (lvls-inst/cons
+                                                                                                                       (lvl-inst/var
+                                                                                                                         lvl-nth/zero)
+                                                                                                                       lvls-inst/nil))
+                                                                                                                   h)
+                                                                                                                 h1)
+                                                                                                               h2))))))))))))))
+                                                                                   h)
+                                                                                 h1)
+                                                                               h5)
+                                                                             h6)))))))))))))
+                                                   (defeq/lam
+                                                     h
+                                                     ([y1]
+                                                       ([h5]
+                                                         (defeq/lam
+                                                           (defeq/forall
+                                                             h
+                                                             ([z1]
+                                                               ([h6]
+                                                                 (defeq/forall
+                                                                   (defeq/app
+                                                                     (defeq/app
+                                                                       h1
+                                                                       h6)
+                                                                     h5)
+                                                                   ([w1]
+                                                                     ([h7]
+                                                                       (defeq/app
+                                                                         (defeq/app
+                                                                           (defeq/app
+                                                                             (defeq/const
+                                                                               Acc/decl
+                                                                               (inst-expr/forall
+                                                                                 (inst-expr/sort
+                                                                                   (lvl-inst/var
+                                                                                     lvl-nth/zero))
+                                                                                 ([x]
+                                                                                   ([h]
+                                                                                     (inst-expr/forall
+                                                                                       (inst-expr/forall
+                                                                                         h
+                                                                                         ([y]
+                                                                                           ([h1]
+                                                                                             (inst-expr/forall
+                                                                                               h
+                                                                                               ([z]
+                                                                                                 ([h2]
+                                                                                                   (inst-expr/sort
+                                                                                                     lvl-inst/zero)))))))
+                                                                                       ([y]
+                                                                                         ([h1]
+                                                                                           (inst-expr/forall
+                                                                                             h
+                                                                                             ([z]
+                                                                                               ([h2]
+                                                                                                 (inst-expr/sort
+                                                                                                   lvl-inst/zero)))))))))))
+                                                                             h)
+                                                                           h1)
+                                                                         h6)))))))
+                                                           ([z1]
+                                                             ([h6]
+                                                               (defeq/lam
+                                                                 (defeq/forall
+                                                                   h
+                                                                   ([w1]
+                                                                     ([h7]
+                                                                       (defeq/forall
+                                                                         (defeq/app
+                                                                           (defeq/app
+                                                                             h1
+                                                                             h7)
+                                                                           h5)
+                                                                         ([x2]
+                                                                           ([h8]
+                                                                             (defeq/app
+                                                                               (defeq/app
+                                                                                 (defeq/lam
+                                                                                   h
+                                                                                   ([y2]
+                                                                                     ([h9]
+                                                                                       (defeq/lam
+                                                                                         (defeq/app
+                                                                                           (defeq/app
+                                                                                             (defeq/app
+                                                                                               (defeq/const
+                                                                                                 Acc/decl
+                                                                                                 (inst-expr/forall
+                                                                                                   (inst-expr/sort
+                                                                                                     (lvl-inst/var
+                                                                                                       lvl-nth/zero))
+                                                                                                   ([x]
+                                                                                                     ([h]
+                                                                                                       (inst-expr/forall
+                                                                                                         (inst-expr/forall
+                                                                                                           h
+                                                                                                           ([y]
+                                                                                                             ([h1]
+                                                                                                               (inst-expr/forall
+                                                                                                                 h
+                                                                                                                 ([z]
+                                                                                                                   ([h2]
+                                                                                                                     (inst-expr/sort
+                                                                                                                       lvl-inst/zero)))))))
+                                                                                                         ([y]
+                                                                                                           ([h1]
+                                                                                                             (inst-expr/forall
+                                                                                                               h
+                                                                                                               ([z]
+                                                                                                                 ([h2]
+                                                                                                                   (inst-expr/sort
+                                                                                                                     lvl-inst/zero)))))))))))
+                                                                                               h)
+                                                                                             h1)
+                                                                                           h9)
+                                                                                         ([z2]
+                                                                                           ([h10]
+                                                                                             (defeq/const
+                                                                                               Bool/decl
+                                                                                               (inst-expr/sort
+                                                                                                 (lvl-inst/succ
+                                                                                                   lvl-inst/zero)))))))))
+                                                                                 h7)
+                                                                               (defeq/app
+                                                                                 (defeq/app
+                                                                                   h6
+                                                                                   h7)
+                                                                                 h8))))))))
+                                                                 ([w1]
+                                                                   ([h7]
+                                                                     h4)))))))))))
+                                               h2)
+                                             (defeq/app
+                                               (defeq/app
+                                                 (defeq/app
+                                                   (defeq/app
+                                                     (defeq/const
+                                                       Acc_intro/decl
+                                                       (inst-expr/forall
+                                                         (inst-expr/sort
+                                                           (lvl-inst/var
+                                                             lvl-nth/zero))
+                                                         ([x]
+                                                           ([h]
+                                                             (inst-expr/forall
+                                                               (inst-expr/forall
+                                                                 h
+                                                                 ([y]
+                                                                   ([h1]
+                                                                     (inst-expr/forall
+                                                                       h
+                                                                       ([z]
+                                                                         ([h2]
+                                                                           (inst-expr/sort
+                                                                             lvl-inst/zero)))))))
+                                                               ([y]
+                                                                 ([h1]
+                                                                   (inst-expr/forall
+                                                                     h
+                                                                     ([z]
+                                                                       ([h2]
+                                                                         (inst-expr/forall
+                                                                           (inst-expr/forall
+                                                                             h
+                                                                             ([w]
+                                                                               ([h3]
+                                                                                 (inst-expr/forall
+                                                                                   (inst-expr/app
+                                                                                     (inst-expr/app
+                                                                                       h1
+                                                                                       h3)
+                                                                                     h2)
+                                                                                   ([x1]
+                                                                                     ([h4]
+                                                                                       (inst-expr/app
+                                                                                         (inst-expr/app
+                                                                                           (inst-expr/app
+                                                                                             (inst-expr/const
+                                                                                               (lvls-inst/cons
+                                                                                                 (lvl-inst/var
+                                                                                                   lvl-nth/zero)
+                                                                                                 lvls-inst/nil))
+                                                                                             h)
+                                                                                           h1)
+                                                                                         h3)))))))
+                                                                           ([w]
+                                                                             ([h3]
+                                                                               (inst-expr/app
+                                                                                 (inst-expr/app
+                                                                                   (inst-expr/app
+                                                                                     (inst-expr/const
+                                                                                       (lvls-inst/cons
+                                                                                         (lvl-inst/var
+                                                                                           lvl-nth/zero)
+                                                                                         lvls-inst/nil))
+                                                                                     h)
+                                                                                   h1)
+                                                                                 h2))))))))))))))
+                                                     h)
+                                                   h1)
+                                                 h2)
+                                               h3))))
+                                       h4))))))))))))))))).
 
 %%% HOLE
 accRecReduction/value-typed : of (elam (esort (lsucc lzero)) ([x] (elam (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (elam x ([z] (elam (eforall x ([w] (eforall (eapp (eapp y w) z) ([x1] (eapp (eapp (eapp (econst "Acc" (lcons (lsucc lzero) lnil)) x) y) w))))) ([w] (elam (econst "Bool" lnil) ([x1] (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (eapp (eapp (eapp (econst "Acc.rec" (lcons (lsucc lzero) (lcons (lsucc lzero) lnil))) x) y) (elam x ([y1] (elam (eapp (eapp (eapp (econst "Acc" (lcons (lsucc lzero) lnil)) x) y) y1) ([z1] (econst "Bool" lnil)))))) (elam x ([y1] (elam (eforall x ([z1] (eforall (eapp (eapp y z1) y1) ([w1] (eapp (eapp (eapp (econst "Acc" (lcons (lsucc lzero) lnil)) x) y) z1))))) ([z1] (elam (eforall x ([w1] (eforall (eapp (eapp y w1) y1) ([x2] (eapp (eapp (elam x ([y2] (elam (eapp (eapp (eapp (econst "Acc" (lcons (lsucc lzero) lnil)) x) y) y2) ([z2] (econst "Bool" lnil))))) w1) (eapp (eapp z1 w1) x2)))))) ([w1] x1))))))) z) (eapp (eapp (eapp (eapp (econst "Acc.intro" (lcons (lsucc lzero) lnil)) x) y) z) w))))))))))))) (eforall (esort (lsucc lzero)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eforall (eforall x ([w] (eforall (eapp (eapp y w) z) ([x1] (eapp (eapp (eapp (econst "Acc" (lcons (lsucc lzero) lnil)) x) y) w))))) ([w] (eforall (econst "Bool" lnil) ([x1] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (eapp (eapp (eapp (econst "Acc.rec" (lcons (lsucc lzero) (lcons (lsucc lzero) lnil))) x) y) (elam x ([y1] (elam (eapp (eapp (eapp (econst "Acc" (lcons (lsucc lzero) lnil)) x) y) y1) ([z1] (econst "Bool" lnil)))))) (elam x ([y1] (elam (eforall x ([z1] (eforall (eapp (eapp y z1) y1) ([w1] (eapp (eapp (eapp (econst "Acc" (lcons (lsucc lzero) lnil)) x) y) z1))))) ([z1] (elam (eforall x ([w1] (eforall (eapp (eapp y w1) y1) ([x2] (eapp (eapp (elam x ([y2] (elam (eapp (eapp (eapp (econst "Acc" (lcons (lsucc lzero) lnil)) x) y) y2) ([z2] (econst "Bool" lnil))))) w1) (eapp (eapp z1 w1) x2)))))) ([w1] x1))))))) z) (eapp (eapp (eapp (eapp (econst "Acc.intro" (lcons (lsucc lzero) lnil)) x) y) z) w))) x1))))))))))).

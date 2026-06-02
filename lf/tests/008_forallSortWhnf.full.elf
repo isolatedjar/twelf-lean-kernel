@@ -25,7 +25,74 @@ forallSortWhnf/type-wf : of (esort lzero) (esort forallSortWhnf/type-wf-sort)
    = defeq/sort-refl.
 
 forallSortWhnf/value-typed : of (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] x)))) (esort lzero)
-   = (defeq/conv (defeq/sort-eq (lvl-eq/le (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))) (mleq/lz nonneg_0))) (defeq/forall (defeq/app (defeq/app (defeq/const id/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] h))))))) defeq/sort-refl) defeq/sort-refl) ([x] ([h] (defeq/forall (defeq/conv (defeq/beta ([y] ([h1] h1)) defeq/sort-refl) (defeq/conv (defeq/app (defeq/beta ([y] ([h1] (defeq/lam h1 ([z] ([h2] h2))))) defeq/sort-refl) defeq/sort-refl) (defeq/conv (defeq/app (defeq/app (defeq/delta id/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] h)))))) (inst-expr/lam (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/lam h ([y] ([h1] h1))))))) defeq/sort-refl) defeq/sort-refl) h))) ([y] ([h1] (defeq/conv (defeq/beta ([z] ([h2] h2)) defeq/sort-refl) (defeq/conv (defeq/app (defeq/beta ([z] ([h2] (defeq/lam h2 ([w] ([h3] h3))))) defeq/sort-refl) defeq/sort-refl) (defeq/conv (defeq/app (defeq/app (defeq/delta id/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] h)))))) (inst-expr/lam (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/lam h ([y] ([h1] h1))))))) defeq/sort-refl) defeq/sort-refl) h)))))))))).
+   = (defeq/conv
+       (defeq/sort-eq
+         (lvl-eq/le
+           (mleq/imax-imL
+             (mleq/maxL
+               (mleq/imax-lzL (mleq/self nonneg_0))
+               (mleq/imax-lzL (mleq/self nonneg_0))))
+           (mleq/lz nonneg_0)))
+       (defeq/forall
+         (defeq/app
+           (defeq/app
+             (defeq/const
+               id/decl
+               (inst-expr/forall
+                 (inst-expr/sort (lvl-inst/var lvl-nth/zero))
+                 ([x] ([h] (inst-expr/forall h ([y] ([h1] h)))))))
+             defeq/sort-refl)
+           defeq/sort-refl)
+         ([x]
+           ([h]
+             (defeq/forall
+               (defeq/conv
+                 (defeq/beta ([y] ([h1] h1)) defeq/sort-refl)
+                 (defeq/conv
+                   (defeq/app
+                     (defeq/beta
+                       ([y] ([h1] (defeq/lam h1 ([z] ([h2] h2)))))
+                       defeq/sort-refl)
+                     defeq/sort-refl)
+                   (defeq/conv
+                     (defeq/app
+                       (defeq/app
+                         (defeq/delta
+                           id/decl
+                           (inst-expr/forall
+                             (inst-expr/sort (lvl-inst/var lvl-nth/zero))
+                             ([x] ([h] (inst-expr/forall h ([y] ([h1] h))))))
+                           (inst-expr/lam
+                             (inst-expr/sort (lvl-inst/var lvl-nth/zero))
+                             ([x] ([h] (inst-expr/lam h ([y] ([h1] h1)))))))
+                         defeq/sort-refl)
+                       defeq/sort-refl)
+                     h)))
+               ([y]
+                 ([h1]
+                   (defeq/conv
+                     (defeq/beta ([z] ([h2] h2)) defeq/sort-refl)
+                     (defeq/conv
+                       (defeq/app
+                         (defeq/beta
+                           ([z] ([h2] (defeq/lam h2 ([w] ([h3] h3)))))
+                           defeq/sort-refl)
+                         defeq/sort-refl)
+                       (defeq/conv
+                         (defeq/app
+                           (defeq/app
+                             (defeq/delta
+                               id/decl
+                               (inst-expr/forall
+                                 (inst-expr/sort (lvl-inst/var lvl-nth/zero))
+                                 ([x]
+                                   ([h] (inst-expr/forall h ([y] ([h1] h))))))
+                               (inst-expr/lam
+                                 (inst-expr/sort (lvl-inst/var lvl-nth/zero))
+                                 ([x] ([h] (inst-expr/lam h ([y] ([h1] h1)))))))
+                             defeq/sort-refl)
+                           defeq/sort-refl)
+                         h)))))))))).
 
 forallSortWhnf/name : name "forallSortWhnf" (is-decl (esort lzero) (defn (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (esort lzero)) ([x] (eforall x ([y] x)))))).
 

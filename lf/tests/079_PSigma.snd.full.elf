@@ -2,10 +2,20 @@
 %%% Type-checking dependent projection functions
 %% inductive PSigma
 PSigma/type-wf-sort : lvl
-   = (limax (lsucc (lvar liz)) (limax (limax (lvar liz) (lsucc (lvar (lis liz)))) (lsucc (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))).
+   = (limax
+       (lsucc (lvar liz))
+       (limax
+         (limax (lvar liz) (lsucc (lvar (lis liz))))
+         (lsucc (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))).
 
 PSigma/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (esort (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))))) (esort PSigma/type-wf-sort)
-   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall (defeq/forall h ([y] ([h1] defeq/sort-refl))) ([y] ([h1] defeq/sort-refl)))))).
+   = (defeq/forall
+       defeq/sort-refl
+       ([x]
+         ([h]
+           (defeq/forall
+             (defeq/forall h ([y] ([h1] defeq/sort-refl)))
+             ([y] ([h1] defeq/sort-refl)))))).
 
 PSigma/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (esort (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz))))))))
    = (ends-in-sort/forall ([x] (ends-in-sort/forall ([y] ends-in-sort/sort)))).
@@ -19,13 +29,91 @@ PSigma/decl : declared "PSigma" (eforall (esort (lvar liz)) ([x] (eforall (efora
 
 %% ctor PSigma.mk (of PSigma)
 PSigma_mk/type-wf-sort : lvl
-   = (limax (lsucc (lvar liz)) (limax (limax (lvar liz) (lsucc (lvar (lis liz)))) (limax (lvar liz) (limax (lvar (lis liz)) (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz))))))).
+   = (limax
+       (lsucc (lvar liz))
+       (limax
+         (limax (lvar liz) (lsucc (lvar (lis liz))))
+         (limax
+           (lvar liz)
+           (limax
+             (lvar (lis liz))
+             (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz))))))).
 
 PSigma_mk/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) (esort PSigma_mk/type-wf-sort)
-   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall (defeq/forall h ([y] ([h1] defeq/sort-refl))) ([y] ([h1] (defeq/forall h ([z] ([h2] (defeq/forall (defeq/app h1 h2) ([w] ([h3] (defeq/app (defeq/app (defeq/const PSigma/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] (inst-expr/sort (lvl-inst/var (lvl-nth/succ lvl-nth/zero)))))) ([y] ([h1] (inst-expr/sort (lvl-inst/max (lvl-inst/max (lvl-inst/succ lvl-inst/zero) (lvl-inst/var lvl-nth/zero)) (lvl-inst/var (lvl-nth/succ lvl-nth/zero))))))))))) h) h1))))))))))))).
+   = (defeq/forall
+       defeq/sort-refl
+       ([x]
+         ([h]
+           (defeq/forall
+             (defeq/forall h ([y] ([h1] defeq/sort-refl)))
+             ([y]
+               ([h1]
+                 (defeq/forall
+                   h
+                   ([z]
+                     ([h2]
+                       (defeq/forall
+                         (defeq/app h1 h2)
+                         ([w]
+                           ([h3]
+                             (defeq/app
+                               (defeq/app
+                                 (defeq/const
+                                   PSigma/decl
+                                   (inst-expr/forall
+                                     (inst-expr/sort
+                                       (lvl-inst/var lvl-nth/zero))
+                                     ([x]
+                                       ([h]
+                                         (inst-expr/forall
+                                           (inst-expr/forall
+                                             h
+                                             ([y]
+                                               ([h1]
+                                                 (inst-expr/sort
+                                                   (lvl-inst/var
+                                                     (lvl-nth/succ
+                                                       lvl-nth/zero))))))
+                                           ([y]
+                                             ([h1]
+                                               (inst-expr/sort
+                                                 (lvl-inst/max
+                                                   (lvl-inst/max
+                                                     (lvl-inst/succ
+                                                       lvl-inst/zero)
+                                                     (lvl-inst/var
+                                                       lvl-nth/zero))
+                                                   (lvl-inst/var
+                                                     (lvl-nth/succ
+                                                       lvl-nth/zero)))))))))))
+                                 h)
+                               h1))))))))))))).
 
 PSigma_mk/positivity : ctor-positive "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil)) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y)))))))))
-   = (ctor-positive/intro ([S] (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp S x) y)))))))))) (ctor-spine/arg (strict-pos/no-occur (esort (lvar liz)) no-self-ref/sort) ([x] ([y] (ctor-spine/arg (strict-pos/no-occur (eforall x ([y] (esort (lvar (lis liz))))) (no-self-ref/forall y ([z] ([w] no-self-ref/sort)))) ([z] ([w] (ctor-spine/arg (strict-pos/no-occur x y) ([x1] ([y1] (ctor-spine/arg (strict-pos/no-occur (eapp z x1) (no-self-ref/app w y1)) ([z1] ([w1] (ctor-spine/result (applies-self/app (applies-self/app applies-self/refl)))))))))))))))).
+   = (ctor-positive/intro ([S] (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp S x) y)))))))))) (ctor-spine/arg
+       (strict-pos/no-occur (esort (lvar liz)) no-self-ref/sort)
+       ([x]
+         ([y]
+           (ctor-spine/arg
+             (strict-pos/no-occur
+               (eforall x ([y] (esort (lvar (lis liz)))))
+               (no-self-ref/forall y ([z] ([w] no-self-ref/sort))))
+             ([z]
+               ([w]
+                 (ctor-spine/arg
+                   (strict-pos/no-occur x y)
+                   ([x1]
+                     ([y1]
+                       (ctor-spine/arg
+                         (strict-pos/no-occur
+                           (eapp z x1)
+                           (no-self-ref/app w y1))
+                         ([z1]
+                           ([w1]
+                             (ctor-spine/result
+                               (applies-self/app
+                                 (applies-self/app
+                                   applies-self/refl)))))))))))))))).
 
 PSigma_mk/name : name "PSigma.mk" (is-decl (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) ctor).
 
@@ -34,20 +122,213 @@ PSigma_mk/decl : declared "PSigma.mk" (eforall (esort (lvar liz)) ([x] (eforall 
 
 %% recursor PSigma.rec
 PSigma_rec/type-wf-sort : lvl
-   = (limax (lsucc (lvar (lis liz))) (limax (limax (lvar (lis liz)) (lsucc (lvar (lis (lis liz))))) (limax (limax (lmax (lmax (lsucc lzero) (lvar (lis liz))) (lvar (lis (lis liz)))) (lsucc (lvar liz))) (limax (limax (lvar (lis liz)) (limax (lvar (lis (lis liz))) (lvar liz))) (limax (lmax (lmax (lsucc lzero) (lvar (lis liz))) (lvar (lis (lis liz)))) (lvar liz)))))).
+   = (limax
+       (lsucc (lvar (lis liz)))
+       (limax
+         (limax (lvar (lis liz)) (lsucc (lvar (lis (lis liz)))))
+         (limax
+           (limax
+             (lmax (lmax (lsucc lzero) (lvar (lis liz))) (lvar (lis (lis liz))))
+             (lsucc (lvar liz)))
+           (limax
+             (limax (lvar (lis liz)) (limax (lvar (lis (lis liz))) (lvar liz)))
+             (limax
+               (lmax
+                 (lmax (lsucc lzero) (lvar (lis liz)))
+                 (lvar (lis (lis liz))))
+               (lvar liz)))))).
 
 PSigma_rec/type-wf : of (eforall (esort (lvar (lis liz))) ([x] (eforall (eforall x ([y] (esort (lvar (lis (lis liz)))))) ([y] (eforall (eforall (eapp (eapp (econst "PSigma" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([z] (esort (lvar liz)))) ([z] (eforall (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PSigma.mk" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "PSigma" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([x1] (eapp z x1))))))))))) (esort PSigma_rec/type-wf-sort)
-   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall (defeq/forall h ([y] ([h1] defeq/sort-refl))) ([y] ([h1] (defeq/forall (defeq/forall (defeq/app (defeq/app (defeq/const PSigma/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] (inst-expr/sort (lvl-inst/var (lvl-nth/succ lvl-nth/zero)))))) ([y] ([h1] (inst-expr/sort (lvl-inst/max (lvl-inst/max (lvl-inst/succ lvl-inst/zero) (lvl-inst/var lvl-nth/zero)) (lvl-inst/var (lvl-nth/succ lvl-nth/zero))))))))))) h) h1) ([z] ([h2] defeq/sort-refl))) ([z] ([h2] (defeq/forall (defeq/forall h ([w] ([h3] (defeq/forall (defeq/app h1 h3) ([x1] ([h4] (defeq/app h2 (defeq/app (defeq/app (defeq/app (defeq/app (defeq/const PSigma_mk/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] (inst-expr/sort (lvl-inst/var (lvl-nth/succ lvl-nth/zero)))))) ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/forall (inst-expr/app h1 h2) ([w] ([h3] (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) (lvls-inst/cons (lvl-inst/var (lvl-nth/succ lvl-nth/zero)) lvls-inst/nil))) h) h1)))))))))))))) h) h1) h3) h4)))))))) ([w] ([h3] (defeq/forall (defeq/app (defeq/app (defeq/const PSigma/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] (inst-expr/sort (lvl-inst/var (lvl-nth/succ lvl-nth/zero)))))) ([y] ([h1] (inst-expr/sort (lvl-inst/max (lvl-inst/max (lvl-inst/succ lvl-inst/zero) (lvl-inst/var lvl-nth/zero)) (lvl-inst/var (lvl-nth/succ lvl-nth/zero))))))))))) h) h1) ([x1] ([h4] (defeq/app h2 h4)))))))))))))))).
+   = (defeq/forall
+       defeq/sort-refl
+       ([x]
+         ([h]
+           (defeq/forall
+             (defeq/forall h ([y] ([h1] defeq/sort-refl)))
+             ([y]
+               ([h1]
+                 (defeq/forall
+                   (defeq/forall
+                     (defeq/app
+                       (defeq/app
+                         (defeq/const
+                           PSigma/decl
+                           (inst-expr/forall
+                             (inst-expr/sort (lvl-inst/var lvl-nth/zero))
+                             ([x]
+                               ([h]
+                                 (inst-expr/forall
+                                   (inst-expr/forall
+                                     h
+                                     ([y]
+                                       ([h1]
+                                         (inst-expr/sort
+                                           (lvl-inst/var
+                                             (lvl-nth/succ lvl-nth/zero))))))
+                                   ([y]
+                                     ([h1]
+                                       (inst-expr/sort
+                                         (lvl-inst/max
+                                           (lvl-inst/max
+                                             (lvl-inst/succ lvl-inst/zero)
+                                             (lvl-inst/var lvl-nth/zero))
+                                           (lvl-inst/var
+                                             (lvl-nth/succ
+                                               lvl-nth/zero)))))))))))
+                         h)
+                       h1)
+                     ([z] ([h2] defeq/sort-refl)))
+                   ([z]
+                     ([h2]
+                       (defeq/forall
+                         (defeq/forall
+                           h
+                           ([w]
+                             ([h3]
+                               (defeq/forall
+                                 (defeq/app h1 h3)
+                                 ([x1]
+                                   ([h4]
+                                     (defeq/app
+                                       h2
+                                       (defeq/app
+                                         (defeq/app
+                                           (defeq/app
+                                             (defeq/app
+                                               (defeq/const
+                                                 PSigma_mk/decl
+                                                 (inst-expr/forall
+                                                   (inst-expr/sort
+                                                     (lvl-inst/var
+                                                       lvl-nth/zero))
+                                                   ([x]
+                                                     ([h]
+                                                       (inst-expr/forall
+                                                         (inst-expr/forall
+                                                           h
+                                                           ([y]
+                                                             ([h1]
+                                                               (inst-expr/sort
+                                                                 (lvl-inst/var
+                                                                   (lvl-nth/succ
+                                                                     lvl-nth/zero))))))
+                                                         ([y]
+                                                           ([h1]
+                                                             (inst-expr/forall
+                                                               h
+                                                               ([z]
+                                                                 ([h2]
+                                                                   (inst-expr/forall
+                                                                     (inst-expr/app
+                                                                       h1
+                                                                       h2)
+                                                                     ([w]
+                                                                       ([h3]
+                                                                         (inst-expr/app
+                                                                           (inst-expr/app
+                                                                             (inst-expr/const
+                                                                               (lvls-inst/cons
+                                                                                 (lvl-inst/var
+                                                                                   lvl-nth/zero)
+                                                                                 (lvls-inst/cons
+                                                                                   (lvl-inst/var
+                                                                                     (lvl-nth/succ
+                                                                                       lvl-nth/zero))
+                                                                                   lvls-inst/nil)))
+                                                                             h)
+                                                                           h1))))))))))))))
+                                               h)
+                                             h1)
+                                           h3)
+                                         h4))))))))
+                         ([w]
+                           ([h3]
+                             (defeq/forall
+                               (defeq/app
+                                 (defeq/app
+                                   (defeq/const
+                                     PSigma/decl
+                                     (inst-expr/forall
+                                       (inst-expr/sort
+                                         (lvl-inst/var lvl-nth/zero))
+                                       ([x]
+                                         ([h]
+                                           (inst-expr/forall
+                                             (inst-expr/forall
+                                               h
+                                               ([y]
+                                                 ([h1]
+                                                   (inst-expr/sort
+                                                     (lvl-inst/var
+                                                       (lvl-nth/succ
+                                                         lvl-nth/zero))))))
+                                             ([y]
+                                               ([h1]
+                                                 (inst-expr/sort
+                                                   (lvl-inst/max
+                                                     (lvl-inst/max
+                                                       (lvl-inst/succ
+                                                         lvl-inst/zero)
+                                                       (lvl-inst/var
+                                                         lvl-nth/zero))
+                                                     (lvl-inst/var
+                                                       (lvl-nth/succ
+                                                         lvl-nth/zero)))))))))))
+                                   h)
+                                 h1)
+                               ([x1] ([h4] (defeq/app h2 h4)))))))))))))))).
 
 PSigma_rec/decl : declared "PSigma.rec" (eforall (esort (lvar (lis liz))) ([x] (eforall (eforall x ([y] (esort (lvar (lis (lis liz)))))) ([y] (eforall (eforall (eapp (eapp (econst "PSigma" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([z] (esort (lvar liz)))) ([z] (eforall (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PSigma.mk" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "PSigma" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([x1] (eapp z x1))))))))))) irec
    = declared/ok-irec PSigma/rec-name (dkind-ok/irec PSigma_rec/type-wf).
 
 %% def PSigma.fst
 PSigma_fst/type-wf-sort : lvl
-   = (limax (lsucc (lvar liz)) (limax (limax (lvar liz) (lsucc (lvar (lis liz)))) (limax (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz))) (lvar liz)))).
+   = (limax
+       (lsucc (lvar liz))
+       (limax
+         (limax (lvar liz) (lsucc (lvar (lis liz))))
+         (limax
+           (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))
+           (lvar liz)))).
 
 PSigma_fst/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (eforall (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] x)))))) (esort PSigma_fst/type-wf-sort)
-   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall (defeq/forall h ([y] ([h1] defeq/sort-refl))) ([y] ([h1] (defeq/forall (defeq/app (defeq/app (defeq/const PSigma/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] (inst-expr/sort (lvl-inst/var (lvl-nth/succ lvl-nth/zero)))))) ([y] ([h1] (inst-expr/sort (lvl-inst/max (lvl-inst/max (lvl-inst/succ lvl-inst/zero) (lvl-inst/var lvl-nth/zero)) (lvl-inst/var (lvl-nth/succ lvl-nth/zero))))))))))) h) h1) ([z] ([h2] h))))))))).
+   = (defeq/forall
+       defeq/sort-refl
+       ([x]
+         ([h]
+           (defeq/forall
+             (defeq/forall h ([y] ([h1] defeq/sort-refl)))
+             ([y]
+               ([h1]
+                 (defeq/forall
+                   (defeq/app
+                     (defeq/app
+                       (defeq/const
+                         PSigma/decl
+                         (inst-expr/forall
+                           (inst-expr/sort (lvl-inst/var lvl-nth/zero))
+                           ([x]
+                             ([h]
+                               (inst-expr/forall
+                                 (inst-expr/forall
+                                   h
+                                   ([y]
+                                     ([h1]
+                                       (inst-expr/sort
+                                         (lvl-inst/var
+                                           (lvl-nth/succ lvl-nth/zero))))))
+                                 ([y]
+                                   ([h1]
+                                     (inst-expr/sort
+                                       (lvl-inst/max
+                                         (lvl-inst/max
+                                           (lvl-inst/succ lvl-inst/zero)
+                                           (lvl-inst/var lvl-nth/zero))
+                                         (lvl-inst/var
+                                           (lvl-nth/succ lvl-nth/zero)))))))))))
+                       h)
+                     h1)
+                   ([z] ([h2] h))))))))).
 
 %%% HOLE
 PSigma_fst/value-typed : of (elam (esort (lvar liz)) ([x] (elam (eforall x ([y] (esort (lvar (lis liz))))) ([y] (elam (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (eproj "PSigma" 0 z))))))) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (eforall (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] x)))))).
@@ -59,10 +340,93 @@ PSigma_fst/decl : declared "PSigma.fst" (eforall (esort (lvar liz)) ([x] (eforal
 
 %% def PSigma.snd
 PSigma_snd/type-wf-sort : lvl
-   = (limax (lsucc (lvar liz)) (limax (limax (lvar liz) (lsucc (lvar (lis liz)))) (limax (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz))) (lvar (lis liz))))).
+   = (limax
+       (lsucc (lvar liz))
+       (limax
+         (limax (lvar liz) (lsucc (lvar (lis liz))))
+         (limax
+           (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))
+           (lvar (lis liz))))).
 
 PSigma_snd/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (eforall (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (eapp y (eapp (eapp (eapp (econst "PSigma.fst" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) z)))))))) (esort PSigma_snd/type-wf-sort)
-   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall (defeq/forall h ([y] ([h1] defeq/sort-refl))) ([y] ([h1] (defeq/forall (defeq/app (defeq/app (defeq/const PSigma/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] (inst-expr/sort (lvl-inst/var (lvl-nth/succ lvl-nth/zero)))))) ([y] ([h1] (inst-expr/sort (lvl-inst/max (lvl-inst/max (lvl-inst/succ lvl-inst/zero) (lvl-inst/var lvl-nth/zero)) (lvl-inst/var (lvl-nth/succ lvl-nth/zero))))))))))) h) h1) ([z] ([h2] (defeq/app h1 (defeq/app (defeq/app (defeq/app (defeq/const PSigma_fst/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/forall h ([y] ([h1] (inst-expr/sort (lvl-inst/var (lvl-nth/succ lvl-nth/zero)))))) ([y] ([h1] (inst-expr/forall (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) (lvls-inst/cons (lvl-inst/var (lvl-nth/succ lvl-nth/zero)) lvls-inst/nil))) h) h1) ([z] ([h2] h)))))))))) h) h1) h2))))))))))).
+   = (defeq/forall
+       defeq/sort-refl
+       ([x]
+         ([h]
+           (defeq/forall
+             (defeq/forall h ([y] ([h1] defeq/sort-refl)))
+             ([y]
+               ([h1]
+                 (defeq/forall
+                   (defeq/app
+                     (defeq/app
+                       (defeq/const
+                         PSigma/decl
+                         (inst-expr/forall
+                           (inst-expr/sort (lvl-inst/var lvl-nth/zero))
+                           ([x]
+                             ([h]
+                               (inst-expr/forall
+                                 (inst-expr/forall
+                                   h
+                                   ([y]
+                                     ([h1]
+                                       (inst-expr/sort
+                                         (lvl-inst/var
+                                           (lvl-nth/succ lvl-nth/zero))))))
+                                 ([y]
+                                   ([h1]
+                                     (inst-expr/sort
+                                       (lvl-inst/max
+                                         (lvl-inst/max
+                                           (lvl-inst/succ lvl-inst/zero)
+                                           (lvl-inst/var lvl-nth/zero))
+                                         (lvl-inst/var
+                                           (lvl-nth/succ lvl-nth/zero)))))))))))
+                       h)
+                     h1)
+                   ([z]
+                     ([h2]
+                       (defeq/app
+                         h1
+                         (defeq/app
+                           (defeq/app
+                             (defeq/app
+                               (defeq/const
+                                 PSigma_fst/decl
+                                 (inst-expr/forall
+                                   (inst-expr/sort (lvl-inst/var lvl-nth/zero))
+                                   ([x]
+                                     ([h]
+                                       (inst-expr/forall
+                                         (inst-expr/forall
+                                           h
+                                           ([y]
+                                             ([h1]
+                                               (inst-expr/sort
+                                                 (lvl-inst/var
+                                                   (lvl-nth/succ
+                                                     lvl-nth/zero))))))
+                                         ([y]
+                                           ([h1]
+                                             (inst-expr/forall
+                                               (inst-expr/app
+                                                 (inst-expr/app
+                                                   (inst-expr/const
+                                                     (lvls-inst/cons
+                                                       (lvl-inst/var
+                                                         lvl-nth/zero)
+                                                       (lvls-inst/cons
+                                                         (lvl-inst/var
+                                                           (lvl-nth/succ
+                                                             lvl-nth/zero))
+                                                         lvls-inst/nil)))
+                                                   h)
+                                                 h1)
+                                               ([z] ([h2] h))))))))))
+                               h)
+                             h1)
+                           h2))))))))))).
 
 %%% HOLE
 PSigma_snd/value-typed : of (elam (esort (lvar liz)) ([x] (elam (eforall x ([y] (esort (lvar (lis liz))))) ([y] (elam (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (eproj "PSigma" 1 z))))))) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (eforall (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (eapp y (eapp (eapp (eapp (econst "PSigma.fst" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) z)))))))).

@@ -10,7 +10,17 @@ arrowType/type-wf : of (esort (lsucc lzero)) (esort arrowType/type-wf-sort)
    = defeq/sort-refl.
 
 arrowType/value-typed : of (eforall (esort lzero) ([x] (esort lzero))) (esort (lsucc lzero))
-   = (defeq/conv (defeq/sort-eq (lvl-eq/le (mleq/imax-lsL (mleq/sR (mleq/maxL (mleq/sL (mleq/self nonneg_0)) (mleq/sL (mleq/self nonneg_0))))) (mleq/sL (mleq/imax-lsR (mleq/maxR-l (mleq/sR (mleq/self nonneg_0))))))) (defeq/forall defeq/sort-refl ([x] ([h] defeq/sort-refl)))).
+   = (defeq/conv
+       (defeq/sort-eq
+         (lvl-eq/le
+           (mleq/imax-lsL
+             (mleq/sR
+               (mleq/maxL
+                 (mleq/sL (mleq/self nonneg_0))
+                 (mleq/sL (mleq/self nonneg_0)))))
+           (mleq/sL
+             (mleq/imax-lsR (mleq/maxR-l (mleq/sR (mleq/self nonneg_0)))))))
+       (defeq/forall defeq/sort-refl ([x] ([h] defeq/sort-refl)))).
 
 arrowType/name : name "arrowType" (is-decl (esort (lsucc lzero)) (defn (eforall (esort lzero) ([x] (esort lzero))))).
 

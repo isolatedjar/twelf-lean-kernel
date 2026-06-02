@@ -20,7 +20,11 @@ letRed/type-wf : of (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (e
    = (defeq/app (defeq/lam defeq/sort-refl ([x] ([h] h))) defeq/sort-refl).
 
 letRed/value-typed : of (econst "aProp" lnil) (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero))
-   = (defeq/conv (defeq/trans defeq/sort-refl (defeq/symm (defeq/beta ([x] ([h] h)) defeq/sort-refl))) (defeq/const aProp/decl (inst-expr/sort lvl-inst/zero))).
+   = (defeq/conv
+       (defeq/trans
+         defeq/sort-refl
+         (defeq/symm (defeq/beta ([x] ([h] h)) defeq/sort-refl)))
+       (defeq/const aProp/decl (inst-expr/sort lvl-inst/zero))).
 
 letRed/name : name "letRed" (is-decl (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (defn (econst "aProp" lnil))).
 

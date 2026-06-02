@@ -113,7 +113,29 @@ cast/type-wf-sort : lvl
    = (limax (limax lzero (lsucc lzero)) (limax lzero lzero)).
 
 cast/type-wf : of (eforall (eforall (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "MyBool.tt" (lcons lzero lnil))) ([y] (eapp x (econst "MyBool.ff" (lcons lzero lnil))))))) (esort cast/type-wf-sort)
-   = (defeq/forall (defeq/forall (defeq/const MyBool/decl (inst-expr/sort (lvl-inst/var lvl-nth/zero))) ([x] ([h] defeq/sort-refl))) ([x] ([h] (defeq/forall (defeq/app h (defeq/const MyBool_tt/decl (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)))) ([y] ([h1] (defeq/app h (defeq/const MyBool_ff/decl (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)))))))))).
+   = (defeq/forall
+       (defeq/forall
+         (defeq/const MyBool/decl (inst-expr/sort (lvl-inst/var lvl-nth/zero)))
+         ([x] ([h] defeq/sort-refl)))
+       ([x]
+         ([h]
+           (defeq/forall
+             (defeq/app
+               h
+               (defeq/const
+                 MyBool_tt/decl
+                 (inst-expr/const
+                   (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil))))
+             ([y]
+               ([h1]
+                 (defeq/app
+                   h
+                   (defeq/const
+                     MyBool_ff/decl
+                     (inst-expr/const
+                       (lvls-inst/cons
+                         (lvl-inst/var lvl-nth/zero)
+                         lvls-inst/nil)))))))))).
 
 %%% HOLE
 cast/value-typed : of (elam (eforall (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero))) ([x] (elam (eapp x (econst "MyBool.tt" (lcons lzero lnil))) ([y] y)))) (eforall (eforall (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "MyBool.tt" (lcons lzero lnil))) ([y] (eapp x (econst "MyBool.ff" (lcons lzero lnil))))))).

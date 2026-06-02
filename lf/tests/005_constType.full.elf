@@ -2,13 +2,19 @@
 %%% Lambda expression
 %% def constType
 constType/type-wf-sort : lvl
-   = (limax (lsucc (lsucc lzero)) (limax (lsucc (lsucc lzero)) (lsucc (lsucc lzero)))).
+   = (limax
+       (lsucc (lsucc lzero))
+       (limax (lsucc (lsucc lzero)) (lsucc (lsucc lzero)))).
 
 constType/type-wf : of (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort constType/type-wf-sort)
-   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] defeq/sort-refl)))))).
+   = (defeq/forall
+       defeq/sort-refl
+       ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] defeq/sort-refl)))))).
 
 constType/value-typed : of (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero))))))
-   = (defeq/lam defeq/sort-refl ([x] ([h] (defeq/lam defeq/sort-refl ([y] ([h1] h)))))).
+   = (defeq/lam
+       defeq/sort-refl
+       ([x] ([h] (defeq/lam defeq/sort-refl ([y] ([h1] h)))))).
 
 constType/name : name "constType" (is-decl (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))).
 

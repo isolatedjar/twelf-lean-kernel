@@ -11,7 +11,22 @@ levelComp2/type-wf : of (esort (lsucc (lsucc lzero))) (esort levelComp2/type-wf-
    = defeq/sort-refl.
 
 levelComp2/value-typed : of (esort (limax lzero (lsucc lzero))) (esort (lsucc (lsucc lzero)))
-   = (defeq/conv (defeq/sort-eq (lvl-eq/le (mleq/sL (mleq/imax-lsL (mleq/sR (mleq/sR (mleq/maxL (mleq/self nonneg_1) (mleq/sL (mleq/self nonneg_0))))))) (mleq/sL (mleq/sL (mleq/sR (mleq/imax-lsR (mleq/maxR-r (mleq/sR (mleq/self nonneg_0))))))))) defeq/sort-refl).
+   = (defeq/conv
+       (defeq/sort-eq
+         (lvl-eq/le
+           (mleq/sL
+             (mleq/imax-lsL
+               (mleq/sR
+                 (mleq/sR
+                   (mleq/maxL
+                     (mleq/self nonneg_1)
+                     (mleq/sL (mleq/self nonneg_0)))))))
+           (mleq/sL
+             (mleq/sL
+               (mleq/sR
+                 (mleq/imax-lsR
+                   (mleq/maxR-r (mleq/sR (mleq/self nonneg_0)))))))))
+       defeq/sort-refl).
 
 levelComp2/name : name "levelComp2" (is-decl (esort (lsucc (lsucc lzero))) (defn (esort (limax lzero (lsucc lzero))))).
 
