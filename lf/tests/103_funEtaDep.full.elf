@@ -1,0 +1,72 @@
+%%% Expected outcome: accept
+%%% Function eta for dependent functions (pi types).
+%solve nonneg_0 : 0 >= 0.
+
+%% inductive Eq
+Eq/type-wf-sort : lvl
+   = (limax (lsucc (lvar liz)) (limax (lvar liz) (limax (lvar liz) (lsucc lzero)))).
+
+Eq/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (esort Eq/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall h ([y] ([h1] (defeq/forall h ([z] ([h2] defeq/sort-refl))))))))).
+
+Eq/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero)))))))
+   = (ends-in-sort/forall ([x] (ends-in-sort/forall ([y] (ends-in-sort/forall ([z] ends-in-sort/sort)))))).
+
+Eq/rec-name : name "Eq.rec" (is-rec-for "Eq").
+
+Eq/name : name "Eq" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) indt).
+
+Eq/decl : declared "Eq" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) indt
+   = declared/ok Eq/name (dkind-ok/indt Eq/type-wf Eq/ends-in-sort).
+
+%% ctor Eq.refl (of Eq)
+Eq_refl/type-wf-sort : lvl
+   = (limax (lsucc (lvar liz)) (limax (lvar liz) lzero)).
+
+Eq_refl/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (esort Eq_refl/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall h ([y] ([h1] (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h1))))))).
+
+Eq_refl/positivity : ctor-positive "Eq" (lcons (lvar liz) lnil) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y)))))
+   = (ctor-positive/intro ([S] (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp S x) y) y)))))) (ctor-spine/arg (strict-pos/no-occur (esort (lvar liz)) no-self-ref/sort) ([x] ([y] (ctor-spine/arg (strict-pos/no-occur x y) ([z] ([w] (ctor-spine/result (applies-self/app (applies-self/app (applies-self/app applies-self/refl))))))))))).
+
+Eq_refl/name : name "Eq.refl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) ctor).
+
+Eq_refl/decl : declared "Eq.refl" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) ctor
+   = declared/ok Eq_refl/name (dkind-ok/ctor Eq_refl/type-wf Eq_refl/positivity).
+
+%% recursor Eq.rec
+Eq_rec/type-wf-sort : lvl
+   = (limax (lsucc (lvar (lis liz))) (limax (lvar (lis liz)) (limax (limax (lvar (lis liz)) (limax lzero (lsucc (lvar liz)))) (limax (lvar liz) (limax (lvar (lis liz)) (limax lzero (lvar liz))))))).
+
+Eq_rec/type-wf : defeq (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Eq_rec/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall h ([y] ([h1] (defeq/forall (defeq/forall h ([z] ([h2] (defeq/forall (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h2) ([w] ([h3] defeq/sort-refl)))))) ([z] ([h2] (defeq/forall (defeq/app (defeq/app h2 h1) (defeq/app (defeq/app (defeq/const Eq_refl/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)) h) h1) h1)))))))) h) h1)) ([w] ([h3] (defeq/forall h ([x1] ([h4] (defeq/forall (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h4) ([y1] ([h5] (defeq/app (defeq/app h2 h4) h5))))))))))))))))))).
+
+Eq_rec/decl : declared "Eq.rec" (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) irec
+   = declared/ok-irec Eq/rec-name (dkind-ok/irec Eq_rec/type-wf).
+
+%% def rfl
+rfl/type-wf-sort : lvl
+   = (limax (lsucc (lvar liz)) (limax (lvar liz) lzero)).
+
+rfl/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (esort rfl/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall h ([y] ([h1] (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h1))))))).
+
+rfl/value-typed : defeq (elam (esort (lvar liz)) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x) y))))) (elam (esort (lvar liz)) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x) y))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y)))))
+   = (defeq/lam defeq/sort-refl ([x] ([h] (defeq/lam h ([y] ([h1] (defeq/app (defeq/app (defeq/const Eq_refl/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)) h) h1) h1)))))))) h) h1))))))).
+
+rfl/name : name "rfl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (defn (elam (esort (lvar liz)) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x) y))))))).
+
+rfl/decl : declared "rfl" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (defn (elam (esort (lvar liz)) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x) y))))))
+   = declared/ok rfl/name (dkind-ok/defn rfl/type-wf rfl/value-typed).
+
+%% thm funEtaDep
+funEtaDep/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (eforall (eforall x ([y] (esort (lsucc lzero)))) ([y] (eforall (eforall x ([z] (eapp y z))) ([z] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eforall x ([w] (eapp y w)))) (elam x ([w] (eapp z w)))) z))))))) (eforall (esort (lsucc lzero)) ([x] (eforall (eforall x ([y] (esort (lsucc lzero)))) ([y] (eforall (eforall x ([z] (eapp y z))) ([z] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eforall x ([w] (eapp y w)))) (elam x ([w] (eapp z w)))) z))))))) (esort lzero)
+   = (defeq/conv (defeq/sort-eq (lvl-eq/le (mleq/imax-imL (mleq/maxL (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))) (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))))) (mleq/lz nonneg_0))) (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall (defeq/forall h ([y] ([h1] defeq/sort-refl))) ([y] ([h1] (defeq/forall (defeq/forall h ([z] ([h2] (defeq/app h1 h2)))) ([z] ([h2] (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) (defeq/conv (defeq/sort-eq (lvl-eq/le (mleq/imax-lsL (mleq/sR (mleq/maxL (mleq/sL (mleq/self nonneg_0)) (mleq/sL (mleq/self nonneg_0))))) (mleq/sL (mleq/imax-lsR (mleq/maxR-l (mleq/sR (mleq/self nonneg_0))))))) (defeq/forall h ([w] ([h3] (defeq/app h1 h3)))))) (defeq/lam h ([w] ([h3] (defeq/app h2 h3))))) h2))))))))))).
+
+%%% HOLE
+funEtaDep/value-typed : defeq (elam (esort (lsucc lzero)) ([x] (elam (eforall x ([y] (esort (lsucc lzero)))) ([y] (elam (eforall x ([z] (eapp y z))) ([z] (eapp (eapp (econst "rfl" (lcons (lsucc lzero) lnil)) (eforall x ([w] (eapp y w)))) (elam x ([w] (eapp z w)))))))))) (elam (esort (lsucc lzero)) ([x] (elam (eforall x ([y] (esort (lsucc lzero)))) ([y] (elam (eforall x ([z] (eapp y z))) ([z] (eapp (eapp (econst "rfl" (lcons (lsucc lzero) lnil)) (eforall x ([w] (eapp y w)))) (elam x ([w] (eapp z w)))))))))) (eforall (esort (lsucc lzero)) ([x] (eforall (eforall x ([y] (esort (lsucc lzero)))) ([y] (eforall (eforall x ([z] (eapp y z))) ([z] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eforall x ([w] (eapp y w)))) (elam x ([w] (eapp z w)))) z))))))).
+
+funEtaDep/name : name "funEtaDep" (is-decl (eforall (esort (lsucc lzero)) ([x] (eforall (eforall x ([y] (esort (lsucc lzero)))) ([y] (eforall (eforall x ([z] (eapp y z))) ([z] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eforall x ([w] (eapp y w)))) (elam x ([w] (eapp z w)))) z))))))) (thm (elam (esort (lsucc lzero)) ([x] (elam (eforall x ([y] (esort (lsucc lzero)))) ([y] (elam (eforall x ([z] (eapp y z))) ([z] (eapp (eapp (econst "rfl" (lcons (lsucc lzero) lnil)) (eforall x ([w] (eapp y w)))) (elam x ([w] (eapp z w)))))))))))).
+
+funEtaDep/decl : declared "funEtaDep" (eforall (esort (lsucc lzero)) ([x] (eforall (eforall x ([y] (esort (lsucc lzero)))) ([y] (eforall (eforall x ([z] (eapp y z))) ([z] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eforall x ([w] (eapp y w)))) (elam x ([w] (eapp z w)))) z))))))) (thm (elam (esort (lsucc lzero)) ([x] (elam (eforall x ([y] (esort (lsucc lzero)))) ([y] (elam (eforall x ([z] (eapp y z))) ([z] (eapp (eapp (econst "rfl" (lcons (lsucc lzero) lnil)) (eforall x ([w] (eapp y w)))) (elam x ([w] (eapp z w)))))))))))
+   = declared/ok funEtaDep/name (dkind-ok/thm funEtaDep/type-wf funEtaDep/value-typed).

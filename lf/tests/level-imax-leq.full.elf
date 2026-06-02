@@ -1,0 +1,169 @@
+%%% Expected outcome: reject
+%%% Proof of False via incorrect universe level comparison for `imax`.
+%%% 
+%%% A correct kernel must reject `leq(imax(u,v)+1, imax(u,v))`, since at `u=0, v=0` this becomes
+%%% `leq(1, 0)` which is false. However, a checker that only compares the `imax` arguments
+%%% structurally (without accounting for an accumulated successor offset) will incorrectly accept it.
+%%% 
+%%% This allows defining a universe-collapsing identity function
+%%% `down.{u,v} : Sort (succ (imax u v)) → Sort (imax u v)`, which is used to cast between
+%%% `True` and `False` via `Bool.rec` at `Sort (imax 0 0) = Prop`.
+%%% 
+%%% Nanoda incorrectly accepted this proof until it was [fixed](https://github.com/ammkrn/nanoda_lib/commit/12838995ca232ced05cd5218e4975d03c5c44316).
+%solve nonneg_0 : 0 >= 0.
+
+%% inductive False
+False/type-wf-sort : lvl
+   = (lsucc lzero).
+
+False/type-wf : defeq (esort lzero) (esort lzero) (esort False/type-wf-sort)
+   = defeq/sort-refl.
+
+False/ends-in-sort : ends-in-sort (esort lzero)
+   = ends-in-sort/sort.
+
+False/rec-name : name "False.rec" (is-rec-for "False").
+
+False/name : name "False" (is-decl (esort lzero) indt).
+
+False/decl : declared "False" (esort lzero) indt
+   = declared/ok False/name (dkind-ok/indt False/type-wf False/ends-in-sort).
+
+%% recursor False.rec
+False_rec/type-wf-sort : lvl
+   = (limax (limax lzero (lsucc (lvar liz))) (limax lzero (lvar liz))).
+
+False_rec/type-wf : defeq (eforall (eforall (econst "False" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "False" lnil) ([y] (eapp x y))))) (eforall (eforall (econst "False" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "False" lnil) ([y] (eapp x y))))) (esort False_rec/type-wf-sort)
+   = (defeq/forall (defeq/forall (defeq/const False/decl (inst-expr/sort lvl-inst/zero)) ([x] ([h] defeq/sort-refl))) ([x] ([h] (defeq/forall (defeq/const False/decl (inst-expr/sort lvl-inst/zero)) ([y] ([h1] (defeq/app h h1))))))).
+
+False_rec/decl : declared "False.rec" (eforall (eforall (econst "False" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "False" lnil) ([y] (eapp x y))))) irec
+   = declared/ok-irec False/rec-name (dkind-ok/irec False_rec/type-wf).
+
+%% inductive True
+True/type-wf-sort : lvl
+   = (lsucc lzero).
+
+True/type-wf : defeq (esort lzero) (esort lzero) (esort True/type-wf-sort)
+   = defeq/sort-refl.
+
+True/ends-in-sort : ends-in-sort (esort lzero)
+   = ends-in-sort/sort.
+
+True/rec-name : name "True.rec" (is-rec-for "True").
+
+True/name : name "True" (is-decl (esort lzero) indt).
+
+True/decl : declared "True" (esort lzero) indt
+   = declared/ok True/name (dkind-ok/indt True/type-wf True/ends-in-sort).
+
+%% ctor True.intro (of True)
+True_intro/type-wf-sort : lvl
+   = lzero.
+
+True_intro/type-wf : defeq (econst "True" lnil) (econst "True" lnil) (esort True_intro/type-wf-sort)
+   = (defeq/const True/decl (inst-expr/sort lvl-inst/zero)).
+
+True_intro/positivity : ctor-positive "True" lnil (econst "True" lnil)
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
+
+True_intro/name : name "True.intro" (is-decl (econst "True" lnil) ctor).
+
+True_intro/decl : declared "True.intro" (econst "True" lnil) ctor
+   = declared/ok True_intro/name (dkind-ok/ctor True_intro/type-wf True_intro/positivity).
+
+%% recursor True.rec
+True_rec/type-wf-sort : lvl
+   = (limax (limax lzero (lsucc (lvar liz))) (limax (lvar liz) (limax lzero (lvar liz)))).
+
+True_rec/type-wf : defeq (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) (esort True_rec/type-wf-sort)
+   = (defeq/forall (defeq/forall (defeq/const True/decl (inst-expr/sort lvl-inst/zero)) ([x] ([h] defeq/sort-refl))) ([x] ([h] (defeq/forall (defeq/app h (defeq/const True_intro/decl (inst-expr/const lvls-inst/nil))) ([y] ([h1] (defeq/forall (defeq/const True/decl (inst-expr/sort lvl-inst/zero)) ([z] ([h2] (defeq/app h h2)))))))))).
+
+True_rec/decl : declared "True.rec" (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) irec
+   = declared/ok-irec True/rec-name (dkind-ok/irec True_rec/type-wf).
+
+%% inductive Bool
+Bool/type-wf-sort : lvl
+   = (lsucc (lsucc lzero)).
+
+Bool/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort Bool/type-wf-sort)
+   = defeq/sort-refl.
+
+Bool/ends-in-sort : ends-in-sort (esort (lsucc lzero))
+   = ends-in-sort/sort.
+
+Bool/rec-name : name "Bool.rec" (is-rec-for "Bool").
+
+Bool/name : name "Bool" (is-decl (esort (lsucc lzero)) indt).
+
+Bool/decl : declared "Bool" (esort (lsucc lzero)) indt
+   = declared/ok Bool/name (dkind-ok/indt Bool/type-wf Bool/ends-in-sort).
+
+%% ctor Bool.false (of Bool)
+Bool_false/type-wf-sort : lvl
+   = (lsucc lzero).
+
+Bool_false/type-wf : defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort Bool_false/type-wf-sort)
+   = (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
+
+Bool_false/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil)
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
+
+Bool_false/name : name "Bool.false" (is-decl (econst "Bool" lnil) ctor).
+
+Bool_false/decl : declared "Bool.false" (econst "Bool" lnil) ctor
+   = declared/ok Bool_false/name (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity).
+
+%% ctor Bool.true (of Bool)
+Bool_true/type-wf-sort : lvl
+   = (lsucc lzero).
+
+Bool_true/type-wf : defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort Bool_true/type-wf-sort)
+   = (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
+
+Bool_true/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil)
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
+
+Bool_true/name : name "Bool.true" (is-decl (econst "Bool" lnil) ctor).
+
+Bool_true/decl : declared "Bool.true" (econst "Bool" lnil) ctor
+   = declared/ok Bool_true/name (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity).
+
+%% recursor Bool.rec
+Bool_rec/type-wf-sort : lvl
+   = (limax (limax (lsucc lzero) (lsucc (lvar liz))) (limax (lvar liz) (limax (lvar liz) (limax (lsucc lzero) (lvar liz))))).
+
+Bool_rec/type-wf : defeq (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort Bool_rec/type-wf-sort)
+   = (defeq/forall (defeq/forall (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] defeq/sort-refl))) ([x] ([h] (defeq/forall (defeq/app h (defeq/const Bool_false/decl (inst-expr/const lvls-inst/nil))) ([y] ([h1] (defeq/forall (defeq/app h (defeq/const Bool_true/decl (inst-expr/const lvls-inst/nil))) ([z] ([h2] (defeq/forall (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([w] ([h3] (defeq/app h h3))))))))))))).
+
+Bool_rec/decl : declared "Bool.rec" (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) irec
+   = declared/ok-irec Bool/rec-name (dkind-ok/irec Bool_rec/type-wf).
+
+%% def down
+down/type-wf-sort : lvl
+   = (limax (lsucc (lsucc (limax (lvar liz) (lvar (lis liz))))) (lsucc (limax (lvar liz) (lvar (lis liz))))).
+
+down/type-wf : defeq (eforall (esort (lsucc (limax (lvar liz) (lvar (lis liz))))) ([x] (esort (limax (lvar liz) (lvar (lis liz)))))) (eforall (esort (lsucc (limax (lvar liz) (lvar (lis liz))))) ([x] (esort (limax (lvar liz) (lvar (lis liz)))))) (esort down/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] defeq/sort-refl))).
+
+%%% HOLE
+down/value-typed : defeq (elam (esort (lsucc (limax (lvar liz) (lvar (lis liz))))) ([x] x)) (elam (esort (lsucc (limax (lvar liz) (lvar (lis liz))))) ([x] x)) (eforall (esort (lsucc (limax (lvar liz) (lvar (lis liz))))) ([x] (esort (limax (lvar liz) (lvar (lis liz)))))).
+
+down/name : name "down" (is-decl (eforall (esort (lsucc (limax (lvar liz) (lvar (lis liz))))) ([x] (esort (limax (lvar liz) (lvar (lis liz)))))) (defn (elam (esort (lsucc (limax (lvar liz) (lvar (lis liz))))) ([x] x)))).
+
+down/decl : declared "down" (eforall (esort (lsucc (limax (lvar liz) (lvar (lis liz))))) ([x] (esort (limax (lvar liz) (lvar (lis liz)))))) (defn (elam (esort (lsucc (limax (lvar liz) (lvar (lis liz))))) ([x] x)))
+   = declared/ok down/name (dkind-ok/defn down/type-wf down/value-typed).
+
+%% def proof_of_false
+proof_of_false/type-wf-sort : lvl
+   = lzero.
+
+proof_of_false/type-wf : defeq (econst "False" lnil) (econst "False" lnil) (esort proof_of_false/type-wf-sort)
+   = (defeq/const False/decl (inst-expr/sort lvl-inst/zero)).
+
+%%% HOLE
+proof_of_false/value-typed : defeq (eapp (eapp (eapp (elam (eapp (econst "down" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) ([x] (elam (eapp (econst "down" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) ([y] (elam (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([z] (esort lzero)))) (econst "False" lnil)) (econst "True" lnil)) x) ([z] (eapp (elam (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([w] (esort lzero)))) (econst "False" lnil)) (econst "True" lnil)) y) ([w] w)) z))))))) (econst "Bool.true" lnil)) (econst "Bool.false" lnil)) (econst "True.intro" lnil)) (eapp (eapp (eapp (elam (eapp (econst "down" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) ([x] (elam (eapp (econst "down" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) ([y] (elam (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([z] (esort lzero)))) (econst "False" lnil)) (econst "True" lnil)) x) ([z] (eapp (elam (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([w] (esort lzero)))) (econst "False" lnil)) (econst "True" lnil)) y) ([w] w)) z))))))) (econst "Bool.true" lnil)) (econst "Bool.false" lnil)) (econst "True.intro" lnil)) (econst "False" lnil).
+
+proof_of_false/name : name "proof_of_false" (is-decl (econst "False" lnil) (defn (eapp (eapp (eapp (elam (eapp (econst "down" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) ([x] (elam (eapp (econst "down" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) ([y] (elam (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([z] (esort lzero)))) (econst "False" lnil)) (econst "True" lnil)) x) ([z] (eapp (elam (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([w] (esort lzero)))) (econst "False" lnil)) (econst "True" lnil)) y) ([w] w)) z))))))) (econst "Bool.true" lnil)) (econst "Bool.false" lnil)) (econst "True.intro" lnil)))).
+
+proof_of_false/decl : declared "proof_of_false" (econst "False" lnil) (defn (eapp (eapp (eapp (elam (eapp (econst "down" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) ([x] (elam (eapp (econst "down" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) ([y] (elam (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([z] (esort lzero)))) (econst "False" lnil)) (econst "True" lnil)) x) ([z] (eapp (elam (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([w] (esort lzero)))) (econst "False" lnil)) (econst "True" lnil)) y) ([w] w)) z))))))) (econst "Bool.true" lnil)) (econst "Bool.false" lnil)) (econst "True.intro" lnil)))
+   = declared/ok proof_of_false/name (dkind-ok/defn proof_of_false/type-wf proof_of_false/value-typed).

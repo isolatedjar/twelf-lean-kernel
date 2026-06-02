@@ -1,0 +1,44 @@
+%%% Render-only view of: 126_misnamed_rec
+%%% The name of the recursor for `misnamed_rec` must be `misnamed_rec.rec`:
+%%% another name (like `misnamed_rec.invalid_rec`) should be rejected.
+%% inductive misnamed_rec
+%%% HOLE
+misnamed_rec/type-wf-sort : lvl.
+
+%%% HOLE
+misnamed_rec/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort misnamed_rec/type-wf-sort).
+
+%%% HOLE
+misnamed_rec/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
+
+misnamed_rec/rec-name : name "misnamed_rec.rec" (is-rec-for "misnamed_rec").
+
+misnamed_rec/name : name "misnamed_rec" (is-decl (esort (lsucc lzero)) indt).
+
+misnamed_rec/decl : declared "misnamed_rec" (esort (lsucc lzero)) indt
+   = declared/ok misnamed_rec/name (dkind-ok/indt misnamed_rec/type-wf misnamed_rec/ends-in-sort).
+
+%% ctor misnamed_rec.mk (of misnamed_rec)
+%%% HOLE
+misnamed_rec_mk/type-wf-sort : lvl.
+
+%%% HOLE
+misnamed_rec_mk/type-wf : defeq (econst "misnamed_rec" lnil) (econst "misnamed_rec" lnil) (esort misnamed_rec_mk/type-wf-sort).
+
+%%% HOLE
+misnamed_rec_mk/positivity : ctor-positive "misnamed_rec" lnil (econst "misnamed_rec" lnil).
+
+misnamed_rec_mk/name : name "misnamed_rec.mk" (is-decl (econst "misnamed_rec" lnil) ctor).
+
+misnamed_rec_mk/decl : declared "misnamed_rec.mk" (econst "misnamed_rec" lnil) ctor
+   = declared/ok misnamed_rec_mk/name (dkind-ok/ctor misnamed_rec_mk/type-wf misnamed_rec_mk/positivity).
+
+%% recursor misnamed_rec.not_rec
+%%% HOLE
+misnamed_rec_not_rec/type-wf-sort : lvl.
+
+%%% HOLE
+misnamed_rec_not_rec/type-wf : defeq (eforall (eforall (econst "misnamed_rec" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "misnamed_rec.mk" lnil)) ([y] (eforall (econst "misnamed_rec" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "misnamed_rec" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "misnamed_rec.mk" lnil)) ([y] (eforall (econst "misnamed_rec" lnil) ([z] (eapp x z))))))) (esort misnamed_rec_not_rec/type-wf-sort).
+
+%%% HOLE: recursor misnamed_rec.not_rec — name does not follow <inductive>.rec convention
+misnamed_rec_not_rec/decl : declared "misnamed_rec.not_rec" (eforall (eforall (econst "misnamed_rec" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "misnamed_rec.mk" lnil)) ([y] (eforall (econst "misnamed_rec" lnil) ([z] (eapp x z))))))) irec.

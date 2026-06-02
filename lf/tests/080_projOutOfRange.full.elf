@@ -1,0 +1,58 @@
+%%% Expected outcome: reject
+%%% Out of range projection
+%% inductive And
+And/type-wf-sort : lvl
+   = (limax (lsucc lzero) (limax (lsucc lzero) (lsucc lzero))).
+
+And/type-wf : defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (esort And/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] defeq/sort-refl)))))).
+
+And/ends-in-sort : ends-in-sort (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero)))))
+   = (ends-in-sort/forall ([x] (ends-in-sort/forall ([y] ends-in-sort/sort)))).
+
+And/rec-name : name "And.rec" (is-rec-for "And").
+
+And/name : name "And" (is-decl (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) indt).
+
+And/decl : declared "And" (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) indt
+   = declared/ok And/name (dkind-ok/indt And/type-wf And/ends-in-sort).
+
+%% ctor And.intro (of And)
+And_intro/type-wf-sort : lvl
+   = (limax (lsucc lzero) (limax (lsucc lzero) (limax lzero (limax lzero lzero)))).
+
+And_intro/type-wf : defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) (esort And_intro/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] (defeq/forall h ([z] ([h2] (defeq/forall h1 ([w] ([h3] (defeq/app (defeq/app (defeq/const And/decl (inst-expr/forall (inst-expr/sort lvl-inst/zero) ([x] ([h] (inst-expr/forall (inst-expr/sort lvl-inst/zero) ([y] ([h1] (inst-expr/sort lvl-inst/zero)))))))) h) h1))))))))))))).
+
+And_intro/positivity : ctor-positive "And" lnil (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y)))))))))
+   = (ctor-positive/intro ([S] (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp S x) y)))))))))) (ctor-spine/arg (strict-pos/no-occur (esort lzero) no-self-ref/sort) ([x] ([y] (ctor-spine/arg (strict-pos/no-occur (esort lzero) no-self-ref/sort) ([z] ([w] (ctor-spine/arg (strict-pos/no-occur x y) ([x1] ([y1] (ctor-spine/arg (strict-pos/no-occur z w) ([z1] ([w1] (ctor-spine/result (applies-self/app (applies-self/app applies-self/refl)))))))))))))))).
+
+And_intro/name : name "And.intro" (is-decl (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) ctor).
+
+And_intro/decl : declared "And.intro" (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) ctor
+   = declared/ok And_intro/name (dkind-ok/ctor And_intro/type-wf And_intro/positivity).
+
+%% recursor And.rec
+And_rec/type-wf-sort : lvl
+   = (limax (lsucc lzero) (limax (lsucc lzero) (limax (limax lzero (lsucc (lvar liz))) (limax (limax lzero (limax lzero (lvar liz))) (limax lzero (lvar liz)))))).
+
+And_rec/type-wf : defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] (esort (lvar liz)))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "And.intro" lnil) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "And" lnil) x) y) ([x1] (eapp z x1))))))))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] (esort (lvar liz)))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "And.intro" lnil) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "And" lnil) x) y) ([x1] (eapp z x1))))))))))) (esort And_rec/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] (defeq/forall (defeq/forall (defeq/app (defeq/app (defeq/const And/decl (inst-expr/forall (inst-expr/sort lvl-inst/zero) ([x] ([h] (inst-expr/forall (inst-expr/sort lvl-inst/zero) ([y] ([h1] (inst-expr/sort lvl-inst/zero)))))))) h) h1) ([z] ([h2] defeq/sort-refl))) ([z] ([h2] (defeq/forall (defeq/forall h ([w] ([h3] (defeq/forall h1 ([x1] ([h4] (defeq/app h2 (defeq/app (defeq/app (defeq/app (defeq/app (defeq/const And_intro/decl (inst-expr/forall (inst-expr/sort lvl-inst/zero) ([x] ([h] (inst-expr/forall (inst-expr/sort lvl-inst/zero) ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/forall h1 ([w] ([h3] (inst-expr/app (inst-expr/app (inst-expr/const lvls-inst/nil) h) h1)))))))))))))) h) h1) h3) h4)))))))) ([w] ([h3] (defeq/forall (defeq/app (defeq/app (defeq/const And/decl (inst-expr/forall (inst-expr/sort lvl-inst/zero) ([x] ([h] (inst-expr/forall (inst-expr/sort lvl-inst/zero) ([y] ([h1] (inst-expr/sort lvl-inst/zero)))))))) h) h1) ([x1] ([h4] (defeq/app h2 h4)))))))))))))))).
+
+And_rec/decl : declared "And.rec" (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] (esort (lvar liz)))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "And.intro" lnil) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "And" lnil) x) y) ([x1] (eapp z x1))))))))))) irec
+   = declared/ok-irec And/rec-name (dkind-ok/irec And_rec/type-wf).
+
+%% def projOutOfRange
+projOutOfRange/type-wf-sort : lvl
+   = (limax (lsucc lzero) (limax (lsucc lzero) (limax lzero lzero))).
+
+projOutOfRange/type-wf : defeq (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] x)))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] x)))))) (esort projOutOfRange/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] (defeq/forall (defeq/app (defeq/app (defeq/const And/decl (inst-expr/forall (inst-expr/sort lvl-inst/zero) ([x] ([h] (inst-expr/forall (inst-expr/sort lvl-inst/zero) ([y] ([h1] (inst-expr/sort lvl-inst/zero)))))))) h) h1) ([z] ([h2] h))))))))).
+
+%%% HOLE
+projOutOfRange/value-typed : defeq (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 2 z))))))) (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 2 z))))))) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] x)))))).
+
+projOutOfRange/name : name "projOutOfRange" (is-decl (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] x)))))) (defn (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 2 z))))))))).
+
+projOutOfRange/decl : declared "projOutOfRange" (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] x)))))) (defn (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 2 z))))))))
+   = declared/ok projOutOfRange/name (dkind-ok/defn projOutOfRange/type-wf projOutOfRange/value-typed).

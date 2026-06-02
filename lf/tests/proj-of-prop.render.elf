@@ -1,0 +1,138 @@
+%%% Render-only view of: proj-of-prop
+%%% A proof of `False` via a projection from a `Prop`-typed structure whose
+%%% constructor was applied to an ill-typed argument. The exported term is
+%%% 
+%%%     badFalse : False := (Wrapper.mk True.intro).p
+%%% 
+%%% where `Wrapper : Prop` has a single field `p : False`, so `Wrapper.mk`
+%%% expects a proof of `False` but is given `True.intro : True`.
+%%% 
+%%% A sound checker must reject this. A checker that types a projection by
+%%% inferring (rather than checking) its structure argument — i.e. that
+%%% trusts the structure to be well-typed instead of verifying the
+%%% constructor's argument types against its binders — will accept it,
+%%% because `Wrapper.mk True.intro` still formally inhabits `Wrapper` at
+%%% the structural level, and the `p` projection is then read back out at
+%%% the declared field type `False`.
+%% inductive False
+%%% HOLE
+False/type-wf-sort : lvl.
+
+%%% HOLE
+False/type-wf : defeq (esort lzero) (esort lzero) (esort False/type-wf-sort).
+
+%%% HOLE
+False/ends-in-sort : ends-in-sort (esort lzero).
+
+False/rec-name : name "False.rec" (is-rec-for "False").
+
+False/name : name "False" (is-decl (esort lzero) indt).
+
+False/decl : declared "False" (esort lzero) indt
+   = declared/ok False/name (dkind-ok/indt False/type-wf False/ends-in-sort).
+
+%% recursor False.rec
+%%% HOLE
+False_rec/type-wf-sort : lvl.
+
+%%% HOLE
+False_rec/type-wf : defeq (eforall (eforall (econst "False" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "False" lnil) ([y] (eapp x y))))) (eforall (eforall (econst "False" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "False" lnil) ([y] (eapp x y))))) (esort False_rec/type-wf-sort).
+
+False_rec/decl : declared "False.rec" (eforall (eforall (econst "False" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "False" lnil) ([y] (eapp x y))))) irec
+   = declared/ok-irec False/rec-name (dkind-ok/irec False_rec/type-wf).
+
+%% inductive Wrapper
+%%% HOLE
+Wrapper/type-wf-sort : lvl.
+
+%%% HOLE
+Wrapper/type-wf : defeq (esort lzero) (esort lzero) (esort Wrapper/type-wf-sort).
+
+%%% HOLE
+Wrapper/ends-in-sort : ends-in-sort (esort lzero).
+
+Wrapper/rec-name : name "Wrapper.rec" (is-rec-for "Wrapper").
+
+Wrapper/name : name "Wrapper" (is-decl (esort lzero) indt).
+
+Wrapper/decl : declared "Wrapper" (esort lzero) indt
+   = declared/ok Wrapper/name (dkind-ok/indt Wrapper/type-wf Wrapper/ends-in-sort).
+
+%% ctor Wrapper.mk (of Wrapper)
+%%% HOLE
+Wrapper_mk/type-wf-sort : lvl.
+
+%%% HOLE
+Wrapper_mk/type-wf : defeq (eforall (econst "False" lnil) ([x] (econst "Wrapper" lnil))) (eforall (econst "False" lnil) ([x] (econst "Wrapper" lnil))) (esort Wrapper_mk/type-wf-sort).
+
+%%% HOLE
+Wrapper_mk/positivity : ctor-positive "Wrapper" lnil (eforall (econst "False" lnil) ([x] (econst "Wrapper" lnil))).
+
+Wrapper_mk/name : name "Wrapper.mk" (is-decl (eforall (econst "False" lnil) ([x] (econst "Wrapper" lnil))) ctor).
+
+Wrapper_mk/decl : declared "Wrapper.mk" (eforall (econst "False" lnil) ([x] (econst "Wrapper" lnil))) ctor
+   = declared/ok Wrapper_mk/name (dkind-ok/ctor Wrapper_mk/type-wf Wrapper_mk/positivity).
+
+%% recursor Wrapper.rec
+%%% HOLE
+Wrapper_rec/type-wf-sort : lvl.
+
+%%% HOLE
+Wrapper_rec/type-wf : defeq (eforall (eforall (econst "Wrapper" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eforall (econst "False" lnil) ([y] (eapp x (eapp (econst "Wrapper.mk" lnil) y)))) ([y] (eforall (econst "Wrapper" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "Wrapper" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eforall (econst "False" lnil) ([y] (eapp x (eapp (econst "Wrapper.mk" lnil) y)))) ([y] (eforall (econst "Wrapper" lnil) ([z] (eapp x z))))))) (esort Wrapper_rec/type-wf-sort).
+
+Wrapper_rec/decl : declared "Wrapper.rec" (eforall (eforall (econst "Wrapper" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eforall (econst "False" lnil) ([y] (eapp x (eapp (econst "Wrapper.mk" lnil) y)))) ([y] (eforall (econst "Wrapper" lnil) ([z] (eapp x z))))))) irec
+   = declared/ok-irec Wrapper/rec-name (dkind-ok/irec Wrapper_rec/type-wf).
+
+%% inductive True
+%%% HOLE
+True/type-wf-sort : lvl.
+
+%%% HOLE
+True/type-wf : defeq (esort lzero) (esort lzero) (esort True/type-wf-sort).
+
+%%% HOLE
+True/ends-in-sort : ends-in-sort (esort lzero).
+
+True/rec-name : name "True.rec" (is-rec-for "True").
+
+True/name : name "True" (is-decl (esort lzero) indt).
+
+True/decl : declared "True" (esort lzero) indt
+   = declared/ok True/name (dkind-ok/indt True/type-wf True/ends-in-sort).
+
+%% ctor True.intro (of True)
+%%% HOLE
+True_intro/type-wf-sort : lvl.
+
+%%% HOLE
+True_intro/type-wf : defeq (econst "True" lnil) (econst "True" lnil) (esort True_intro/type-wf-sort).
+
+%%% HOLE
+True_intro/positivity : ctor-positive "True" lnil (econst "True" lnil).
+
+True_intro/name : name "True.intro" (is-decl (econst "True" lnil) ctor).
+
+True_intro/decl : declared "True.intro" (econst "True" lnil) ctor
+   = declared/ok True_intro/name (dkind-ok/ctor True_intro/type-wf True_intro/positivity).
+
+%% recursor True.rec
+%%% HOLE
+True_rec/type-wf-sort : lvl.
+
+%%% HOLE
+True_rec/type-wf : defeq (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) (esort True_rec/type-wf-sort).
+
+True_rec/decl : declared "True.rec" (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) irec
+   = declared/ok-irec True/rec-name (dkind-ok/irec True_rec/type-wf).
+
+%% thm badFalse
+%%% HOLE
+badFalse/type-wf : defeq (econst "False" lnil) (econst "False" lnil) (esort lzero).
+
+%%% HOLE
+badFalse/value-typed : defeq (eproj "Wrapper" 0 (eapp (econst "Wrapper.mk" lnil) (econst "True.intro" lnil))) (eproj "Wrapper" 0 (eapp (econst "Wrapper.mk" lnil) (econst "True.intro" lnil))) (econst "False" lnil).
+
+badFalse/name : name "badFalse" (is-decl (econst "False" lnil) (thm (eproj "Wrapper" 0 (eapp (econst "Wrapper.mk" lnil) (econst "True.intro" lnil))))).
+
+badFalse/decl : declared "badFalse" (econst "False" lnil) (thm (eproj "Wrapper" 0 (eapp (econst "Wrapper.mk" lnil) (econst "True.intro" lnil))))
+   = declared/ok badFalse/name (dkind-ok/thm badFalse/type-wf badFalse/value-typed).

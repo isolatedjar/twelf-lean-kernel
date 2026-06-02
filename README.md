@@ -28,8 +28,10 @@ https://github.com/robsimmons/twelf/tree/limited-thaw
 
 ## Evaluation pipeline
 
-The script `scripts/gen-tests.sh` takes the NDJSON files in `tests` and
-produces three files:
+Test inputs are not kept in this repo: they come from the sibling
+`../lean-kernel-arena` checkout. Run `scripts/build-arena-ndjson.sh` to build
+the arena's (non-heavy) test NDJSONs, then `scripts/gen-tests.sh` reads those
+NDJSONs and, for each, produces three files in `lf/tests/`:
 
 - A `.json` file that represents a non-structure-sharing version of the NDJSON
   signature; other than that it is in essentially the same format.

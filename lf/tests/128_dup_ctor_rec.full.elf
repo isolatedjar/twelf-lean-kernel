@@ -1,0 +1,43 @@
+%%% Expected outcome: reject
+%%% A constructor and a recursor with the same name
+%% inductive dup_ctor_rec
+dup_ctor_rec/type-wf-sort : lvl
+   = (lsucc (lsucc lzero)).
+
+dup_ctor_rec/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort dup_ctor_rec/type-wf-sort)
+   = defeq/sort-refl.
+
+dup_ctor_rec/ends-in-sort : ends-in-sort (esort (lsucc lzero))
+   = ends-in-sort/sort.
+
+dup_ctor_rec/rec-name : name "dup_ctor_rec.rec" (is-rec-for "dup_ctor_rec").
+
+dup_ctor_rec/name : name "dup_ctor_rec" (is-decl (esort (lsucc lzero)) indt).
+
+dup_ctor_rec/decl : declared "dup_ctor_rec" (esort (lsucc lzero)) indt
+   = declared/ok dup_ctor_rec/name (dkind-ok/indt dup_ctor_rec/type-wf dup_ctor_rec/ends-in-sort).
+
+%% ctor dup_ctor_rec.rec (of dup_ctor_rec)
+dup_ctor_rec_rec/type-wf-sort : lvl
+   = (lsucc lzero).
+
+dup_ctor_rec_rec/type-wf : defeq (econst "dup_ctor_rec" lnil) (econst "dup_ctor_rec" lnil) (esort dup_ctor_rec_rec/type-wf-sort)
+   = (defeq/const dup_ctor_rec/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
+
+dup_ctor_rec_rec/positivity : ctor-positive "dup_ctor_rec" lnil (econst "dup_ctor_rec" lnil)
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
+
+dup_ctor_rec_rec/name : name "dup_ctor_rec.rec" (is-decl (econst "dup_ctor_rec" lnil) ctor).
+
+dup_ctor_rec_rec/decl : declared "dup_ctor_rec.rec" (econst "dup_ctor_rec" lnil) ctor
+   = declared/ok dup_ctor_rec_rec/name (dkind-ok/ctor dup_ctor_rec_rec/type-wf dup_ctor_rec_rec/positivity).
+
+%% recursor dup_ctor_rec.rec
+%%% HOLE
+dup_ctor_rec_rec/type-wf-sort : lvl.
+
+%%% HOLE
+dup_ctor_rec_rec/type-wf : defeq (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z))))))) (esort dup_ctor_rec_rec/type-wf-sort).
+
+dup_ctor_rec_rec/decl : declared "dup_ctor_rec.rec" (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z))))))) irec
+   = declared/ok-irec dup_ctor_rec/rec-name (dkind-ok/irec dup_ctor_rec_rec/type-wf).

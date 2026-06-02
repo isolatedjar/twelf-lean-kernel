@@ -1,0 +1,63 @@
+%%% Render-only view of: 108_reflOccInIndex
+%%% Rejection: recursive occurrence in *index position*, behind a further arrow.
+%%% 
+%%% We build an indexed inductive `I : Type → Type` with a constructor argument
+%%% `Nat → I (I α)`, so the recursive occurrence appears as an index argument.
+%% inductive Nat
+%%% HOLE
+Nat/type-wf-sort : lvl.
+
+%%% HOLE
+Nat/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort Nat/type-wf-sort).
+
+%%% HOLE
+Nat/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
+
+Nat/rec-name : name "Nat.rec" (is-rec-for "Nat").
+
+Nat/name : name "Nat" (is-decl (esort (lsucc lzero)) indt).
+
+Nat/decl : declared "Nat" (esort (lsucc lzero)) indt
+   = declared/ok Nat/name (dkind-ok/indt Nat/type-wf Nat/ends-in-sort).
+
+%% ctor Nat.zero (of Nat)
+%%% HOLE
+Nat_zero/type-wf-sort : lvl.
+
+%%% HOLE
+Nat_zero/type-wf : defeq (econst "Nat" lnil) (econst "Nat" lnil) (esort Nat_zero/type-wf-sort).
+
+%%% HOLE
+Nat_zero/positivity : ctor-positive "Nat" lnil (econst "Nat" lnil).
+
+Nat_zero/name : name "Nat.zero" (is-decl (econst "Nat" lnil) ctor).
+
+Nat_zero/decl : declared "Nat.zero" (econst "Nat" lnil) ctor
+   = declared/ok Nat_zero/name (dkind-ok/ctor Nat_zero/type-wf Nat_zero/positivity).
+
+%% ctor Nat.succ (of Nat)
+%%% HOLE
+Nat_succ/type-wf-sort : lvl.
+
+%%% HOLE
+Nat_succ/type-wf : defeq (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (esort Nat_succ/type-wf-sort).
+
+%%% HOLE
+Nat_succ/positivity : ctor-positive "Nat" lnil (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))).
+
+Nat_succ/name : name "Nat.succ" (is-decl (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) ctor).
+
+Nat_succ/decl : declared "Nat.succ" (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) ctor
+   = declared/ok Nat_succ/name (dkind-ok/ctor Nat_succ/type-wf Nat_succ/positivity).
+
+%% recursor Nat.rec
+%%% HOLE
+Nat_rec/type-wf-sort : lvl.
+
+%%% HOLE
+Nat_rec/type-wf : defeq (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (esort Nat_rec/type-wf-sort).
+
+Nat_rec/decl : declared "Nat.rec" (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) irec
+   = declared/ok-irec Nat/rec-name (dkind-ok/irec Nat_rec/type-wf).
+
+%%% SKIP: ctor reflOccInIndex.mk — field #1 has type Sort 1 (lives at Sort 2); inductive is at Sort 1

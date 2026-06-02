@@ -16,7 +16,9 @@ Pipeline:
                                               (prover plugin: src/prover.ts + src/synth.ts)
 ```
 
-Test cases live under `tests/` (NDJSON) and `lf/tests/` (generated `.elf`).
+Test cases come from the sibling `../lean-kernel-arena` checkout (this repo keeps
+no copy of them); `scripts/gen-tests.sh` reads the arena's built NDJSONs and
+writes the generated `.elf` to `lf/tests/`.
 
 ## Architecture (trust boundary)
 
@@ -69,7 +71,11 @@ Two soundness checks follow the same shape: the environment is allowed to
 ## Running tests
 
 ```bash
-# Regenerate all .elf files from NDJSON
+# (Re)build the arena test NDJSONs into ../lean-kernel-arena/_build/tests/
+# (skips the heavy skip-on-ci tests: mathlib, std, cslib, mlir, cedar, init)
+./scripts/build-arena-ndjson.sh
+
+# Regenerate all .elf files from those NDJSONs
 ./scripts/gen-tests.sh
 
 # Check all tests with Twelf
@@ -106,21 +112,32 @@ Because the frozen load is now authoritative, the `%%% HOLE` marker in generated
 `.elf` files is purely informational — `check-tests.sh` no longer simulates
 freeze rejection from it.
 
-## Regenerating the tutorial NDJSON test cases
+## Regenerating test cases from the arena
 
-The NDJSON files under `tests/tutorial/` are generated from the Lean 4 source
-in `lean/tutorial/` (a copy of the tutorial project from
-[lean-kernel-arena](https://github.com/leanprover/lean-kernel-arena/tree/master/tutorial)).
-They are checked in so the TypeScript pipeline can run without Lean.
+This repo keeps **no copy** of the test inputs — the
+[lean-kernel-arena](https://github.com/leanprover/lean-kernel-arena) is the
+single source of truth, and is assumed to live in a sibling directory at
+`../lean-kernel-arena` (override with `$ARENA`). Keeping no copy avoids drift
+and makes it easy to author/submit new tests upstream in the arena rather than
+here.
 
-To regenerate them (requires `elan`/`lake` on PATH):
+The two-step pipeline (requires `elan`/`lake` and `uv` on PATH):
 
 ```bash
-./scripts/regen-tutorial-ndjson.sh
+# 1. Build the arena's non-heavy test NDJSONs into ../lean-kernel-arena/_build/tests/.
+#    Uses the arena's own `lka.py build-test --skip-ci`, which skips the heavy
+#    skip-on-ci tests (mathlib, std, cslib, mlir, cedar, init).
+./scripts/build-arena-ndjson.sh
+
+# 2. Generate lf/tests/*.elf from those NDJSONs (reads them directly; no copy).
+./scripts/gen-tests.sh
 ```
 
-After regenerating NDJSON, re-run `./scripts/gen-tests.sh` to update the
-`.elf` files.
+`gen-tests.sh` treats every `*.ndjson` under `$ARENA/_build/tests/` that has a
+sibling `.stats.json` with an `outcome` as a test, reading the accept/reject
+verdict and description from that stats file, and skips any NDJSON over 10 MB
+(the arena's own tarball policy). Unlike `tests/`, the generated `lf/tests/`
+**is** checked in, as a reviewable snapshot.
 
 ## Key files
 
@@ -138,18 +155,18 @@ After regenerating NDJSON, re-run `./scripts/gen-tests.sh` to update the
 | `src/render.ts`                    | Pure IR → LF text rendering (`lfExpr`, mangling)                    |
 | `src/prover.ts`                    | `NullProver` + `makeRealProver` (untrusted)                         |
 | `src/synth.ts`                     | Type synthesizer / defeq prover / positivity builders (untrusted)   |
-| `scripts/gen-tests.sh`             | Generate `lf/tests/*.elf` from `tests/*.ndjson`                     |
+| `scripts/build-arena-ndjson.sh`    | Build the arena's non-heavy test NDJSONs (`lka.py build-test --skip-ci`) |
+| `scripts/gen-tests.sh`             | Generate `lf/tests/*.elf` from `../lean-kernel-arena/_build/tests/` |
 | `scripts/check-tests.sh`           | Run Twelf on each `.elf` and report results                         |
 | `scripts/check-soundness.sh`       | Load each `lf/soundness/*.elf` through the chain; assert it ABORTs  |
-| `scripts/regen-tutorial-ndjson.sh` | Regenerate `tests/tutorial/**/*.ndjson` from Lean source            |
-| `lean/tutorial/`                   | Lean 4 source for the tutorial test suite                           |
 
 ## Test status
 
-Tests are in `tests/` and categorized:
+Each test carries an expected outcome (read from the arena's `.stats.json`,
+embedded as `%%% Expected outcome:` in the generated `.elf`):
 
-- `good/` — declarations that should be accepted
-- `bad/` — declarations that should be rejected
+- `accept` — declarations that should be accepted
+- `reject` — declarations that should be rejected
 
 Run `check-tests.sh` for the current pass/fail/skip breakdown.
 

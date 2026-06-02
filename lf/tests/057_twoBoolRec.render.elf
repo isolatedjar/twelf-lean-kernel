@@ -113,4 +113,3 @@ twoBoolRec/name : name "twoBoolRec" (is-decl (eforall (eforall (econst "TwoBool"
 
 twoBoolRec/decl : declared "twoBoolRec" (eforall (eforall (econst "TwoBool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp x (eapp (eapp (econst "TwoBool.mk" lnil) y) z)))))) ([y] (eforall (econst "TwoBool" lnil) ([z] (eapp x z))))))) (defn (elam (eforall (econst "TwoBool" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp x (eapp (eapp (econst "TwoBool.mk" lnil) y) z)))))) ([y] (elam (econst "TwoBool" lnil) ([z] (eapp (eapp (eapp (econst "TwoBool.rec" (lcons (lvar liz) lnil)) x) y) z))))))))
    = declared/ok twoBoolRec/name (dkind-ok/defn twoBoolRec/type-wf twoBoolRec/value-typed).
-

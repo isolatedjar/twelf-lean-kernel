@@ -1,0 +1,181 @@
+{
+  "decls": [
+    {
+      "kind": "inductive",
+      "types": [
+        {
+          "name": { "_n": ["False"] },
+          "levelParams": [],
+          "type": { "kind": "sort", "level": { "kind": "zero" } },
+          "numParams": 0,
+          "numIndices": 0
+        }
+      ],
+      "ctors": [],
+      "recursors": []
+    },
+    {
+      "kind": "inductive",
+      "types": [
+        {
+          "name": { "_n": ["True"] },
+          "levelParams": [],
+          "type": { "kind": "sort", "level": { "kind": "zero" } },
+          "numParams": 0,
+          "numIndices": 0
+        }
+      ],
+      "ctors": [
+        {
+          "name": { "_n": ["True", "intro"] },
+          "levelParams": [],
+          "type": { "kind": "const", "name": { "_n": ["True"] }, "us": [] },
+          "numParams": 0,
+          "numFields": 0,
+          "induct": { "_n": ["True"] }
+        }
+      ],
+      "recursors": []
+    },
+    {
+      "kind": "inductive",
+      "types": [
+        {
+          "name": { "_n": ["MyBool"] },
+          "levelParams": [{ "_n": ["u"] }],
+          "type": { "kind": "sort", "level": { "kind": "param", "name": { "_n": ["u"] } } },
+          "numParams": 0,
+          "numIndices": 0
+        }
+      ],
+      "ctors": [
+        {
+          "name": { "_n": ["MyBool", "tt"] },
+          "levelParams": [{ "_n": ["u"] }],
+          "type": {
+            "kind": "const",
+            "name": { "_n": ["MyBool"] },
+            "us": [{ "kind": "param", "name": { "_n": ["u"] } }]
+          },
+          "numParams": 0,
+          "numFields": 0,
+          "induct": { "_n": ["MyBool"] }
+        },
+        {
+          "name": { "_n": ["MyBool", "ff"] },
+          "levelParams": [{ "_n": ["u"] }],
+          "type": {
+            "kind": "const",
+            "name": { "_n": ["MyBool"] },
+            "us": [{ "kind": "param", "name": { "_n": ["u"] } }]
+          },
+          "numParams": 0,
+          "numFields": 0,
+          "induct": { "_n": ["MyBool"] }
+        }
+      ],
+      "recursors": []
+    },
+    {
+      "kind": "def",
+      "name": { "_n": ["cast"] },
+      "levelParams": [],
+      "type": {
+        "kind": "forallE",
+        "name": { "_n": ["motive"] },
+        "type": {
+          "kind": "forallE",
+          "name": { "_n": [] },
+          "type": { "kind": "const", "name": { "_n": ["MyBool"] }, "us": [{ "kind": "zero" }] },
+          "body": { "kind": "sort", "level": { "kind": "zero" } }
+        },
+        "body": {
+          "kind": "forallE",
+          "name": { "_n": ["val"] },
+          "type": {
+            "kind": "app",
+            "fn": { "kind": "bvar", "deBruijn": 0 },
+            "arg": {
+              "kind": "const",
+              "name": { "_n": ["MyBool", "tt"] },
+              "us": [{ "kind": "zero" }]
+            }
+          },
+          "body": {
+            "kind": "app",
+            "fn": { "kind": "bvar", "deBruijn": 1 },
+            "arg": {
+              "kind": "const",
+              "name": { "_n": ["MyBool", "ff"] },
+              "us": [{ "kind": "zero" }]
+            }
+          }
+        }
+      },
+      "value": {
+        "kind": "lam",
+        "name": { "_n": ["motive"] },
+        "type": {
+          "kind": "forallE",
+          "name": { "_n": [] },
+          "type": { "kind": "const", "name": { "_n": ["MyBool"] }, "us": [{ "kind": "zero" }] },
+          "body": { "kind": "sort", "level": { "kind": "zero" } }
+        },
+        "body": {
+          "kind": "lam",
+          "name": { "_n": ["val"] },
+          "type": {
+            "kind": "app",
+            "fn": { "kind": "bvar", "deBruijn": 0 },
+            "arg": {
+              "kind": "const",
+              "name": { "_n": ["MyBool", "tt"] },
+              "us": [{ "kind": "zero" }]
+            }
+          },
+          "body": { "kind": "bvar", "deBruijn": 0 }
+        }
+      }
+    },
+    {
+      "kind": "thm",
+      "name": { "_n": ["false_proof"] },
+      "levelParams": [],
+      "type": { "kind": "const", "name": { "_n": ["False"] }, "us": [] },
+      "value": {
+        "kind": "app",
+        "fn": {
+          "kind": "app",
+          "fn": { "kind": "const", "name": { "_n": ["cast"] }, "us": [] },
+          "arg": {
+            "kind": "app",
+            "fn": {
+              "kind": "app",
+              "fn": {
+                "kind": "app",
+                "fn": {
+                  "kind": "const",
+                  "name": { "_n": ["MyBool", "rec"] },
+                  "us": [{ "kind": "succ", "arg": { "kind": "zero" } }, { "kind": "zero" }]
+                },
+                "arg": {
+                  "kind": "lam",
+                  "name": { "_n": ["x"] },
+                  "type": {
+                    "kind": "const",
+                    "name": { "_n": ["MyBool"] },
+                    "us": [{ "kind": "zero" }]
+                  },
+                  "body": { "kind": "sort", "level": { "kind": "zero" } }
+                }
+              },
+              "arg": { "kind": "const", "name": { "_n": ["True"] }, "us": [] }
+            },
+            "arg": { "kind": "const", "name": { "_n": ["False"] }, "us": [] }
+          }
+        },
+        "arg": { "kind": "const", "name": { "_n": ["True", "intro"] }, "us": [] }
+      }
+    }
+  ]
+}
