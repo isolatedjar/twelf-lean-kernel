@@ -107,7 +107,7 @@ OS.exit"
 # in generated files is now purely informational, not load-bearing.
 classify() {
     local full="$1" render="$2"
-    if grep -q "^%%% SKIP" "$full" 2>/dev/null; then echo "shrug"; return; fi
+    if grep -qa "^%%% SKIP" "$full" 2>/dev/null; then echo "shrug"; return; fi
     [[ "$(load_render_nofreeze "$render")" == "reject" ]] && { echo "red"; return; }
     [[ "$(load_full_freeze "$full")" == "accept" ]] && { echo "accept"; return; }
     [[ "$(load_full_nofreeze "$full")" == "accept" ]] && { echo "holes"; return; }
@@ -145,7 +145,7 @@ for b in "${bases[@]}"; do
     full="$TESTS_DIR/$b.full.elf"
     render="$TESTS_DIR/$b.render.elf"
 
-    expected="$(grep -i "^%%% Expected outcome:" "$full" | head -1 | \
+    expected="$(grep -ia "^%%% Expected outcome:" "$full" | head -1 | \
                 sed 's/^.*: *//' | tr -d ' \r' | tr '[:upper:]' '[:lower:]')"
     if [[ -z "$expected" ]]; then
         printf "  %-*s  (no expected-outcome header)\n" "$max_len" "$b"

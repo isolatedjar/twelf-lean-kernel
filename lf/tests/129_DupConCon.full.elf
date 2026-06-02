@@ -1,0 +1,58 @@
+%%% Expected outcome: reject
+%%% An inductive with two constructors with the same name
+%% inductive DupConCon
+DupConCon/type-wf-sort : lvl
+   = (lsucc (lsucc lzero)).
+
+DupConCon/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort DupConCon/type-wf-sort)
+   = defeq/sort-refl.
+
+DupConCon/ends-in-sort : ends-in-sort (esort (lsucc lzero))
+   = ends-in-sort/sort.
+
+DupConCon/rec-name : name "DupConCon.rec" (is-rec-for "DupConCon").
+
+DupConCon/name : name "DupConCon" (is-decl (esort (lsucc lzero)) indt).
+
+DupConCon/decl : declared "DupConCon" (esort (lsucc lzero)) indt
+   = declared/ok DupConCon/name (dkind-ok/indt DupConCon/type-wf DupConCon/ends-in-sort).
+
+%% ctor dup_ind_con_con.mk (of DupConCon)
+dup_ind_con_con_mk/type-wf-sort : lvl
+   = (lsucc lzero).
+
+dup_ind_con_con_mk/type-wf : defeq (econst "DupConCon" lnil) (econst "DupConCon" lnil) (esort dup_ind_con_con_mk/type-wf-sort)
+   = (defeq/const DupConCon/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
+
+dup_ind_con_con_mk/positivity : ctor-positive "DupConCon" lnil (econst "DupConCon" lnil)
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
+
+dup_ind_con_con_mk/name : name "dup_ind_con_con.mk" (is-decl (econst "DupConCon" lnil) ctor).
+
+dup_ind_con_con_mk/decl : declared "dup_ind_con_con.mk" (econst "DupConCon" lnil) ctor
+   = declared/ok dup_ind_con_con_mk/name (dkind-ok/ctor dup_ind_con_con_mk/type-wf dup_ind_con_con_mk/positivity).
+
+%% ctor dup_ind_con_con.mk (of DupConCon)
+dup_ind_con_con_mk/type-wf-sort : lvl
+   = (lsucc lzero).
+
+dup_ind_con_con_mk/type-wf : defeq (econst "DupConCon" lnil) (econst "DupConCon" lnil) (esort dup_ind_con_con_mk/type-wf-sort)
+   = (defeq/const DupConCon/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
+
+dup_ind_con_con_mk/positivity : ctor-positive "DupConCon" lnil (econst "DupConCon" lnil)
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
+
+dup_ind_con_con_mk/name : name "dup_ind_con_con.mk" (is-decl (econst "DupConCon" lnil) ctor).
+
+dup_ind_con_con_mk/decl : declared "dup_ind_con_con.mk" (econst "DupConCon" lnil) ctor
+   = declared/ok dup_ind_con_con_mk/name (dkind-ok/ctor dup_ind_con_con_mk/type-wf dup_ind_con_con_mk/positivity).
+
+%% recursor DupConCon.rec
+DupConCon_rec/type-wf-sort : lvl
+   = (limax (limax (lsucc lzero) (lsucc (lvar liz))) (limax (lvar liz) (limax (lvar liz) (limax (lsucc lzero) (lvar liz))))).
+
+DupConCon_rec/type-wf : defeq (eforall (eforall (econst "DupConCon" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] (eforall (econst "DupConCon" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "DupConCon" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] (eforall (econst "DupConCon" lnil) ([w] (eapp x w))))))))) (esort DupConCon_rec/type-wf-sort)
+   = (defeq/forall (defeq/forall (defeq/const DupConCon/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] defeq/sort-refl))) ([x] ([h] (defeq/forall (defeq/app h (defeq/const dup_ind_con_con_mk/decl (inst-expr/const lvls-inst/nil))) ([y] ([h1] (defeq/forall (defeq/app h (defeq/const dup_ind_con_con_mk/decl (inst-expr/const lvls-inst/nil))) ([z] ([h2] (defeq/forall (defeq/const DupConCon/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([w] ([h3] (defeq/app h h3))))))))))))).
+
+DupConCon_rec/decl : declared "DupConCon.rec" (eforall (eforall (econst "DupConCon" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] (eforall (econst "DupConCon" lnil) ([w] (eapp x w))))))))) irec
+   = declared/ok-irec DupConCon/rec-name (dkind-ok/irec DupConCon_rec/type-wf).

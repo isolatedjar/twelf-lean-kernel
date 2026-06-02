@@ -1,0 +1,273 @@
+{
+  "decls": [
+    {
+      "kind": "inductive",
+      "types": [
+        {
+          "name": { "_n": ["False"] },
+          "levelParams": [],
+          "type": { "kind": "sort", "level": { "kind": "zero" } },
+          "numParams": 0,
+          "numIndices": 0
+        }
+      ],
+      "ctors": [],
+      "recursors": [
+        {
+          "name": { "_n": ["False", "rec"] },
+          "levelParams": [{ "_n": ["u"] }],
+          "type": {
+            "kind": "forallE",
+            "name": { "_n": ["motive"] },
+            "type": {
+              "kind": "forallE",
+              "name": { "_n": ["t"] },
+              "type": { "kind": "const", "name": { "_n": ["False"] }, "us": [] },
+              "body": { "kind": "sort", "level": { "kind": "param", "name": { "_n": ["u"] } } }
+            },
+            "body": {
+              "kind": "forallE",
+              "name": { "_n": ["t"] },
+              "type": { "kind": "const", "name": { "_n": ["False"] }, "us": [] },
+              "body": {
+                "kind": "app",
+                "fn": { "kind": "bvar", "deBruijn": 1 },
+                "arg": { "kind": "bvar", "deBruijn": 0 }
+              }
+            }
+          },
+          "numParams": 0,
+          "numIndices": 0,
+          "numMotives": 1,
+          "numMinors": 0,
+          "rules": [],
+          "k": false
+        }
+      ]
+    },
+    {
+      "kind": "inductive",
+      "types": [
+        {
+          "name": { "_n": ["Wrapper"] },
+          "levelParams": [],
+          "type": { "kind": "sort", "level": { "kind": "zero" } },
+          "numParams": 0,
+          "numIndices": 0
+        }
+      ],
+      "ctors": [
+        {
+          "name": { "_n": ["Wrapper", "mk"] },
+          "levelParams": [],
+          "type": {
+            "kind": "forallE",
+            "name": { "_n": ["p"] },
+            "type": { "kind": "const", "name": { "_n": ["False"] }, "us": [] },
+            "body": { "kind": "const", "name": { "_n": ["Wrapper"] }, "us": [] }
+          },
+          "numParams": 0,
+          "numFields": 1,
+          "induct": { "_n": ["Wrapper"] }
+        }
+      ],
+      "recursors": [
+        {
+          "name": { "_n": ["Wrapper", "rec"] },
+          "levelParams": [{ "_n": ["u"] }],
+          "type": {
+            "kind": "forallE",
+            "name": { "_n": ["motive"] },
+            "type": {
+              "kind": "forallE",
+              "name": { "_n": ["t"] },
+              "type": { "kind": "const", "name": { "_n": ["Wrapper"] }, "us": [] },
+              "body": { "kind": "sort", "level": { "kind": "param", "name": { "_n": ["u"] } } }
+            },
+            "body": {
+              "kind": "forallE",
+              "name": { "_n": ["mk"] },
+              "type": {
+                "kind": "forallE",
+                "name": { "_n": ["p"] },
+                "type": { "kind": "const", "name": { "_n": ["False"] }, "us": [] },
+                "body": {
+                  "kind": "app",
+                  "fn": { "kind": "bvar", "deBruijn": 1 },
+                  "arg": {
+                    "kind": "app",
+                    "fn": { "kind": "const", "name": { "_n": ["Wrapper", "mk"] }, "us": [] },
+                    "arg": { "kind": "bvar", "deBruijn": 0 }
+                  }
+                }
+              },
+              "body": {
+                "kind": "forallE",
+                "name": { "_n": ["t"] },
+                "type": { "kind": "const", "name": { "_n": ["Wrapper"] }, "us": [] },
+                "body": {
+                  "kind": "app",
+                  "fn": { "kind": "bvar", "deBruijn": 2 },
+                  "arg": { "kind": "bvar", "deBruijn": 0 }
+                }
+              }
+            }
+          },
+          "numParams": 0,
+          "numIndices": 0,
+          "numMotives": 1,
+          "numMinors": 1,
+          "rules": [
+            {
+              "ctor": { "_n": ["Wrapper", "mk"] },
+              "nfields": 1,
+              "rhs": {
+                "kind": "lam",
+                "name": { "_n": ["motive"] },
+                "type": {
+                  "kind": "forallE",
+                  "name": { "_n": ["t"] },
+                  "type": { "kind": "const", "name": { "_n": ["Wrapper"] }, "us": [] },
+                  "body": { "kind": "sort", "level": { "kind": "param", "name": { "_n": ["u"] } } }
+                },
+                "body": {
+                  "kind": "lam",
+                  "name": { "_n": ["mk"] },
+                  "type": {
+                    "kind": "forallE",
+                    "name": { "_n": ["p"] },
+                    "type": { "kind": "const", "name": { "_n": ["False"] }, "us": [] },
+                    "body": {
+                      "kind": "app",
+                      "fn": { "kind": "bvar", "deBruijn": 1 },
+                      "arg": {
+                        "kind": "app",
+                        "fn": { "kind": "const", "name": { "_n": ["Wrapper", "mk"] }, "us": [] },
+                        "arg": { "kind": "bvar", "deBruijn": 0 }
+                      }
+                    }
+                  },
+                  "body": {
+                    "kind": "lam",
+                    "name": { "_n": ["p"] },
+                    "type": { "kind": "const", "name": { "_n": ["False"] }, "us": [] },
+                    "body": {
+                      "kind": "app",
+                      "fn": { "kind": "bvar", "deBruijn": 1 },
+                      "arg": { "kind": "bvar", "deBruijn": 0 }
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "k": false
+        }
+      ]
+    },
+    {
+      "kind": "inductive",
+      "types": [
+        {
+          "name": { "_n": ["True"] },
+          "levelParams": [],
+          "type": { "kind": "sort", "level": { "kind": "zero" } },
+          "numParams": 0,
+          "numIndices": 0
+        }
+      ],
+      "ctors": [
+        {
+          "name": { "_n": ["True", "intro"] },
+          "levelParams": [],
+          "type": { "kind": "const", "name": { "_n": ["True"] }, "us": [] },
+          "numParams": 0,
+          "numFields": 0,
+          "induct": { "_n": ["True"] }
+        }
+      ],
+      "recursors": [
+        {
+          "name": { "_n": ["True", "rec"] },
+          "levelParams": [{ "_n": ["u"] }],
+          "type": {
+            "kind": "forallE",
+            "name": { "_n": ["motive"] },
+            "type": {
+              "kind": "forallE",
+              "name": { "_n": ["t"] },
+              "type": { "kind": "const", "name": { "_n": ["True"] }, "us": [] },
+              "body": { "kind": "sort", "level": { "kind": "param", "name": { "_n": ["u"] } } }
+            },
+            "body": {
+              "kind": "forallE",
+              "name": { "_n": ["intro"] },
+              "type": {
+                "kind": "app",
+                "fn": { "kind": "bvar", "deBruijn": 0 },
+                "arg": { "kind": "const", "name": { "_n": ["True", "intro"] }, "us": [] }
+              },
+              "body": {
+                "kind": "forallE",
+                "name": { "_n": ["t"] },
+                "type": { "kind": "const", "name": { "_n": ["True"] }, "us": [] },
+                "body": {
+                  "kind": "app",
+                  "fn": { "kind": "bvar", "deBruijn": 2 },
+                  "arg": { "kind": "bvar", "deBruijn": 0 }
+                }
+              }
+            }
+          },
+          "numParams": 0,
+          "numIndices": 0,
+          "numMotives": 1,
+          "numMinors": 1,
+          "rules": [
+            {
+              "ctor": { "_n": ["True", "intro"] },
+              "nfields": 0,
+              "rhs": {
+                "kind": "lam",
+                "name": { "_n": ["motive"] },
+                "type": {
+                  "kind": "forallE",
+                  "name": { "_n": ["t"] },
+                  "type": { "kind": "const", "name": { "_n": ["True"] }, "us": [] },
+                  "body": { "kind": "sort", "level": { "kind": "param", "name": { "_n": ["u"] } } }
+                },
+                "body": {
+                  "kind": "lam",
+                  "name": { "_n": ["intro"] },
+                  "type": {
+                    "kind": "app",
+                    "fn": { "kind": "bvar", "deBruijn": 0 },
+                    "arg": { "kind": "const", "name": { "_n": ["True", "intro"] }, "us": [] }
+                  },
+                  "body": { "kind": "bvar", "deBruijn": 0 }
+                }
+              }
+            }
+          ],
+          "k": true
+        }
+      ]
+    },
+    {
+      "kind": "thm",
+      "name": { "_n": ["badFalse"] },
+      "levelParams": [],
+      "type": { "kind": "const", "name": { "_n": ["False"] }, "us": [] },
+      "value": {
+        "kind": "proj",
+        "typeName": { "_n": ["Wrapper"] },
+        "idx": 0,
+        "struct": {
+          "kind": "app",
+          "fn": { "kind": "const", "name": { "_n": ["Wrapper", "mk"] }, "us": [] },
+          "arg": { "kind": "const", "name": { "_n": ["True", "intro"] }, "us": [] }
+        }
+      }
+    }
+  ]
+}

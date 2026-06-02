@@ -56,4 +56,3 @@ prodRec/name : name "prodRec" (is-decl (eforall (esort (lsucc (lvar liz))) ([x] 
 
 prodRec/decl : declared "prodRec" (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall (eforall (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (esort (lvar liz)))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([x1] (eapp z x1))))))))))) (defn (econst "Prod.rec" (lcons (lvar liz) (lcons (lvar liz) (lcons (lvar (lis liz)) lnil)))))
    = declared/ok prodRec/name (dkind-ok/defn prodRec/type-wf prodRec/value-typed).
-

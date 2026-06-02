@@ -1,0 +1,310 @@
+%%% Expected outcome: reject
+%%% Proof of False via large elimination of a multi-constructor `Prop`, using a
+%%% hand-supplied recursor.
+%%% 
+%%% A `Prop` with two or more constructors admits only **small** elimination: its
+%%% recursor's motive must target `Prop`. Allowing large elimination would
+%%% transport a genuine case distinction out of `Prop` into `Type`, which is
+%%% unsound under proof irrelevance.
+%%% 
+%%% This export defines `PropTwo : Prop` with constructors `PropTwo.a`, `PropTwo.b`
+%%% and supplies a recursor `PropTwo.rec` whose motive targets `Sort u` (large
+%%% elimination). The recursor is otherwise well-formed — correct rule count and
+%%% correct reduction rules — so the only defect is the elimination level. From it:
+%%% 
+%%%     discriminate : PropTwo → Bool := PropTwo.rec (fun _ => Bool) true false
+%%%     ab_eq        : PropTwo.a = PropTwo.b           -- proof irrelevance
+%%%     discr_eq     : discriminate a = discriminate b -- congrArg
+%%%     falseViaLargeElim : False                       -- transport True.intro along discr_eq
+%%% 
+%%% Because `discriminate a` reduces to `true` and `discriminate b` to `false`,
+%%% `discr_eq` is a proof of `true = false`, and transporting `True.intro` along it
+%%% lands in `False`.
+%%% 
+%%% A sound checker must reject this. The two safe behaviors observed:
+%%% * the official kernel and lean4lean **regenerate** the canonical recursor with
+%%%   a `Prop` motive, so `discriminate` (eliminating into `Type`) fails to type;
+%%% * nanoda likewise rejects.
+%%% 
+%%% rpylean accepts it: it trusts the supplied recursor's declared elimination
+%%% level instead of enforcing the small-elimination restriction, so the proof of
+%%% `False` goes through. (mini also ignores the supplied recursor and regenerates
+%%% its own, so it too rejects — its recursor-handling gap happens to be safe here.)
+%%% 
+%%% This is distinct from `large-elim-param`, which exploits an incorrect
+%%% "level is surely not zero" check on universe *parameters*; here the inductive
+%%% is monomorphic at `Prop` (`Sort 0`) and the defect is that the checker does
+%%% not validate the recursor's elimination strength at all.
+%solve nonneg_0 : 0 >= 0.
+
+%%% SKIP: recursor PropTwo.rec — large elimination (motive into a non-Prop sort) from a Prop inductive with 2 constructors
+
+%% inductive Bool
+Bool/type-wf-sort : lvl
+   = (lsucc (lsucc lzero)).
+
+Bool/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort Bool/type-wf-sort)
+   = defeq/sort-refl.
+
+Bool/ends-in-sort : ends-in-sort (esort (lsucc lzero))
+   = ends-in-sort/sort.
+
+Bool/rec-name : name "Bool.rec" (is-rec-for "Bool").
+
+Bool/name : name "Bool" (is-decl (esort (lsucc lzero)) indt).
+
+Bool/decl : declared "Bool" (esort (lsucc lzero)) indt
+   = declared/ok Bool/name (dkind-ok/indt Bool/type-wf Bool/ends-in-sort).
+
+%% ctor Bool.false (of Bool)
+Bool_false/type-wf-sort : lvl
+   = (lsucc lzero).
+
+Bool_false/type-wf : defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort Bool_false/type-wf-sort)
+   = (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
+
+Bool_false/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil)
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
+
+Bool_false/name : name "Bool.false" (is-decl (econst "Bool" lnil) ctor).
+
+Bool_false/decl : declared "Bool.false" (econst "Bool" lnil) ctor
+   = declared/ok Bool_false/name (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity).
+
+%% ctor Bool.true (of Bool)
+Bool_true/type-wf-sort : lvl
+   = (lsucc lzero).
+
+Bool_true/type-wf : defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort Bool_true/type-wf-sort)
+   = (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
+
+Bool_true/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil)
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
+
+Bool_true/name : name "Bool.true" (is-decl (econst "Bool" lnil) ctor).
+
+Bool_true/decl : declared "Bool.true" (econst "Bool" lnil) ctor
+   = declared/ok Bool_true/name (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity).
+
+%% recursor Bool.rec
+Bool_rec/type-wf-sort : lvl
+   = (limax (limax (lsucc lzero) (lsucc (lvar liz))) (limax (lvar liz) (limax (lvar liz) (limax (lsucc lzero) (lvar liz))))).
+
+Bool_rec/type-wf : defeq (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort Bool_rec/type-wf-sort)
+   = (defeq/forall (defeq/forall (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] defeq/sort-refl))) ([x] ([h] (defeq/forall (defeq/app h (defeq/const Bool_false/decl (inst-expr/const lvls-inst/nil))) ([y] ([h1] (defeq/forall (defeq/app h (defeq/const Bool_true/decl (inst-expr/const lvls-inst/nil))) ([z] ([h2] (defeq/forall (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([w] ([h3] (defeq/app h h3))))))))))))).
+
+Bool_rec/decl : declared "Bool.rec" (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) irec
+   = declared/ok-irec Bool/rec-name (dkind-ok/irec Bool_rec/type-wf).
+
+%% def discriminate
+discriminate/type-wf-sort : lvl
+   = (limax lzero (lsucc lzero)).
+
+discriminate/type-wf : defeq (eforall (econst "PropTwo" lnil) ([x] (econst "Bool" lnil))) (eforall (econst "PropTwo" lnil) ([x] (econst "Bool" lnil))) (esort discriminate/type-wf-sort)
+   = (defeq/forall (defeq/const PropTwo/decl (inst-expr/sort lvl-inst/zero)) ([x] ([h] (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))).
+
+discriminate/value-typed : defeq (elam (econst "PropTwo" lnil) ([x] (eapp (eapp (eapp (eapp (econst "PropTwo.rec" lnil) (elam (econst "PropTwo" lnil) ([y] (econst "Bool" lnil)))) (econst "Bool.true" lnil)) (econst "Bool.false" lnil)) x))) (elam (econst "PropTwo" lnil) ([x] (eapp (eapp (eapp (eapp (econst "PropTwo.rec" lnil) (elam (econst "PropTwo" lnil) ([y] (econst "Bool" lnil)))) (econst "Bool.true" lnil)) (econst "Bool.false" lnil)) x))) (eforall (econst "PropTwo" lnil) ([x] (econst "Bool" lnil)))
+   = (defeq/conv (defeq/forall (defeq/const PropTwo/decl (inst-expr/sort lvl-inst/zero)) ([x] ([h] (defeq/trans (defeq/beta ([y] ([h1] (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))) h) (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))))) (defeq/lam (defeq/const PropTwo/decl (inst-expr/sort lvl-inst/zero)) ([x] ([h] (defeq/app (defeq/app (defeq/app (defeq/app (defeq/const PropTwo_rec/decl (inst-expr/forall (inst-expr/forall (inst-expr/const lvls-inst/nil) ([x] ([h] (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))) ([x] ([h] (inst-expr/forall (inst-expr/app h (inst-expr/const lvls-inst/nil)) ([y] ([h1] (inst-expr/forall (inst-expr/app h (inst-expr/const lvls-inst/nil)) ([z] ([h2] (inst-expr/forall (inst-expr/const lvls-inst/nil) ([w] ([h3] (inst-expr/app h h3)))))))))))))) (defeq/lam (defeq/const PropTwo/decl (inst-expr/sort lvl-inst/zero)) ([y] ([h1] (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))))) (defeq/conv (defeq/trans (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) (defeq/symm (defeq/beta ([y] ([h1] (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))) (defeq/const PropTwo_a/decl (inst-expr/const lvls-inst/nil))))) (defeq/const Bool_true/decl (inst-expr/const lvls-inst/nil)))) (defeq/conv (defeq/trans (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) (defeq/symm (defeq/beta ([y] ([h1] (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))) (defeq/const PropTwo_b/decl (inst-expr/const lvls-inst/nil))))) (defeq/const Bool_false/decl (inst-expr/const lvls-inst/nil)))) h))))).
+
+discriminate/name : name "discriminate" (is-decl (eforall (econst "PropTwo" lnil) ([x] (econst "Bool" lnil))) (defn (elam (econst "PropTwo" lnil) ([x] (eapp (eapp (eapp (eapp (econst "PropTwo.rec" lnil) (elam (econst "PropTwo" lnil) ([y] (econst "Bool" lnil)))) (econst "Bool.true" lnil)) (econst "Bool.false" lnil)) x))))).
+
+discriminate/decl : declared "discriminate" (eforall (econst "PropTwo" lnil) ([x] (econst "Bool" lnil))) (defn (elam (econst "PropTwo" lnil) ([x] (eapp (eapp (eapp (eapp (econst "PropTwo.rec" lnil) (elam (econst "PropTwo" lnil) ([y] (econst "Bool" lnil)))) (econst "Bool.true" lnil)) (econst "Bool.false" lnil)) x))))
+   = declared/ok discriminate/name (dkind-ok/defn discriminate/type-wf discriminate/value-typed).
+
+%% inductive False
+False/type-wf-sort : lvl
+   = (lsucc lzero).
+
+False/type-wf : defeq (esort lzero) (esort lzero) (esort False/type-wf-sort)
+   = defeq/sort-refl.
+
+False/ends-in-sort : ends-in-sort (esort lzero)
+   = ends-in-sort/sort.
+
+False/rec-name : name "False.rec" (is-rec-for "False").
+
+False/name : name "False" (is-decl (esort lzero) indt).
+
+False/decl : declared "False" (esort lzero) indt
+   = declared/ok False/name (dkind-ok/indt False/type-wf False/ends-in-sort).
+
+%% recursor False.rec
+False_rec/type-wf-sort : lvl
+   = (limax (limax lzero (lsucc (lvar liz))) (limax lzero (lvar liz))).
+
+False_rec/type-wf : defeq (eforall (eforall (econst "False" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "False" lnil) ([y] (eapp x y))))) (eforall (eforall (econst "False" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "False" lnil) ([y] (eapp x y))))) (esort False_rec/type-wf-sort)
+   = (defeq/forall (defeq/forall (defeq/const False/decl (inst-expr/sort lvl-inst/zero)) ([x] ([h] defeq/sort-refl))) ([x] ([h] (defeq/forall (defeq/const False/decl (inst-expr/sort lvl-inst/zero)) ([y] ([h1] (defeq/app h h1))))))).
+
+False_rec/decl : declared "False.rec" (eforall (eforall (econst "False" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "False" lnil) ([y] (eapp x y))))) irec
+   = declared/ok-irec False/rec-name (dkind-ok/irec False_rec/type-wf).
+
+%% inductive True
+True/type-wf-sort : lvl
+   = (lsucc lzero).
+
+True/type-wf : defeq (esort lzero) (esort lzero) (esort True/type-wf-sort)
+   = defeq/sort-refl.
+
+True/ends-in-sort : ends-in-sort (esort lzero)
+   = ends-in-sort/sort.
+
+True/rec-name : name "True.rec" (is-rec-for "True").
+
+True/name : name "True" (is-decl (esort lzero) indt).
+
+True/decl : declared "True" (esort lzero) indt
+   = declared/ok True/name (dkind-ok/indt True/type-wf True/ends-in-sort).
+
+%% ctor True.intro (of True)
+True_intro/type-wf-sort : lvl
+   = lzero.
+
+True_intro/type-wf : defeq (econst "True" lnil) (econst "True" lnil) (esort True_intro/type-wf-sort)
+   = (defeq/const True/decl (inst-expr/sort lvl-inst/zero)).
+
+True_intro/positivity : ctor-positive "True" lnil (econst "True" lnil)
+   = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
+
+True_intro/name : name "True.intro" (is-decl (econst "True" lnil) ctor).
+
+True_intro/decl : declared "True.intro" (econst "True" lnil) ctor
+   = declared/ok True_intro/name (dkind-ok/ctor True_intro/type-wf True_intro/positivity).
+
+%% recursor True.rec
+True_rec/type-wf-sort : lvl
+   = (limax (limax lzero (lsucc (lvar liz))) (limax (lvar liz) (limax lzero (lvar liz)))).
+
+True_rec/type-wf : defeq (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) (esort True_rec/type-wf-sort)
+   = (defeq/forall (defeq/forall (defeq/const True/decl (inst-expr/sort lvl-inst/zero)) ([x] ([h] defeq/sort-refl))) ([x] ([h] (defeq/forall (defeq/app h (defeq/const True_intro/decl (inst-expr/const lvls-inst/nil))) ([y] ([h1] (defeq/forall (defeq/const True/decl (inst-expr/sort lvl-inst/zero)) ([z] ([h2] (defeq/app h h2)))))))))).
+
+True_rec/decl : declared "True.rec" (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) irec
+   = declared/ok-irec True/rec-name (dkind-ok/irec True_rec/type-wf).
+
+%% def decode
+decode/type-wf-sort : lvl
+   = (limax (lsucc lzero) (lsucc lzero)).
+
+decode/type-wf : defeq (eforall (econst "Bool" lnil) ([x] (esort lzero))) (eforall (econst "Bool" lnil) ([x] (esort lzero))) (esort decode/type-wf-sort)
+   = (defeq/forall (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] defeq/sort-refl))).
+
+decode/value-typed : defeq (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([x] (esort lzero)))) (econst "False" lnil)) (econst "True" lnil)) (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([x] (esort lzero)))) (econst "False" lnil)) (econst "True" lnil)) (eforall (econst "Bool" lnil) ([x] (esort lzero)))
+   = (defeq/conv (defeq/forall (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] (defeq/trans (defeq/beta ([y] ([h1] defeq/sort-refl)) h) defeq/sort-refl)))) (defeq/app (defeq/app (defeq/app (defeq/const Bool_rec/decl (inst-expr/forall (inst-expr/forall (inst-expr/const lvls-inst/nil) ([x] ([h] (inst-expr/sort (lvl-inst/var lvl-nth/zero))))) ([x] ([h] (inst-expr/forall (inst-expr/app h (inst-expr/const lvls-inst/nil)) ([y] ([h1] (inst-expr/forall (inst-expr/app h (inst-expr/const lvls-inst/nil)) ([z] ([h2] (inst-expr/forall (inst-expr/const lvls-inst/nil) ([w] ([h3] (inst-expr/app h h3)))))))))))))) (defeq/lam (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))) ([x] ([h] defeq/sort-refl)))) (defeq/conv (defeq/trans defeq/sort-refl (defeq/symm (defeq/beta ([x] ([h] defeq/sort-refl)) (defeq/const Bool_false/decl (inst-expr/const lvls-inst/nil))))) (defeq/const False/decl (inst-expr/sort lvl-inst/zero)))) (defeq/conv (defeq/trans defeq/sort-refl (defeq/symm (defeq/beta ([x] ([h] defeq/sort-refl)) (defeq/const Bool_true/decl (inst-expr/const lvls-inst/nil))))) (defeq/const True/decl (inst-expr/sort lvl-inst/zero))))).
+
+decode/name : name "decode" (is-decl (eforall (econst "Bool" lnil) ([x] (esort lzero))) (defn (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([x] (esort lzero)))) (econst "False" lnil)) (econst "True" lnil)))).
+
+decode/decl : declared "decode" (eforall (econst "Bool" lnil) ([x] (esort lzero))) (defn (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([x] (esort lzero)))) (econst "False" lnil)) (econst "True" lnil)))
+   = declared/ok decode/name (dkind-ok/defn decode/type-wf decode/value-typed).
+
+%% inductive Eq
+Eq/type-wf-sort : lvl
+   = (limax (lsucc (lvar liz)) (limax (lvar liz) (limax (lvar liz) (lsucc lzero)))).
+
+Eq/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (esort Eq/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall h ([y] ([h1] (defeq/forall h ([z] ([h2] defeq/sort-refl))))))))).
+
+Eq/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero)))))))
+   = (ends-in-sort/forall ([x] (ends-in-sort/forall ([y] (ends-in-sort/forall ([z] ends-in-sort/sort)))))).
+
+Eq/rec-name : name "Eq.rec" (is-rec-for "Eq").
+
+Eq/name : name "Eq" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) indt).
+
+Eq/decl : declared "Eq" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) indt
+   = declared/ok Eq/name (dkind-ok/indt Eq/type-wf Eq/ends-in-sort).
+
+%% ctor Eq.refl (of Eq)
+Eq_refl/type-wf-sort : lvl
+   = (limax (lsucc (lvar liz)) (limax (lvar liz) lzero)).
+
+Eq_refl/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (esort Eq_refl/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall h ([y] ([h1] (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h1))))))).
+
+Eq_refl/positivity : ctor-positive "Eq" (lcons (lvar liz) lnil) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y)))))
+   = (ctor-positive/intro ([S] (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp S x) y) y)))))) (ctor-spine/arg (strict-pos/no-occur (esort (lvar liz)) no-self-ref/sort) ([x] ([y] (ctor-spine/arg (strict-pos/no-occur x y) ([z] ([w] (ctor-spine/result (applies-self/app (applies-self/app (applies-self/app applies-self/refl))))))))))).
+
+Eq_refl/name : name "Eq.refl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) ctor).
+
+Eq_refl/decl : declared "Eq.refl" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) ctor
+   = declared/ok Eq_refl/name (dkind-ok/ctor Eq_refl/type-wf Eq_refl/positivity).
+
+%% recursor Eq.rec
+Eq_rec/type-wf-sort : lvl
+   = (limax (lsucc (lvar (lis liz))) (limax (lvar (lis liz)) (limax (limax (lvar (lis liz)) (limax lzero (lsucc (lvar liz)))) (limax (lvar liz) (limax (lvar (lis liz)) (limax lzero (lvar liz))))))).
+
+Eq_rec/type-wf : defeq (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Eq_rec/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall h ([y] ([h1] (defeq/forall (defeq/forall h ([z] ([h2] (defeq/forall (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h2) ([w] ([h3] defeq/sort-refl)))))) ([z] ([h2] (defeq/forall (defeq/app (defeq/app h2 h1) (defeq/app (defeq/app (defeq/const Eq_refl/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)) h) h1) h1)))))))) h) h1)) ([w] ([h3] (defeq/forall h ([x1] ([h4] (defeq/forall (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h4) ([y1] ([h5] (defeq/app (defeq/app h2 h4) h5))))))))))))))))))).
+
+Eq_rec/decl : declared "Eq.rec" (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) irec
+   = declared/ok-irec Eq/rec-name (dkind-ok/irec Eq_rec/type-wf).
+
+%% def ab_eq
+ab_eq/type-wf-sort : lvl
+   = lzero.
+
+ab_eq/type-wf : defeq (eapp (eapp (eapp (econst "Eq" (lcons lzero lnil)) (econst "PropTwo" lnil)) (econst "PropTwo.a" lnil)) (econst "PropTwo.b" lnil)) (eapp (eapp (eapp (econst "Eq" (lcons lzero lnil)) (econst "PropTwo" lnil)) (econst "PropTwo.a" lnil)) (econst "PropTwo.b" lnil)) (esort ab_eq/type-wf-sort)
+   = (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) (defeq/const PropTwo/decl (inst-expr/sort lvl-inst/zero))) (defeq/const PropTwo_a/decl (inst-expr/const lvls-inst/nil))) (defeq/const PropTwo_b/decl (inst-expr/const lvls-inst/nil))).
+
+%%% HOLE
+ab_eq/value-typed : defeq (eapp (eapp (econst "Eq.refl" (lcons lzero lnil)) (econst "PropTwo" lnil)) (econst "PropTwo.a" lnil)) (eapp (eapp (econst "Eq.refl" (lcons lzero lnil)) (econst "PropTwo" lnil)) (econst "PropTwo.a" lnil)) (eapp (eapp (eapp (econst "Eq" (lcons lzero lnil)) (econst "PropTwo" lnil)) (econst "PropTwo.a" lnil)) (econst "PropTwo.b" lnil)).
+
+ab_eq/name : name "ab_eq" (is-decl (eapp (eapp (eapp (econst "Eq" (lcons lzero lnil)) (econst "PropTwo" lnil)) (econst "PropTwo.a" lnil)) (econst "PropTwo.b" lnil)) (defn (eapp (eapp (econst "Eq.refl" (lcons lzero lnil)) (econst "PropTwo" lnil)) (econst "PropTwo.a" lnil)))).
+
+ab_eq/decl : declared "ab_eq" (eapp (eapp (eapp (econst "Eq" (lcons lzero lnil)) (econst "PropTwo" lnil)) (econst "PropTwo.a" lnil)) (econst "PropTwo.b" lnil)) (defn (eapp (eapp (econst "Eq.refl" (lcons lzero lnil)) (econst "PropTwo" lnil)) (econst "PropTwo.a" lnil)))
+   = declared/ok ab_eq/name (dkind-ok/defn ab_eq/type-wf ab_eq/value-typed).
+
+%% def rfl
+rfl/type-wf-sort : lvl
+   = (limax (lsucc (lvar liz)) (limax (lvar liz) lzero)).
+
+rfl/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (esort rfl/type-wf-sort)
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall h ([y] ([h1] (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h1) h1))))))).
+
+rfl/value-typed : defeq (elam (esort (lvar liz)) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x) y))))) (elam (esort (lvar liz)) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x) y))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y)))))
+   = (defeq/lam defeq/sort-refl ([x] ([h] (defeq/lam h ([y] ([h1] (defeq/app (defeq/app (defeq/const Eq_refl/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)) h) h1) h1)))))))) h) h1))))))).
+
+rfl/name : name "rfl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (defn (elam (esort (lvar liz)) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x) y))))))).
+
+rfl/decl : declared "rfl" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (defn (elam (esort (lvar liz)) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x) y))))))
+   = declared/ok rfl/name (dkind-ok/defn rfl/type-wf rfl/value-typed).
+
+%% thm congrArg
+congrArg/type-wf : defeq (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (eforall x ([z] (eforall x ([w] (eforall (eforall x ([x1] y)) ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) w) ([y1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) y) (eapp x1 z)) (eapp x1 w)))))))))))))) (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (eforall x ([z] (eforall x ([w] (eforall (eforall x ([x1] y)) ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) w) ([y1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) y) (eapp x1 z)) (eapp x1 w)))))))))))))) (esort lzero)
+   = (defeq/conv (defeq/sort-eq (lvl-eq/le (mleq/imax-imL (mleq/maxL (mleq/imax-imL (mleq/maxL (mleq/imax-imL (mleq/maxL (mleq/imax-imL (mleq/maxL (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))) (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))))) (mleq/imax-imL (mleq/maxL (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))) (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))))))) (mleq/imax-imL (mleq/maxL (mleq/imax-imL (mleq/maxL (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))) (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))))) (mleq/imax-imL (mleq/maxL (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))) (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))))))))) (mleq/imax-imL (mleq/maxL (mleq/imax-imL (mleq/maxL (mleq/imax-imL (mleq/maxL (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))) (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))))) (mleq/imax-imL (mleq/maxL (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))) (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))))))) (mleq/imax-imL (mleq/maxL (mleq/imax-imL (mleq/maxL (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))) (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))))) (mleq/imax-imL (mleq/maxL (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))) (mleq/imax-imL (mleq/maxL (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/imax-lzL (mleq/self nonneg_0)))))))))))) (mleq/lz nonneg_0))) (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] (defeq/forall h ([z] ([h2] (defeq/forall h ([w] ([h3] (defeq/forall (defeq/forall h ([x1] ([h4] h1))) ([x1] ([h4] (defeq/forall (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h2) h3) ([y1] ([h5] (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h1) (defeq/app h4 h2)) (defeq/app h4 h3))))))))))))))))))))).
+
+congrArg/value-typed : defeq (elam (esort (lvar liz)) ([x] (elam (esort (lvar (lis liz))) ([y] (elam x ([z] (elam x ([w] (elam (eforall x ([x1] y)) ([x1] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) w) ([y1] (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons lzero (lcons (lvar liz) lnil))) x) z) (elam x ([z1] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) z1) ([w1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) y) (eapp x1 z)) (eapp x1 z1))))))) (eapp (eapp (econst "rfl" (lcons (lvar (lis liz)) lnil)) y) (eapp x1 z))) w) y1))))))))))))) (elam (esort (lvar liz)) ([x] (elam (esort (lvar (lis liz))) ([y] (elam x ([z] (elam x ([w] (elam (eforall x ([x1] y)) ([x1] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) w) ([y1] (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons lzero (lcons (lvar liz) lnil))) x) z) (elam x ([z1] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) z1) ([w1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) y) (eapp x1 z)) (eapp x1 z1))))))) (eapp (eapp (econst "rfl" (lcons (lvar (lis liz)) lnil)) y) (eapp x1 z))) w) y1))))))))))))) (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (eforall x ([z] (eforall x ([w] (eforall (eforall x ([x1] y)) ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) w) ([y1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) y) (eapp x1 z)) (eapp x1 w))))))))))))))
+   = (defeq/conv (defeq/forall (defeq/sort-eq lvl-eq/refl) ([x] ([h] (defeq/forall (defeq/sort-eq lvl-eq/refl) ([y] ([h1] (defeq/forall h ([z] ([h2] (defeq/forall h ([w] ([h3] (defeq/forall (defeq/forall h ([x1] ([h4] h1))) ([x1] ([h4] (defeq/forall (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h2) h3) ([y1] ([h5] (defeq/trans (defeq/app (defeq/beta ([z1] ([h6] (defeq/lam (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h2) h6) ([w1] ([h7] (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h1) (defeq/app h4 h2)) (defeq/app h4 h6))))))) h3) h5) (defeq/trans (defeq/beta ([z1] ([h6] (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h1) (defeq/app h4 h2)) (defeq/app h4 h3)))) h5) (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h1) (defeq/app h4 h2)) (defeq/app h4 h3)))))))))))))))))))))) (defeq/lam defeq/sort-refl ([x] ([h] (defeq/lam defeq/sort-refl ([y] ([h1] (defeq/lam h ([z] ([h2] (defeq/lam h ([w] ([h3] (defeq/lam (defeq/forall h ([x1] ([h4] h1))) ([x1] ([h4] (defeq/lam (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h2) h3) ([y1] ([h5] (defeq/app (defeq/app (defeq/app (defeq/app (defeq/app (defeq/app (defeq/const Eq_rec/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var (lvl-nth/succ lvl-nth/zero))) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall (inst-expr/forall h ([z] ([h2] (inst-expr/forall (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var (lvl-nth/succ lvl-nth/zero)) lvls-inst/nil)) h) h1) h2) ([w] ([h3] (inst-expr/sort (lvl-inst/var lvl-nth/zero)))))))) ([z] ([h2] (inst-expr/forall (inst-expr/app (inst-expr/app h2 h1) (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var (lvl-nth/succ lvl-nth/zero)) lvls-inst/nil)) h) h1)) ([w] ([h3] (inst-expr/forall h ([x1] ([h4] (inst-expr/forall (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var (lvl-nth/succ lvl-nth/zero)) lvls-inst/nil)) h) h1) h4) ([y1] ([h5] (inst-expr/app (inst-expr/app h2 h4) h5)))))))))))))))))))) h) h2) (defeq/lam h ([z1] ([h6] (defeq/lam (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h2) h6) ([w1] ([h7] (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h1) (defeq/app h4 h2)) (defeq/app h4 h6))))))))) (defeq/conv (defeq/trans (defeq/trans (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h1) (defeq/app h4 h2)) (defeq/app h4 h2)) (defeq/symm (defeq/beta ([z1] ([h6] (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h1) (defeq/app h4 h2)) (defeq/app h4 h2)))) (defeq/app (defeq/app (defeq/const Eq_refl/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)) h) h1) h1)))))))) h) h2)))) (defeq/symm (defeq/app (defeq/beta ([z1] ([h6] (defeq/lam (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h) h2) h6) ([w1] ([h7] (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) h1) (defeq/app h4 h2)) (defeq/app h4 h6))))))) h2) (defeq/app (defeq/app (defeq/const Eq_refl/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)) h) h1) h1)))))))) h) h2)))) (defeq/app (defeq/app (defeq/const rfl/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)) h) h1) h1)))))))) h1) (defeq/app h4 h2)))) h3) h5)))))))))))))))))))).
+
+congrArg/name : name "congrArg" (is-decl (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (eforall x ([z] (eforall x ([w] (eforall (eforall x ([x1] y)) ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) w) ([y1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) y) (eapp x1 z)) (eapp x1 w)))))))))))))) (thm (elam (esort (lvar liz)) ([x] (elam (esort (lvar (lis liz))) ([y] (elam x ([z] (elam x ([w] (elam (eforall x ([x1] y)) ([x1] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) w) ([y1] (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons lzero (lcons (lvar liz) lnil))) x) z) (elam x ([z1] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) z1) ([w1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) y) (eapp x1 z)) (eapp x1 z1))))))) (eapp (eapp (econst "rfl" (lcons (lvar (lis liz)) lnil)) y) (eapp x1 z))) w) y1))))))))))))))).
+
+congrArg/decl : declared "congrArg" (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (eforall x ([z] (eforall x ([w] (eforall (eforall x ([x1] y)) ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) w) ([y1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) y) (eapp x1 z)) (eapp x1 w)))))))))))))) (thm (elam (esort (lvar liz)) ([x] (elam (esort (lvar (lis liz))) ([y] (elam x ([z] (elam x ([w] (elam (eforall x ([x1] y)) ([x1] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) w) ([y1] (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons lzero (lcons (lvar liz) lnil))) x) z) (elam x ([z1] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) z1) ([w1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) y) (eapp x1 z)) (eapp x1 z1))))))) (eapp (eapp (econst "rfl" (lcons (lvar (lis liz)) lnil)) y) (eapp x1 z))) w) y1))))))))))))))
+   = declared/ok congrArg/name (dkind-ok/thm congrArg/type-wf congrArg/value-typed).
+
+%% def discr_eq
+discr_eq/type-wf-sort : lvl
+   = lzero.
+
+discr_eq/type-wf : defeq (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.a" lnil))) (eapp (econst "discriminate" lnil) (econst "PropTwo.b" lnil))) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.a" lnil))) (eapp (econst "discriminate" lnil) (econst "PropTwo.b" lnil))) (esort discr_eq/type-wf-sort)
+   = (defeq/app (defeq/app (defeq/app (defeq/const Eq/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall h ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/sort lvl-inst/zero))))))))))) (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))) (defeq/app (defeq/const discriminate/decl (inst-expr/forall (inst-expr/const lvls-inst/nil) ([x] ([h] (inst-expr/const lvls-inst/nil))))) (defeq/const PropTwo_a/decl (inst-expr/const lvls-inst/nil)))) (defeq/app (defeq/const discriminate/decl (inst-expr/forall (inst-expr/const lvls-inst/nil) ([x] ([h] (inst-expr/const lvls-inst/nil))))) (defeq/const PropTwo_b/decl (inst-expr/const lvls-inst/nil)))).
+
+discr_eq/value-typed : defeq (eapp (eapp (eapp (eapp (eapp (eapp (econst "congrArg" (lcons lzero (lcons (lsucc lzero) lnil))) (econst "PropTwo" lnil)) (econst "Bool" lnil)) (econst "PropTwo.a" lnil)) (econst "PropTwo.b" lnil)) (econst "discriminate" lnil)) (econst "ab_eq" lnil)) (eapp (eapp (eapp (eapp (eapp (eapp (econst "congrArg" (lcons lzero (lcons (lsucc lzero) lnil))) (econst "PropTwo" lnil)) (econst "Bool" lnil)) (econst "PropTwo.a" lnil)) (econst "PropTwo.b" lnil)) (econst "discriminate" lnil)) (econst "ab_eq" lnil)) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.a" lnil))) (eapp (econst "discriminate" lnil) (econst "PropTwo.b" lnil)))
+   = (defeq/app (defeq/app (defeq/app (defeq/app (defeq/app (defeq/app (defeq/const congrArg/decl (inst-expr/forall (inst-expr/sort (lvl-inst/var lvl-nth/zero)) ([x] ([h] (inst-expr/forall (inst-expr/sort (lvl-inst/var (lvl-nth/succ lvl-nth/zero))) ([y] ([h1] (inst-expr/forall h ([z] ([h2] (inst-expr/forall h ([w] ([h3] (inst-expr/forall (inst-expr/forall h ([x1] ([h4] h1))) ([x1] ([h4] (inst-expr/forall (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)) h) h2) h3) ([y1] ([h5] (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons (lvl-inst/var (lvl-nth/succ lvl-nth/zero)) lvls-inst/nil)) h1) (inst-expr/app h4 h2)) (inst-expr/app h4 h3))))))))))))))))))))) (defeq/const PropTwo/decl (inst-expr/sort lvl-inst/zero))) (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))) (defeq/const PropTwo_a/decl (inst-expr/const lvls-inst/nil))) (defeq/const PropTwo_b/decl (inst-expr/const lvls-inst/nil))) (defeq/const discriminate/decl (inst-expr/forall (inst-expr/const lvls-inst/nil) ([x] ([h] (inst-expr/const lvls-inst/nil)))))) (defeq/const ab_eq/decl (inst-expr/app (inst-expr/app (inst-expr/app (inst-expr/const (lvls-inst/cons lvl-inst/zero lvls-inst/nil)) (inst-expr/const lvls-inst/nil)) (inst-expr/const lvls-inst/nil)) (inst-expr/const lvls-inst/nil)))).
+
+discr_eq/name : name "discr_eq" (is-decl (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.a" lnil))) (eapp (econst "discriminate" lnil) (econst "PropTwo.b" lnil))) (defn (eapp (eapp (eapp (eapp (eapp (eapp (econst "congrArg" (lcons lzero (lcons (lsucc lzero) lnil))) (econst "PropTwo" lnil)) (econst "Bool" lnil)) (econst "PropTwo.a" lnil)) (econst "PropTwo.b" lnil)) (econst "discriminate" lnil)) (econst "ab_eq" lnil)))).
+
+discr_eq/decl : declared "discr_eq" (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.a" lnil))) (eapp (econst "discriminate" lnil) (econst "PropTwo.b" lnil))) (defn (eapp (eapp (eapp (eapp (eapp (eapp (econst "congrArg" (lcons lzero (lcons (lsucc lzero) lnil))) (econst "PropTwo" lnil)) (econst "Bool" lnil)) (econst "PropTwo.a" lnil)) (econst "PropTwo.b" lnil)) (econst "discriminate" lnil)) (econst "ab_eq" lnil)))
+   = declared/ok discr_eq/name (dkind-ok/defn discr_eq/type-wf discr_eq/value-typed).
+
+%% def falseViaLargeElim
+falseViaLargeElim/type-wf-sort : lvl
+   = lzero.
+
+falseViaLargeElim/type-wf : defeq (econst "False" lnil) (econst "False" lnil) (esort falseViaLargeElim/type-wf-sort)
+   = (defeq/const False/decl (inst-expr/sort lvl-inst/zero)).
+
+%%% HOLE
+falseViaLargeElim/value-typed : defeq (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons lzero (lcons (lsucc lzero) lnil))) (econst "Bool" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.a" lnil))) (elam (econst "Bool" lnil) ([x] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.a" lnil))) x) ([y] (eapp (econst "decode" lnil) x)))))) (econst "True.intro" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.b" lnil))) (econst "discr_eq" lnil)) (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons lzero (lcons (lsucc lzero) lnil))) (econst "Bool" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.a" lnil))) (elam (econst "Bool" lnil) ([x] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.a" lnil))) x) ([y] (eapp (econst "decode" lnil) x)))))) (econst "True.intro" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.b" lnil))) (econst "discr_eq" lnil)) (econst "False" lnil).
+
+falseViaLargeElim/name : name "falseViaLargeElim" (is-decl (econst "False" lnil) (defn (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons lzero (lcons (lsucc lzero) lnil))) (econst "Bool" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.a" lnil))) (elam (econst "Bool" lnil) ([x] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.a" lnil))) x) ([y] (eapp (econst "decode" lnil) x)))))) (econst "True.intro" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.b" lnil))) (econst "discr_eq" lnil)))).
+
+falseViaLargeElim/decl : declared "falseViaLargeElim" (econst "False" lnil) (defn (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons lzero (lcons (lsucc lzero) lnil))) (econst "Bool" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.a" lnil))) (elam (econst "Bool" lnil) ([x] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.a" lnil))) x) ([y] (eapp (econst "decode" lnil) x)))))) (econst "True.intro" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.b" lnil))) (econst "discr_eq" lnil)))
+   = declared/ok falseViaLargeElim/name (dkind-ok/defn falseViaLargeElim/type-wf falseViaLargeElim/value-typed).
