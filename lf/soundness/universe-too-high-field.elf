@@ -1,0 +1,39 @@
+%%% Soundness probe: constructor field universe exceeds the inductive's.
+%%%
+%%%   inductive TooHigh : Type 0          -- Sort 1
+%%%     | mk (a : Type 0) : TooHigh       -- field's type `Type 0` lives at Sort 2 > Sort 1
+%%%
+%%% Lean rejects this (universe consistency: a ctor field's type must inhabit a
+%%% sort ≤ the inductive's sort).  The TCB's `dkind-ok/ctor` (tcb.elf:705) checks
+%%% only `defeq T T (esort U)` (the ctor type is well-formed at *some* sort) plus
+%%% `ctor-positive` — there is NO field-universe ≤ inductive-universe premise.
+%%% So the malformed ctor is accepted.  (cf. arena tutorial 054, which the
+%%% generator SKIPs translator-side; this hand-written file reaches the TCB.)
+%%%
+%%% This demonstrates the MISSING CHECK (the declaration is accepted).  It does
+%%% not by itself construct a proof of False — that route is Girard/Hurkens via
+%%% the recursor, not built here.  Identical in spirit to the generated GOOD
+%%% test 052 (`TypeWithTypeField : Type 1`), but with the inductive lowered one
+%%% universe so the same field becomes too high.
+%%%
+%%% STATUS (2026-06-02): EXPECTED-FAIL — loads CLEAN today, so check-soundness.sh
+%%% reports 💥 ACCEPTED (red).  Fix: a `dkind-ok/ctor` premise constraining each
+%%% field's sort ≤ the inductive's sort (`completeness-plan.md` §3, "universe
+%%% consistency ✗ missing").  Then this ABORTs and becomes a passing regression.
+
+TooHigh/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
+   = defeq/sort-refl.
+TooHigh/ends-in-sort : ends-in-sort (esort (lsucc lzero))
+   = ends-in-sort/sort.
+TooHigh/name : name "TooHigh" (is-decl (esort (lsucc lzero)) indt).
+TooHigh/decl : declared "TooHigh" (esort (lsucc lzero)) indt
+   = declared/ok TooHigh/name (dkind-ok/indt TooHigh/type-wf TooHigh/ends-in-sort).
+
+%% ctor TooHigh.mk : (a : Type 0) -> TooHigh   -- field at Sort 1 (type lives at Sort 2)
+TooHigh_mk/type-wf : defeq (eforall (esort (lsucc lzero)) ([x] (econst "TooHigh" lnil))) (eforall (esort (lsucc lzero)) ([x] (econst "TooHigh" lnil))) (esort (limax (lsucc (lsucc lzero)) (lsucc lzero)))
+   = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/const TooHigh/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))).
+TooHigh_mk/positivity : ctor-positive "TooHigh" lnil (eforall (esort (lsucc lzero)) ([x] (econst "TooHigh" lnil)))
+   = (ctor-positive/intro ([S] (eforall (esort (lsucc lzero)) ([x] S))) (ctor-spine/arg (strict-pos/no-occur (esort (lsucc lzero)) no-self-ref/sort) ([x] ([y] (ctor-spine/result applies-self/refl))))).
+TooHigh_mk/name : name "TooHigh.mk" (is-decl (eforall (esort (lsucc lzero)) ([x] (econst "TooHigh" lnil))) ctor).
+TooHigh_mk/decl : declared "TooHigh.mk" (eforall (esort (lsucc lzero)) ([x] (econst "TooHigh" lnil))) ctor
+   = declared/ok TooHigh_mk/name (dkind-ok/ctor TooHigh_mk/type-wf TooHigh_mk/positivity).
