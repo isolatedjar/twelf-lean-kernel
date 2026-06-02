@@ -1,0 +1,109 @@
+%%% Soundness exploit (hand-written, adversarial): large elimination of a
+%%% 2-constructor Prop derives a false defeq between two distinct propositions.
+%%%
+%%% Models a translator that emits, for `inductive PropTwo : Prop | a | b`, the
+%%% Bool-style large-elim recursor `PropTwo.rec.{u} : (PropTwo → Sort u) → …`.
+%%% Lean forbids large elimination of a ≥2-ctor Prop; the TCB does not:
+%%%   * dkind-ok/irec checks only that the recursor type is well-formed;
+%%%   * defeq/iota-enum-2-* place no constraint on the motive's universe U.
+%%% With proof irrelevance (a ≡ b : PropTwo : Prop), the two iota reductions
+%%%   PropTwo.rec (λ_.Prop) P Q a ≡ P   and   …b ≡ Q
+%%% collapse to P ≡ Q for two DISTINCT declared propositions — soundness fail.
+%%%
+%%% STATUS (2026-06-02): EXPECTED-FAIL regression — this file currently loads
+%%% CLEAN (no ABORT), i.e. the TCB *accepts* the false `boom : defeq P Q Prop`.
+%%% That IS the bug, so `check-soundness.sh` reports this as 💥 ACCEPTED (red)
+%%% until the TCB is fixed.  The fix is an elimination-universe check: an
+%%% `le-ok`-style premise on `dkind-ok/irec` and/or a sort constraint on
+%%% `defeq/iota-enum-*` relating the motive universe U to the inductive's sort
+%%% and subsingleton-eligibility.  Once added, this file will ABORT and becomes
+%%% an ordinary passing regression.
+%%%
+%%% Masked at the arena level: the generator preflight SKIPs large-elim Props, so
+%%% only a malicious/buggy translator (or this hand-written file) reaches it.
+
+pt    : expr = econst "PropTwo" lnil.
+ca    : expr = econst "PropTwo.a" lnil.
+cb    : expr = econst "PropTwo.b" lnil.
+eP    : expr = econst "P" lnil.
+eQ    : expr = econst "Q" lnil.
+mot   : expr = elam pt ([_] esort lzero).
+rec1  : expr = econst "PropTwo.rec" (lcons (lsucc lzero) lnil).
+recPQ : expr = eapp (eapp (eapp rec1 mot) eP) eQ.
+recSchema : expr =
+   eforall (eforall pt ([x] (esort (lvar liz)))) ([x] (eforall (eapp x ca) ([y] (eforall (eapp x cb) ([z] (eforall pt ([w] (eapp x w)))))))).
+recType1 : expr =
+   eforall (eforall pt ([x] (esort (lsucc lzero)))) ([x] (eforall (eapp x ca) ([y] (eforall (eapp x cb) ([z] (eforall pt ([w] (eapp x w)))))))).
+motType : expr = eforall pt ([_] esort (lsucc lzero)).
+
+PropTwo/type-wf : defeq (esort lzero) (esort lzero) (esort (lsucc lzero)) = defeq/sort-refl.
+PropTwo/ends-in-sort : ends-in-sort (esort lzero) = ends-in-sort/sort.
+PropTwo/rec-name : name "PropTwo.rec" (is-rec-for "PropTwo").
+PropTwo/name : name "PropTwo" (is-decl (esort lzero) indt).
+PropTwo/decl : declared "PropTwo" (esort lzero) indt
+   = declared/ok PropTwo/name (dkind-ok/indt PropTwo/type-wf PropTwo/ends-in-sort).
+
+PropTwo_a/type-wf : defeq pt pt (esort lzero) = (defeq/const PropTwo/decl (inst-expr/sort lvl-inst/zero)).
+PropTwo_a/positivity : ctor-positive "PropTwo" lnil pt = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
+PropTwo_a/name : name "PropTwo.a" (is-decl pt ctor).
+PropTwo_a/decl : declared "PropTwo.a" pt ctor = declared/ok PropTwo_a/name (dkind-ok/ctor PropTwo_a/type-wf PropTwo_a/positivity).
+
+PropTwo_b/type-wf : defeq pt pt (esort lzero) = (defeq/const PropTwo/decl (inst-expr/sort lvl-inst/zero)).
+PropTwo_b/positivity : ctor-positive "PropTwo" lnil pt = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
+PropTwo_b/name : name "PropTwo.b" (is-decl pt ctor).
+PropTwo_b/decl : declared "PropTwo.b" pt ctor = declared/ok PropTwo_b/name (dkind-ok/ctor PropTwo_b/type-wf PropTwo_b/positivity).
+
+PropTwo_rec/type-wf : defeq recSchema recSchema (esort (limax (limax lzero (lsucc (lvar liz))) (limax (lvar liz) (limax (lvar liz) (limax lzero (lvar liz))))))
+   = (defeq/forall (defeq/forall (defeq/const PropTwo/decl (inst-expr/sort lvl-inst/zero)) ([x] ([h] defeq/sort-refl))) ([x] ([h] (defeq/forall (defeq/app h (defeq/const PropTwo_a/decl (inst-expr/const lvls-inst/nil))) ([y] ([h1] (defeq/forall (defeq/app h (defeq/const PropTwo_b/decl (inst-expr/const lvls-inst/nil))) ([z] ([h2] (defeq/forall (defeq/const PropTwo/decl (inst-expr/sort lvl-inst/zero)) ([w] ([h3] (defeq/app h h3))))))))))))).
+PropTwo_rec/decl : declared "PropTwo.rec" recSchema irec = declared/ok-irec PropTwo/rec-name (dkind-ok/irec PropTwo_rec/type-wf).
+
+P/name : name "P" (is-decl (esort lzero) ax).
+P/decl : declared "P" (esort lzero) ax = declared/ok P/name (dkind-ok/ax defeq/sort-refl).
+Q/name : name "Q" (is-decl (esort lzero) ax).
+Q/decl : declared "Q" (esort lzero) ax = declared/ok Q/name (dkind-ok/ax defeq/sort-refl).
+
+%% Only the two STRUCTURAL premises need search (no defeq sub-goals → bounded):
+%solve ie0   : inst-expr recSchema (lcons (lsucc lzero) lnil) recType1.
+%solve enumT : enum-rec-type recType1 "PropTwo" lnil (ccons "PropTwo.a" (ccons "PropTwo.b" cnil)) (lsucc lzero).
+
+beta_a : defeq (eapp mot ca) (esort lzero) (esort (lsucc lzero))
+   = defeq/beta ([x] [h] defeq/sort-refl) (defeq/const PropTwo_a/decl (inst-expr/const lvls-inst/nil)).
+beta_b : defeq (eapp mot cb) (esort lzero) (esort (lsucc lzero))
+   = defeq/beta ([x] [h] defeq/sort-refl) (defeq/const PropTwo_b/decl (inst-expr/const lvls-inst/nil)).
+
+pMot : defeq mot mot motType
+   = defeq/lam (defeq/const PropTwo/decl (inst-expr/sort lvl-inst/zero)) ([x] [h] defeq/sort-refl).
+pP : defeq eP eP (eapp mot ca)
+   = defeq/conv (defeq/symm beta_a) (defeq/const P/decl (inst-expr/sort lvl-inst/zero)).
+pQ : defeq eQ eQ (eapp mot cb)
+   = defeq/conv (defeq/symm beta_b) (defeq/const Q/decl (inst-expr/sort lvl-inst/zero)).
+
+ab : defeq ca cb pt
+   = defeq/proof-irrel (defeq/const PropTwo/decl (inst-expr/sort lvl-inst/zero))
+                       (defeq/const PropTwo_a/decl (inst-expr/const lvls-inst/nil))
+                       (defeq/const PropTwo_b/decl (inst-expr/const lvls-inst/nil)).
+
+reflRec : defeq rec1 rec1 recType1 = defeq/const PropTwo_rec/decl ie0.
+s1 : defeq (eapp rec1 mot) (eapp rec1 mot) (eforall (eapp mot ca) ([_] eforall (eapp mot cb) ([_] eforall pt ([w] eapp mot w))))
+   = defeq/app reflRec pMot.
+s2 : defeq (eapp (eapp rec1 mot) eP) (eapp (eapp rec1 mot) eP) (eforall (eapp mot cb) ([_] eforall pt ([w] eapp mot w)))
+   = defeq/app s1 pP.
+s3 : defeq recPQ recPQ (eforall pt ([w] eapp mot w))
+   = defeq/app s2 pQ.
+cong : defeq (eapp recPQ ca) (eapp recPQ cb) (eapp mot ca)
+   = defeq/app s3 ab.
+
+%% iota facts, fully hand-built (all premises supplied; no search):
+iota_a : defeq-extra (eapp recPQ ca) eP (eapp mot ca)
+   = defeq/iota-enum-2-first PropTwo_rec/decl ie0 PropTwo_a/decl PropTwo_b/decl enumT pMot pP pQ.
+iota_b : defeq-extra (eapp recPQ cb) eQ (eapp mot cb)
+   = defeq/iota-enum-2-second PropTwo_rec/decl ie0 PropTwo_a/decl PropTwo_b/decl enumT pMot pP pQ.
+
+r_a : defeq (eapp recPQ ca) eP (eapp mot ca) = defeq/extra iota_a.
+r_b : defeq (eapp recPQ cb) eQ (eapp mot cb) = defeq/extra iota_b.
+r_a' : defeq (eapp recPQ ca) eP (esort lzero) = defeq/conv beta_a r_a.
+r_b' : defeq (eapp recPQ cb) eQ (esort lzero) = defeq/conv beta_b r_b.
+cong' : defeq (eapp recPQ ca) (eapp recPQ cb) (esort lzero) = defeq/conv beta_a cong.
+
+boom : defeq eP eQ (esort lzero)
+   = defeq/trans (defeq/symm r_a') (defeq/trans cong' r_b').
