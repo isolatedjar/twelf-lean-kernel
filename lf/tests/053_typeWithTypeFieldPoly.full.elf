@@ -49,7 +49,10 @@ TypeWithTypeFieldPoly_rec/type-wf-sort : lvl
          (limax (lsucc (lsucc (lvar (lis liz)))) (lvar liz))
          (limax (lsucc (lsucc (lvar (lis liz)))) (lvar liz)))).
 
-TypeWithTypeFieldPoly_rec/type-wf : of (eforall (eforall (econst "TypeWithTypeFieldPoly" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (eforall (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eapp x (eapp (econst "TypeWithTypeFieldPoly.mk" (lcons (lvar (lis liz)) lnil)) y)))) ([y] (eforall (econst "TypeWithTypeFieldPoly" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z))))))) (esort TypeWithTypeFieldPoly_rec/type-wf-sort)
+TypeWithTypeFieldPoly_rec/type-wf : of (eforall (eforall (econst "TypeWithTypeFieldPoly" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz))))
+                                      ([x]
+                                        (eforall (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eapp x (eapp (econst "TypeWithTypeFieldPoly.mk" (lcons (lvar (lis liz)) lnil)) y))))
+                                          ([y] (eforall (econst "TypeWithTypeFieldPoly" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z))))))) (esort TypeWithTypeFieldPoly_rec/type-wf-sort)
    = (defeq/forall
        (defeq/forall
          (defeq/const

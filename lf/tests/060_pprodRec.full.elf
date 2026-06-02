@@ -35,7 +35,10 @@ PProd_mk/type-wf-sort : lvl
              (lvar (lis liz))
              (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz))))))).
 
-PProd_mk/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "PProd" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) (esort PProd_mk/type-wf-sort)
+PProd_mk/type-wf : of (eforall (esort (lvar liz))
+                     ([x]
+                       (eforall (esort (lvar (lis liz)))
+                         ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "PProd" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) (esort PProd_mk/type-wf-sort)
    = (defeq/forall
        defeq/sort-refl
        ([x]
@@ -125,7 +128,16 @@ PProd_rec/type-wf-sort : lvl
                  (lvar (lis (lis liz))))
                (lvar liz)))))).
 
-PProd_rec/type-wf : of (eforall (esort (lvar (lis liz))) ([x] (eforall (esort (lvar (lis (lis liz)))) ([y] (eforall (eforall (eapp (eapp (econst "PProd" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([z] (esort (lvar liz)))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PProd.mk" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "PProd" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([x1] (eapp z x1))))))))))) (esort PProd_rec/type-wf-sort)
+PProd_rec/type-wf : of (eforall (esort (lvar (lis liz)))
+                      ([x]
+                        (eforall (esort (lvar (lis (lis liz))))
+                          ([y]
+                            (eforall (eforall (eapp (eapp (econst "PProd" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([z] (esort (lvar liz))))
+                              ([z]
+                                (eforall (eforall x
+                                  ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PProd.mk" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) w) x1))))))
+                                  ([w]
+                                    (eforall (eapp (eapp (econst "PProd" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([x1] (eapp z x1))))))))))) (esort PProd_rec/type-wf-sort)
    = (defeq/forall
        defeq/sort-refl
        ([x]
@@ -268,7 +280,14 @@ pprodRec/type-wf-sort : lvl
                (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))
                (lvar liz)))))).
 
-pprodRec/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (eforall (eforall (eapp (eapp (econst "PProd" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (esort (lvar liz)))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PProd.mk" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "PProd" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([x1] (eapp z x1))))))))))) (esort pprodRec/type-wf-sort)
+pprodRec/type-wf : of (eforall (esort (lvar liz))
+                     ([x]
+                       (eforall (esort (lvar (lis liz)))
+                         ([y]
+                           (eforall (eforall (eapp (eapp (econst "PProd" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (esort (lvar liz))))
+                             ([z]
+                               (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PProd.mk" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) w) x1))))))
+                                 ([w] (eforall (eapp (eapp (econst "PProd" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([x1] (eapp z x1))))))))))) (esort pprodRec/type-wf-sort)
    = (defeq/forall
        defeq/sort-refl
        ([x]
@@ -392,7 +411,14 @@ pprodRec/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (li
                                  h1)
                                ([x1] ([h4] (defeq/app h2 h4)))))))))))))))).
 
-pprodRec/value-typed : of (econst "PProd.rec" (lcons (lvar liz) (lcons (lvar liz) (lcons (lvar (lis liz)) lnil)))) (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (eforall (eforall (eapp (eapp (econst "PProd" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (esort (lvar liz)))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PProd.mk" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "PProd" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([x1] (eapp z x1)))))))))))
+pprodRec/value-typed : of (econst "PProd.rec" (lcons (lvar liz) (lcons (lvar liz) (lcons (lvar (lis liz)) lnil)))) (eforall (esort (lvar liz))
+                         ([x]
+                           (eforall (esort (lvar (lis liz)))
+                             ([y]
+                               (eforall (eforall (eapp (eapp (econst "PProd" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (esort (lvar liz))))
+                                 ([z]
+                                   (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PProd.mk" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) w) x1))))))
+                                     ([w] (eforall (eapp (eapp (econst "PProd" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([x1] (eapp z x1)))))))))))
    = (defeq/const
        PProd_rec/decl
        (inst-expr/forall

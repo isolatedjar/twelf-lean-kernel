@@ -57,7 +57,10 @@ Bool_rec/type-wf-sort : lvl
        (limax (lsucc lzero) (lsucc (lvar liz)))
        (limax (lvar liz) (limax (lvar liz) (limax (lsucc lzero) (lvar liz))))).
 
-Bool_rec/type-wf : of (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort Bool_rec/type-wf-sort)
+Bool_rec/type-wf : of (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz))))
+                     ([x]
+                       (eforall (eapp x (econst "Bool.false" lnil))
+                         ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort Bool_rec/type-wf-sort)
    = (defeq/forall
        (defeq/forall
          (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
@@ -142,7 +145,14 @@ SortElimProp2/decl : declared "SortElimProp2" (eforall (econst "Bool" lnil) ([x]
 SortElimProp2_mk/type-wf-sort : lvl
    = (limax (lsucc lzero) (limax (lsucc lzero) (limax (lsucc lzero) lzero))).
 
-SortElimProp2_mk/type-wf : of (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) z) (eapp (eapp (econst "id" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) y)))))))) (esort SortElimProp2_mk/type-wf-sort)
+SortElimProp2_mk/type-wf : of (eforall (econst "Bool" lnil)
+                             ([x]
+                               (eforall (econst "Bool" lnil)
+                                 ([y]
+                                   (eforall (econst "Bool" lnil)
+                                     ([z]
+                                       (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) z)
+                                         (eapp (eapp (econst "id" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) y)))))))) (esort SortElimProp2_mk/type-wf-sort)
    = (defeq/forall
        (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
        ([x]
@@ -230,7 +240,24 @@ SortElimProp2_rec/type-wf-sort : lvl
            (limax (lsucc lzero) (limax (lsucc lzero) lzero))
            (limax (lsucc lzero) (limax (lsucc lzero) (limax lzero lzero)))))).
 
-SortElimProp2_rec/type-wf : of (eforall (econst "Bool" lnil) ([x] (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) y) z) ([w] (esort lzero))))))) ([y] (eforall (eforall (econst "Bool" lnil) ([z] (eforall (econst "Bool" lnil) ([w] (eapp (eapp (eapp y w) (eapp (eapp (econst "id" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) z)) (eapp (eapp (eapp (econst "SortElimProp2.mk" lnil) x) z) w)))))) ([z] (eforall (econst "Bool" lnil) ([w] (eforall (econst "Bool" lnil) ([x1] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) w) x1) ([y1] (eapp (eapp (eapp y w) x1) y1))))))))))))) (esort SortElimProp2_rec/type-wf-sort)
+SortElimProp2_rec/type-wf : of (eforall (econst "Bool" lnil)
+                              ([x]
+                                (eforall (eforall (econst "Bool" lnil)
+                                  ([y] (eforall (econst "Bool" lnil) ([z] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) y) z) ([w] (esort lzero)))))))
+                                  ([y]
+                                    (eforall (eforall (econst "Bool" lnil)
+                                      ([z]
+                                        (eforall (econst "Bool" lnil)
+                                          ([w]
+                                            (eapp (eapp (eapp y w) (eapp (eapp (econst "id" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) z))
+                                              (eapp (eapp (eapp (econst "SortElimProp2.mk" lnil) x) z) w))))))
+                                      ([z]
+                                        (eforall (econst "Bool" lnil)
+                                          ([w]
+                                            (eforall (econst "Bool" lnil)
+                                              ([x1]
+                                                (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) w) x1)
+                                                  ([y1] (eapp (eapp (eapp y w) x1) y1))))))))))))) (esort SortElimProp2_rec/type-wf-sort)
    = (defeq/forall
        (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
        ([x]
@@ -403,7 +430,18 @@ sortElimProp2Rec/type-wf-sort : lvl
            (limax (lsucc lzero) (limax (lsucc lzero) lzero))
            (limax (lsucc lzero) (limax (lsucc lzero) (limax lzero lzero)))))).
 
-sortElimProp2Rec/type-wf : of (eforall (econst "Bool" lnil) ([x] (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) y) z) ([w] (esort lzero))))))) ([y] (eforall (eforall (econst "Bool" lnil) ([z] (eforall (econst "Bool" lnil) ([w] (eapp (eapp (eapp y w) z) (eapp (eapp (eapp (econst "SortElimProp2.mk" lnil) x) z) w)))))) ([z] (eforall (econst "Bool" lnil) ([w] (eforall (econst "Bool" lnil) ([x1] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) w) x1) ([y1] (eapp (eapp (eapp y w) x1) y1))))))))))))) (esort sortElimProp2Rec/type-wf-sort)
+sortElimProp2Rec/type-wf : of (eforall (econst "Bool" lnil)
+                             ([x]
+                               (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) y) z) ([w] (esort lzero)))))))
+                                 ([y]
+                                   (eforall (eforall (econst "Bool" lnil)
+                                     ([z] (eforall (econst "Bool" lnil) ([w] (eapp (eapp (eapp y w) z) (eapp (eapp (eapp (econst "SortElimProp2.mk" lnil) x) z) w))))))
+                                     ([z]
+                                       (eforall (econst "Bool" lnil)
+                                         ([w]
+                                           (eforall (econst "Bool" lnil)
+                                             ([x1]
+                                               (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) w) x1) ([y1] (eapp (eapp (eapp y w) x1) y1))))))))))))) (esort sortElimProp2Rec/type-wf-sort)
    = (defeq/forall
        (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
        ([x]
@@ -613,7 +651,17 @@ sortElimProp2Rec/type-wf : of (eforall (econst "Bool" lnil) ([x] (eforall (efora
                                            (defeq/app (defeq/app h1 h3) h4)
                                            h5))))))))))))))))))).
 
-sortElimProp2Rec/value-typed : of (econst "SortElimProp2.rec" lnil) (eforall (econst "Bool" lnil) ([x] (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) y) z) ([w] (esort lzero))))))) ([y] (eforall (eforall (econst "Bool" lnil) ([z] (eforall (econst "Bool" lnil) ([w] (eapp (eapp (eapp y w) z) (eapp (eapp (eapp (econst "SortElimProp2.mk" lnil) x) z) w)))))) ([z] (eforall (econst "Bool" lnil) ([w] (eforall (econst "Bool" lnil) ([x1] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) w) x1) ([y1] (eapp (eapp (eapp y w) x1) y1)))))))))))))
+sortElimProp2Rec/value-typed : of (econst "SortElimProp2.rec" lnil) (eforall (econst "Bool" lnil)
+                                 ([x]
+                                   (eforall (eforall (econst "Bool" lnil)
+                                     ([y] (eforall (econst "Bool" lnil) ([z] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) y) z) ([w] (esort lzero)))))))
+                                     ([y]
+                                       (eforall (eforall (econst "Bool" lnil)
+                                         ([z] (eforall (econst "Bool" lnil) ([w] (eapp (eapp (eapp y w) z) (eapp (eapp (eapp (econst "SortElimProp2.mk" lnil) x) z) w))))))
+                                         ([z]
+                                           (eforall (econst "Bool" lnil)
+                                             ([w]
+                                               (eforall (econst "Bool" lnil) ([x1] (eforall (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) w) x1) ([y1] (eapp (eapp (eapp y w) x1) y1)))))))))))))
    = (defeq/conv
        (defeq/forall
          (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))

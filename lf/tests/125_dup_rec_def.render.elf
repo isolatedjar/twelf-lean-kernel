@@ -52,7 +52,8 @@ dup_rec_def_mk/decl : declared "dup_rec_def.mk" (econst "dup_rec_def" lnil) ctor
 dup_rec_def_rec/type-wf-sort : lvl.
 
 %%% HOLE
-dup_rec_def_rec/type-wf : of (eforall (eforall (econst "dup_rec_def" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_rec_def.mk" lnil)) ([y] (eforall (econst "dup_rec_def" lnil) ([z] (eapp x z))))))) (esort dup_rec_def_rec/type-wf-sort).
+dup_rec_def_rec/type-wf : of (eforall (eforall (econst "dup_rec_def" lnil) ([x] (esort (lvar liz))))
+                            ([x] (eforall (eapp x (econst "dup_rec_def.mk" lnil)) ([y] (eforall (econst "dup_rec_def" lnil) ([z] (eapp x z))))))) (esort dup_rec_def_rec/type-wf-sort).
 
 dup_rec_def_rec/decl : declared "dup_rec_def.rec" (eforall (eforall (econst "dup_rec_def" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_rec_def.mk" lnil)) ([y] (eforall (econst "dup_rec_def" lnil) ([z] (eapp x z))))))) irec
    = declared/ok-irec dup_rec_def/rec-name (dkind-ok/irec dup_rec_def_rec/type-wf).

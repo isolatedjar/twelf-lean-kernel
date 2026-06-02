@@ -55,7 +55,10 @@ Bool_rec/type-wf-sort : lvl
        (limax (lsucc lzero) (lsucc (lvar liz)))
        (limax (lvar liz) (limax (lvar liz) (limax (lsucc lzero) (lvar liz))))).
 
-Bool_rec/type-wf : of (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort Bool_rec/type-wf-sort)
+Bool_rec/type-wf : of (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz))))
+                     ([x]
+                       (eforall (eapp x (econst "Bool.false" lnil))
+                         ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort Bool_rec/type-wf-sort)
    = (defeq/forall
        (defeq/forall
          (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
@@ -145,7 +148,10 @@ TwoBool_rec/type-wf-sort : lvl
          (limax (lsucc lzero) (limax (lsucc lzero) (lvar liz)))
          (limax (lsucc lzero) (lvar liz)))).
 
-TwoBool_rec/type-wf : of (eforall (eforall (econst "TwoBool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp x (eapp (eapp (econst "TwoBool.mk" lnil) y) z)))))) ([y] (eforall (econst "TwoBool" lnil) ([z] (eapp x z))))))) (esort TwoBool_rec/type-wf-sort)
+TwoBool_rec/type-wf : of (eforall (eforall (econst "TwoBool" lnil) ([x] (esort (lvar liz))))
+                        ([x]
+                          (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp x (eapp (eapp (econst "TwoBool.mk" lnil) y) z))))))
+                            ([y] (eforall (econst "TwoBool" lnil) ([z] (eapp x z))))))) (esort TwoBool_rec/type-wf-sort)
    = (defeq/forall
        (defeq/forall
          (defeq/const

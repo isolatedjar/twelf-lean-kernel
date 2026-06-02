@@ -42,7 +42,14 @@ Acc_intro/type-wf-sort : lvl
            (lvar liz)
            (limax (limax (lvar liz) (limax lzero lzero)) lzero)))).
 
-Acc_intro/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eforall (eforall x ([w] (eforall (eapp (eapp y w) z) ([x1] (eapp (eapp (eapp (econst "Acc" (lcons (lvar liz) lnil)) x) y) w))))) ([w] (eapp (eapp (eapp (econst "Acc" (lcons (lvar liz) lnil)) x) y) z))))))))) (esort Acc_intro/type-wf-sort)
+Acc_intro/type-wf : of (eforall (esort (lvar liz))
+                      ([x]
+                        (eforall (eforall x ([y] (eforall x ([z] (esort lzero)))))
+                          ([y]
+                            (eforall x
+                              ([z]
+                                (eforall (eforall x ([w] (eforall (eapp (eapp y w) z) ([x1] (eapp (eapp (eapp (econst "Acc" (lcons (lvar liz) lnil)) x) y) w)))))
+                                  ([w] (eapp (eapp (eapp (econst "Acc" (lcons (lvar liz) lnil)) x) y) z))))))))) (esort Acc_intro/type-wf-sort)
    = (defeq/forall
        defeq/sort-refl
        ([x]
@@ -199,7 +206,21 @@ Acc_rec/type-wf-sort : lvl
                    (lvar liz))))
              (limax (lvar (lis liz)) (limax lzero (lvar liz))))))).
 
-Acc_rec/type-wf : of (eforall (esort (lvar (lis liz))) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Acc" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eforall x ([w] (eforall (eforall x ([x1] (eforall (eapp (eapp y x1) w) ([y1] (eapp (eapp (eapp (econst "Acc" (lcons (lvar (lis liz)) lnil)) x) y) x1))))) ([x1] (eforall (eforall x ([y1] (eforall (eapp (eapp y y1) w) ([z1] (eapp (eapp z y1) (eapp (eapp x1 y1) z1)))))) ([y1] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "Acc.intro" (lcons (lvar (lis liz)) lnil)) x) y) w) x1)))))))) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Acc" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Acc_rec/type-wf-sort)
+Acc_rec/type-wf : of (eforall (esort (lvar (lis liz)))
+                    ([x]
+                      (eforall (eforall x ([y] (eforall x ([z] (esort lzero)))))
+                        ([y]
+                          (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Acc" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz))))))
+                            ([z]
+                              (eforall (eforall x
+                                ([w]
+                                  (eforall (eforall x ([x1] (eforall (eapp (eapp y x1) w) ([y1] (eapp (eapp (eapp (econst "Acc" (lcons (lvar (lis liz)) lnil)) x) y) x1)))))
+                                    ([x1]
+                                      (eforall (eforall x ([y1] (eforall (eapp (eapp y y1) w) ([z1] (eapp (eapp z y1) (eapp (eapp x1 y1) z1))))))
+                                        ([y1] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "Acc.intro" (lcons (lvar (lis liz)) lnil)) x) y) w) x1))))))))
+                                ([w]
+                                  (eforall x
+                                    ([x1] (eforall (eapp (eapp (eapp (econst "Acc" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Acc_rec/type-wf-sort)
    = (defeq/forall
        defeq/sort-refl
        ([x]
@@ -454,7 +475,21 @@ accRecType/type-wf-sort : lvl
                    (lvar (lis liz)))))
              (limax (lvar liz) (limax lzero (lvar (lis liz)))))))).
 
-accRecType/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Acc" (lcons (lvar liz) lnil)) x) y) z) ([w] (esort (lvar (lis liz))))))) ([z] (eforall (eforall x ([w] (eforall (eforall x ([x1] (eforall (eapp (eapp y x1) w) ([y1] (eapp (eapp (eapp (econst "Acc" (lcons (lvar liz) lnil)) x) y) x1))))) ([x1] (eforall (eforall x ([y1] (eforall (eapp (eapp y y1) w) ([z1] (eapp (eapp z y1) (eapp (eapp x1 y1) z1)))))) ([y1] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "Acc.intro" (lcons (lvar liz) lnil)) x) y) w) x1)))))))) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Acc" (lcons (lvar liz) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort accRecType/type-wf-sort)
+accRecType/type-wf : of (eforall (esort (lvar liz))
+                       ([x]
+                         (eforall (eforall x ([y] (eforall x ([z] (esort lzero)))))
+                           ([y]
+                             (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Acc" (lcons (lvar liz) lnil)) x) y) z) ([w] (esort (lvar (lis liz)))))))
+                               ([z]
+                                 (eforall (eforall x
+                                   ([w]
+                                     (eforall (eforall x ([x1] (eforall (eapp (eapp y x1) w) ([y1] (eapp (eapp (eapp (econst "Acc" (lcons (lvar liz) lnil)) x) y) x1)))))
+                                       ([x1]
+                                         (eforall (eforall x ([y1] (eforall (eapp (eapp y y1) w) ([z1] (eapp (eapp z y1) (eapp (eapp x1 y1) z1))))))
+                                           ([y1] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "Acc.intro" (lcons (lvar liz) lnil)) x) y) w) x1))))))))
+                                   ([w]
+                                     (eforall x
+                                       ([x1] (eforall (eapp (eapp (eapp (econst "Acc" (lcons (lvar liz) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort accRecType/type-wf-sort)
    = (defeq/forall
        defeq/sort-refl
        ([x]
@@ -688,7 +723,19 @@ accRecType/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y
                                            (defeq/app h2 h4)
                                            h5))))))))))))))))))).
 
-accRecType/value-typed : of (econst "Acc.rec" (lcons (lvar (lis liz)) (lcons (lvar liz) lnil))) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Acc" (lcons (lvar liz) lnil)) x) y) z) ([w] (esort (lvar (lis liz))))))) ([z] (eforall (eforall x ([w] (eforall (eforall x ([x1] (eforall (eapp (eapp y x1) w) ([y1] (eapp (eapp (eapp (econst "Acc" (lcons (lvar liz) lnil)) x) y) x1))))) ([x1] (eforall (eforall x ([y1] (eforall (eapp (eapp y y1) w) ([z1] (eapp (eapp z y1) (eapp (eapp x1 y1) z1)))))) ([y1] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "Acc.intro" (lcons (lvar liz) lnil)) x) y) w) x1)))))))) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Acc" (lcons (lvar liz) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1)))))))))))))
+accRecType/value-typed : of (econst "Acc.rec" (lcons (lvar (lis liz)) (lcons (lvar liz) lnil))) (eforall (esort (lvar liz))
+                           ([x]
+                             (eforall (eforall x ([y] (eforall x ([z] (esort lzero)))))
+                               ([y]
+                                 (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Acc" (lcons (lvar liz) lnil)) x) y) z) ([w] (esort (lvar (lis liz)))))))
+                                   ([z]
+                                     (eforall (eforall x
+                                       ([w]
+                                         (eforall (eforall x ([x1] (eforall (eapp (eapp y x1) w) ([y1] (eapp (eapp (eapp (econst "Acc" (lcons (lvar liz) lnil)) x) y) x1)))))
+                                           ([x1]
+                                             (eforall (eforall x ([y1] (eforall (eapp (eapp y y1) w) ([z1] (eapp (eapp z y1) (eapp (eapp x1 y1) z1))))))
+                                               ([y1] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "Acc.intro" (lcons (lvar liz) lnil)) x) y) w) x1))))))))
+                                       ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Acc" (lcons (lvar liz) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1)))))))))))))
    = (defeq/const
        Acc_rec/decl
        (inst-expr/forall

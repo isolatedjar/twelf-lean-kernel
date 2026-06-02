@@ -40,7 +40,15 @@ Eq_refl/decl : declared "Eq.refl" (eforall (esort (lvar liz)) ([x] (eforall x ([
 Eq_rec/type-wf-sort : lvl.
 
 %%% HOLE
-Eq_rec/type-wf : of (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Eq_rec/type-wf-sort).
+Eq_rec/type-wf : of (eforall (esort (lvar (lis liz)))
+                   ([x]
+                     (eforall x
+                       ([y]
+                         (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz))))))
+                           ([z]
+                             (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y))
+                               ([w]
+                                 (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Eq_rec/type-wf-sort).
 
 Eq_rec/decl : declared "Eq.rec" (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) irec
    = declared/ok-irec Eq/rec-name (dkind-ok/irec Eq_rec/type-wf).
@@ -97,7 +105,12 @@ Nat_succ/decl : declared "Nat.succ" (eforall (econst "Nat" lnil) ([x] (econst "N
 Nat_rec/type-wf-sort : lvl.
 
 %%% HOLE
-Nat_rec/type-wf : of (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (esort Nat_rec/type-wf-sort).
+Nat_rec/type-wf : of (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz))))
+                    ([x]
+                      (eforall (eapp x (econst "Nat.zero" lnil))
+                        ([y]
+                          (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z))))))
+                            ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (esort Nat_rec/type-wf-sort).
 
 Nat_rec/decl : declared "Nat.rec" (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) irec
    = declared/ok-irec Nat/rec-name (dkind-ok/irec Nat_rec/type-wf).
@@ -124,7 +137,8 @@ OfNat/decl : declared "OfNat" (eforall (esort (lsucc (lvar liz))) ([x] (eforall 
 OfNat_mk/type-wf-sort : lvl.
 
 %%% HOLE
-OfNat_mk/type-wf : of (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "Nat" lnil) ([y] (eforall x ([z] (eapp (eapp (econst "OfNat" (lcons (lvar liz) lnil)) x) y))))))) (esort OfNat_mk/type-wf-sort).
+OfNat_mk/type-wf : of (eforall (esort (lsucc (lvar liz)))
+                     ([x] (eforall (econst "Nat" lnil) ([y] (eforall x ([z] (eapp (eapp (econst "OfNat" (lcons (lvar liz) lnil)) x) y))))))) (esort OfNat_mk/type-wf-sort).
 
 %%% HOLE
 OfNat_mk/positivity : ctor-positive "OfNat" (lcons (lvar liz) lnil) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "Nat" lnil) ([y] (eforall x ([z] (eapp (eapp (econst "OfNat" (lcons (lvar liz) lnil)) x) y))))))).
@@ -139,7 +153,14 @@ OfNat_mk/decl : declared "OfNat.mk" (eforall (esort (lsucc (lvar liz))) ([x] (ef
 OfNat_rec/type-wf-sort : lvl.
 
 %%% HOLE
-OfNat_rec/type-wf : of (eforall (esort (lsucc (lvar (lis liz)))) ([x] (eforall (econst "Nat" lnil) ([y] (eforall (eforall (eapp (eapp (econst "OfNat" (lcons (lvar (lis liz)) lnil)) x) y) ([z] (esort (lvar liz)))) ([z] (eforall (eforall x ([w] (eapp z (eapp (eapp (eapp (econst "OfNat.mk" (lcons (lvar (lis liz)) lnil)) x) y) w)))) ([w] (eforall (eapp (eapp (econst "OfNat" (lcons (lvar (lis liz)) lnil)) x) y) ([x1] (eapp z x1))))))))))) (esort OfNat_rec/type-wf-sort).
+OfNat_rec/type-wf : of (eforall (esort (lsucc (lvar (lis liz))))
+                      ([x]
+                        (eforall (econst "Nat" lnil)
+                          ([y]
+                            (eforall (eforall (eapp (eapp (econst "OfNat" (lcons (lvar (lis liz)) lnil)) x) y) ([z] (esort (lvar liz))))
+                              ([z]
+                                (eforall (eforall x ([w] (eapp z (eapp (eapp (eapp (econst "OfNat.mk" (lcons (lvar (lis liz)) lnil)) x) y) w))))
+                                  ([w] (eforall (eapp (eapp (econst "OfNat" (lcons (lvar (lis liz)) lnil)) x) y) ([x1] (eapp z x1))))))))))) (esort OfNat_rec/type-wf-sort).
 
 OfNat_rec/decl : declared "OfNat.rec" (eforall (esort (lsucc (lvar (lis liz)))) ([x] (eforall (econst "Nat" lnil) ([y] (eforall (eforall (eapp (eapp (econst "OfNat" (lcons (lvar (lis liz)) lnil)) x) y) ([z] (esort (lvar liz)))) ([z] (eforall (eforall x ([w] (eapp z (eapp (eapp (eapp (econst "OfNat.mk" (lcons (lvar (lis liz)) lnil)) x) y) w)))) ([w] (eforall (eapp (eapp (econst "OfNat" (lcons (lvar (lis liz)) lnil)) x) y) ([x1] (eapp z x1))))))))))) irec
    = declared/ok-irec OfNat/rec-name (dkind-ok/irec OfNat_rec/type-wf).
@@ -149,10 +170,19 @@ OfNat_rec/decl : declared "OfNat.rec" (eforall (esort (lsucc (lvar (lis liz)))) 
 OfNat_ofNat/type-wf-sort : lvl.
 
 %%% HOLE
-OfNat_ofNat/type-wf : of (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "Nat" lnil) ([y] (eforall (eapp (eapp (econst "OfNat" (lcons (lvar liz) lnil)) x) y) ([z] x)))))) (esort OfNat_ofNat/type-wf-sort).
+OfNat_ofNat/type-wf : of (eforall (esort (lsucc (lvar liz)))
+                        ([x] (eforall (econst "Nat" lnil) ([y] (eforall (eapp (eapp (econst "OfNat" (lcons (lvar liz) lnil)) x) y) ([z] x)))))) (esort OfNat_ofNat/type-wf-sort).
 
 %%% HOLE
-OfNat_ofNat/value-typed : of (elam (esort (lsucc (lvar liz))) ([x] (elam (econst "Nat" lnil) ([y] (elam (eapp (eapp (econst "OfNat" (lcons (lvar liz) lnil)) x) y) ([z] (eproj "OfNat" 0 z))))))) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "Nat" lnil) ([y] (eforall (eapp (eapp (econst "OfNat" (lcons (lvar liz) lnil)) x) y) ([z] x)))))).
+OfNat_ofNat/value-typed : of (elam (esort (lsucc (lvar liz)))
+                            ([x]
+                              (elam (econst "Nat" lnil)
+                                ([y]
+                                  (elam (eapp (eapp (econst "OfNat" (lcons (lvar liz) lnil)) x) y)
+                                    ([z]
+                                      (eproj "OfNat" 0
+                                        z))))))) (eforall (esort (lsucc (lvar liz)))
+                            ([x] (eforall (econst "Nat" lnil) ([y] (eforall (eapp (eapp (econst "OfNat" (lcons (lvar liz) lnil)) x) y) ([z] x)))))).
 
 OfNat_ofNat/name : name "OfNat.ofNat" (is-decl (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "Nat" lnil) ([y] (eforall (eapp (eapp (econst "OfNat" (lcons (lvar liz) lnil)) x) y) ([z] x)))))) (defn (elam (esort (lsucc (lvar liz))) ([x] (elam (econst "Nat" lnil) ([y] (elam (eapp (eapp (econst "OfNat" (lcons (lvar liz) lnil)) x) y) ([z] (eproj "OfNat" 0 z))))))))).
 
@@ -167,7 +197,10 @@ instOfNatNat/type-wf-sort : lvl.
 instOfNatNat/type-wf : of (eforall (econst "Nat" lnil) ([x] (eapp (eapp (econst "OfNat" (lcons lzero lnil)) (econst "Nat" lnil)) x))) (esort instOfNatNat/type-wf-sort).
 
 %%% HOLE
-instOfNatNat/value-typed : of (elam (econst "Nat" lnil) ([x] (eapp (eapp (eapp (econst "OfNat.mk" (lcons lzero lnil)) (econst "Nat" lnil)) x) x))) (eforall (econst "Nat" lnil) ([x] (eapp (eapp (econst "OfNat" (lcons lzero lnil)) (econst "Nat" lnil)) x))).
+instOfNatNat/value-typed : of (elam (econst "Nat" lnil)
+                             ([x]
+                               (eapp (eapp (eapp (econst "OfNat.mk" (lcons lzero lnil)) (econst "Nat" lnil)) x)
+                                 x))) (eforall (econst "Nat" lnil) ([x] (eapp (eapp (econst "OfNat" (lcons lzero lnil)) (econst "Nat" lnil)) x))).
 
 instOfNatNat/name : name "instOfNatNat" (is-decl (eforall (econst "Nat" lnil) ([x] (eapp (eapp (econst "OfNat" (lcons lzero lnil)) (econst "Nat" lnil)) x))) (defn (elam (econst "Nat" lnil) ([x] (eapp (eapp (eapp (econst "OfNat.mk" (lcons lzero lnil)) (econst "Nat" lnil)) x) x))))).
 
@@ -211,17 +244,22 @@ True_intro/decl : declared "True.intro" (econst "True" lnil) ctor
 True_rec/type-wf-sort : lvl.
 
 %%% HOLE
-True_rec/type-wf : of (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) (esort True_rec/type-wf-sort).
+True_rec/type-wf : of (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz))))
+                     ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) (esort True_rec/type-wf-sort).
 
 True_rec/decl : declared "True.rec" (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) irec
    = declared/ok-irec True/rec-name (dkind-ok/irec True_rec/type-wf).
 
 %% thm thm
 %%% HOLE
-thm/type-wf : of (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (eapp (eapp (eapp (econst "OfNat.ofNat" (lcons lzero lnil)) (econst "Nat" lnil)) (enatlit 0 nonneg_0)) (eapp (econst "instOfNatNat" lnil) (enatlit 0 nonneg_0)))) (eapp (eapp (eapp (econst "OfNat.ofNat" (lcons lzero lnil)) (econst "Nat" lnil)) (enatlit 1 nonneg_1)) (eapp (econst "instOfNatNat" lnil) (enatlit 1 nonneg_1)))) (esort lzero).
+thm/type-wf : of (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil))
+                (eapp (eapp (eapp (econst "OfNat.ofNat" (lcons lzero lnil)) (econst "Nat" lnil)) (enatlit 0 nonneg_0)) (eapp (econst "instOfNatNat" lnil) (enatlit 0 nonneg_0))))
+                (eapp (eapp (eapp (econst "OfNat.ofNat" (lcons lzero lnil)) (econst "Nat" lnil)) (enatlit 1 nonneg_1)) (eapp (econst "instOfNatNat" lnil) (enatlit 1 nonneg_1)))) (esort lzero).
 
 %%% HOLE
-thm/value-typed : of (econst "True.intro" lnil) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (eapp (eapp (eapp (econst "OfNat.ofNat" (lcons lzero lnil)) (econst "Nat" lnil)) (enatlit 0 nonneg_0)) (eapp (econst "instOfNatNat" lnil) (enatlit 0 nonneg_0)))) (eapp (eapp (eapp (econst "OfNat.ofNat" (lcons lzero lnil)) (econst "Nat" lnil)) (enatlit 1 nonneg_1)) (eapp (econst "instOfNatNat" lnil) (enatlit 1 nonneg_1)))).
+thm/value-typed : of (econst "True.intro" lnil) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil))
+                    (eapp (eapp (eapp (econst "OfNat.ofNat" (lcons lzero lnil)) (econst "Nat" lnil)) (enatlit 0 nonneg_0)) (eapp (econst "instOfNatNat" lnil) (enatlit 0 nonneg_0))))
+                    (eapp (eapp (eapp (econst "OfNat.ofNat" (lcons lzero lnil)) (econst "Nat" lnil)) (enatlit 1 nonneg_1)) (eapp (econst "instOfNatNat" lnil) (enatlit 1 nonneg_1)))).
 
 thm/name : name "thm" (is-decl (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (eapp (eapp (eapp (econst "OfNat.ofNat" (lcons lzero lnil)) (econst "Nat" lnil)) (enatlit 0 nonneg_0)) (eapp (econst "instOfNatNat" lnil) (enatlit 0 nonneg_0)))) (eapp (eapp (eapp (econst "OfNat.ofNat" (lcons lzero lnil)) (econst "Nat" lnil)) (enatlit 1 nonneg_1)) (eapp (econst "instOfNatNat" lnil) (enatlit 1 nonneg_1)))) (thm (econst "True.intro" lnil))).
 

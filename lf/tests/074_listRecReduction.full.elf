@@ -55,7 +55,8 @@ List_cons/type-wf-sort : lvl
        (lsucc (lsucc (lvar liz)))
        (limax (lsucc (lvar liz)) (limax (lsucc (lvar liz)) (lsucc (lvar liz))))).
 
-List_cons/type-wf : of (eforall (esort (lsucc (lvar liz))) ([x] (eforall x ([y] (eforall (eapp (econst "List" (lcons (lvar liz) lnil)) x) ([z] (eapp (econst "List" (lcons (lvar liz) lnil)) x))))))) (esort List_cons/type-wf-sort)
+List_cons/type-wf : of (eforall (esort (lsucc (lvar liz)))
+                      ([x] (eforall x ([y] (eforall (eapp (econst "List" (lcons (lvar liz) lnil)) x) ([z] (eapp (econst "List" (lcons (lvar liz) lnil)) x))))))) (esort List_cons/type-wf-sort)
    = (defeq/forall
        defeq/sort-refl
        ([x]
@@ -126,7 +127,17 @@ List_rec/type-wf-sort : lvl
                (limax (lsucc (lvar (lis liz))) (limax (lvar liz) (lvar liz))))
              (limax (lsucc (lvar (lis liz))) (lvar liz)))))).
 
-List_rec/type-wf : of (eforall (esort (lsucc (lvar (lis liz)))) ([x] (eforall (eforall (eapp (econst "List" (lcons (lvar (lis liz)) lnil)) x) ([y] (esort (lvar liz)))) ([y] (eforall (eapp y (eapp (econst "List.nil" (lcons (lvar (lis liz)) lnil)) x)) ([z] (eforall (eforall x ([w] (eforall (eapp (econst "List" (lcons (lvar (lis liz)) lnil)) x) ([x1] (eforall (eapp y x1) ([y1] (eapp y (eapp (eapp (eapp (econst "List.cons" (lcons (lvar (lis liz)) lnil)) x) w) x1)))))))) ([w] (eforall (eapp (econst "List" (lcons (lvar (lis liz)) lnil)) x) ([x1] (eapp y x1))))))))))) (esort List_rec/type-wf-sort)
+List_rec/type-wf : of (eforall (esort (lsucc (lvar (lis liz))))
+                     ([x]
+                       (eforall (eforall (eapp (econst "List" (lcons (lvar (lis liz)) lnil)) x) ([y] (esort (lvar liz))))
+                         ([y]
+                           (eforall (eapp y (eapp (econst "List.nil" (lcons (lvar (lis liz)) lnil)) x))
+                             ([z]
+                               (eforall (eforall x
+                                 ([w]
+                                   (eforall (eapp (econst "List" (lcons (lvar (lis liz)) lnil)) x)
+                                     ([x1] (eforall (eapp y x1) ([y1] (eapp y (eapp (eapp (eapp (econst "List.cons" (lcons (lvar (lis liz)) lnil)) x) w) x1))))))))
+                                 ([w] (eforall (eapp (econst "List" (lcons (lvar (lis liz)) lnil)) x) ([x1] (eapp y x1))))))))))) (esort List_rec/type-wf-sort)
    = (defeq/forall
        defeq/sort-refl
        ([x]
@@ -349,7 +360,14 @@ And_rec/type-wf-sort : lvl
              (limax lzero (limax lzero (lvar liz)))
              (limax lzero (lvar liz)))))).
 
-And_rec/type-wf : of (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] (esort (lvar liz)))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "And.intro" lnil) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "And" lnil) x) y) ([x1] (eapp z x1))))))))))) (esort And_rec/type-wf-sort)
+And_rec/type-wf : of (eforall (esort lzero)
+                    ([x]
+                      (eforall (esort lzero)
+                        ([y]
+                          (eforall (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] (esort (lvar liz))))
+                            ([z]
+                              (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "And.intro" lnil) x) y) w) x1))))))
+                                ([w] (eforall (eapp (eapp (econst "And" lnil) x) y) ([x1] (eapp z x1))))))))))) (esort And_rec/type-wf-sort)
    = (defeq/forall
        defeq/sort-refl
        ([x]
@@ -541,7 +559,15 @@ Eq_rec/type-wf-sort : lvl
              (lvar liz)
              (limax (lvar (lis liz)) (limax lzero (lvar liz))))))).
 
-Eq_rec/type-wf : of (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Eq_rec/type-wf-sort)
+Eq_rec/type-wf : of (eforall (esort (lvar (lis liz)))
+                   ([x]
+                     (eforall x
+                       ([y]
+                         (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz))))))
+                           ([z]
+                             (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y))
+                               ([w]
+                                 (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Eq_rec/type-wf-sort)
    = (defeq/forall
        defeq/sort-refl
        ([x]
@@ -665,7 +691,19 @@ List_recOn/type-wf-sort : lvl
                  (limax (lsucc (lvar (lis liz))) (limax (lvar liz) (lvar liz))))
                (lvar liz)))))).
 
-List_recOn/type-wf : of (eforall (esort (lsucc (lvar (lis liz)))) ([x] (eforall (eforall (eapp (econst "List" (lcons (lvar (lis liz)) lnil)) x) ([y] (esort (lvar liz)))) ([y] (eforall (eapp (econst "List" (lcons (lvar (lis liz)) lnil)) x) ([z] (eforall (eapp y (eapp (econst "List.nil" (lcons (lvar (lis liz)) lnil)) x)) ([w] (eforall (eforall x ([x1] (eforall (eapp (econst "List" (lcons (lvar (lis liz)) lnil)) x) ([y1] (eforall (eapp y y1) ([z1] (eapp y (eapp (eapp (eapp (econst "List.cons" (lcons (lvar (lis liz)) lnil)) x) x1) y1)))))))) ([x1] (eapp y z))))))))))) (esort List_recOn/type-wf-sort)
+List_recOn/type-wf : of (eforall (esort (lsucc (lvar (lis liz))))
+                       ([x]
+                         (eforall (eforall (eapp (econst "List" (lcons (lvar (lis liz)) lnil)) x) ([y] (esort (lvar liz))))
+                           ([y]
+                             (eforall (eapp (econst "List" (lcons (lvar (lis liz)) lnil)) x)
+                               ([z]
+                                 (eforall (eapp y (eapp (econst "List.nil" (lcons (lvar (lis liz)) lnil)) x))
+                                   ([w]
+                                     (eforall (eforall x
+                                       ([x1]
+                                         (eforall (eapp (econst "List" (lcons (lvar (lis liz)) lnil)) x)
+                                           ([y1] (eforall (eapp y y1) ([z1] (eapp y (eapp (eapp (eapp (econst "List.cons" (lcons (lvar (lis liz)) lnil)) x) x1) y1))))))))
+                                       ([x1] (eapp y z))))))))))) (esort List_recOn/type-wf-sort)
    = (defeq/forall
        defeq/sort-refl
        ([x]
@@ -786,7 +824,33 @@ List_recOn/type-wf : of (eforall (esort (lsucc (lvar (lis liz)))) ([x] (eforall 
                                                      h5)))))))))))
                                ([x1] ([h4] (defeq/app h1 h2)))))))))))))))).
 
-List_recOn/value-typed : of (elam (esort (lsucc (lvar (lis liz)))) ([x] (elam (eforall (eapp (econst "List" (lcons (lvar (lis liz)) lnil)) x) ([y] (esort (lvar liz)))) ([y] (elam (eapp (econst "List" (lcons (lvar (lis liz)) lnil)) x) ([z] (elam (eapp y (eapp (econst "List.nil" (lcons (lvar (lis liz)) lnil)) x)) ([w] (elam (eforall x ([x1] (eforall (eapp (econst "List" (lcons (lvar (lis liz)) lnil)) x) ([y1] (eforall (eapp y y1) ([z1] (eapp y (eapp (eapp (eapp (econst "List.cons" (lcons (lvar (lis liz)) lnil)) x) x1) y1)))))))) ([x1] (eapp (eapp (eapp (eapp (eapp (econst "List.rec" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) w) x1) z))))))))))) (eforall (esort (lsucc (lvar (lis liz)))) ([x] (eforall (eforall (eapp (econst "List" (lcons (lvar (lis liz)) lnil)) x) ([y] (esort (lvar liz)))) ([y] (eforall (eapp (econst "List" (lcons (lvar (lis liz)) lnil)) x) ([z] (eforall (eapp y (eapp (econst "List.nil" (lcons (lvar (lis liz)) lnil)) x)) ([w] (eforall (eforall x ([x1] (eforall (eapp (econst "List" (lcons (lvar (lis liz)) lnil)) x) ([y1] (eforall (eapp y y1) ([z1] (eapp y (eapp (eapp (eapp (econst "List.cons" (lcons (lvar (lis liz)) lnil)) x) x1) y1)))))))) ([x1] (eapp y z)))))))))))
+List_recOn/value-typed : of (elam (esort (lsucc (lvar (lis liz))))
+                           ([x]
+                             (elam (eforall (eapp (econst "List" (lcons (lvar (lis liz)) lnil)) x) ([y] (esort (lvar liz))))
+                               ([y]
+                                 (elam (eapp (econst "List" (lcons (lvar (lis liz)) lnil)) x)
+                                   ([z]
+                                     (elam (eapp y (eapp (econst "List.nil" (lcons (lvar (lis liz)) lnil)) x))
+                                       ([w]
+                                         (elam (eforall x
+                                           ([x1]
+                                             (eforall (eapp (econst "List" (lcons (lvar (lis liz)) lnil)) x)
+                                               ([y1] (eforall (eapp y y1) ([z1] (eapp y (eapp (eapp (eapp (econst "List.cons" (lcons (lvar (lis liz)) lnil)) x) x1) y1))))))))
+                                           ([x1]
+                                             (eapp (eapp (eapp (eapp (eapp (econst "List.rec" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) w) x1)
+                                               z))))))))))) (eforall (esort (lsucc (lvar (lis liz))))
+                           ([x]
+                             (eforall (eforall (eapp (econst "List" (lcons (lvar (lis liz)) lnil)) x) ([y] (esort (lvar liz))))
+                               ([y]
+                                 (eforall (eapp (econst "List" (lcons (lvar (lis liz)) lnil)) x)
+                                   ([z]
+                                     (eforall (eapp y (eapp (econst "List.nil" (lcons (lvar (lis liz)) lnil)) x))
+                                       ([w]
+                                         (eforall (eforall x
+                                           ([x1]
+                                             (eforall (eapp (econst "List" (lcons (lvar (lis liz)) lnil)) x)
+                                               ([y1] (eforall (eapp y y1) ([z1] (eapp y (eapp (eapp (eapp (econst "List.cons" (lcons (lvar (lis liz)) lnil)) x) x1) y1))))))))
+                                           ([x1] (eapp y z)))))))))))
    = (defeq/lam
        defeq/sort-refl
        ([x]
@@ -1021,7 +1085,10 @@ myListApped/type-wf-sort : lvl
        (lsucc (lsucc lzero))
        (limax (lsucc lzero) (limax (lsucc lzero) (lsucc lzero)))).
 
-myListApped/type-wf : of (eforall (esort (lsucc lzero)) ([x] (eforall (eapp (econst "List" (lcons lzero lnil)) x) ([y] (eforall (eapp (econst "List" (lcons lzero lnil)) x) ([z] (eapp (econst "List" (lcons lzero lnil)) x))))))) (esort myListApped/type-wf-sort)
+myListApped/type-wf : of (eforall (esort (lsucc lzero))
+                        ([x]
+                          (eforall (eapp (econst "List" (lcons lzero lnil)) x)
+                            ([y] (eforall (eapp (econst "List" (lcons lzero lnil)) x) ([z] (eapp (econst "List" (lcons lzero lnil)) x))))))) (esort myListApped/type-wf-sort)
    = (defeq/forall
        defeq/sort-refl
        ([x]
@@ -1066,7 +1133,25 @@ myListApped/type-wf : of (eforall (esort (lsucc lzero)) ([x] (eforall (eapp (eco
                                      (lvl-inst/var lvl-nth/zero)))))))
                          h)))))))))).
 
-myListApped/value-typed : of (elam (esort (lsucc lzero)) ([x] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([y] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([z] (eapp (eapp (eapp (eapp (eapp (econst "List.recOn" (lcons (lsucc lzero) (lcons lzero lnil))) x) (elam (eapp (econst "List" (lcons lzero lnil)) x) ([w] (eapp (econst "List" (lcons lzero lnil)) x)))) y) z) (elam x ([w] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([x1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([y1] (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) y1)))))))))))))) (eforall (esort (lsucc lzero)) ([x] (eforall (eapp (econst "List" (lcons lzero lnil)) x) ([y] (eforall (eapp (econst "List" (lcons lzero lnil)) x) ([z] (eapp (econst "List" (lcons lzero lnil)) x)))))))
+myListApped/value-typed : of (elam (esort (lsucc lzero))
+                            ([x]
+                              (elam (eapp (econst "List" (lcons lzero lnil)) x)
+                                ([y]
+                                  (elam (eapp (econst "List" (lcons lzero lnil)) x)
+                                    ([z]
+                                      (eapp (eapp (eapp (eapp (eapp (econst "List.recOn" (lcons (lsucc lzero) (lcons lzero lnil))) x)
+                                        (elam (eapp (econst "List" (lcons lzero lnil)) x) ([w] (eapp (econst "List" (lcons lzero lnil)) x))))
+                                        y)
+                                        z)
+                                        (elam x
+                                          ([w]
+                                            (elam (eapp (econst "List" (lcons lzero lnil)) x)
+                                              ([x1]
+                                                (elam (eapp (econst "List" (lcons lzero lnil)) x)
+                                                  ([y1]
+                                                    (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w)
+                                                      y1)))))))))))))) (eforall (esort (lsucc lzero))
+                            ([x] (eforall (eapp (econst "List" (lcons lzero lnil)) x) ([y] (eforall (eapp (econst "List" (lcons lzero lnil)) x) ([z] (eapp (econst "List" (lcons lzero lnil)) x)))))))
    = (defeq/conv
        (defeq/forall
          (defeq/sort-eq lvl-eq/refl)
@@ -1572,7 +1657,23 @@ id/decl : declared "id" (eforall (esort (lvar liz)) ([x] (eforall x ([y] x)))) (
    = declared/ok id/name (dkind-ok/defn id/type-wf id/value-typed).
 
 %% thm listRecReduction
-listRecReduction/type-wf : of (eforall (esort (lsucc lzero)) ([x] (eforall (eapp (econst "List" (lcons lzero lnil)) x) ([y] (eforall (eapp (econst "List" (lcons lzero lnil)) x) ([z] (eapp (eapp (econst "And" lnil) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x)) (eapp (eapp (eapp (econst "myListApped" lnil) x) (eapp (econst "List.nil" (lcons lzero lnil)) x)) z)) z)) (eforall x ([w] (eforall (eapp (econst "List" (lcons lzero lnil)) x) ([x1] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x)) (eapp (eapp (eapp (econst "myListApped" lnil) x) (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) x1)) z)) (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) (eapp (eapp (eapp (econst "myListApped" lnil) x) x1) z)))))))))))))) (esort lzero)
+listRecReduction/type-wf : of (eforall (esort (lsucc lzero))
+                             ([x]
+                               (eforall (eapp (econst "List" (lcons lzero lnil)) x)
+                                 ([y]
+                                   (eforall (eapp (econst "List" (lcons lzero lnil)) x)
+                                     ([z]
+                                       (eapp (eapp (econst "And" lnil)
+                                         (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x))
+                                           (eapp (eapp (eapp (econst "myListApped" lnil) x) (eapp (econst "List.nil" (lcons lzero lnil)) x)) z))
+                                           z))
+                                         (eforall x
+                                           ([w]
+                                             (eforall (eapp (econst "List" (lcons lzero lnil)) x)
+                                               ([x1]
+                                                 (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x))
+                                                   (eapp (eapp (eapp (econst "myListApped" lnil) x) (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) x1)) z))
+                                                   (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) (eapp (eapp (eapp (econst "myListApped" lnil) x) x1) z)))))))))))))) (esort lzero)
    = (defeq/conv
        (defeq/sort-eq
          (lvl-eq/le
@@ -1933,7 +2034,102 @@ listRecReduction/type-wf : of (eforall (esort (lsucc lzero)) ([x] (eforall (eapp
                                                h2))))))))))))))))))))).
 
 %%% HOLE
-listRecReduction/value-typed : of (elam (esort (lsucc lzero)) ([x] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([y] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([z] (eapp (eapp (econst "id" (lcons lzero lnil)) (eapp (eapp (econst "And" lnil) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x)) (eapp (eapp (eapp (econst "myListApped" lnil) x) (eapp (econst "List.nil" (lcons lzero lnil)) x)) z)) z)) (eforall x ([w] (eforall (eapp (econst "List" (lcons lzero lnil)) x) ([x1] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x)) (eapp (eapp (eapp (econst "myListApped" lnil) x) (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) x1)) z)) (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) (eapp (eapp (eapp (econst "myListApped" lnil) x) x1) z))))))))) (eapp (eapp (eapp (eapp (econst "And.intro" lnil) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x)) (eapp (eapp (eapp (eapp (eapp (econst "List.recOn" (lcons (lsucc lzero) (lcons lzero lnil))) x) (elam (eapp (econst "List" (lcons lzero lnil)) x) ([w] (eapp (econst "List" (lcons lzero lnil)) x)))) (eapp (econst "List.nil" (lcons lzero lnil)) x)) z) (elam x ([w] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([x1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([y1] (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) y1))))))))) z)) (eforall x ([w] (eforall (eapp (econst "List" (lcons lzero lnil)) x) ([x1] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x)) (eapp (eapp (eapp (eapp (eapp (econst "List.recOn" (lcons (lsucc lzero) (lcons lzero lnil))) x) (elam (eapp (econst "List" (lcons lzero lnil)) x) ([y1] (eapp (econst "List" (lcons lzero lnil)) x)))) (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) x1)) z) (elam x ([y1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([z1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([w1] (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) y1) w1))))))))) (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) (eapp (eapp (eapp (eapp (eapp (econst "List.recOn" (lcons (lsucc lzero) (lcons lzero lnil))) x) (elam (eapp (econst "List" (lcons lzero lnil)) x) ([y1] (eapp (econst "List" (lcons lzero lnil)) x)))) x1) z) (elam x ([y1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([z1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([w1] (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) y1) w1))))))))))))))) (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x)) (eapp (eapp (eapp (eapp (eapp (econst "List.recOn" (lcons (lsucc lzero) (lcons lzero lnil))) x) (elam (eapp (econst "List" (lcons lzero lnil)) x) ([w] (eapp (econst "List" (lcons lzero lnil)) x)))) (eapp (econst "List.nil" (lcons lzero lnil)) x)) z) (elam x ([w] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([x1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([y1] (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) y1)))))))))) (elam x ([w] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([x1] (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x)) (eapp (eapp (eapp (eapp (eapp (econst "List.recOn" (lcons (lsucc lzero) (lcons lzero lnil))) x) (elam (eapp (econst "List" (lcons lzero lnil)) x) ([y1] (eapp (econst "List" (lcons lzero lnil)) x)))) (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) x1)) z) (elam x ([y1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([z1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([w1] (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) y1) w1))))))))))))))))))))) (eforall (esort (lsucc lzero)) ([x] (eforall (eapp (econst "List" (lcons lzero lnil)) x) ([y] (eforall (eapp (econst "List" (lcons lzero lnil)) x) ([z] (eapp (eapp (econst "And" lnil) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x)) (eapp (eapp (eapp (econst "myListApped" lnil) x) (eapp (econst "List.nil" (lcons lzero lnil)) x)) z)) z)) (eforall x ([w] (eforall (eapp (econst "List" (lcons lzero lnil)) x) ([x1] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x)) (eapp (eapp (eapp (econst "myListApped" lnil) x) (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) x1)) z)) (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) (eapp (eapp (eapp (econst "myListApped" lnil) x) x1) z)))))))))))))).
+listRecReduction/value-typed : of (elam (esort (lsucc lzero))
+                                 ([x]
+                                   (elam (eapp (econst "List" (lcons lzero lnil)) x)
+                                     ([y]
+                                       (elam (eapp (econst "List" (lcons lzero lnil)) x)
+                                         ([z]
+                                           (eapp (eapp (econst "id" (lcons lzero lnil))
+                                             (eapp (eapp (econst "And" lnil)
+                                               (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x))
+                                                 (eapp (eapp (eapp (econst "myListApped" lnil) x) (eapp (econst "List.nil" (lcons lzero lnil)) x)) z))
+                                                 z))
+                                               (eforall x
+                                                 ([w]
+                                                   (eforall (eapp (econst "List" (lcons lzero lnil)) x)
+                                                     ([x1]
+                                                       (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x))
+                                                         (eapp (eapp (eapp (econst "myListApped" lnil) x) (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) x1)) z))
+                                                         (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) (eapp (eapp (eapp (econst "myListApped" lnil) x) x1) z)))))))))
+                                             (eapp (eapp (eapp (eapp (econst "And.intro" lnil)
+                                               (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x))
+                                                 (eapp (eapp (eapp (eapp (eapp (econst "List.recOn" (lcons (lsucc lzero) (lcons lzero lnil))) x)
+                                                   (elam (eapp (econst "List" (lcons lzero lnil)) x) ([w] (eapp (econst "List" (lcons lzero lnil)) x))))
+                                                   (eapp (econst "List.nil" (lcons lzero lnil)) x))
+                                                   z)
+                                                   (elam x
+                                                     ([w]
+                                                       (elam (eapp (econst "List" (lcons lzero lnil)) x)
+                                                         ([x1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([y1] (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) y1)))))))))
+                                                 z))
+                                               (eforall x
+                                                 ([w]
+                                                   (eforall (eapp (econst "List" (lcons lzero lnil)) x)
+                                                     ([x1]
+                                                       (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x))
+                                                         (eapp (eapp (eapp (eapp (eapp (econst "List.recOn" (lcons (lsucc lzero) (lcons lzero lnil))) x)
+                                                           (elam (eapp (econst "List" (lcons lzero lnil)) x) ([y1] (eapp (econst "List" (lcons lzero lnil)) x))))
+                                                           (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) x1))
+                                                           z)
+                                                           (elam x
+                                                             ([y1]
+                                                               (elam (eapp (econst "List" (lcons lzero lnil)) x)
+                                                                 ([z1]
+                                                                   (elam (eapp (econst "List" (lcons lzero lnil)) x) ([w1] (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) y1) w1)))))))))
+                                                         (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w)
+                                                           (eapp (eapp (eapp (eapp (eapp (econst "List.recOn" (lcons (lsucc lzero) (lcons lzero lnil))) x)
+                                                             (elam (eapp (econst "List" (lcons lzero lnil)) x) ([y1] (eapp (econst "List" (lcons lzero lnil)) x))))
+                                                             x1)
+                                                             z)
+                                                             (elam x
+                                                               ([y1]
+                                                                 (elam (eapp (econst "List" (lcons lzero lnil)) x)
+                                                                   ([z1]
+                                                                     (elam (eapp (econst "List" (lcons lzero lnil)) x)
+                                                                       ([w1] (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) y1) w1)))))))))))))))
+                                               (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x))
+                                                 (eapp (eapp (eapp (eapp (eapp (econst "List.recOn" (lcons (lsucc lzero) (lcons lzero lnil))) x)
+                                                   (elam (eapp (econst "List" (lcons lzero lnil)) x) ([w] (eapp (econst "List" (lcons lzero lnil)) x))))
+                                                   (eapp (econst "List.nil" (lcons lzero lnil)) x))
+                                                   z)
+                                                   (elam x
+                                                     ([w]
+                                                       (elam (eapp (econst "List" (lcons lzero lnil)) x)
+                                                         ([x1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([y1] (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) y1))))))))))
+                                               (elam x
+                                                 ([w]
+                                                   (elam (eapp (econst "List" (lcons lzero lnil)) x)
+                                                     ([x1]
+                                                       (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x))
+                                                         (eapp (eapp (eapp (eapp (eapp (econst "List.recOn" (lcons (lsucc lzero) (lcons lzero lnil))) x)
+                                                           (elam (eapp (econst "List" (lcons lzero lnil)) x) ([y1] (eapp (econst "List" (lcons lzero lnil)) x))))
+                                                           (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) x1))
+                                                           z)
+                                                           (elam x
+                                                             ([y1]
+                                                               (elam (eapp (econst "List" (lcons lzero lnil)) x)
+                                                                 ([z1]
+                                                                   (elam (eapp (econst "List" (lcons lzero lnil)) x)
+                                                                     ([w1]
+                                                                       (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) y1)
+                                                                         w1))))))))))))))))))))) (eforall (esort (lsucc lzero))
+                                 ([x]
+                                   (eforall (eapp (econst "List" (lcons lzero lnil)) x)
+                                     ([y]
+                                       (eforall (eapp (econst "List" (lcons lzero lnil)) x)
+                                         ([z]
+                                           (eapp (eapp (econst "And" lnil)
+                                             (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x))
+                                               (eapp (eapp (eapp (econst "myListApped" lnil) x) (eapp (econst "List.nil" (lcons lzero lnil)) x)) z))
+                                               z))
+                                             (eforall x
+                                               ([w]
+                                                 (eforall (eapp (econst "List" (lcons lzero lnil)) x)
+                                                   ([x1]
+                                                     (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x))
+                                                       (eapp (eapp (eapp (econst "myListApped" lnil) x) (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) x1)) z))
+                                                       (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) (eapp (eapp (eapp (econst "myListApped" lnil) x) x1) z)))))))))))))).
 
 listRecReduction/name : name "listRecReduction" (is-decl (eforall (esort (lsucc lzero)) ([x] (eforall (eapp (econst "List" (lcons lzero lnil)) x) ([y] (eforall (eapp (econst "List" (lcons lzero lnil)) x) ([z] (eapp (eapp (econst "And" lnil) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x)) (eapp (eapp (eapp (econst "myListApped" lnil) x) (eapp (econst "List.nil" (lcons lzero lnil)) x)) z)) z)) (eforall x ([w] (eforall (eapp (econst "List" (lcons lzero lnil)) x) ([x1] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x)) (eapp (eapp (eapp (econst "myListApped" lnil) x) (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) x1)) z)) (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) (eapp (eapp (eapp (econst "myListApped" lnil) x) x1) z)))))))))))))) (thm (elam (esort (lsucc lzero)) ([x] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([y] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([z] (eapp (eapp (econst "id" (lcons lzero lnil)) (eapp (eapp (econst "And" lnil) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x)) (eapp (eapp (eapp (econst "myListApped" lnil) x) (eapp (econst "List.nil" (lcons lzero lnil)) x)) z)) z)) (eforall x ([w] (eforall (eapp (econst "List" (lcons lzero lnil)) x) ([x1] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x)) (eapp (eapp (eapp (econst "myListApped" lnil) x) (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) x1)) z)) (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) (eapp (eapp (eapp (econst "myListApped" lnil) x) x1) z))))))))) (eapp (eapp (eapp (eapp (econst "And.intro" lnil) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x)) (eapp (eapp (eapp (eapp (eapp (econst "List.recOn" (lcons (lsucc lzero) (lcons lzero lnil))) x) (elam (eapp (econst "List" (lcons lzero lnil)) x) ([w] (eapp (econst "List" (lcons lzero lnil)) x)))) (eapp (econst "List.nil" (lcons lzero lnil)) x)) z) (elam x ([w] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([x1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([y1] (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) y1))))))))) z)) (eforall x ([w] (eforall (eapp (econst "List" (lcons lzero lnil)) x) ([x1] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x)) (eapp (eapp (eapp (eapp (eapp (econst "List.recOn" (lcons (lsucc lzero) (lcons lzero lnil))) x) (elam (eapp (econst "List" (lcons lzero lnil)) x) ([y1] (eapp (econst "List" (lcons lzero lnil)) x)))) (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) x1)) z) (elam x ([y1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([z1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([w1] (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) y1) w1))))))))) (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) (eapp (eapp (eapp (eapp (eapp (econst "List.recOn" (lcons (lsucc lzero) (lcons lzero lnil))) x) (elam (eapp (econst "List" (lcons lzero lnil)) x) ([y1] (eapp (econst "List" (lcons lzero lnil)) x)))) x1) z) (elam x ([y1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([z1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([w1] (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) y1) w1))))))))))))))) (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x)) (eapp (eapp (eapp (eapp (eapp (econst "List.recOn" (lcons (lsucc lzero) (lcons lzero lnil))) x) (elam (eapp (econst "List" (lcons lzero lnil)) x) ([w] (eapp (econst "List" (lcons lzero lnil)) x)))) (eapp (econst "List.nil" (lcons lzero lnil)) x)) z) (elam x ([w] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([x1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([y1] (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) y1)))))))))) (elam x ([w] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([x1] (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (eapp (econst "List" (lcons lzero lnil)) x)) (eapp (eapp (eapp (eapp (eapp (econst "List.recOn" (lcons (lsucc lzero) (lcons lzero lnil))) x) (elam (eapp (econst "List" (lcons lzero lnil)) x) ([y1] (eapp (econst "List" (lcons lzero lnil)) x)))) (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) w) x1)) z) (elam x ([y1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([z1] (elam (eapp (econst "List" (lcons lzero lnil)) x) ([w1] (eapp (eapp (eapp (econst "List.cons" (lcons lzero lnil)) x) y1) w1))))))))))))))))))))))).
 

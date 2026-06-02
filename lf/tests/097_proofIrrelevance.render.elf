@@ -37,7 +37,15 @@ Eq_refl/decl : declared "Eq.refl" (eforall (esort (lvar liz)) ([x] (eforall x ([
 Eq_rec/type-wf-sort : lvl.
 
 %%% HOLE
-Eq_rec/type-wf : of (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Eq_rec/type-wf-sort).
+Eq_rec/type-wf : of (eforall (esort (lvar (lis liz)))
+                   ([x]
+                     (eforall x
+                       ([y]
+                         (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz))))))
+                           ([z]
+                             (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y))
+                               ([w]
+                                 (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Eq_rec/type-wf-sort).
 
 Eq_rec/decl : declared "Eq.rec" (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) irec
    = declared/ok-irec Eq/rec-name (dkind-ok/irec Eq_rec/type-wf).
@@ -50,7 +58,12 @@ rfl/type-wf-sort : lvl.
 rfl/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (esort rfl/type-wf-sort).
 
 %%% HOLE
-rfl/value-typed : of (elam (esort (lvar liz)) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x) y))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))).
+rfl/value-typed : of (elam (esort (lvar liz))
+                    ([x]
+                      (elam x
+                        ([y]
+                          (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x)
+                            y))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))).
 
 rfl/name : name "rfl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (defn (elam (esort (lvar liz)) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x) y))))))).
 
@@ -65,7 +78,14 @@ proofIrrelevance/type-wf-sort : lvl.
 proofIrrelevance/type-wf : of (eforall (esort lzero) ([x] (eforall x ([y] (eforall x ([z] (eapp (eapp (eapp (econst "Eq" (lcons lzero lnil)) x) y) z))))))) (esort proofIrrelevance/type-wf-sort).
 
 %%% HOLE
-proofIrrelevance/value-typed : of (elam (esort lzero) ([x] (elam x ([y] (elam x ([z] (eapp (eapp (econst "rfl" (lcons lzero lnil)) x) y))))))) (eforall (esort lzero) ([x] (eforall x ([y] (eforall x ([z] (eapp (eapp (eapp (econst "Eq" (lcons lzero lnil)) x) y) z))))))).
+proofIrrelevance/value-typed : of (elam (esort lzero)
+                                 ([x]
+                                   (elam x
+                                     ([y]
+                                       (elam x
+                                         ([z]
+                                           (eapp (eapp (econst "rfl" (lcons lzero lnil)) x)
+                                             y))))))) (eforall (esort lzero) ([x] (eforall x ([y] (eforall x ([z] (eapp (eapp (eapp (econst "Eq" (lcons lzero lnil)) x) y) z))))))).
 
 proofIrrelevance/name : name "proofIrrelevance" (is-decl (eforall (esort lzero) ([x] (eforall x ([y] (eforall x ([z] (eapp (eapp (eapp (econst "Eq" (lcons lzero lnil)) x) y) z))))))) (defn (elam (esort lzero) ([x] (elam x ([y] (elam x ([z] (eapp (eapp (econst "rfl" (lcons lzero lnil)) x) y))))))))).
 

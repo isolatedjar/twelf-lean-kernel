@@ -37,7 +37,10 @@ Prod_mk/type-wf-sort : lvl
              (lsucc (lvar (lis liz)))
              (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz)))))))).
 
-Prod_mk/type-wf : of (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) (esort Prod_mk/type-wf-sort)
+Prod_mk/type-wf : of (eforall (esort (lsucc (lvar liz)))
+                    ([x]
+                      (eforall (esort (lsucc (lvar (lis liz))))
+                        ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) (esort Prod_mk/type-wf-sort)
    = (defeq/forall
        defeq/sort-refl
        ([x]
@@ -130,7 +133,15 @@ Prod_rec/type-wf-sort : lvl
                (lmax (lsucc (lvar (lis liz))) (lsucc (lvar (lis (lis liz)))))
                (lvar liz)))))).
 
-Prod_rec/type-wf : of (eforall (esort (lsucc (lvar (lis liz)))) ([x] (eforall (esort (lsucc (lvar (lis (lis liz))))) ([y] (eforall (eforall (eapp (eapp (econst "Prod" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([z] (esort (lvar liz)))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "Prod" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([x1] (eapp z x1))))))))))) (esort Prod_rec/type-wf-sort)
+Prod_rec/type-wf : of (eforall (esort (lsucc (lvar (lis liz))))
+                     ([x]
+                       (eforall (esort (lsucc (lvar (lis (lis liz)))))
+                         ([y]
+                           (eforall (eforall (eapp (eapp (econst "Prod" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([z] (esort (lvar liz))))
+                             ([z]
+                               (eforall (eforall x
+                                 ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) w) x1))))))
+                                 ([w] (eforall (eapp (eapp (econst "Prod" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([x1] (eapp z x1))))))))))) (esort Prod_rec/type-wf-sort)
    = (defeq/forall
        defeq/sort-refl
        ([x]
@@ -362,7 +373,14 @@ And_rec/type-wf-sort : lvl
              (limax lzero (limax lzero (lvar liz)))
              (limax lzero (lvar liz)))))).
 
-And_rec/type-wf : of (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] (esort (lvar liz)))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "And.intro" lnil) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "And" lnil) x) y) ([x1] (eapp z x1))))))))))) (esort And_rec/type-wf-sort)
+And_rec/type-wf : of (eforall (esort lzero)
+                    ([x]
+                      (eforall (esort lzero)
+                        ([y]
+                          (eforall (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] (esort (lvar liz))))
+                            ([z]
+                              (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "And.intro" lnil) x) y) w) x1))))))
+                                ([w] (eforall (eapp (eapp (econst "And" lnil) x) y) ([x1] (eapp z x1))))))))))) (esort And_rec/type-wf-sort)
    = (defeq/forall
        defeq/sort-refl
        ([x]
@@ -554,7 +572,15 @@ Eq_rec/type-wf-sort : lvl
              (lvar liz)
              (limax (lvar (lis liz)) (limax lzero (lvar liz))))))).
 
-Eq_rec/type-wf : of (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Eq_rec/type-wf-sort)
+Eq_rec/type-wf : of (eforall (esort (lvar (lis liz)))
+                   ([x]
+                     (eforall x
+                       ([y]
+                         (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz))))))
+                           ([z]
+                             (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y))
+                               ([w]
+                                 (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Eq_rec/type-wf-sort)
    = (defeq/forall
        defeq/sort-refl
        ([x]
@@ -672,7 +698,10 @@ Prod_fst/type-wf-sort : lvl
            (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz))))
            (lsucc (lvar liz))))).
 
-Prod_fst/type-wf : of (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] x)))))) (esort Prod_fst/type-wf-sort)
+Prod_fst/type-wf : of (eforall (esort (lsucc (lvar liz)))
+                     ([x]
+                       (eforall (esort (lsucc (lvar (lis liz))))
+                         ([y] (eforall (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] x)))))) (esort Prod_fst/type-wf-sort)
    = (defeq/forall
        defeq/sort-refl
        ([x]
@@ -711,7 +740,15 @@ Prod_fst/type-wf : of (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (
                    ([z] ([h2] h))))))))).
 
 %%% HOLE
-Prod_fst/value-typed : of (elam (esort (lsucc (lvar liz))) ([x] (elam (esort (lsucc (lvar (lis liz)))) ([y] (elam (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (eproj "Prod" 0 z))))))) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] x)))))).
+Prod_fst/value-typed : of (elam (esort (lsucc (lvar liz)))
+                         ([x]
+                           (elam (esort (lsucc (lvar (lis liz))))
+                             ([y]
+                               (elam (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y)
+                                 ([z]
+                                   (eproj "Prod" 0
+                                     z))))))) (eforall (esort (lsucc (lvar liz)))
+                         ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] x)))))).
 
 Prod_fst/name : name "Prod.fst" (is-decl (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] x)))))) (defn (elam (esort (lsucc (lvar liz))) ([x] (elam (esort (lsucc (lvar (lis liz)))) ([y] (elam (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (eproj "Prod" 0 z))))))))).
 
@@ -728,7 +765,10 @@ Prod_snd/type-wf-sort : lvl
            (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz))))
            (lsucc (lvar (lis liz)))))).
 
-Prod_snd/type-wf : of (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] y)))))) (esort Prod_snd/type-wf-sort)
+Prod_snd/type-wf : of (eforall (esort (lsucc (lvar liz)))
+                     ([x]
+                       (eforall (esort (lsucc (lvar (lis liz))))
+                         ([y] (eforall (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] y)))))) (esort Prod_snd/type-wf-sort)
    = (defeq/forall
        defeq/sort-refl
        ([x]
@@ -767,7 +807,15 @@ Prod_snd/type-wf : of (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (
                    ([z] ([h2] h1))))))))).
 
 %%% HOLE
-Prod_snd/value-typed : of (elam (esort (lsucc (lvar liz))) ([x] (elam (esort (lsucc (lvar (lis liz)))) ([y] (elam (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (eproj "Prod" 1 z))))))) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] y)))))).
+Prod_snd/value-typed : of (elam (esort (lsucc (lvar liz)))
+                         ([x]
+                           (elam (esort (lsucc (lvar (lis liz))))
+                             ([y]
+                               (elam (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y)
+                                 ([z]
+                                   (eproj "Prod" 1
+                                     z))))))) (eforall (esort (lsucc (lvar liz)))
+                         ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] y)))))).
 
 Prod_snd/name : name "Prod.snd" (is-decl (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] y)))))) (defn (elam (esort (lsucc (lvar liz))) ([x] (elam (esort (lsucc (lvar (lis liz)))) ([y] (elam (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (eproj "Prod" 1 z))))))))).
 
@@ -810,7 +858,12 @@ rfl/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (e
                      h1)
                    h1))))))).
 
-rfl/value-typed : of (elam (esort (lvar liz)) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x) y))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y)))))
+rfl/value-typed : of (elam (esort (lvar liz))
+                    ([x]
+                      (elam x
+                        ([y]
+                          (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x)
+                            y))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y)))))
    = (defeq/lam
        defeq/sort-refl
        ([x]
@@ -857,7 +910,22 @@ structEta/type-wf-sort : lvl
          (lsucc (lsucc (lvar liz)))
          (limax (lmax (lsucc (lvar liz)) (lsucc (lvar liz))) lzero))).
 
-structEta/type-wf : of (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar liz))) ([y] (eforall (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) ([z] (eapp (eapp (econst "And" lnil) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc (lvar liz)) lnil)) (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)) z) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) (eapp (eapp (eapp (econst "Prod.fst" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z)) (eapp (eapp (eapp (econst "Prod.snd" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z)))) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc (lvar liz)) lnil)) (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) (eapp (eapp (eapp (econst "Prod.fst" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z)) (eapp (eapp (eapp (econst "Prod.snd" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z))) z)))))))) (esort structEta/type-wf-sort)
+structEta/type-wf : of (eforall (esort (lsucc (lvar liz)))
+                      ([x]
+                        (eforall (esort (lsucc (lvar liz)))
+                          ([y]
+                            (eforall (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)
+                              ([z]
+                                (eapp (eapp (econst "And" lnil)
+                                  (eapp (eapp (eapp (econst "Eq" (lcons (lsucc (lvar liz)) lnil)) (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)) z)
+                                    (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)
+                                      (eapp (eapp (eapp (econst "Prod.fst" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z))
+                                      (eapp (eapp (eapp (econst "Prod.snd" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z))))
+                                  (eapp (eapp (eapp (econst "Eq" (lcons (lsucc (lvar liz)) lnil)) (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y))
+                                    (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)
+                                      (eapp (eapp (eapp (econst "Prod.fst" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z))
+                                      (eapp (eapp (eapp (econst "Prod.snd" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z)))
+                                    z)))))))) (esort structEta/type-wf-sort)
    = (defeq/forall
        defeq/sort-refl
        ([x]
@@ -1263,7 +1331,43 @@ structEta/type-wf : of (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort 
                            h2))))))))))).
 
 %%% HOLE
-structEta/value-typed : of (elam (esort (lsucc (lvar liz))) ([x] (elam (esort (lsucc (lvar liz))) ([y] (elam (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) ([z] (eapp (eapp (eapp (eapp (econst "And.intro" lnil) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc (lvar liz)) lnil)) (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)) z) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) (eapp (eapp (eapp (econst "Prod.fst" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z)) (eapp (eapp (eapp (econst "Prod.snd" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z)))) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc (lvar liz)) lnil)) (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) (eapp (eapp (eapp (econst "Prod.fst" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z)) (eapp (eapp (eapp (econst "Prod.snd" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z))) z)) (eapp (eapp (econst "rfl" (lcons (lsucc (lvar liz)) lnil)) (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)) z)) (eapp (eapp (econst "rfl" (lcons (lsucc (lvar liz)) lnil)) (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) (eapp (eapp (eapp (econst "Prod.fst" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z)) (eapp (eapp (eapp (econst "Prod.snd" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z)))))))))) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar liz))) ([y] (eforall (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) ([z] (eapp (eapp (econst "And" lnil) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc (lvar liz)) lnil)) (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)) z) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) (eapp (eapp (eapp (econst "Prod.fst" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z)) (eapp (eapp (eapp (econst "Prod.snd" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z)))) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc (lvar liz)) lnil)) (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) (eapp (eapp (eapp (econst "Prod.fst" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z)) (eapp (eapp (eapp (econst "Prod.snd" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z))) z)))))))).
+structEta/value-typed : of (elam (esort (lsucc (lvar liz)))
+                          ([x]
+                            (elam (esort (lsucc (lvar liz)))
+                              ([y]
+                                (elam (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)
+                                  ([z]
+                                    (eapp (eapp (eapp (eapp (econst "And.intro" lnil)
+                                      (eapp (eapp (eapp (econst "Eq" (lcons (lsucc (lvar liz)) lnil)) (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)) z)
+                                        (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)
+                                          (eapp (eapp (eapp (econst "Prod.fst" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z))
+                                          (eapp (eapp (eapp (econst "Prod.snd" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z))))
+                                      (eapp (eapp (eapp (econst "Eq" (lcons (lsucc (lvar liz)) lnil)) (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y))
+                                        (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)
+                                          (eapp (eapp (eapp (econst "Prod.fst" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z))
+                                          (eapp (eapp (eapp (econst "Prod.snd" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z)))
+                                        z))
+                                      (eapp (eapp (econst "rfl" (lcons (lsucc (lvar liz)) lnil)) (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)) z))
+                                      (eapp (eapp (econst "rfl" (lcons (lsucc (lvar liz)) lnil)) (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y))
+                                        (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)
+                                          (eapp (eapp (eapp (econst "Prod.fst" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z))
+                                          (eapp (eapp (eapp (econst "Prod.snd" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)
+                                            z)))))))))) (eforall (esort (lsucc (lvar liz)))
+                          ([x]
+                            (eforall (esort (lsucc (lvar liz)))
+                              ([y]
+                                (eforall (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)
+                                  ([z]
+                                    (eapp (eapp (econst "And" lnil)
+                                      (eapp (eapp (eapp (econst "Eq" (lcons (lsucc (lvar liz)) lnil)) (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)) z)
+                                        (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)
+                                          (eapp (eapp (eapp (econst "Prod.fst" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z))
+                                          (eapp (eapp (eapp (econst "Prod.snd" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z))))
+                                      (eapp (eapp (eapp (econst "Eq" (lcons (lsucc (lvar liz)) lnil)) (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y))
+                                        (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)
+                                          (eapp (eapp (eapp (econst "Prod.fst" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z))
+                                          (eapp (eapp (eapp (econst "Prod.snd" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z)))
+                                        z)))))))).
 
 structEta/name : name "structEta" (is-decl (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar liz))) ([y] (eforall (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) ([z] (eapp (eapp (econst "And" lnil) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc (lvar liz)) lnil)) (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)) z) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) (eapp (eapp (eapp (econst "Prod.fst" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z)) (eapp (eapp (eapp (econst "Prod.snd" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z)))) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc (lvar liz)) lnil)) (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) (eapp (eapp (eapp (econst "Prod.fst" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z)) (eapp (eapp (eapp (econst "Prod.snd" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z))) z)))))))) (defn (elam (esort (lsucc (lvar liz))) ([x] (elam (esort (lsucc (lvar liz))) ([y] (elam (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) ([z] (eapp (eapp (eapp (eapp (econst "And.intro" lnil) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc (lvar liz)) lnil)) (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)) z) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) (eapp (eapp (eapp (econst "Prod.fst" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z)) (eapp (eapp (eapp (econst "Prod.snd" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z)))) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc (lvar liz)) lnil)) (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) (eapp (eapp (eapp (econst "Prod.fst" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z)) (eapp (eapp (eapp (econst "Prod.snd" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z))) z)) (eapp (eapp (econst "rfl" (lcons (lsucc (lvar liz)) lnil)) (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)) z)) (eapp (eapp (econst "rfl" (lcons (lsucc (lvar liz)) lnil)) (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y)) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) (eapp (eapp (eapp (econst "Prod.fst" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z)) (eapp (eapp (eapp (econst "Prod.snd" (lcons (lvar liz) (lcons (lvar liz) lnil))) x) y) z)))))))))))).
 

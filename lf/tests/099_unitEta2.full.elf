@@ -38,7 +38,10 @@ PUnit_rec/type-wf-sort : lvl
        (limax (lvar (lis liz)) (lsucc (lvar liz)))
        (limax (lvar liz) (limax (lvar (lis liz)) (lvar liz)))).
 
-PUnit_rec/type-wf : of (eforall (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z))))))) (esort PUnit_rec/type-wf-sort)
+PUnit_rec/type-wf : of (eforall (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz))))
+                      ([x]
+                        (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil)))
+                          ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z))))))) (esort PUnit_rec/type-wf-sort)
    = (defeq/forall
        (defeq/forall
          (defeq/const PUnit/decl (inst-expr/sort (lvl-inst/var lvl-nth/zero)))
@@ -158,7 +161,15 @@ Eq_rec/type-wf-sort : lvl
              (lvar liz)
              (limax (lvar (lis liz)) (limax lzero (lvar liz))))))).
 
-Eq_rec/type-wf : of (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Eq_rec/type-wf-sort)
+Eq_rec/type-wf : of (eforall (esort (lvar (lis liz)))
+                   ([x]
+                     (eforall x
+                       ([y]
+                         (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz))))))
+                           ([z]
+                             (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y))
+                               ([w]
+                                 (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Eq_rec/type-wf-sort)
    = (defeq/forall
        defeq/sort-refl
        ([x]
@@ -302,7 +313,12 @@ rfl/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (e
                      h1)
                    h1))))))).
 
-rfl/value-typed : of (elam (esort (lvar liz)) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x) y))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y)))))
+rfl/value-typed : of (elam (esort (lvar liz))
+                    ([x]
+                      (elam x
+                        ([y]
+                          (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x)
+                            y))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y)))))
    = (defeq/lam
        defeq/sort-refl
        ([x]
@@ -345,7 +361,10 @@ rfl/decl : declared "rfl" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp
 unitEta2/type-wf-sort : lvl
    = (limax (lvar liz) (limax (lvar liz) lzero)).
 
-unitEta2/type-wf : of (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([x] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) (econst "PUnit" (lcons (lvar liz) lnil))) x) y))))) (esort unitEta2/type-wf-sort)
+unitEta2/type-wf : of (eforall (econst "PUnit" (lcons (lvar liz) lnil))
+                     ([x]
+                       (eforall (econst "PUnit" (lcons (lvar liz) lnil))
+                         ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) (econst "PUnit" (lcons (lvar liz) lnil))) x) y))))) (esort unitEta2/type-wf-sort)
    = (defeq/forall
        (defeq/const PUnit/decl (inst-expr/sort (lvl-inst/var lvl-nth/zero)))
        ([x]
@@ -382,7 +401,13 @@ unitEta2/type-wf : of (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([x] (ef
                    h1))))))).
 
 %%% HOLE
-unitEta2/value-typed : of (elam (econst "PUnit" (lcons (lvar liz) lnil)) ([x] (elam (econst "PUnit" (lcons (lvar liz) lnil)) ([y] (eapp (eapp (econst "rfl" (lcons (lvar liz) lnil)) (econst "PUnit" (lcons (lvar liz) lnil))) x))))) (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([x] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) (econst "PUnit" (lcons (lvar liz) lnil))) x) y))))).
+unitEta2/value-typed : of (elam (econst "PUnit" (lcons (lvar liz) lnil))
+                         ([x]
+                           (elam (econst "PUnit" (lcons (lvar liz) lnil))
+                             ([y]
+                               (eapp (eapp (econst "rfl" (lcons (lvar liz) lnil)) (econst "PUnit" (lcons (lvar liz) lnil)))
+                                 x))))) (eforall (econst "PUnit" (lcons (lvar liz) lnil))
+                         ([x] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) (econst "PUnit" (lcons (lvar liz) lnil))) x) y))))).
 
 unitEta2/name : name "unitEta2" (is-decl (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([x] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) (econst "PUnit" (lcons (lvar liz) lnil))) x) y))))) (defn (elam (econst "PUnit" (lcons (lvar liz) lnil)) ([x] (elam (econst "PUnit" (lcons (lvar liz) lnil)) ([y] (eapp (eapp (econst "rfl" (lcons (lvar liz) lnil)) (econst "PUnit" (lcons (lvar liz) lnil))) x))))))).
 

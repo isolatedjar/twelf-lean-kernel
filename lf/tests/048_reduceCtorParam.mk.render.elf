@@ -52,7 +52,10 @@ reduceCtorParam/decl : declared "reduceCtorParam" (eforall (esort (lsucc lzero))
 reduceCtorParam_mk/type-wf-sort : lvl.
 
 %%% HOLE
-reduceCtorParam_mk/type-wf : of (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero))) ([x] (eforall (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParam" lnil) x)) (eapp (econst "reduceCtorParam" lnil) x)) ([y] (eapp (econst "reduceCtorParam" lnil) x))))) (esort reduceCtorParam_mk/type-wf-sort).
+reduceCtorParam_mk/type-wf : of (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero)))
+                               ([x]
+                                 (eforall (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParam" lnil) x)) (eapp (econst "reduceCtorParam" lnil) x))
+                                   ([y] (eapp (econst "reduceCtorParam" lnil) x))))) (esort reduceCtorParam_mk/type-wf-sort).
 
 %%% HOLE
 reduceCtorParam_mk/positivity : ctor-positive "reduceCtorParam" lnil (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero))) ([x] (eforall (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParam" lnil) x)) (eapp (econst "reduceCtorParam" lnil) x)) ([y] (eapp (econst "reduceCtorParam" lnil) x))))).
@@ -67,7 +70,13 @@ reduceCtorParam_mk/decl : declared "reduceCtorParam.mk" (eforall (eapp (eapp (ec
 reduceCtorParam_rec/type-wf-sort : lvl.
 
 %%% HOLE
-reduceCtorParam_rec/type-wf : of (eforall (esort (lsucc lzero)) ([x] (eforall (eforall (eapp (econst "reduceCtorParam" lnil) x) ([y] (esort (lvar liz)))) ([y] (eforall (eforall (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParam" lnil) x)) (eapp (econst "reduceCtorParam" lnil) x)) ([z] (eforall (eapp y z) ([w] (eapp y (eapp (eapp (econst "reduceCtorParam.mk" lnil) x) z)))))) ([z] (eforall (eapp (econst "reduceCtorParam" lnil) x) ([w] (eapp y w))))))))) (esort reduceCtorParam_rec/type-wf-sort).
+reduceCtorParam_rec/type-wf : of (eforall (esort (lsucc lzero))
+                                ([x]
+                                  (eforall (eforall (eapp (econst "reduceCtorParam" lnil) x) ([y] (esort (lvar liz))))
+                                    ([y]
+                                      (eforall (eforall (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParam" lnil) x)) (eapp (econst "reduceCtorParam" lnil) x))
+                                        ([z] (eforall (eapp y z) ([w] (eapp y (eapp (eapp (econst "reduceCtorParam.mk" lnil) x) z))))))
+                                        ([z] (eforall (eapp (econst "reduceCtorParam" lnil) x) ([w] (eapp y w))))))))) (esort reduceCtorParam_rec/type-wf-sort).
 
 reduceCtorParam_rec/decl : declared "reduceCtorParam.rec" (eforall (esort (lsucc lzero)) ([x] (eforall (eforall (eapp (econst "reduceCtorParam" lnil) x) ([y] (esort (lvar liz)))) ([y] (eforall (eforall (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParam" lnil) x)) (eapp (econst "reduceCtorParam" lnil) x)) ([z] (eforall (eapp y z) ([w] (eapp y (eapp (eapp (econst "reduceCtorParam.mk" lnil) x) z)))))) ([z] (eforall (eapp (econst "reduceCtorParam" lnil) x) ([w] (eapp y w))))))))) irec
    = declared/ok-irec reduceCtorParam/rec-name (dkind-ok/irec reduceCtorParam_rec/type-wf).

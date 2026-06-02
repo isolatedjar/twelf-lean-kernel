@@ -46,7 +46,10 @@ PredWithTypeField_rec/type-wf-sort : lvl
        (limax lzero (lsucc lzero))
        (limax (limax (lsucc (lsucc lzero)) lzero) (limax lzero lzero))).
 
-PredWithTypeField_rec/type-wf : of (eforall (eforall (econst "PredWithTypeField" lnil) ([x] (esort lzero))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "PredWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "PredWithTypeField" lnil) ([z] (eapp x z))))))) (esort PredWithTypeField_rec/type-wf-sort)
+PredWithTypeField_rec/type-wf : of (eforall (eforall (econst "PredWithTypeField" lnil) ([x] (esort lzero)))
+                                  ([x]
+                                    (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "PredWithTypeField.mk" lnil) y))))
+                                      ([y] (eforall (econst "PredWithTypeField" lnil) ([z] (eapp x z))))))) (esort PredWithTypeField_rec/type-wf-sort)
    = (defeq/forall
        (defeq/forall
          (defeq/const PredWithTypeField/decl (inst-expr/sort lvl-inst/zero))

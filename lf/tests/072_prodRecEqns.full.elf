@@ -37,7 +37,10 @@ Prod_mk/type-wf-sort : lvl
              (lsucc (lvar (lis liz)))
              (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz)))))))).
 
-Prod_mk/type-wf : of (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) (esort Prod_mk/type-wf-sort)
+Prod_mk/type-wf : of (eforall (esort (lsucc (lvar liz)))
+                    ([x]
+                      (eforall (esort (lsucc (lvar (lis liz))))
+                        ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) (esort Prod_mk/type-wf-sort)
    = (defeq/forall
        defeq/sort-refl
        ([x]
@@ -130,7 +133,15 @@ Prod_rec/type-wf-sort : lvl
                (lmax (lsucc (lvar (lis liz))) (lsucc (lvar (lis (lis liz)))))
                (lvar liz)))))).
 
-Prod_rec/type-wf : of (eforall (esort (lsucc (lvar (lis liz)))) ([x] (eforall (esort (lsucc (lvar (lis (lis liz))))) ([y] (eforall (eforall (eapp (eapp (econst "Prod" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([z] (esort (lvar liz)))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "Prod" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([x1] (eapp z x1))))))))))) (esort Prod_rec/type-wf-sort)
+Prod_rec/type-wf : of (eforall (esort (lsucc (lvar (lis liz))))
+                     ([x]
+                       (eforall (esort (lsucc (lvar (lis (lis liz)))))
+                         ([y]
+                           (eforall (eforall (eapp (eapp (econst "Prod" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([z] (esort (lvar liz))))
+                             ([z]
+                               (eforall (eforall x
+                                 ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) w) x1))))))
+                                 ([w] (eforall (eapp (eapp (econst "Prod" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([x1] (eapp z x1))))))))))) (esort Prod_rec/type-wf-sort)
    = (defeq/forall
        defeq/sort-refl
        ([x]
@@ -359,7 +370,15 @@ Eq_rec/type-wf-sort : lvl
              (lvar liz)
              (limax (lvar (lis liz)) (limax lzero (lvar liz))))))).
 
-Eq_rec/type-wf : of (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Eq_rec/type-wf-sort)
+Eq_rec/type-wf : of (eforall (esort (lvar (lis liz)))
+                   ([x]
+                     (eforall x
+                       ([y]
+                         (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz))))))
+                           ([z]
+                             (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y))
+                               ([w]
+                                 (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Eq_rec/type-wf-sort)
    = (defeq/forall
        defeq/sort-refl
        ([x]
@@ -468,7 +487,25 @@ Eq_rec/decl : declared "Eq.rec" (eforall (esort (lvar (lis liz))) ([x] (eforall 
    = declared/ok-irec Eq/rec-name (dkind-ok/irec Eq_rec/type-wf).
 
 %% thm prodRecEqns
-prodRecEqns/type-wf : of (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (eforall (eforall (eapp (eapp (econst "Prod" (lcons lzero (lcons lzero lnil))) x) y) ([z] (esort (lvar liz)))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) x) y) w) x1)))))) ([w] (eforall x ([x1] (eforall y ([y1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) x) y) x1) y1))) (eapp (eapp (eapp (eapp (eapp (econst "Prod.rec" (lcons (lvar liz) (lcons lzero (lcons lzero lnil)))) x) y) (elam (eapp (eapp (econst "Prod" (lcons lzero (lcons lzero lnil))) x) y) ([z1] (eapp z z1)))) w) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) x) y) x1) y1))) (eapp (eapp w x1) y1)))))))))))))) (esort lzero)
+prodRecEqns/type-wf : of (eforall (esort (lsucc lzero))
+                        ([x]
+                          (eforall (esort (lsucc lzero))
+                            ([y]
+                              (eforall (eforall (eapp (eapp (econst "Prod" (lcons lzero (lcons lzero lnil))) x) y) ([z] (esort (lvar liz))))
+                                ([z]
+                                  (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) x) y) w) x1))))))
+                                    ([w]
+                                      (eforall x
+                                        ([x1]
+                                          (eforall y
+                                            ([y1]
+                                              (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil))
+                                                (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) x) y) x1) y1)))
+                                                (eapp (eapp (eapp (eapp (eapp (econst "Prod.rec" (lcons (lvar liz) (lcons lzero (lcons lzero lnil)))) x) y)
+                                                  (elam (eapp (eapp (econst "Prod" (lcons lzero (lcons lzero lnil))) x) y) ([z1] (eapp z z1))))
+                                                  w)
+                                                  (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) x) y) x1) y1)))
+                                                (eapp (eapp w x1) y1)))))))))))))) (esort lzero)
    = (defeq/conv
        (defeq/sort-eq
          (lvl-eq/le
@@ -1143,7 +1180,43 @@ prodRecEqns/type-wf : of (eforall (esort (lsucc lzero)) ([x] (eforall (esort (ls
                                                h5))))))))))))))))))))).
 
 %%% HOLE
-prodRecEqns/value-typed : of (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] (elam (eforall (eapp (eapp (econst "Prod" (lcons lzero (lcons lzero lnil))) x) y) ([z] (esort (lvar liz)))) ([z] (elam (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) x) y) w) x1)))))) ([w] (elam x ([x1] (elam y ([y1] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) x) y) x1) y1))) (eapp (eapp (eapp (eapp (eapp (econst "Prod.rec" (lcons (lvar liz) (lcons lzero (lcons lzero lnil)))) x) y) (elam (eapp (eapp (econst "Prod" (lcons lzero (lcons lzero lnil))) x) y) ([z1] (eapp z z1)))) w) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) x) y) x1) y1))))))))))))))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (eforall (eforall (eapp (eapp (econst "Prod" (lcons lzero (lcons lzero lnil))) x) y) ([z] (esort (lvar liz)))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) x) y) w) x1)))))) ([w] (eforall x ([x1] (eforall y ([y1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) x) y) x1) y1))) (eapp (eapp (eapp (eapp (eapp (econst "Prod.rec" (lcons (lvar liz) (lcons lzero (lcons lzero lnil)))) x) y) (elam (eapp (eapp (econst "Prod" (lcons lzero (lcons lzero lnil))) x) y) ([z1] (eapp z z1)))) w) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) x) y) x1) y1))) (eapp (eapp w x1) y1)))))))))))))).
+prodRecEqns/value-typed : of (elam (esort (lsucc lzero))
+                            ([x]
+                              (elam (esort (lsucc lzero))
+                                ([y]
+                                  (elam (eforall (eapp (eapp (econst "Prod" (lcons lzero (lcons lzero lnil))) x) y) ([z] (esort (lvar liz))))
+                                    ([z]
+                                      (elam (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) x) y) w) x1))))))
+                                        ([w]
+                                          (elam x
+                                            ([x1]
+                                              (elam y
+                                                ([y1]
+                                                  (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil))
+                                                    (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) x) y) x1) y1)))
+                                                    (eapp (eapp (eapp (eapp (eapp (econst "Prod.rec" (lcons (lvar liz) (lcons lzero (lcons lzero lnil)))) x) y)
+                                                      (elam (eapp (eapp (econst "Prod" (lcons lzero (lcons lzero lnil))) x) y) ([z1] (eapp z z1))))
+                                                      w)
+                                                      (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) x) y) x1)
+                                                        y1))))))))))))))) (eforall (esort (lsucc lzero))
+                            ([x]
+                              (eforall (esort (lsucc lzero))
+                                ([y]
+                                  (eforall (eforall (eapp (eapp (econst "Prod" (lcons lzero (lcons lzero lnil))) x) y) ([z] (esort (lvar liz))))
+                                    ([z]
+                                      (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) x) y) w) x1))))))
+                                        ([w]
+                                          (eforall x
+                                            ([x1]
+                                              (eforall y
+                                                ([y1]
+                                                  (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil))
+                                                    (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) x) y) x1) y1)))
+                                                    (eapp (eapp (eapp (eapp (eapp (econst "Prod.rec" (lcons (lvar liz) (lcons lzero (lcons lzero lnil)))) x) y)
+                                                      (elam (eapp (eapp (econst "Prod" (lcons lzero (lcons lzero lnil))) x) y) ([z1] (eapp z z1))))
+                                                      w)
+                                                      (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) x) y) x1) y1)))
+                                                    (eapp (eapp w x1) y1)))))))))))))).
 
 prodRecEqns/name : name "prodRecEqns" (is-decl (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (eforall (eforall (eapp (eapp (econst "Prod" (lcons lzero (lcons lzero lnil))) x) y) ([z] (esort (lvar liz)))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) x) y) w) x1)))))) ([w] (eforall x ([x1] (eforall y ([y1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) x) y) x1) y1))) (eapp (eapp (eapp (eapp (eapp (econst "Prod.rec" (lcons (lvar liz) (lcons lzero (lcons lzero lnil)))) x) y) (elam (eapp (eapp (econst "Prod" (lcons lzero (lcons lzero lnil))) x) y) ([z1] (eapp z z1)))) w) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) x) y) x1) y1))) (eapp (eapp w x1) y1)))))))))))))) (thm (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] (elam (eforall (eapp (eapp (econst "Prod" (lcons lzero (lcons lzero lnil))) x) y) ([z] (esort (lvar liz)))) ([z] (elam (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) x) y) w) x1)))))) ([w] (elam x ([x1] (elam y ([y1] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) x) y) x1) y1))) (eapp (eapp (eapp (eapp (eapp (econst "Prod.rec" (lcons (lvar liz) (lcons lzero (lcons lzero lnil)))) x) y) (elam (eapp (eapp (econst "Prod" (lcons lzero (lcons lzero lnil))) x) y) ([z1] (eapp z z1)))) w) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) x) y) x1) y1))))))))))))))))).
 

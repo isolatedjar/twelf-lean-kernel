@@ -8,7 +8,10 @@ defEqLambda/type-wf-sort : lvl
        (limax (limax (lsucc lzero) (lsucc lzero)) (lsucc lzero))
        (limax (limax (limax (lsucc lzero) (lsucc lzero)) lzero) lzero)).
 
-defEqLambda/type-wf : of (eforall (eforall (eforall (esort lzero) ([x] (esort lzero))) ([x] (esort lzero))) ([x] (eforall (eforall (eforall (esort lzero) ([y] (esort lzero))) ([y] (eapp x y))) ([y] (eapp x (elam (esort lzero) ([z] (eforall z ([w] z))))))))) (esort defEqLambda/type-wf-sort)
+defEqLambda/type-wf : of (eforall (eforall (eforall (esort lzero) ([x] (esort lzero))) ([x] (esort lzero)))
+                        ([x]
+                          (eforall (eforall (eforall (esort lzero) ([y] (esort lzero))) ([y] (eapp x y)))
+                            ([y] (eapp x (elam (esort lzero) ([z] (eforall z ([w] z))))))))) (esort defEqLambda/type-wf-sort)
    = (defeq/forall
        (defeq/forall
          (defeq/forall defeq/sort-refl ([x] ([h] defeq/sort-refl)))
@@ -36,7 +39,17 @@ defEqLambda/type-wf : of (eforall (eforall (eforall (esort lzero) ([x] (esort lz
                        defeq/sort-refl
                        ([z] ([h2] (defeq/forall h2 ([w] ([h3] h2)))))))))))))).
 
-defEqLambda/value-typed : of (elam (eforall (eforall (esort lzero) ([x] (esort lzero))) ([x] (esort lzero))) ([x] (elam (eforall (eforall (esort lzero) ([y] (esort lzero))) ([y] (eapp x y))) ([y] (eapp y (elam (esort lzero) ([z] (eforall z ([w] z))))))))) (eforall (eforall (eforall (esort lzero) ([x] (esort lzero))) ([x] (esort lzero))) ([x] (eforall (eforall (eforall (esort lzero) ([y] (esort lzero))) ([y] (eapp x y))) ([y] (eapp x (elam (esort lzero) ([z] (eforall z ([w] z)))))))))
+defEqLambda/value-typed : of (elam (eforall (eforall (esort lzero) ([x] (esort lzero))) ([x] (esort lzero)))
+                            ([x]
+                              (elam (eforall (eforall (esort lzero) ([y] (esort lzero))) ([y] (eapp x y)))
+                                ([y]
+                                  (eapp y
+                                    (elam (esort lzero)
+                                      ([z]
+                                        (eforall z
+                                          ([w]
+                                            z))))))))) (eforall (eforall (eforall (esort lzero) ([x] (esort lzero))) ([x] (esort lzero)))
+                            ([x] (eforall (eforall (eforall (esort lzero) ([y] (esort lzero))) ([y] (eapp x y))) ([y] (eapp x (elam (esort lzero) ([z] (eforall z ([w] z)))))))))
    = (defeq/lam
        (defeq/forall
          (defeq/forall defeq/sort-refl ([x] ([h] defeq/sort-refl)))

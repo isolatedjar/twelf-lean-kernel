@@ -26,11 +26,13 @@ import {
   levelParamBindings,
   levelParamIndices,
   lfExpr,
+  lfExprDoc,
   mangle,
   natLiteralsSeen,
   stringNeqFacts,
 } from "./render.ts";
-import { render } from "./pp.ts";
+import type { Doc } from "./pp.ts";
+import { concat, render, text } from "./pp.ts";
 import type {
   Decl,
   Expr,
@@ -111,15 +113,37 @@ function withLevelParams<T>(params: Name[], fn: () => T): T {
 // Obligation emission
 // =====================================================================
 
+// Target width for pretty-printed obligation types.  The HEAD baseline (no
+// pretty-printing) emitted long single lines — ~99 chars was common — so
+// using a strict 80-col budget would aggressively break medium-length types
+// that the project previously left intact (a ~30% .elf size bloat for no
+// readability win).  We pick a deliberately generous 200 so only truly large
+// types (recursors, deep forall chains) break, and the common case stays on
+// one line.
+const TYPE_WIDTH = 200;
+
+// Render an obligation-type Doc to a string with the right hanging indent for
+// the "<constName> : " prefix already known by the caller.  Multi-line types
+// align under the column where the type begins, not at column 0.
+function ppType(typeDoc: Doc, hang: number): string {
+  const raw = render(TYPE_WIDTH - hang, typeDoc);
+  if (hang === 0) return raw;
+  return raw.replace(/\n/g, "\n" + " ".repeat(hang));
+}
+
 // Emit a Twelf constant: a definition (`<const> : <type> = <term>.`) when
 // `term` is non-null, or a declaration with a HOLE warning (`%%% HOLE` then
-// `<const> : <type>.`) when it is null.
-function emitDefn(constName: string, type: string, term: Fmt | null): void {
+// `<const> : <type>.`) when it is null.  `type` is a `Doc` so multi-line LF
+// types (recursors, big foralls) wrap and align under the ` : ` column.
+function emitDefn(constName: string, type: Doc, term: Fmt | null): void {
+  // Length of `${constName} : ` is the column the type starts at.
+  const typeHang = constName.length + 3;
+  const typeStr = ppType(type, typeHang);
   if (term === null) {
     emit(`%%% HOLE`);
-    emit(`${constName} : ${type}.`);
+    emit(`${constName} : ${typeStr}.`);
   } else {
-    emit(`${constName} : ${type}`);
+    emit(`${constName} : ${typeStr}`);
     // "   = " is 5 chars; hang multi-line proofs under that column.
     emit(`   = ${ppFmt(term, 5)}.`);
   }
@@ -133,7 +157,7 @@ function emitDefn(constName: string, type: string, term: Fmt | null): void {
 // through like any term and Twelf rejects it as an undeclared identifier
 // (no special-casing).  Everything is ground: the obligation's type is a
 // schema over `lvar`, so there are no level binders or lambdas.
-function emitObligation(result: Fmt | null, constName: string, judgmentType: string): string {
+function emitObligation(result: Fmt | null, constName: string, judgmentType: Doc): string {
   emitDefn(constName, judgmentType, result);
   return constName;
 }
@@ -151,17 +175,40 @@ function emitObligation(result: Fmt | null, constName: string, judgmentType: str
 // obligation on `lvl`: `lvl` is freezable, so the universe HOLE is itself
 // detectable.  (T may mention `lvar` schema variables; the obligation type
 // stays ground because those are data, not LF binders.)
-function emitTypeWf(result: TypeWfResult, mn: string, T: string, isThm: boolean): string {
+function emitTypeWf(result: TypeWfResult, mn: string, T: Doc, isThm: boolean): string {
+  // The obligation `of <T> (esort <U>)`: emit T as a Doc child so a big T
+  // (the killer case: recursor types) breaks into a readable nested layout.
+  // U is one token, kept inline.
   if (isThm) {
     const proof = result === null ? null : result.proof;
-    return emitObligation(proof, `${mn}/type-wf`, `of ${T} (esort lzero)`);
+    return emitObligation(proof, `${mn}/type-wf`, ofSort(T, text("lzero")));
   }
-  const sortRef = emitObligation(result === null ? null : result.sort, `${mn}/type-wf-sort`, `lvl`);
+  const sortRef = emitObligation(
+    result === null ? null : result.sort,
+    `${mn}/type-wf-sort`,
+    text("lvl"),
+  );
   return emitObligation(
     result === null ? null : result.proof,
     `${mn}/type-wf`,
-    `of ${T} (esort ${sortRef})`,
+    ofSort(T, text(sortRef)),
   );
+}
+
+// `of <T> (esort <U>)` as a Doc.  No top-level soft break: layout decisions
+// happen entirely inside T.  Short Ts emit `of T (esort U)` on one line
+// (matching the pre-pretty baseline for the common case); a very long T
+// (recursor types) breaks within its own `(eforall …)` groups, and
+// `(esort U)` continues on the line where T's outer `)` lands.  Adding a
+// top-level group here would aggressively break ~95-char lines that the
+// repo previously left intact — a 30% size bloat for no readability win.
+function ofSort(T: Doc, U: Doc): Doc {
+  return concat(text("of "), T, text(" (esort "), U, text(")"));
+}
+
+// Same shape for `of <V> <T>` (value-has-type).  Same rationale.
+function ofValueType(V: Doc, T: Doc): Doc {
+  return concat(text("of "), V, text(" "), T);
 }
 
 // Emit the `ctor-positive` obligation for a constructor and return its name.
@@ -192,7 +239,15 @@ function emitCtorPositive(
   T: string,
 ): string {
   const posName = `${mn}/positivity`;
-  const posType = `ctor-positive "${indName}" ${formalLvls(c.levelParams.length)} ${T}`;
+  // ctor-positive "Foo" <lvls> <T>: the obligation type Doc.
+  const posTypeDoc = concat(
+    text(`ctor-positive "${indName}" ${formalLvls(c.levelParams.length)} `),
+    // T came in as a flat string from the caller; treat it as a single text
+    // node so the broader Doc layout doesn't try to break inside it.  (For
+    // big T, the line might overflow 80 chars; that's a minor cost relative
+    // to step 3's win on type-wf — emitCtorPositive's T appears only here.)
+    text(T),
+  );
   const spine = prover.ctorPositive({
     ctorType: c.type,
     indName: c.induct,
@@ -211,15 +266,19 @@ function emitCtorPositive(
     hoasBody = null;
   }
   if (spine === null || hoasBody === null) {
-    emitDefn(posName, posType, null); // HOLE
+    emitDefn(posName, posTypeDoc, null); // HOLE
     return posName;
   }
+  // Render the obligation type ourselves rather than going through emitDefn
+  // — we need a custom proof template (`(ctor-positive/intro ([S] {hoasBody})
+  // {spine})`) that splices hoasBody mid-line.
+  const posType = ppType(posTypeDoc, posName.length + 3);
   emit(`${posName} : ${posType}`);
   // The spine sits mid-line after `(ctor-positive/intro ([S] {hoasBody}) `.
   // We can't easily know that column without measuring hoasBody, so hang
   // multi-line spines under the proof-equals column (5) — slight under-
-  // alignment, but readable; step 3 will dissolve this when hoasBody and
-  // the whole emit move to Docs.
+  // alignment but readable; if hoasBody later becomes a Doc, this can hang
+  // precisely.
   emit(`   = (ctor-positive/intro ([S] ${hoasBody}) ${ppFmt(spine, 5)}).`);
   emit(``);
   return posName;
@@ -264,13 +323,27 @@ function skip(reason: string): void {
 // Per-declaration emission
 // =====================================================================
 
-// Render an expr to LF text; null if it can't be represented at all.
-function tryLf(e: Expr): string | null {
+// Render an expr as a `Doc`; null if it can't be represented at all.
+// Callers that want a flat single-line string render it with effectively
+// infinite width; callers that want pretty wrap-around pass the Doc to
+// emitDefn/emitObligation where the right hanging-indent is computed.
+function tryLfDoc(e: Expr): Doc | null {
   try {
-    return lfExpr(e, []);
+    return lfExprDoc(e, []);
   } catch {
     return null;
   }
+}
+
+// Flat single-line rendering of a Doc — for embedding inside larger strings.
+function flatStr(d: Doc): string {
+  return render(1_000_000, d);
+}
+
+// Render an expr to LF text; null if it can't be represented at all.
+function tryLf(e: Expr): string | null {
+  const d = tryLfDoc(e);
+  return d === null ? null : flatStr(d);
 }
 
 function generateDecl(prover: Prover, d: Decl): void {
@@ -312,24 +385,30 @@ function generateValDecl(prover: Prover, d: Decl & { kind: "def" | "opaque" | "t
   const declName = nameToString(d.name);
   const mn = mangle(d.name);
   withLevelParams(d.levelParams, () => {
-    const T = tryLf(d.type);
-    const V = tryLf(d.value);
-    if (T === null || V === null) {
+    const tDoc = tryLfDoc(d.type);
+    const vDoc = tryLfDoc(d.value);
+    if (tDoc === null || vDoc === null) {
       skip(`${d.kind} ${declName} — type/value not representable in LF`);
       return;
     }
+    // Flat single-line forms are still needed for embedding in emitDeclared
+    // and in the dkind-ok constructor's value slot, which sit inside larger
+    // strings.  Pretty-printable Docs feed emitTypeWf and the value-typed
+    // obligation, where the wrapper computes hanging-indent.
+    const T = flatStr(tDoc);
+    const V = flatStr(vDoc);
     emit(`%% ${d.kind} ${declName}`);
 
     const tw = emitTypeWf(
       prover.typeWellFormed({ type: d.type, levelParams: d.levelParams, isThm: d.kind === "thm" }),
       mn,
-      T,
+      tDoc,
       d.kind === "thm",
     );
     const vt = emitObligation(
       prover.valueHasType({ value: d.value, type: d.type, levelParams: d.levelParams }),
       `${mn}/value-typed`,
-      `of ${V} ${T}`,
+      ofValueType(vDoc, tDoc),
     );
 
     const dkindCtor = d.kind === "def" ? "defn" : d.kind === "opaque" ? "opq" : "thm";
@@ -343,16 +422,17 @@ function generateAxiom(prover: Prover, d: Decl & { kind: "axiom" }): void {
   const declName = nameToString(d.name);
   const mn = mangle(d.name);
   withLevelParams(d.levelParams, () => {
-    const T = tryLf(d.type);
-    if (T === null) {
+    const tDoc = tryLfDoc(d.type);
+    if (tDoc === null) {
       skip(`axiom ${declName} — type not representable in LF`);
       return;
     }
+    const T = flatStr(tDoc);
     emit(`%% axiom ${declName}`);
     const tw = emitTypeWf(
       prover.typeWellFormed({ type: d.type, levelParams: d.levelParams }),
       mn,
-      T,
+      tDoc,
       false,
     );
     emitDeclared(mn, declName, T, `ax`, `(dkind-ok/ax ${tw})`);
@@ -588,17 +668,18 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
     const mn = mangle(c.name);
     const indName = nameToString(c.induct);
     withLevelParams(c.levelParams, () => {
-      const T = tryLf(c.type);
-      if (T === null) {
+      const tDoc = tryLfDoc(c.type);
+      if (tDoc === null) {
         skip(`ctor ${declName} — type not representable in LF`);
         return;
       }
+      const T = flatStr(tDoc);
       const indLevels: Level[] = c.levelParams.map((name) => ({ kind: "param", name }));
       emit(`%% ctor ${declName} (of ${indName})`);
       const tw = emitTypeWf(
         prover.typeWellFormed({ type: c.type, levelParams: c.levelParams }),
         mn,
-        T,
+        tDoc,
         false,
       );
       const cp = emitCtorPositive(prover, c, indName, indLevels, mn, T);
@@ -610,16 +691,17 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
     const declName = nameToString(r.name);
     const mn = mangle(r.name);
     withLevelParams(r.levelParams, () => {
-      const T = tryLf(r.type);
-      if (T === null) {
+      const tDoc = tryLfDoc(r.type);
+      if (tDoc === null) {
         skip(`recursor ${declName} — type not representable in LF`);
         return;
       }
+      const T = flatStr(tDoc);
       emit(`%% recursor ${declName}`);
       const tw = emitTypeWf(
         prover.typeWellFormed({ type: r.type, levelParams: r.levelParams }),
         mn,
-        T,
+        tDoc,
         false,
       );
       // A recursor is declared via `declared/ok-irec`, which requires the
@@ -649,22 +731,23 @@ function generateIndType(prover: Prover, t: IndType): void {
   const declName = nameToString(t.name);
   const mn = mangle(t.name);
   withLevelParams(t.levelParams, () => {
-    const T = tryLf(t.type);
-    if (T === null) {
+    const tDoc = tryLfDoc(t.type);
+    if (tDoc === null) {
       skip(`inductive ${declName} — type not representable in LF`);
       return;
     }
+    const T = flatStr(tDoc);
     emit(`%% inductive ${declName}`);
     const tw = emitTypeWf(
       prover.typeWellFormed({ type: t.type, levelParams: t.levelParams }),
       mn,
-      T,
+      tDoc,
       false,
     );
     const eis = emitObligation(
       prover.endsInSort({ type: t.type, levelParams: t.levelParams }),
       `${mn}/ends-in-sort`,
-      `ends-in-sort ${T}`,
+      concat(text("ends-in-sort "), tDoc),
     );
     // Reserve the canonical recursor slot: %unique name ensures no other
     // declaration can claim this string (e.g., a def with the recursor name).

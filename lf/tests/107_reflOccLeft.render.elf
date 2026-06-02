@@ -55,7 +55,12 @@ Nat_succ/decl : declared "Nat.succ" (eforall (econst "Nat" lnil) ([x] (econst "N
 Nat_rec/type-wf-sort : lvl.
 
 %%% HOLE
-Nat_rec/type-wf : of (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (esort Nat_rec/type-wf-sort).
+Nat_rec/type-wf : of (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz))))
+                    ([x]
+                      (eforall (eapp x (econst "Nat.zero" lnil))
+                        ([y]
+                          (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z))))))
+                            ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (esort Nat_rec/type-wf-sort).
 
 Nat_rec/decl : declared "Nat.rec" (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) irec
    = declared/ok-irec Nat/rec-name (dkind-ok/irec Nat_rec/type-wf).
@@ -82,7 +87,8 @@ reflOccLeft/decl : declared "reflOccLeft" (esort (lsucc lzero)) indt
 reflOccLeft_mk/type-wf-sort : lvl.
 
 %%% HOLE
-reflOccLeft_mk/type-wf : of (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil))) (esort reflOccLeft_mk/type-wf-sort).
+reflOccLeft_mk/type-wf : of (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil)))))
+                           ([x] (econst "reflOccLeft" lnil))) (esort reflOccLeft_mk/type-wf-sort).
 
 %%% HOLE
 reflOccLeft_mk/positivity : ctor-positive "reflOccLeft" lnil (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil))).

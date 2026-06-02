@@ -97,7 +97,15 @@ Eq_rec/type-wf-sort : lvl
              (lvar liz)
              (limax (lvar (lis liz)) (limax lzero (lvar liz))))))).
 
-Eq_rec/type-wf : of (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Eq_rec/type-wf-sort)
+Eq_rec/type-wf : of (eforall (esort (lvar (lis liz)))
+                   ([x]
+                     (eforall x
+                       ([y]
+                         (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz))))))
+                           ([z]
+                             (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y))
+                               ([w]
+                                 (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Eq_rec/type-wf-sort)
    = (defeq/forall
        defeq/sort-refl
        ([x]
@@ -270,7 +278,12 @@ Nat_rec/type-wf-sort : lvl
            (limax (lsucc lzero) (limax (lvar liz) (lvar liz)))
            (limax (lsucc lzero) (lvar liz))))).
 
-Nat_rec/type-wf : of (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (esort Nat_rec/type-wf-sort)
+Nat_rec/type-wf : of (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz))))
+                    ([x]
+                      (eforall (eapp x (econst "Nat.zero" lnil))
+                        ([y]
+                          (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z))))))
+                            ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (esort Nat_rec/type-wf-sort)
    = (defeq/forall
        (defeq/forall
          (defeq/const Nat/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
@@ -318,10 +331,13 @@ Nat_rec/decl : declared "Nat.rec" (eforall (eforall (econst "Nat" lnil) ([x] (es
 
 %% thm natLitEq
 %%% HOLE
-natLitEq/type-wf : of (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3)) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (econst "Nat.zero" lnil))))) (esort lzero).
+natLitEq/type-wf : of (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3))
+                     (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (econst "Nat.zero" lnil))))) (esort lzero).
 
 %%% HOLE
-natLitEq/value-typed : of (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3)) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3)) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (econst "Nat.zero" lnil))))).
+natLitEq/value-typed : of (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil))
+                         (enatlit 3 nonneg_3)) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3))
+                         (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (econst "Nat.zero" lnil))))).
 
 natLitEq/name : name "natLitEq" (is-decl (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3)) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (eapp (econst "Nat.succ" lnil) (econst "Nat.zero" lnil))))) (thm (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (econst "Nat" lnil)) (enatlit 3 nonneg_3)))).
 

@@ -93,7 +93,10 @@ Wrapper_rec/type-wf-sort : lvl
        (limax lzero (lsucc (lvar liz)))
        (limax (limax lzero (lvar liz)) (limax lzero (lvar liz)))).
 
-Wrapper_rec/type-wf : of (eforall (eforall (econst "Wrapper" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eforall (econst "False" lnil) ([y] (eapp x (eapp (econst "Wrapper.mk" lnil) y)))) ([y] (eforall (econst "Wrapper" lnil) ([z] (eapp x z))))))) (esort Wrapper_rec/type-wf-sort)
+Wrapper_rec/type-wf : of (eforall (eforall (econst "Wrapper" lnil) ([x] (esort (lvar liz))))
+                        ([x]
+                          (eforall (eforall (econst "False" lnil) ([y] (eapp x (eapp (econst "Wrapper.mk" lnil) y))))
+                            ([y] (eforall (econst "Wrapper" lnil) ([z] (eapp x z))))))) (esort Wrapper_rec/type-wf-sort)
    = (defeq/forall
        (defeq/forall
          (defeq/const Wrapper/decl (inst-expr/sort lvl-inst/zero))
@@ -161,7 +164,8 @@ True_rec/type-wf-sort : lvl
        (limax lzero (lsucc (lvar liz)))
        (limax (lvar liz) (limax lzero (lvar liz)))).
 
-True_rec/type-wf : of (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) (esort True_rec/type-wf-sort)
+True_rec/type-wf : of (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz))))
+                     ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) (esort True_rec/type-wf-sort)
    = (defeq/forall
        (defeq/forall
          (defeq/const True/decl (inst-expr/sort lvl-inst/zero))

@@ -205,6 +205,93 @@ export type SelfSubst = { selfStr: string; varName: string };
 // introduced at that binder.  `boundVars` is the LF-side variable name
 // stack, innermost-first.  When `self` is supplied, occurrences of the
 // self-reference constant are abstracted to `self.varName` (see SelfSubst).
+// Pretty-printable version of `lfExpr` — returns a `Doc` whose break points
+// the Wadler engine in pp.ts decides at render time.  Mirrors lfExpr's
+// recursion structure; the layout choices are:
+//
+//   `(eapp F A)`              flat / broken as `(eapp F\n  A)`
+//   `(elam T ([x] B))`        flat / broken as `(elam T\n  ([x] B))`
+//                             with B itself a sub-group that may break
+//   `(eforall T ([x] B))`     same as elam
+//   `(eproj "T" i S)`         flat / broken as `(eproj "T" i\n  S)`
+//
+// `sort`/`const`/`bvar`/`natLit`/`strLit` are atomic text — never broken.
+// Level expressions go through `lfLevel` (string), which is one-line; if we
+// ever need them broken too, add `lfLevelDoc` analogously.
+export function lfExprDoc(e: Expr, boundVars: string[], self?: SelfSubst): Doc {
+  switch (e.kind) {
+    case "bvar": {
+      const name = boundVars[e.deBruijn];
+      if (name === undefined)
+        throw new Error(`bvar ${e.deBruijn} out of scope (depth ${boundVars.length})`);
+      return text(name);
+    }
+    case "sort":
+      return text(`(esort ${lfLevel(e.level)})`);
+    case "const": {
+      const s = `(econst "${nameToString(e.name)}" ${lfLvls(e.us)})`;
+      return text(self && s === self.selfStr ? self.varName : s);
+    }
+    case "app":
+      return lfApp2Doc(
+        "eapp",
+        lfExprDoc(e.fn, boundVars, self),
+        lfExprDoc(e.arg, boundVars, self),
+      );
+    case "lam": {
+      const v = freshVar(boundVars);
+      return lfApp2Doc(
+        "elam",
+        lfExprDoc(e.type, boundVars, self),
+        lfBindDoc(v, lfExprDoc(e.body, [v, ...boundVars], self)),
+      );
+    }
+    case "forallE": {
+      const v = freshVar(boundVars);
+      return lfApp2Doc(
+        "eforall",
+        lfExprDoc(e.type, boundVars, self),
+        lfBindDoc(v, lfExprDoc(e.body, [v, ...boundVars], self)),
+      );
+    }
+    case "letE":
+      throw new Error("letE should have been desugared by parse.ts");
+    case "proj":
+      return group(
+        concat(
+          text(`(eproj "${nameToString(e.typeName)}" ${e.idx}`),
+          nest(2, concat(line, lfExprDoc(e.struct, boundVars, self))),
+          text(")"),
+        ),
+      );
+    case "natLit": {
+      natLiteralsSeen.add(e.value);
+      return text(`(enatlit ${e.value} nonneg_${e.value})`);
+    }
+    case "strLit":
+      return text(`(estrlit ${JSON.stringify(e.value)})`);
+  }
+}
+
+// `(head A B)` — flat or, when broken, `(head A\n  B)`.  A goes on the same
+// line as the head; B hangs at +2.  When A itself is a group that has
+// already broken, A's internal lines indent from its own outer paren.
+function lfApp2Doc(head: string, a: Doc, b: Doc): Doc {
+  return group(
+    concat(
+      text(`(${head} `),
+      a,
+      nest(2, concat(line, b)),
+      text(")"),
+    ),
+  );
+}
+
+// `([v] body)` — flat, or when broken, `([v]\n  body)`.
+function lfBindDoc(v: string, body: Doc): Doc {
+  return group(concat(text(`([${v}]`), nest(2, concat(line, body)), text(")")));
+}
+
 export function lfExpr(e: Expr, boundVars: string[], self?: SelfSubst): string {
   switch (e.kind) {
     case "bvar": {

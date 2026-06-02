@@ -57,7 +57,8 @@ dup_rec_def2_not_rec/type-wf-sort : lvl
        (limax (lsucc lzero) (lsucc (lvar liz)))
        (limax (lvar liz) (limax (lsucc lzero) (lvar liz)))).
 
-dup_rec_def2_not_rec/type-wf : of (eforall (eforall (econst "dup_rec_def2" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_rec_def2.mk" lnil)) ([y] (eforall (econst "dup_rec_def2" lnil) ([z] (eapp x z))))))) (esort dup_rec_def2_not_rec/type-wf-sort)
+dup_rec_def2_not_rec/type-wf : of (eforall (eforall (econst "dup_rec_def2" lnil) ([x] (esort (lvar liz))))
+                                 ([x] (eforall (eapp x (econst "dup_rec_def2.mk" lnil)) ([y] (eforall (econst "dup_rec_def2" lnil) ([z] (eapp x z))))))) (esort dup_rec_def2_not_rec/type-wf-sort)
    = (defeq/forall
        (defeq/forall
          (defeq/const

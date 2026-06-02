@@ -99,7 +99,15 @@ Eq_refl/decl : declared "Eq.refl" (eforall (esort (lvar liz)) ([x] (eforall x ([
 Eq_rec/type-wf-sort : lvl.
 
 %%% HOLE
-Eq_rec/type-wf : of (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Eq_rec/type-wf-sort).
+Eq_rec/type-wf : of (eforall (esort (lvar (lis liz)))
+                   ([x]
+                     (eforall x
+                       ([y]
+                         (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz))))))
+                           ([z]
+                             (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y))
+                               ([w]
+                                 (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Eq_rec/type-wf-sort).
 
 Eq_rec/decl : declared "Eq.rec" (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) irec
    = declared/ok-irec Eq/rec-name (dkind-ok/irec Eq_rec/type-wf).
@@ -156,7 +164,10 @@ Bool_true/decl : declared "Bool.true" (econst "Bool" lnil) ctor
 Bool_rec/type-wf-sort : lvl.
 
 %%% HOLE
-Bool_rec/type-wf : of (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort Bool_rec/type-wf-sort).
+Bool_rec/type-wf : of (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz))))
+                     ([x]
+                       (eforall (eapp x (econst "Bool.false" lnil))
+                         ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort Bool_rec/type-wf-sort).
 
 Bool_rec/decl : declared "Bool.rec" (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) irec
    = declared/ok-irec Bool/rec-name (dkind-ok/irec Bool_rec/type-wf).
@@ -171,7 +182,10 @@ discriminate/type-wf-sort : lvl.
 discriminate/type-wf : of (eforall (econst "PropTwo" lnil) ([x] (econst "Bool" lnil))) (esort discriminate/type-wf-sort).
 
 %%% HOLE
-discriminate/value-typed : of (elam (econst "PropTwo" lnil) ([x] (eapp (eapp (eapp (eapp (econst "PropTwo.rec" lnil) (elam (econst "PropTwo" lnil) ([y] (econst "Bool" lnil)))) (econst "Bool.true" lnil)) (econst "Bool.false" lnil)) x))) (eforall (econst "PropTwo" lnil) ([x] (econst "Bool" lnil))).
+discriminate/value-typed : of (elam (econst "PropTwo" lnil)
+                             ([x]
+                               (eapp (eapp (eapp (eapp (econst "PropTwo.rec" lnil) (elam (econst "PropTwo" lnil) ([y] (econst "Bool" lnil)))) (econst "Bool.true" lnil)) (econst "Bool.false" lnil))
+                                 x))) (eforall (econst "PropTwo" lnil) ([x] (econst "Bool" lnil))).
 
 discriminate/name : name "discriminate" (is-decl (eforall (econst "PropTwo" lnil) ([x] (econst "Bool" lnil))) (defn (elam (econst "PropTwo" lnil) ([x] (eapp (eapp (eapp (eapp (econst "PropTwo.rec" lnil) (elam (econst "PropTwo" lnil) ([y] (econst "Bool" lnil)))) (econst "Bool.true" lnil)) (econst "Bool.false" lnil)) x))))).
 
@@ -215,7 +229,8 @@ True_intro/decl : declared "True.intro" (econst "True" lnil) ctor
 True_rec/type-wf-sort : lvl.
 
 %%% HOLE
-True_rec/type-wf : of (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) (esort True_rec/type-wf-sort).
+True_rec/type-wf : of (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz))))
+                     ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) (esort True_rec/type-wf-sort).
 
 True_rec/decl : declared "True.rec" (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) irec
    = declared/ok-irec True/rec-name (dkind-ok/irec True_rec/type-wf).
@@ -228,7 +243,8 @@ decode/type-wf-sort : lvl.
 decode/type-wf : of (eforall (econst "Bool" lnil) ([x] (esort lzero))) (esort decode/type-wf-sort).
 
 %%% HOLE
-decode/value-typed : of (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([x] (esort lzero)))) (econst "False" lnil)) (econst "True" lnil)) (eforall (econst "Bool" lnil) ([x] (esort lzero))).
+decode/value-typed : of (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([x] (esort lzero)))) (econst "False" lnil))
+                       (econst "True" lnil)) (eforall (econst "Bool" lnil) ([x] (esort lzero))).
 
 decode/name : name "decode" (is-decl (eforall (econst "Bool" lnil) ([x] (esort lzero))) (defn (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([x] (esort lzero)))) (econst "False" lnil)) (econst "True" lnil)))).
 
@@ -243,7 +259,12 @@ rfl/type-wf-sort : lvl.
 rfl/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (esort rfl/type-wf-sort).
 
 %%% HOLE
-rfl/value-typed : of (elam (esort (lvar liz)) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x) y))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))).
+rfl/value-typed : of (elam (esort (lvar liz))
+                    ([x]
+                      (elam x
+                        ([y]
+                          (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x)
+                            y))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))).
 
 rfl/name : name "rfl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (defn (elam (esort (lvar liz)) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x) y))))))).
 
@@ -252,10 +273,51 @@ rfl/decl : declared "rfl" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp
 
 %% thm congrArg
 %%% HOLE
-congrArg/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (eforall x ([z] (eforall x ([w] (eforall (eforall x ([x1] y)) ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) w) ([y1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) y) (eapp x1 z)) (eapp x1 w)))))))))))))) (esort lzero).
+congrArg/type-wf : of (eforall (esort (lvar liz))
+                     ([x]
+                       (eforall (esort (lvar (lis liz)))
+                         ([y]
+                           (eforall x
+                             ([z]
+                               (eforall x
+                                 ([w]
+                                   (eforall (eforall x ([x1] y))
+                                     ([x1]
+                                       (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) w)
+                                         ([y1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) y) (eapp x1 z)) (eapp x1 w)))))))))))))) (esort lzero).
 
 %%% HOLE
-congrArg/value-typed : of (elam (esort (lvar liz)) ([x] (elam (esort (lvar (lis liz))) ([y] (elam x ([z] (elam x ([w] (elam (eforall x ([x1] y)) ([x1] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) w) ([y1] (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons lzero (lcons (lvar liz) lnil))) x) z) (elam x ([z1] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) z1) ([w1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) y) (eapp x1 z)) (eapp x1 z1))))))) (eapp (eapp (econst "rfl" (lcons (lvar (lis liz)) lnil)) y) (eapp x1 z))) w) y1))))))))))))) (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (eforall x ([z] (eforall x ([w] (eforall (eforall x ([x1] y)) ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) w) ([y1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) y) (eapp x1 z)) (eapp x1 w)))))))))))))).
+congrArg/value-typed : of (elam (esort (lvar liz))
+                         ([x]
+                           (elam (esort (lvar (lis liz)))
+                             ([y]
+                               (elam x
+                                 ([z]
+                                   (elam x
+                                     ([w]
+                                       (elam (eforall x ([x1] y))
+                                         ([x1]
+                                           (elam (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) w)
+                                             ([y1]
+                                               (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons lzero (lcons (lvar liz) lnil))) x) z)
+                                                 (elam x
+                                                   ([z1]
+                                                     (elam (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) z1)
+                                                       ([w1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) y) (eapp x1 z)) (eapp x1 z1)))))))
+                                                 (eapp (eapp (econst "rfl" (lcons (lvar (lis liz)) lnil)) y) (eapp x1 z)))
+                                                 w)
+                                                 y1))))))))))))) (eforall (esort (lvar liz))
+                         ([x]
+                           (eforall (esort (lvar (lis liz)))
+                             ([y]
+                               (eforall x
+                                 ([z]
+                                   (eforall x
+                                     ([w]
+                                       (eforall (eforall x ([x1] y))
+                                         ([x1]
+                                           (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) w)
+                                             ([y1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) y) (eapp x1 z)) (eapp x1 w)))))))))))))).
 
 congrArg/name : name "congrArg" (is-decl (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (eforall x ([z] (eforall x ([w] (eforall (eforall x ([x1] y)) ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) w) ([y1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) y) (eapp x1 z)) (eapp x1 w)))))))))))))) (thm (elam (esort (lvar liz)) ([x] (elam (esort (lvar (lis liz))) ([y] (elam x ([z] (elam x ([w] (elam (eforall x ([x1] y)) ([x1] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) w) ([y1] (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons lzero (lcons (lvar liz) lnil))) x) z) (elam x ([z1] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) z1) ([w1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) y) (eapp x1 z)) (eapp x1 z1))))))) (eapp (eapp (econst "rfl" (lcons (lvar (lis liz)) lnil)) y) (eapp x1 z))) w) y1))))))))))))))).
 
@@ -270,7 +332,8 @@ ab_eq/type-wf-sort : lvl.
 ab_eq/type-wf : of (eapp (eapp (eapp (econst "Eq" (lcons lzero lnil)) (econst "PropTwo" lnil)) (econst "PropTwo.a" lnil)) (econst "PropTwo.b" lnil)) (esort ab_eq/type-wf-sort).
 
 %%% HOLE
-ab_eq/value-typed : of (eapp (eapp (econst "Eq.refl" (lcons lzero lnil)) (econst "PropTwo" lnil)) (econst "PropTwo.a" lnil)) (eapp (eapp (eapp (econst "Eq" (lcons lzero lnil)) (econst "PropTwo" lnil)) (econst "PropTwo.a" lnil)) (econst "PropTwo.b" lnil)).
+ab_eq/value-typed : of (eapp (eapp (econst "Eq.refl" (lcons lzero lnil)) (econst "PropTwo" lnil))
+                      (econst "PropTwo.a" lnil)) (eapp (eapp (eapp (econst "Eq" (lcons lzero lnil)) (econst "PropTwo" lnil)) (econst "PropTwo.a" lnil)) (econst "PropTwo.b" lnil)).
 
 ab_eq/name : name "ab_eq" (is-decl (eapp (eapp (eapp (econst "Eq" (lcons lzero lnil)) (econst "PropTwo" lnil)) (econst "PropTwo.a" lnil)) (econst "PropTwo.b" lnil)) (defn (eapp (eapp (econst "Eq.refl" (lcons lzero lnil)) (econst "PropTwo" lnil)) (econst "PropTwo.a" lnil)))).
 
@@ -282,10 +345,15 @@ ab_eq/decl : declared "ab_eq" (eapp (eapp (eapp (econst "Eq" (lcons lzero lnil))
 discr_eq/type-wf-sort : lvl.
 
 %%% HOLE
-discr_eq/type-wf : of (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.a" lnil))) (eapp (econst "discriminate" lnil) (econst "PropTwo.b" lnil))) (esort discr_eq/type-wf-sort).
+discr_eq/type-wf : of (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.a" lnil)))
+                     (eapp (econst "discriminate" lnil) (econst "PropTwo.b" lnil))) (esort discr_eq/type-wf-sort).
 
 %%% HOLE
-discr_eq/value-typed : of (eapp (eapp (eapp (eapp (eapp (eapp (econst "congrArg" (lcons lzero (lcons (lsucc lzero) lnil))) (econst "PropTwo" lnil)) (econst "Bool" lnil)) (econst "PropTwo.a" lnil)) (econst "PropTwo.b" lnil)) (econst "discriminate" lnil)) (econst "ab_eq" lnil)) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.a" lnil))) (eapp (econst "discriminate" lnil) (econst "PropTwo.b" lnil))).
+discr_eq/value-typed : of (eapp (eapp (eapp (eapp (eapp (eapp (econst "congrArg" (lcons lzero (lcons (lsucc lzero) lnil))) (econst "PropTwo" lnil)) (econst "Bool" lnil)) (econst "PropTwo.a" lnil))
+                         (econst "PropTwo.b" lnil))
+                         (econst "discriminate" lnil))
+                         (econst "ab_eq" lnil)) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.a" lnil)))
+                         (eapp (econst "discriminate" lnil) (econst "PropTwo.b" lnil))).
 
 discr_eq/name : name "discr_eq" (is-decl (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.a" lnil))) (eapp (econst "discriminate" lnil) (econst "PropTwo.b" lnil))) (defn (eapp (eapp (eapp (eapp (eapp (eapp (econst "congrArg" (lcons lzero (lcons (lsucc lzero) lnil))) (econst "PropTwo" lnil)) (econst "Bool" lnil)) (econst "PropTwo.a" lnil)) (econst "PropTwo.b" lnil)) (econst "discriminate" lnil)) (econst "ab_eq" lnil)))).
 
@@ -300,7 +368,15 @@ falseViaLargeElim/type-wf-sort : lvl.
 falseViaLargeElim/type-wf : of (econst "False" lnil) (esort falseViaLargeElim/type-wf-sort).
 
 %%% HOLE
-falseViaLargeElim/value-typed : of (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons lzero (lcons (lsucc lzero) lnil))) (econst "Bool" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.a" lnil))) (elam (econst "Bool" lnil) ([x] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.a" lnil))) x) ([y] (eapp (econst "decode" lnil) x)))))) (econst "True.intro" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.b" lnil))) (econst "discr_eq" lnil)) (econst "False" lnil).
+falseViaLargeElim/value-typed : of (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons lzero (lcons (lsucc lzero) lnil))) (econst "Bool" lnil))
+                                  (eapp (econst "discriminate" lnil) (econst "PropTwo.a" lnil)))
+                                  (elam (econst "Bool" lnil)
+                                    ([x]
+                                      (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.a" lnil))) x)
+                                        ([y] (eapp (econst "decode" lnil) x))))))
+                                  (econst "True.intro" lnil))
+                                  (eapp (econst "discriminate" lnil) (econst "PropTwo.b" lnil)))
+                                  (econst "discr_eq" lnil)) (econst "False" lnil).
 
 falseViaLargeElim/name : name "falseViaLargeElim" (is-decl (econst "False" lnil) (defn (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons lzero (lcons (lsucc lzero) lnil))) (econst "Bool" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.a" lnil))) (elam (econst "Bool" lnil) ([x] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.a" lnil))) x) ([y] (eapp (econst "decode" lnil) x)))))) (econst "True.intro" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.b" lnil))) (econst "discr_eq" lnil)))).
 
