@@ -30,6 +30,7 @@ import {
   lfLevel,
   mangle,
   natLiteralsSeen,
+  recordStringNeq,
   stringNeqFacts,
 } from "./render.ts";
 import type { Doc } from "./pp.ts";
@@ -38,6 +39,7 @@ import type {
   Decl,
   Expr,
   Fmt,
+  IndCtor,
   IndType,
   Level,
   Name,
@@ -320,15 +322,28 @@ function emitDeclared(
   kExpr: string,
   okWitness: string,
 ): void {
-  // Both lines use the same "break-after-head, args at col 2" pattern that
-  // `of T U` uses (see ofSort): short decls stay flat, long ones wrap as
-  //
-  //   N_rec/decl : declared "N.rec"
-  //     (eforall ...)
-  //     irec
-  //      = declared/ok-irec ...
-  //
-  // and the name-line analogously with `(is-decl` ending the head.
+  // Defer to `emitInductiveFamilyDecl`, the generalized form. The non-
+  // inductive-family path always uses `declared/ok ${mn}/name ${okWitness}`.
+  emitInductiveFamilyDecl(mn, declName, tDoc, kExpr, "declared/ok", `${mn}/name ${okWitness}`);
+}
+
+// Generalized inductive-family declared/decl emission.  The non-inductive
+// callers go through `emitDeclared` (which fixes the ok-rule to
+// `declared/ok` and prepends `${mn}/name` to the witness list).  The
+// inductive-family callers (indt/ctor/irec) call this directly so they can
+// route through `declared/ok-indt` / `-ctor` / `-irec` and supply their
+// specialized witness lists.
+//
+// Layout matches the rest of emitDefn/ofSort: a `group` with break-after-
+// head, args at col 2.
+function emitInductiveFamilyDecl(
+  mn: string,
+  declName: string,
+  tDoc: Doc,
+  kExpr: string,
+  okRule: string,
+  okWitnessArgs: string,
+): void {
   const nameDoc = group(
     concat(
       text(`name "${declName}" (is-decl`),
@@ -342,7 +357,7 @@ function emitDeclared(
     concat(text(`declared "${declName}"`), nest(2, concat(line, tDoc, line, text(kExpr)))),
   );
   emit(`${mn}/decl : ${render(TYPE_WIDTH, declDoc)}`);
-  emit(`   = declared/ok ${mn}/name ${okWitness}.`);
+  emit(`   = ${okRule} ${okWitnessArgs}.`);
   emit(``);
 }
 
@@ -548,6 +563,98 @@ function buildEisl(t: Expr, used: string[] = []): Fmt {
   return atom("ends-in-sort-with-level/sort");
 }
 
+// not-forall/<head> for a given non-forall expr.  Closed family — every
+// non-forall expression has exactly one constructor.  Returns null if the
+// expr is a bvar (not a top-level form a closed term should bottom out at)
+// or a forallE (a logic error — caller should have stopped recursing).
+function buildNotForall(t: Expr): Fmt | null {
+  switch (t.kind) {
+    case "sort":
+      return atom("not-forall/sort");
+    case "const":
+      return atom("not-forall/const");
+    case "app":
+      return atom("not-forall/app");
+    case "lam":
+      return atom("not-forall/lam");
+    case "proj":
+      return atom("not-forall/proj");
+    case "natLit":
+      return atom("not-forall/nat");
+    case "strLit":
+      return atom("not-forall/str");
+    case "forallE":
+    case "bvar":
+    case "letE":
+      return null;
+  }
+}
+
+// Structural witness for `count-leading-foralls T N`: T is a Π chain with
+// exactly N leading binders.  Walks T like buildEisl: at each `forallE`
+// introduce a fresh LF binder and recurse; at the head non-forall, emit
+// `count-leading-foralls/zero <not-forall>`.  Returns null if the head
+// is something `not-forall` can't witness (bvar, etc.) — caller declines.
+//
+// The result N is *not* an input; it's whatever the recursion produces.
+// Callers that need to assert N matches a known count of Πs in T have
+// already counted them and just emit the correct `(lis ...)` literal —
+// see the inductive emission.
+function buildCountLeadingForalls(t: Expr, used: string[] = []): Fmt | null {
+  if (t.kind === "forallE") {
+    const x = freshVar(used);
+    const body = buildCountLeadingForalls(t.body, [x, ...used]);
+    if (body === null) return null;
+    return app(atom("count-leading-foralls/succ"), lam(x, body));
+  }
+  const nf = buildNotForall(t);
+  if (nf === null) return null;
+  return app(atom("count-leading-foralls/zero"), nf);
+}
+
+// Build a `cnames` literal `(ccons "c_0" (ccons "c_1" ... cnil))` from a
+// list of ctor name-strings (already in cidx order).
+function ctorsToCnames(names: string[]): string {
+  let acc = "cnil";
+  for (let i = names.length - 1; i >= 0; i--) {
+    acc = `(ccons "${names[i]}" ${acc})`;
+  }
+  return acc;
+}
+
+// Build `cmem C Ctors` witness for C at the i-th position (0-based) of
+// Ctors.  cmem/here at i=0, (cmem/there^i cmem/here) otherwise.
+function buildCmem(cidx: number): Fmt {
+  let f: Fmt = atom("cmem/here");
+  for (let k = 0; k < cidx; k++) f = app(atom("cmem/there"), f);
+  return f;
+}
+
+// Build `cnames-distinct Ctors` for the list of ctor name-strings (in
+// cidx order).  Each `cnames-distinct/cons` carries an `all-string-neq C
+// Rest` whose leaves are `string-neq C D` posits — when the translator
+// has no real proof, the posit is recorded via `recordStringNeq` so the
+// global `%query 0 * string-neq X X` audit catches a lie.
+function buildCnamesDistinct(names: string[]): Fmt {
+  // `all-string-neq C Rest`: chain of (cons (string-neq C D_0) (cons ... nil))
+  function allNeq(C: string, rest: string[]): Fmt {
+    if (rest.length === 0) return atom("all-string-neq/nil");
+    const D = rest[0]!;
+    const tail = allNeq(C, rest.slice(1));
+    const neq = atom(recordStringNeq(C, D));
+    return app(atom("all-string-neq/cons"), neq, tail);
+  }
+  let acc: Fmt = atom("cnames-distinct/nil");
+  // Walk from the back so the outermost ccons is at the front.  At each
+  // step prepend names[k] and carry an all-string-neq against the suffix.
+  for (let k = names.length - 1; k >= 0; k--) {
+    const tail = names.slice(k + 1);
+    const asn = allNeq(names[k]!, tail);
+    acc = app(atom("cnames-distinct/cons"), acc, asn);
+  }
+  return acc;
+}
+
 // A chain of `succ` over `zero` as a number, else null (we don't reason about
 // max/imax/param universes here).
 function levelToNumber(l: Level): number | null {
@@ -710,9 +817,15 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
     skip(reject);
     return;
   }
-  // Type formers.
+  // Type formers.  Per §3.5, each inductive's reservation now carries its
+  // full ctor list (in cidx order) and its NumParams.  We compute both from
+  // `ind.ctors` (filtered to this type) so the reservation is grounded in
+  // the env's own data and Twelf can match `name FooName (is-decl _ (indt
+  // Ctors NParams))` lookups downstream.
   for (const t of ind.types) {
-    generateIndType(prover, t);
+    const indName = nameToString(t.name);
+    const ctorsForT = ind.ctors.filter((c) => nameToString(c.induct) === indName);
+    generateIndType(prover, t, ctorsForT);
   }
   // Constructors.
   for (const c of ind.ctors) {
@@ -735,19 +848,14 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
         false,
       );
       const cp = emitCtorPositive(prover, c, indName, indLevels, mn, T);
-      // §3.2: dkind-ok/ctor now requires three more witnesses — the parent
-      // inductive's `declared`, an `ends-in-sort-with-level` derivation to
-      // surface its sort, and a `field-universes-ok-skip-params` derivation
-      // ensuring each field's sort is ≤ that sort (mleq).
-      //
-      // `eisl` is structural and we build it directly here (a fully-determined
-      // walk of the inductive's Π chain to the result sort).  `fuo` needs
-      // defeq + mleq subgoals for each field; that's prover work and lives
-      // behind `prover.fieldUniverses`.  When the prover returns null (the
-      // common case while the prover is incomplete), we emit a bare
-      // declaration on the frozen `field-universes-ok-skip-params` family,
-      // which %freeze rejects — so the ctor (and its env) declines.  That's
-      // a loss of completeness, not of soundness.
+      // §3.2 / §3.5: dkind-ok/ctor + declared/ok-ctor now require five
+      // more witnesses than dkind-ok/ctor used to.  Three are structural
+      // and we build them directly: eisl (the inductive's
+      // ends-in-sort-with-level) and cmem (this ctor's position in the
+      // inductive's reserved Ctors list).  Two are HOLEs on frozen
+      // families (fuo for field-universes-ok-skip-params) until the
+      // prover catches up — that drops the ctor's env to a decline but
+      // never to wrong-accept.
       const indSpec = ind.types.find((t) => nameToString(t.name) === indName);
       if (indSpec === undefined) {
         skip(`ctor ${declName} — couldn't locate parent inductive ${indName}`);
@@ -759,27 +867,57 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
         skip(`ctor ${declName} — inductive ${indName} doesn't end in a concrete sort`);
         return;
       }
-      // eisl: structural walk of the inductive's Π chain.  ends-in-sort-with-
-      // level is closed, every node is determined by the syntactic shape.
+      // Compute this ctor's cidx (its position among ctors of the same
+      // inductive, in declaration order).
+      const ctorsForInd = ind.ctors.filter((cc) => nameToString(cc.induct) === indName);
+      const cidx = ctorsForInd.findIndex((cc) => nameToString(cc.name) === declName);
+      if (cidx < 0) {
+        skip(`ctor ${declName} — couldn't locate own cidx in parent ${indName}`);
+        return;
+      }
+      // eisl: structural walk of the inductive's Π chain.
       const eislFmt = buildEisl(indSpec.type);
       emit(
         `${mn}/eisl : ends-in-sort-with-level ${flatStr(lfExprDoc(indSpec.type, []))} ${lfLevel(indUInd)}`,
       );
       emit(`   = ${ppFmt(eislFmt, 5)}.`);
       emit(``);
+      // cmem: this ctor's position in the inductive's reserved Ctors list.
+      const ctorNames = ctorsForInd.map((cc) => nameToString(cc.name));
+      const ctorsCnames = ctorsToCnames(ctorNames);
+      const cmemFmt = buildCmem(cidx);
+      emit(`${mn}/cmem : cmem "${declName}" ${ctorsCnames}`);
+      emit(`   = ${ppFmt(cmemFmt, 5)}.`);
+      emit(``);
       // fuo: bare HOLE on a frozen family until the prover can synthesize it.
       // Freeze rejects bare declarations, so the ctor's whole env declines.
+      //
+      // The skip count is `params + indices` — same payload semantics as
+      // the inductive's NParams (see generateIndType for why).  A ctor's
+      // type has the inductive's leading binders re-bound in front of
+      // its own fields, so the skip-params walk needs to consume all of
+      // them before reaching real fields.
+      const skipCount = indSpec.numParams + indSpec.numIndices;
       emit(`%%% HOLE: ${mn}/fuo — prover for field-universes-ok-skip-params not yet implemented`);
       emit(
-        `${mn}/fuo : field-universes-ok-skip-params ${lidxLit(c.numParams)} ${T} ${lfLevel(indUInd)}.`,
+        `${mn}/fuo : field-universes-ok-skip-params ${lidxLit(skipCount)} ${T} ${lfLevel(indUInd)}.`,
       );
       emit(``);
-      emitDeclared(
+      // dkind payload: (ctor "<ind>" <cidx>).  Hand-roll the line rather
+      // than going through emitDeclared because the dkind expression has
+      // moving parts (indName, cidx).
+      const cidxLidx = lidxLit(cidx);
+      const dkindExpr = `(ctor "${indName}" ${cidxLidx})`;
+      const okWitness = `(dkind-ok/ctor ${tw} ${cp})`;
+      emitInductiveFamilyDecl(
         mn,
         declName,
         tDoc,
-        `ctor`,
-        `(dkind-ok/ctor ${tw} ${cp} ${indMn}/decl ${mn}/eisl ${mn}/fuo)`,
+        dkindExpr,
+        `declared/ok-ctor`,
+        // The ok-ctor witness consumes (in order): name reservation, the
+        // parent's name reservation, cmem, eisl, fuo, dkind-ok/ctor.
+        `${mn}/name ${indMn}/name ${mn}/cmem ${mn}/eisl ${mn}/fuo ${okWitness}`,
       );
     });
   }
@@ -811,18 +949,36 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
       const indType =
         IndN !== null ? ind.types.find((t) => nameToString(t.name) === IndN) : undefined;
       const indMn = indType !== undefined ? mangle(indType.name) : null;
-      // Match emitDeclared's break-after-head layout: short recursor types
-      // stay flat; the killer N_rec / Eq_rec types wrap with `declared "..."`
-      // alone on the prefix line and args at col 2.
-      const declDoc = group(
-        concat(text(`declared "${declName}"`), nest(2, concat(line, tDoc, line, text("irec")))),
-      );
-      const declStr = render(TYPE_WIDTH, declDoc);
       if (indMn !== null) {
-        emit(`${mn}/decl : ${declStr}`);
+        // dkind payload: (irec "<ind>") records the parent inductive so
+        // iota rules can look up its reservation.  Unlike emitInductive-
+        // FamilyDecl which emits a `<mn>/name` is-decl reservation, the
+        // recursor does NOT emit its own name reservation — the
+        // inductive's `<indMn>/rec-name : name "<ind>.rec" (is-rec-for
+        // "<ind>")` already claims this string and serves as the
+        // `declared/ok-irec` premise.  Emitting a parallel `<mn>/name
+        // (is-decl T (irec ...))` reservation would collide under
+        // `%unique name` (different nkinds for one string), so we just
+        // emit the `decl` line directly.
+        const dkindExpr = `(irec "${IndN}")`;
+        const declDoc = group(
+          concat(
+            text(`declared "${declName}"`),
+            nest(2, concat(line, tDoc, line, text(dkindExpr))),
+          ),
+        );
+        emit(`${mn}/decl : ${render(TYPE_WIDTH, declDoc)}`);
         emit(`   = declared/ok-irec ${indMn}/rec-name (dkind-ok/irec ${tw}).`);
         emit(``);
       } else {
+        // No parent inductive — emit a bare decl on the frozen family,
+        // which %freeze rejects.  Fall back to the old `irec` dkind shape
+        // (without payload) just for the error message; this branch is
+        // already on the path to rejection.
+        const declDoc = group(
+          concat(text(`declared "${declName}"`), nest(2, concat(line, tDoc, line, text("(irec \"<unknown>\")")))),
+        );
+        const declStr = render(TYPE_WIDTH, declDoc);
         emit(`%%% HOLE: recursor ${declName} — name does not follow <inductive>.rec convention`);
         emit(`${mn}/decl : ${declStr}.`);
         emit(``);
@@ -831,7 +987,7 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
   }
 }
 
-function generateIndType(prover: Prover, t: IndType): void {
+function generateIndType(prover: Prover, t: IndType, ctorsForT: readonly IndCtor[]): void {
   const declName = nameToString(t.name);
   const mn = mangle(t.name);
   withLevelParams(t.levelParams, () => {
@@ -840,7 +996,6 @@ function generateIndType(prover: Prover, t: IndType): void {
       skip(`inductive ${declName} — type not representable in LF`);
       return;
     }
-    const T = flatStr(tDoc);
     emit(`%% inductive ${declName}`);
     const tw = emitTypeWf(
       prover.typeWellFormed({ type: t.type, levelParams: t.levelParams }),
@@ -857,7 +1012,49 @@ function generateIndType(prover: Prover, t: IndType): void {
     // declaration can claim this string (e.g., a def with the recursor name).
     emit(`${mn}/rec-name : name "${declName}.rec" (is-rec-for "${declName}").`);
     emit(``);
-    emitDeclared(mn, declName, tDoc, `indt`, `(dkind-ok/indt ${tw} ${eis})`);
+    // §3.5: emit the count-leading-foralls and cnames-distinct witnesses
+    // that `declared/ok-indt` requires.  Both are structural / posit-and-
+    // audited (the cnames-distinct leaves record `string-neq` posits that
+    // the global `%query 0 * string-neq X X` audit catches if reflexive).
+    //
+    // The `indt`'s NParams payload is *total leading-Π count*
+    // (params + indices), not just `numParams`.  Rationale: an inductive
+    // like `Eq.{u} : ∀ (α : Sort u) (a b : α), Prop` has numParams=1 and
+    // numIndices=2; its type's leading Π chain is 3, and that's what a
+    // ctor like `Eq.refl : ∀ α a, Eq α a a` must skip before checking
+    // field universes.  Lean's spec treats params + indices uniformly
+    // for the "ctor's leading binders match the inductive's" check.
+    const ctorNames = ctorsForT.map((c) => nameToString(c.name));
+    const ctorsCnames = ctorsToCnames(ctorNames);
+    const clfFmt = buildCountLeadingForalls(t.type);
+    const nparamsLidx = lidxLit(t.numParams + t.numIndices);
+    if (clfFmt !== null) {
+      emit(
+        `${mn}/clf : count-leading-foralls ${flatStr(tDoc)} ${nparamsLidx}`,
+      );
+      emit(`   = ${ppFmt(clfFmt, 5)}.`);
+      emit(``);
+    } else {
+      emit(`%%% HOLE: ${mn}/clf — couldn't build count-leading-foralls (bvar head?)`);
+      emit(`${mn}/clf : count-leading-foralls ${flatStr(tDoc)} ${nparamsLidx}.`);
+      emit(``);
+    }
+    const cndFmt = buildCnamesDistinct(ctorNames);
+    emit(`${mn}/cnd : cnames-distinct ${ctorsCnames}`);
+    emit(`   = ${ppFmt(cndFmt, 5)}.`);
+    emit(``);
+    // dkind payload: (indt <Ctors> <NParams>).
+    const dkindExpr = `(indt ${ctorsCnames} ${nparamsLidx})`;
+    // declared/ok-indt witness list: name reservation, rec-name reservation,
+    // count-leading-foralls, cnames-distinct, dkind-ok/indt.
+    emitInductiveFamilyDecl(
+      mn,
+      declName,
+      tDoc,
+      dkindExpr,
+      `declared/ok-indt`,
+      `${mn}/name ${mn}/rec-name ${mn}/clf ${mn}/cnd (dkind-ok/indt ${tw} ${eis})`,
+    );
   });
 }
 

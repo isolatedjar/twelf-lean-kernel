@@ -35,7 +35,13 @@ inductBadNonSort/ends-in-sort : ends-in-sort (econst "constType" lnil).
 
 inductBadNonSort/rec-name : name "inductBadNonSort.rec" (is-rec-for "inductBadNonSort").
 
-inductBadNonSort/name : name "inductBadNonSort" (is-decl (econst "constType" lnil) indt).
+inductBadNonSort/clf : count-leading-foralls (econst "constType" lnil) liz
+   = (count-leading-foralls/zero not-forall/const).
 
-inductBadNonSort/decl : declared "inductBadNonSort" (econst "constType" lnil) indt
-   = declared/ok inductBadNonSort/name (dkind-ok/indt inductBadNonSort/type-wf inductBadNonSort/ends-in-sort).
+inductBadNonSort/cnd : cnames-distinct cnil
+   = cnames-distinct/nil.
+
+inductBadNonSort/name : name "inductBadNonSort" (is-decl (econst "constType" lnil) (indt cnil liz)).
+
+inductBadNonSort/decl : declared "inductBadNonSort" (econst "constType" lnil) (indt cnil liz)
+   = declared/ok-indt inductBadNonSort/name inductBadNonSort/rec-name inductBadNonSort/clf inductBadNonSort/cnd (dkind-ok/indt inductBadNonSort/type-wf inductBadNonSort/ends-in-sort).

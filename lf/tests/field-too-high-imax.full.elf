@@ -28,10 +28,16 @@ Foo/ends-in-sort : ends-in-sort (esort (lsucc lzero))
 
 Foo/rec-name : name "Foo.rec" (is-rec-for "Foo").
 
-Foo/name : name "Foo" (is-decl (esort (lsucc lzero)) indt).
+Foo/clf : count-leading-foralls (esort (lsucc lzero)) liz
+   = (count-leading-foralls/zero not-forall/sort).
 
-Foo/decl : declared "Foo" (esort (lsucc lzero)) indt
-   = declared/ok Foo/name (dkind-ok/indt Foo/type-wf Foo/ends-in-sort).
+Foo/cnd : cnames-distinct (ccons "Foo.mk" cnil)
+   = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
+
+Foo/name : name "Foo" (is-decl (esort (lsucc lzero)) (indt (ccons "Foo.mk" cnil) liz)).
+
+Foo/decl : declared "Foo" (esort (lsucc lzero)) (indt (ccons "Foo.mk" cnil) liz)
+   = declared/ok-indt Foo/name Foo/rec-name Foo/clf Foo/cnd (dkind-ok/indt Foo/type-wf Foo/ends-in-sort).
 
 %% ctor Foo.mk (of Foo)
 Foo_mk/type-wf-sort : lvl
@@ -56,13 +62,16 @@ Foo_mk/positivity : ctor-positive "Foo" lnil (eforall (esort (limax (lsucc lzero
 Foo_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
+Foo_mk/cmem : cmem "Foo.mk" (ccons "Foo.mk" cnil)
+   = cmem/here.
+
 %%% HOLE: Foo_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
 Foo_mk/fuo : field-universes-ok-skip-params liz (eforall (esort (limax (lsucc lzero) (lsucc lzero))) ([x] (econst "Foo" lnil))) (lsucc lzero).
 
-Foo_mk/name : name "Foo.mk" (is-decl (eforall (esort (limax (lsucc lzero) (lsucc lzero))) ([x] (econst "Foo" lnil))) ctor).
+Foo_mk/name : name "Foo.mk" (is-decl (eforall (esort (limax (lsucc lzero) (lsucc lzero))) ([x] (econst "Foo" lnil))) (ctor "Foo" liz)).
 
-Foo_mk/decl : declared "Foo.mk" (eforall (esort (limax (lsucc lzero) (lsucc lzero))) ([x] (econst "Foo" lnil))) ctor
-   = declared/ok Foo_mk/name (dkind-ok/ctor Foo_mk/type-wf Foo_mk/positivity Foo/decl Foo_mk/eisl Foo_mk/fuo).
+Foo_mk/decl : declared "Foo.mk" (eforall (esort (limax (lsucc lzero) (lsucc lzero))) ([x] (econst "Foo" lnil))) (ctor "Foo" liz)
+   = declared/ok-ctor Foo_mk/name Foo/name Foo_mk/cmem Foo_mk/eisl Foo_mk/fuo (dkind-ok/ctor Foo_mk/type-wf Foo_mk/positivity).
 
 %% recursor Foo.rec
 Foo_rec/type-wf-sort : lvl
@@ -71,5 +80,5 @@ Foo_rec/type-wf-sort : lvl
 Foo_rec/type-wf : of (esort lzero) (esort Foo_rec/type-wf-sort)
    = defeq/sort-refl.
 
-Foo_rec/decl : declared "Foo.rec" (esort lzero) irec
+Foo_rec/decl : declared "Foo.rec" (esort lzero) (irec "Foo")
    = declared/ok-irec Foo/rec-name (dkind-ok/irec Foo_rec/type-wf).

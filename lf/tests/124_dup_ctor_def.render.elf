@@ -27,10 +27,16 @@ dup_ctor_def/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
 dup_ctor_def/rec-name : name "dup_ctor_def.rec" (is-rec-for "dup_ctor_def").
 
-dup_ctor_def/name : name "dup_ctor_def" (is-decl (esort (lsucc lzero)) indt).
+dup_ctor_def/clf : count-leading-foralls (esort (lsucc lzero)) liz
+   = (count-leading-foralls/zero not-forall/sort).
 
-dup_ctor_def/decl : declared "dup_ctor_def" (esort (lsucc lzero)) indt
-   = declared/ok dup_ctor_def/name (dkind-ok/indt dup_ctor_def/type-wf dup_ctor_def/ends-in-sort).
+dup_ctor_def/cnd : cnames-distinct (ccons "dup_ctor_def.mk" cnil)
+   = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
+
+dup_ctor_def/name : name "dup_ctor_def" (is-decl (esort (lsucc lzero)) (indt (ccons "dup_ctor_def.mk" cnil) liz)).
+
+dup_ctor_def/decl : declared "dup_ctor_def" (esort (lsucc lzero)) (indt (ccons "dup_ctor_def.mk" cnil) liz)
+   = declared/ok-indt dup_ctor_def/name dup_ctor_def/rec-name dup_ctor_def/clf dup_ctor_def/cnd (dkind-ok/indt dup_ctor_def/type-wf dup_ctor_def/ends-in-sort).
 
 %% ctor dup_ctor_def.mk (of dup_ctor_def)
 %%% HOLE
@@ -45,13 +51,16 @@ dup_ctor_def_mk/positivity : ctor-positive "dup_ctor_def" lnil (econst "dup_ctor
 dup_ctor_def_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
+dup_ctor_def_mk/cmem : cmem "dup_ctor_def.mk" (ccons "dup_ctor_def.mk" cnil)
+   = cmem/here.
+
 %%% HOLE: dup_ctor_def_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
 dup_ctor_def_mk/fuo : field-universes-ok-skip-params liz (econst "dup_ctor_def" lnil) (lsucc lzero).
 
-dup_ctor_def_mk/name : name "dup_ctor_def.mk" (is-decl (econst "dup_ctor_def" lnil) ctor).
+dup_ctor_def_mk/name : name "dup_ctor_def.mk" (is-decl (econst "dup_ctor_def" lnil) (ctor "dup_ctor_def" liz)).
 
-dup_ctor_def_mk/decl : declared "dup_ctor_def.mk" (econst "dup_ctor_def" lnil) ctor
-   = declared/ok dup_ctor_def_mk/name (dkind-ok/ctor dup_ctor_def_mk/type-wf dup_ctor_def_mk/positivity dup_ctor_def/decl dup_ctor_def_mk/eisl dup_ctor_def_mk/fuo).
+dup_ctor_def_mk/decl : declared "dup_ctor_def.mk" (econst "dup_ctor_def" lnil) (ctor "dup_ctor_def" liz)
+   = declared/ok-ctor dup_ctor_def_mk/name dup_ctor_def/name dup_ctor_def_mk/cmem dup_ctor_def_mk/eisl dup_ctor_def_mk/fuo (dkind-ok/ctor dup_ctor_def_mk/type-wf dup_ctor_def_mk/positivity).
 
 %% recursor dup_ctor_def.rec
 %%% HOLE
@@ -64,5 +73,5 @@ dup_ctor_def_rec/type-wf : of
 
 dup_ctor_def_rec/decl : declared "dup_ctor_def.rec"
   (eforall (eforall (econst "dup_ctor_def" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ctor_def.mk" lnil)) ([y] (eforall (econst "dup_ctor_def" lnil) ([z] (eapp x z)))))))
-  irec
+  (irec "dup_ctor_def")
    = declared/ok-irec dup_ctor_def/rec-name (dkind-ok/irec dup_ctor_def_rec/type-wf).

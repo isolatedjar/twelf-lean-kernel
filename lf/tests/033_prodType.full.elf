@@ -20,10 +20,23 @@ Prod/ends-in-sort : ends-in-sort (eforall (esort (lsucc (lvar liz))) ([x] (efora
 
 Prod/rec-name : name "Prod.rec" (is-rec-for "Prod").
 
-Prod/name : name "Prod" (is-decl (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (esort (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz))))))))) indt).
+Prod/clf : count-leading-foralls (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (esort (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz))))))))) (lis (lis liz))
+   = (count-leading-foralls/succ
+       ([x]
+         (count-leading-foralls/succ
+           ([y] (count-leading-foralls/zero not-forall/sort))))).
 
-Prod/decl : declared "Prod" (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (esort (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz))))))))) indt
-   = declared/ok Prod/name (dkind-ok/indt Prod/type-wf Prod/ends-in-sort).
+Prod/cnd : cnames-distinct (ccons "Prod.mk" cnil)
+   = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
+
+Prod/name : name "Prod" (is-decl
+  (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (esort (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz)))))))))
+  (indt (ccons "Prod.mk" cnil) (lis (lis liz)))).
+
+Prod/decl : declared "Prod"
+  (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (esort (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz)))))))))
+  (indt (ccons "Prod.mk" cnil) (lis (lis liz)))
+   = declared/ok-indt Prod/name Prod/rec-name Prod/clf Prod/cnd (dkind-ok/indt Prod/type-wf Prod/ends-in-sort).
 
 %% ctor Prod.mk (of Prod)
 Prod_mk/type-wf-sort : lvl
@@ -115,19 +128,22 @@ Prod_mk/eisl : ends-in-sort-with-level (eforall (esort (lsucc (lvar liz))) ([x] 
        ([x]
          (ends-in-sort-with-level/forall ([y] ends-in-sort-with-level/sort)))).
 
+Prod_mk/cmem : cmem "Prod.mk" (ccons "Prod.mk" cnil)
+   = cmem/here.
+
 %%% HOLE: Prod_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
 Prod_mk/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz)))).
 
 Prod_mk/name : name "Prod.mk" (is-decl
   (eforall (esort (lsucc (lvar liz)))
     ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y)))))))))
-  ctor).
+  (ctor "Prod" liz)).
 
 Prod_mk/decl : declared "Prod.mk"
   (eforall (esort (lsucc (lvar liz)))
     ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y)))))))))
-  ctor
-   = declared/ok Prod_mk/name (dkind-ok/ctor Prod_mk/type-wf Prod_mk/positivity Prod/decl Prod_mk/eisl Prod_mk/fuo).
+  (ctor "Prod" liz)
+   = declared/ok-ctor Prod_mk/name Prod/name Prod_mk/cmem Prod_mk/eisl Prod_mk/fuo (dkind-ok/ctor Prod_mk/type-wf Prod_mk/positivity).
 
 %% recursor Prod.rec
 Prod_rec/type-wf-sort : lvl
@@ -296,7 +312,7 @@ Prod_rec/decl : declared "Prod.rec"
             ([z]
               (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) w) x1))))))
                 ([w] (eforall (eapp (eapp (econst "Prod" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([x1] (eapp z x1)))))))))))
-  irec
+  (irec "Prod")
    = declared/ok-irec Prod/rec-name (dkind-ok/irec Prod_rec/type-wf).
 
 %% def prodType

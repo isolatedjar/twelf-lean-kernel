@@ -1,5 +1,11 @@
 %%% Render-only view of: 064_rbTreeRef
 %%% Asserting the type of the generated recursor
+sneq/0 : string-neq "Color.r" "Color.b".
+sneq/1 : string-neq "N.zero" "N.succ".
+sneq/2 : string-neq "RBTree.red" "RBTree.black".
+sneq/3 : string-neq "RBTree.leaf" "RBTree.black".
+sneq/4 : string-neq "RBTree.leaf" "RBTree.red".
+
 %% inductive Color
 %%% HOLE
 Color/type-wf-sort : lvl.
@@ -12,10 +18,18 @@ Color/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
 Color/rec-name : name "Color.rec" (is-rec-for "Color").
 
-Color/name : name "Color" (is-decl (esort (lsucc lzero)) indt).
+Color/clf : count-leading-foralls (esort (lsucc lzero)) liz
+   = (count-leading-foralls/zero not-forall/sort).
 
-Color/decl : declared "Color" (esort (lsucc lzero)) indt
-   = declared/ok Color/name (dkind-ok/indt Color/type-wf Color/ends-in-sort).
+Color/cnd : cnames-distinct (ccons "Color.r" (ccons "Color.b" cnil))
+   = (cnames-distinct/cons
+       (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil)
+       (all-string-neq/cons sneq/0 all-string-neq/nil)).
+
+Color/name : name "Color" (is-decl (esort (lsucc lzero)) (indt (ccons "Color.r" (ccons "Color.b" cnil)) liz)).
+
+Color/decl : declared "Color" (esort (lsucc lzero)) (indt (ccons "Color.r" (ccons "Color.b" cnil)) liz)
+   = declared/ok-indt Color/name Color/rec-name Color/clf Color/cnd (dkind-ok/indt Color/type-wf Color/ends-in-sort).
 
 %% ctor Color.r (of Color)
 %%% HOLE
@@ -30,13 +44,16 @@ Color_r/positivity : ctor-positive "Color" lnil (econst "Color" lnil).
 Color_r/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
+Color_r/cmem : cmem "Color.r" (ccons "Color.r" (ccons "Color.b" cnil))
+   = cmem/here.
+
 %%% HOLE: Color_r/fuo — prover for field-universes-ok-skip-params not yet implemented
 Color_r/fuo : field-universes-ok-skip-params liz (econst "Color" lnil) (lsucc lzero).
 
-Color_r/name : name "Color.r" (is-decl (econst "Color" lnil) ctor).
+Color_r/name : name "Color.r" (is-decl (econst "Color" lnil) (ctor "Color" liz)).
 
-Color_r/decl : declared "Color.r" (econst "Color" lnil) ctor
-   = declared/ok Color_r/name (dkind-ok/ctor Color_r/type-wf Color_r/positivity Color/decl Color_r/eisl Color_r/fuo).
+Color_r/decl : declared "Color.r" (econst "Color" lnil) (ctor "Color" liz)
+   = declared/ok-ctor Color_r/name Color/name Color_r/cmem Color_r/eisl Color_r/fuo (dkind-ok/ctor Color_r/type-wf Color_r/positivity).
 
 %% ctor Color.b (of Color)
 %%% HOLE
@@ -51,13 +68,16 @@ Color_b/positivity : ctor-positive "Color" lnil (econst "Color" lnil).
 Color_b/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
+Color_b/cmem : cmem "Color.b" (ccons "Color.r" (ccons "Color.b" cnil))
+   = (cmem/there cmem/here).
+
 %%% HOLE: Color_b/fuo — prover for field-universes-ok-skip-params not yet implemented
 Color_b/fuo : field-universes-ok-skip-params liz (econst "Color" lnil) (lsucc lzero).
 
-Color_b/name : name "Color.b" (is-decl (econst "Color" lnil) ctor).
+Color_b/name : name "Color.b" (is-decl (econst "Color" lnil) (ctor "Color" (lis liz))).
 
-Color_b/decl : declared "Color.b" (econst "Color" lnil) ctor
-   = declared/ok Color_b/name (dkind-ok/ctor Color_b/type-wf Color_b/positivity Color/decl Color_b/eisl Color_b/fuo).
+Color_b/decl : declared "Color.b" (econst "Color" lnil) (ctor "Color" (lis liz))
+   = declared/ok-ctor Color_b/name Color/name Color_b/cmem Color_b/eisl Color_b/fuo (dkind-ok/ctor Color_b/type-wf Color_b/positivity).
 
 %% recursor Color.rec
 %%% HOLE
@@ -72,7 +92,7 @@ Color_rec/type-wf : of
 Color_rec/decl : declared "Color.rec"
   (eforall (eforall (econst "Color" lnil) ([x] (esort (lvar liz))))
     ([x] (eforall (eapp x (econst "Color.r" lnil)) ([y] (eforall (eapp x (econst "Color.b" lnil)) ([z] (eforall (econst "Color" lnil) ([w] (eapp x w)))))))))
-  irec
+  (irec "Color")
    = declared/ok-irec Color/rec-name (dkind-ok/irec Color_rec/type-wf).
 
 %% inductive N
@@ -87,10 +107,18 @@ N/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
 N/rec-name : name "N.rec" (is-rec-for "N").
 
-N/name : name "N" (is-decl (esort (lsucc lzero)) indt).
+N/clf : count-leading-foralls (esort (lsucc lzero)) liz
+   = (count-leading-foralls/zero not-forall/sort).
 
-N/decl : declared "N" (esort (lsucc lzero)) indt
-   = declared/ok N/name (dkind-ok/indt N/type-wf N/ends-in-sort).
+N/cnd : cnames-distinct (ccons "N.zero" (ccons "N.succ" cnil))
+   = (cnames-distinct/cons
+       (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil)
+       (all-string-neq/cons sneq/1 all-string-neq/nil)).
+
+N/name : name "N" (is-decl (esort (lsucc lzero)) (indt (ccons "N.zero" (ccons "N.succ" cnil)) liz)).
+
+N/decl : declared "N" (esort (lsucc lzero)) (indt (ccons "N.zero" (ccons "N.succ" cnil)) liz)
+   = declared/ok-indt N/name N/rec-name N/clf N/cnd (dkind-ok/indt N/type-wf N/ends-in-sort).
 
 %% ctor N.zero (of N)
 %%% HOLE
@@ -105,13 +133,16 @@ N_zero/positivity : ctor-positive "N" lnil (econst "N" lnil).
 N_zero/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
+N_zero/cmem : cmem "N.zero" (ccons "N.zero" (ccons "N.succ" cnil))
+   = cmem/here.
+
 %%% HOLE: N_zero/fuo — prover for field-universes-ok-skip-params not yet implemented
 N_zero/fuo : field-universes-ok-skip-params liz (econst "N" lnil) (lsucc lzero).
 
-N_zero/name : name "N.zero" (is-decl (econst "N" lnil) ctor).
+N_zero/name : name "N.zero" (is-decl (econst "N" lnil) (ctor "N" liz)).
 
-N_zero/decl : declared "N.zero" (econst "N" lnil) ctor
-   = declared/ok N_zero/name (dkind-ok/ctor N_zero/type-wf N_zero/positivity N/decl N_zero/eisl N_zero/fuo).
+N_zero/decl : declared "N.zero" (econst "N" lnil) (ctor "N" liz)
+   = declared/ok-ctor N_zero/name N/name N_zero/cmem N_zero/eisl N_zero/fuo (dkind-ok/ctor N_zero/type-wf N_zero/positivity).
 
 %% ctor N.succ (of N)
 %%% HOLE
@@ -126,13 +157,16 @@ N_succ/positivity : ctor-positive "N" lnil (eforall (econst "N" lnil) ([x] (econ
 N_succ/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
+N_succ/cmem : cmem "N.succ" (ccons "N.zero" (ccons "N.succ" cnil))
+   = (cmem/there cmem/here).
+
 %%% HOLE: N_succ/fuo — prover for field-universes-ok-skip-params not yet implemented
 N_succ/fuo : field-universes-ok-skip-params liz (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (lsucc lzero).
 
-N_succ/name : name "N.succ" (is-decl (eforall (econst "N" lnil) ([x] (econst "N" lnil))) ctor).
+N_succ/name : name "N.succ" (is-decl (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (ctor "N" (lis liz))).
 
-N_succ/decl : declared "N.succ" (eforall (econst "N" lnil) ([x] (econst "N" lnil))) ctor
-   = declared/ok N_succ/name (dkind-ok/ctor N_succ/type-wf N_succ/positivity N/decl N_succ/eisl N_succ/fuo).
+N_succ/decl : declared "N.succ" (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (ctor "N" (lis liz))
+   = declared/ok-ctor N_succ/name N/name N_succ/cmem N_succ/eisl N_succ/fuo (dkind-ok/ctor N_succ/type-wf N_succ/positivity).
 
 %% recursor N.rec
 %%% HOLE
@@ -151,7 +185,7 @@ N_rec/decl : declared "N.rec"
     ([x]
       (eforall (eapp x (econst "N.zero" lnil))
         ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w)))))))))
-  irec
+  (irec "N")
    = declared/ok-irec N/rec-name (dkind-ok/irec N_rec/type-wf).
 
 %% inductive RBTree
@@ -166,10 +200,31 @@ RBTree/ends-in-sort : ends-in-sort (eforall (esort (lsucc (lvar liz))) ([x] (efo
 
 RBTree/rec-name : name "RBTree.rec" (is-rec-for "RBTree").
 
-RBTree/name : name "RBTree" (is-decl (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "Color" lnil) ([y] (eforall (econst "N" lnil) ([z] (esort (lsucc (lvar liz))))))))) indt).
+RBTree/clf : count-leading-foralls (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "Color" lnil) ([y] (eforall (econst "N" lnil) ([z] (esort (lsucc (lvar liz))))))))) (lis (lis (lis liz)))
+   = (count-leading-foralls/succ
+       ([x]
+         (count-leading-foralls/succ
+           ([y]
+             (count-leading-foralls/succ
+               ([z] (count-leading-foralls/zero not-forall/sort))))))).
 
-RBTree/decl : declared "RBTree" (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "Color" lnil) ([y] (eforall (econst "N" lnil) ([z] (esort (lsucc (lvar liz))))))))) indt
-   = declared/ok RBTree/name (dkind-ok/indt RBTree/type-wf RBTree/ends-in-sort).
+RBTree/cnd : cnames-distinct (ccons "RBTree.leaf" (ccons "RBTree.red" (ccons "RBTree.black" cnil)))
+   = (cnames-distinct/cons
+       (cnames-distinct/cons
+         (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil)
+         (all-string-neq/cons sneq/2 all-string-neq/nil))
+       (all-string-neq/cons
+         sneq/4
+         (all-string-neq/cons sneq/3 all-string-neq/nil))).
+
+RBTree/name : name "RBTree" (is-decl
+  (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "Color" lnil) ([y] (eforall (econst "N" lnil) ([z] (esort (lsucc (lvar liz)))))))))
+  (indt (ccons "RBTree.leaf" (ccons "RBTree.red" (ccons "RBTree.black" cnil))) (lis (lis (lis liz))))).
+
+RBTree/decl : declared "RBTree"
+  (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "Color" lnil) ([y] (eforall (econst "N" lnil) ([z] (esort (lsucc (lvar liz)))))))))
+  (indt (ccons "RBTree.leaf" (ccons "RBTree.red" (ccons "RBTree.black" cnil))) (lis (lis (lis liz))))
+   = declared/ok-indt RBTree/name RBTree/rec-name RBTree/clf RBTree/cnd (dkind-ok/indt RBTree/type-wf RBTree/ends-in-sort).
 
 %% ctor RBTree.leaf (of RBTree)
 %%% HOLE
@@ -189,13 +244,18 @@ RBTree_leaf/eisl : ends-in-sort-with-level (eforall (esort (lsucc (lvar liz))) (
              (ends-in-sort-with-level/forall
                ([z] ends-in-sort-with-level/sort)))))).
 
+RBTree_leaf/cmem : cmem "RBTree.leaf" (ccons "RBTree.leaf" (ccons "RBTree.red" (ccons "RBTree.black" cnil)))
+   = cmem/here.
+
 %%% HOLE: RBTree_leaf/fuo — prover for field-universes-ok-skip-params not yet implemented
-RBTree_leaf/fuo : field-universes-ok-skip-params (lis liz) (eforall (esort (lsucc (lvar liz))) ([x] (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.b" lnil)) (econst "N.zero" lnil)))) (lsucc (lvar liz)).
+RBTree_leaf/fuo : field-universes-ok-skip-params (lis (lis (lis liz))) (eforall (esort (lsucc (lvar liz))) ([x] (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.b" lnil)) (econst "N.zero" lnil)))) (lsucc (lvar liz)).
 
-RBTree_leaf/name : name "RBTree.leaf" (is-decl (eforall (esort (lsucc (lvar liz))) ([x] (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.b" lnil)) (econst "N.zero" lnil)))) ctor).
+RBTree_leaf/name : name "RBTree.leaf" (is-decl
+  (eforall (esort (lsucc (lvar liz))) ([x] (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.b" lnil)) (econst "N.zero" lnil))))
+  (ctor "RBTree" liz)).
 
-RBTree_leaf/decl : declared "RBTree.leaf" (eforall (esort (lsucc (lvar liz))) ([x] (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.b" lnil)) (econst "N.zero" lnil)))) ctor
-   = declared/ok RBTree_leaf/name (dkind-ok/ctor RBTree_leaf/type-wf RBTree_leaf/positivity RBTree/decl RBTree_leaf/eisl RBTree_leaf/fuo).
+RBTree_leaf/decl : declared "RBTree.leaf" (eforall (esort (lsucc (lvar liz))) ([x] (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.b" lnil)) (econst "N.zero" lnil)))) (ctor "RBTree" liz)
+   = declared/ok-ctor RBTree_leaf/name RBTree/name RBTree_leaf/cmem RBTree_leaf/eisl RBTree_leaf/fuo (dkind-ok/ctor RBTree_leaf/type-wf RBTree_leaf/positivity).
 
 %% ctor RBTree.red (of RBTree)
 %%% HOLE
@@ -226,8 +286,11 @@ RBTree_red/eisl : ends-in-sort-with-level (eforall (esort (lsucc (lvar liz))) ([
              (ends-in-sort-with-level/forall
                ([z] ends-in-sort-with-level/sort)))))).
 
+RBTree_red/cmem : cmem "RBTree.red" (ccons "RBTree.leaf" (ccons "RBTree.red" (ccons "RBTree.black" cnil)))
+   = (cmem/there cmem/here).
+
 %%% HOLE: RBTree_red/fuo — prover for field-universes-ok-skip-params not yet implemented
-RBTree_red/fuo : field-universes-ok-skip-params (lis liz) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "N" lnil) ([y] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.b" lnil)) y) ([z] (eforall x ([w] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.b" lnil)) y) ([x1] (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.r" lnil)) y))))))))))) (lsucc (lvar liz)).
+RBTree_red/fuo : field-universes-ok-skip-params (lis (lis (lis liz))) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "N" lnil) ([y] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.b" lnil)) y) ([z] (eforall x ([w] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.b" lnil)) y) ([x1] (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.r" lnil)) y))))))))))) (lsucc (lvar liz)).
 
 RBTree_red/name : name "RBTree.red" (is-decl
   (eforall (esort (lsucc (lvar liz)))
@@ -240,7 +303,7 @@ RBTree_red/name : name "RBTree.red" (is-decl
                 ([w]
                   (eforall (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.b" lnil)) y)
                     ([x1] (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.r" lnil)) y)))))))))))
-  ctor).
+  (ctor "RBTree" (lis liz))).
 
 RBTree_red/decl : declared "RBTree.red"
   (eforall (esort (lsucc (lvar liz)))
@@ -253,8 +316,8 @@ RBTree_red/decl : declared "RBTree.red"
                 ([w]
                   (eforall (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.b" lnil)) y)
                     ([x1] (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.r" lnil)) y)))))))))))
-  ctor
-   = declared/ok RBTree_red/name (dkind-ok/ctor RBTree_red/type-wf RBTree_red/positivity RBTree/decl RBTree_red/eisl RBTree_red/fuo).
+  (ctor "RBTree" (lis liz))
+   = declared/ok-ctor RBTree_red/name RBTree/name RBTree_red/cmem RBTree_red/eisl RBTree_red/fuo (dkind-ok/ctor RBTree_red/type-wf RBTree_red/positivity).
 
 %% ctor RBTree.black (of RBTree)
 %%% HOLE
@@ -289,8 +352,11 @@ RBTree_black/eisl : ends-in-sort-with-level (eforall (esort (lsucc (lvar liz))) 
              (ends-in-sort-with-level/forall
                ([z] ends-in-sort-with-level/sort)))))).
 
+RBTree_black/cmem : cmem "RBTree.black" (ccons "RBTree.leaf" (ccons "RBTree.red" (ccons "RBTree.black" cnil)))
+   = (cmem/there (cmem/there cmem/here)).
+
 %%% HOLE: RBTree_black/fuo — prover for field-universes-ok-skip-params not yet implemented
-RBTree_black/fuo : field-universes-ok-skip-params (lis liz) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "Color" lnil) ([y] (eforall (econst "Color" lnil) ([z] (eforall (econst "N" lnil) ([w] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) y) w) ([x1] (eforall x ([y1] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) z) w) ([z1] (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.b" lnil)) (eapp (econst "N.succ" lnil) w)))))))))))))))) (lsucc (lvar liz)).
+RBTree_black/fuo : field-universes-ok-skip-params (lis (lis (lis liz))) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "Color" lnil) ([y] (eforall (econst "Color" lnil) ([z] (eforall (econst "N" lnil) ([w] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) y) w) ([x1] (eforall x ([y1] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) z) w) ([z1] (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.b" lnil)) (eapp (econst "N.succ" lnil) w)))))))))))))))) (lsucc (lvar liz)).
 
 RBTree_black/name : name "RBTree.black" (is-decl
   (eforall (esort (lsucc (lvar liz)))
@@ -307,7 +373,7 @@ RBTree_black/name : name "RBTree.black" (is-decl
                         ([y1]
                           (eforall (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) z) w)
                             ([z1] (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.b" lnil)) (eapp (econst "N.succ" lnil) w))))))))))))))))
-  ctor).
+  (ctor "RBTree" (lis (lis liz)))).
 
 RBTree_black/decl : declared "RBTree.black"
   (eforall (esort (lsucc (lvar liz)))
@@ -324,8 +390,8 @@ RBTree_black/decl : declared "RBTree.black"
                         ([y1]
                           (eforall (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) z) w)
                             ([z1] (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.b" lnil)) (eapp (econst "N.succ" lnil) w))))))))))))))))
-  ctor
-   = declared/ok RBTree_black/name (dkind-ok/ctor RBTree_black/type-wf RBTree_black/positivity RBTree/decl RBTree_black/eisl RBTree_black/fuo).
+  (ctor "RBTree" (lis (lis liz)))
+   = declared/ok-ctor RBTree_black/name RBTree/name RBTree_black/cmem RBTree_black/eisl RBTree_black/fuo (dkind-ok/ctor RBTree_black/type-wf RBTree_black/positivity).
 
 %% recursor RBTree.rec
 %%% HOLE
@@ -420,7 +486,7 @@ RBTree_rec/decl : declared "RBTree.rec"
                       (eforall (econst "Color" lnil)
                         ([y1]
                           (eforall (econst "N" lnil) ([z1] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons (lvar (lis liz)) lnil)) x) y1) z1) ([w1] (eapp (eapp (eapp y y1) z1) w1)))))))))))))))))
-  irec
+  (irec "RBTree")
    = declared/ok-irec RBTree/rec-name (dkind-ok/irec RBTree_rec/type-wf).
 
 %% def rbTreeRef

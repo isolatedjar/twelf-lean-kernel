@@ -1,6 +1,8 @@
 %%% Expected outcome: accept
 %%% Asserting the type of the generated recursor.
-sneq/0 : string-neq "Bool" "RTree".
+sneq/0 : string-neq "Bool.false" "Bool.true".
+sneq/1 : string-neq "RTree.leaf" "RTree.node".
+sneq/2 : string-neq "Bool" "RTree".
 
 %% inductive Bool
 Bool/type-wf-sort : lvl
@@ -14,10 +16,18 @@ Bool/ends-in-sort : ends-in-sort (esort (lsucc lzero))
 
 Bool/rec-name : name "Bool.rec" (is-rec-for "Bool").
 
-Bool/name : name "Bool" (is-decl (esort (lsucc lzero)) indt).
+Bool/clf : count-leading-foralls (esort (lsucc lzero)) liz
+   = (count-leading-foralls/zero not-forall/sort).
 
-Bool/decl : declared "Bool" (esort (lsucc lzero)) indt
-   = declared/ok Bool/name (dkind-ok/indt Bool/type-wf Bool/ends-in-sort).
+Bool/cnd : cnames-distinct (ccons "Bool.false" (ccons "Bool.true" cnil))
+   = (cnames-distinct/cons
+       (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil)
+       (all-string-neq/cons sneq/0 all-string-neq/nil)).
+
+Bool/name : name "Bool" (is-decl (esort (lsucc lzero)) (indt (ccons "Bool.false" (ccons "Bool.true" cnil)) liz)).
+
+Bool/decl : declared "Bool" (esort (lsucc lzero)) (indt (ccons "Bool.false" (ccons "Bool.true" cnil)) liz)
+   = declared/ok-indt Bool/name Bool/rec-name Bool/clf Bool/cnd (dkind-ok/indt Bool/type-wf Bool/ends-in-sort).
 
 %% ctor Bool.false (of Bool)
 Bool_false/type-wf-sort : lvl
@@ -32,13 +42,16 @@ Bool_false/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil)
 Bool_false/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
+Bool_false/cmem : cmem "Bool.false" (ccons "Bool.false" (ccons "Bool.true" cnil))
+   = cmem/here.
+
 %%% HOLE: Bool_false/fuo — prover for field-universes-ok-skip-params not yet implemented
 Bool_false/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
 
-Bool_false/name : name "Bool.false" (is-decl (econst "Bool" lnil) ctor).
+Bool_false/name : name "Bool.false" (is-decl (econst "Bool" lnil) (ctor "Bool" liz)).
 
-Bool_false/decl : declared "Bool.false" (econst "Bool" lnil) ctor
-   = declared/ok Bool_false/name (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity Bool/decl Bool_false/eisl Bool_false/fuo).
+Bool_false/decl : declared "Bool.false" (econst "Bool" lnil) (ctor "Bool" liz)
+   = declared/ok-ctor Bool_false/name Bool/name Bool_false/cmem Bool_false/eisl Bool_false/fuo (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity).
 
 %% ctor Bool.true (of Bool)
 Bool_true/type-wf-sort : lvl
@@ -53,13 +66,16 @@ Bool_true/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil)
 Bool_true/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
+Bool_true/cmem : cmem "Bool.true" (ccons "Bool.false" (ccons "Bool.true" cnil))
+   = (cmem/there cmem/here).
+
 %%% HOLE: Bool_true/fuo — prover for field-universes-ok-skip-params not yet implemented
 Bool_true/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
 
-Bool_true/name : name "Bool.true" (is-decl (econst "Bool" lnil) ctor).
+Bool_true/name : name "Bool.true" (is-decl (econst "Bool" lnil) (ctor "Bool" (lis liz))).
 
-Bool_true/decl : declared "Bool.true" (econst "Bool" lnil) ctor
-   = declared/ok Bool_true/name (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity Bool/decl Bool_true/eisl Bool_true/fuo).
+Bool_true/decl : declared "Bool.true" (econst "Bool" lnil) (ctor "Bool" (lis liz))
+   = declared/ok-ctor Bool_true/name Bool/name Bool_true/cmem Bool_true/eisl Bool_true/fuo (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity).
 
 %% recursor Bool.rec
 Bool_rec/type-wf-sort : lvl
@@ -100,7 +116,7 @@ Bool_rec/type-wf : of
 Bool_rec/decl : declared "Bool.rec"
   (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz))))
     ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w)))))))))
-  irec
+  (irec "Bool")
    = declared/ok-irec Bool/rec-name (dkind-ok/irec Bool_rec/type-wf).
 
 %% inductive RTree
@@ -115,10 +131,18 @@ RTree/ends-in-sort : ends-in-sort (esort (lsucc lzero))
 
 RTree/rec-name : name "RTree.rec" (is-rec-for "RTree").
 
-RTree/name : name "RTree" (is-decl (esort (lsucc lzero)) indt).
+RTree/clf : count-leading-foralls (esort (lsucc lzero)) liz
+   = (count-leading-foralls/zero not-forall/sort).
 
-RTree/decl : declared "RTree" (esort (lsucc lzero)) indt
-   = declared/ok RTree/name (dkind-ok/indt RTree/type-wf RTree/ends-in-sort).
+RTree/cnd : cnames-distinct (ccons "RTree.leaf" (ccons "RTree.node" cnil))
+   = (cnames-distinct/cons
+       (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil)
+       (all-string-neq/cons sneq/1 all-string-neq/nil)).
+
+RTree/name : name "RTree" (is-decl (esort (lsucc lzero)) (indt (ccons "RTree.leaf" (ccons "RTree.node" cnil)) liz)).
+
+RTree/decl : declared "RTree" (esort (lsucc lzero)) (indt (ccons "RTree.leaf" (ccons "RTree.node" cnil)) liz)
+   = declared/ok-indt RTree/name RTree/rec-name RTree/clf RTree/cnd (dkind-ok/indt RTree/type-wf RTree/ends-in-sort).
 
 %% ctor RTree.leaf (of RTree)
 RTree_leaf/type-wf-sort : lvl
@@ -133,13 +157,16 @@ RTree_leaf/positivity : ctor-positive "RTree" lnil (econst "RTree" lnil)
 RTree_leaf/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
+RTree_leaf/cmem : cmem "RTree.leaf" (ccons "RTree.leaf" (ccons "RTree.node" cnil))
+   = cmem/here.
+
 %%% HOLE: RTree_leaf/fuo — prover for field-universes-ok-skip-params not yet implemented
 RTree_leaf/fuo : field-universes-ok-skip-params liz (econst "RTree" lnil) (lsucc lzero).
 
-RTree_leaf/name : name "RTree.leaf" (is-decl (econst "RTree" lnil) ctor).
+RTree_leaf/name : name "RTree.leaf" (is-decl (econst "RTree" lnil) (ctor "RTree" liz)).
 
-RTree_leaf/decl : declared "RTree.leaf" (econst "RTree" lnil) ctor
-   = declared/ok RTree_leaf/name (dkind-ok/ctor RTree_leaf/type-wf RTree_leaf/positivity RTree/decl RTree_leaf/eisl RTree_leaf/fuo).
+RTree_leaf/decl : declared "RTree.leaf" (econst "RTree" lnil) (ctor "RTree" liz)
+   = declared/ok-ctor RTree_leaf/name RTree/name RTree_leaf/cmem RTree_leaf/eisl RTree_leaf/fuo (dkind-ok/ctor RTree_leaf/type-wf RTree_leaf/positivity).
 
 %% ctor RTree.node (of RTree)
 RTree_node/type-wf-sort : lvl
@@ -164,20 +191,23 @@ RTree_node/positivity : ctor-positive "RTree" lnil (eforall (eforall (econst "Bo
    = (ctor-positive/intro ([S] (eforall (eforall (econst "Bool" lnil) ([x] S)) ([x] S))) (ctor-spine/arg
        (strict-pos/forall
          (econst "Bool" lnil)
-         (no-self-ref/const sneq/0)
+         (no-self-ref/const sneq/2)
          ([x] ([y] (strict-pos/head applies-self/refl))))
        ([x] ([y] (ctor-spine/result applies-self/refl))))).
 
 RTree_node/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
+RTree_node/cmem : cmem "RTree.node" (ccons "RTree.leaf" (ccons "RTree.node" cnil))
+   = (cmem/there cmem/here).
+
 %%% HOLE: RTree_node/fuo — prover for field-universes-ok-skip-params not yet implemented
 RTree_node/fuo : field-universes-ok-skip-params liz (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil))) (lsucc lzero).
 
-RTree_node/name : name "RTree.node" (is-decl (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil))) ctor).
+RTree_node/name : name "RTree.node" (is-decl (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil))) (ctor "RTree" (lis liz))).
 
-RTree_node/decl : declared "RTree.node" (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil))) ctor
-   = declared/ok RTree_node/name (dkind-ok/ctor RTree_node/type-wf RTree_node/positivity RTree/decl RTree_node/eisl RTree_node/fuo).
+RTree_node/decl : declared "RTree.node" (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil))) (ctor "RTree" (lis liz))
+   = declared/ok-ctor RTree_node/name RTree/name RTree_node/cmem RTree_node/eisl RTree_node/fuo (dkind-ok/ctor RTree_node/type-wf RTree_node/positivity).
 
 %% recursor RTree.rec
 RTree_rec/type-wf-sort : lvl
@@ -264,7 +294,7 @@ RTree_rec/decl : declared "RTree.rec"
           (eforall (eforall (eforall (econst "Bool" lnil) ([z] (econst "RTree" lnil)))
             ([z] (eforall (eforall (econst "Bool" lnil) ([w] (eapp x (eapp z w)))) ([w] (eapp x (eapp (econst "RTree.node" lnil) z))))))
             ([z] (eforall (econst "RTree" lnil) ([w] (eapp x w)))))))))
-  irec
+  (irec "RTree")
    = declared/ok-irec RTree/rec-name (dkind-ok/irec RTree_rec/type-wf).
 
 %% def rTreeRec

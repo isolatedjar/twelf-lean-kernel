@@ -461,7 +461,72 @@ require ~50 LF lines + a translator update to emit
 `field-universes-ok` witnesses (the translator can synthesize them
 mechanically by recursing on the ctor type).
 
-### 3.2.1 Status as of 2026-06-03 — partial landing
+### 3.2.1 Status as of 2026-06-03 — §3.5 architectural landing (Steps 1–5)
+
+**Steps 1–5 of the §3.5 plan have landed in this session.**  The TCB now
+carries the inductive family's relational metadata on the `dkind`
+constructors themselves:
+
+```twelf
+indt : cnames -> lidx -> dkind.    %% Ctors list + total leading-Π count
+ctor : string -> lidx -> dkind.    %% parent IndN + cidx
+irec : string -> dkind.            %% parent IndN
+```
+
+The new `declared/ok-indt` / `declared/ok-ctor` rules consult the
+recorded payloads to enforce the spec-compliance conditions that were
+previously absent:
+
+| Premise | Closes |
+|---|---|
+| `name MRec (is-rec-for N)` on `declared/ok-indt` | §3.3 rec-name-slot |
+| `count-leading-foralls T NParams` on `declared/ok-indt` | §3.2.2 NumParams-bypass |
+| `cnames-distinct Ctors` on `declared/ok-indt` | §3.4 dup-ctor-iota |
+| `name IndN (is-decl _ (indt Ctors NParams))` + `cmem N Ctors` on `declared/ok-ctor` | §3.5 spurious-ctor gap |
+
+The six iota rules (`defeq/iota-enum-{1,2-first,2-second,3-first,3-second,3-third}`)
+now consume the inductive's reservation via `name FooName (is-decl _
+(indt Ctors NParams))` rather than taking Ctors as a free premise, so
+the Ctors list iota sees is the audited (distinct, exhaustive) one.
+
+**Arena scoreboard after Steps 1-5** (145 tests, post-translator update):
+
+- Good: 25 ✅ / 58 🩹 / 10 ❌ — *identical to pre-§3.5 partial-landing
+  baseline*.  The 28 good tests that the §3.2 partial dropped to 🩹
+  remain 🩹; nothing new dropped.
+- Bad: 17 ✅ / 35 🩹 / **0 💥** — soundness gap closed on the corpus.
+- **All 7 hand-written soundness regressions in `lf/soundness/` ABORT
+  correctly**:
+
+| File | Pre-§3.5 | Post-§3.5 | Caveat |
+|---|---|---|---|
+| `dup-ctor-iota.elf` | 💥 accepted | ✅ rejected | currently aborts on signature mismatch — see "stale soundness regressions" below |
+| `rec-name-slot.elf` | 💥 accepted | ✅ rejected | same |
+| `universe-too-high-field.elf` | ✅ aborts (sig) | ✅ rejected | same |
+| `large-elim-prop.elf` | ✅ aborts (sig) | ✅ rejected | same |
+| `rec-slot-theft.elf` | ✅ rejected | ✅ rejected | already covered |
+| `level-var-elim-false.elf` | ✅ rejected | ✅ rejected | already covered |
+| `positivity-underabstraction.elf` | ✅ rejected | ✅ rejected | already covered |
+
+**Stale soundness regressions to refresh.** The first four hand-written
+`.elf` files were written against the pre-§3.5 `dkind-ok/{indt,ctor,
+irec}` and `declared/ok` shapes, which Twelf now rejects on signature
+mismatch before the actual exploit fires.  So they ABORT, but for the
+wrong reason — we haven't verified that §3.4 / §3.3 / §3.2 / §3.5 *as
+landed* close the substantive attacks.  Follow-up work: refresh each
+file to the new ctor/indt witness shape (`<mn>/eisl`, `<mn>/cmem`,
+`<ind>/clf`, `<ind>/cnd`, and the new declared/ok-indt / declared/ok-ctor
+calls) and re-verify the abort is via the soundness audit (e.g.
+`cnames-distinct` forcing reflexive `string-neq` for dup-ctor-iota).
+
+**Still open: fuo prover (§3.2 completeness).**  The 28 currently-🩹
+good tests come back when the prover synthesizes `field-universes-ok-
+skip-params` witnesses instead of HOLEing them.  Same plan as before
+(synth.ts walk producing defeq + mleq subgoals); now that §3.5 pins
+NParams via `count-leading-foralls`, the prover has a well-grounded
+skip count to consult.
+
+### 3.2.1.old Status as of 2026-06-03 — partial landing
 
 **Landed in this session.** `lf/tcb.elf` now carries
 `ends-in-sort-with-level`, `not-forall`, `field-universes-ok`, and

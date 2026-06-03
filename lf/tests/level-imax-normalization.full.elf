@@ -12,6 +12,8 @@
 %%% `myProp` equates `Bool.true` and `Bool.false`, and `Bool.rec` maps this into `False`.
 %solve nonneg_0 : 0 >= 0.
 
+sneq/0 : string-neq "Bool.false" "Bool.true".
+
 %% inductive False
 False/type-wf-sort : lvl
    = (lsucc lzero).
@@ -24,10 +26,16 @@ False/ends-in-sort : ends-in-sort (esort lzero)
 
 False/rec-name : name "False.rec" (is-rec-for "False").
 
-False/name : name "False" (is-decl (esort lzero) indt).
+False/clf : count-leading-foralls (esort lzero) liz
+   = (count-leading-foralls/zero not-forall/sort).
 
-False/decl : declared "False" (esort lzero) indt
-   = declared/ok False/name (dkind-ok/indt False/type-wf False/ends-in-sort).
+False/cnd : cnames-distinct cnil
+   = cnames-distinct/nil.
+
+False/name : name "False" (is-decl (esort lzero) (indt cnil liz)).
+
+False/decl : declared "False" (esort lzero) (indt cnil liz)
+   = declared/ok-indt False/name False/rec-name False/clf False/cnd (dkind-ok/indt False/type-wf False/ends-in-sort).
 
 %% recursor False.rec
 False_rec/type-wf-sort : lvl
@@ -44,7 +52,7 @@ False_rec/type-wf : of (eforall (eforall (econst "False" lnil) ([x] (esort (lvar
              (defeq/const False/decl (inst-expr/sort lvl-inst/zero))
              ([y] ([h1] (defeq/app h h1))))))).
 
-False_rec/decl : declared "False.rec" (eforall (eforall (econst "False" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "False" lnil) ([y] (eapp x y))))) irec
+False_rec/decl : declared "False.rec" (eforall (eforall (econst "False" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "False" lnil) ([y] (eapp x y))))) (irec "False")
    = declared/ok-irec False/rec-name (dkind-ok/irec False_rec/type-wf).
 
 %% inductive True
@@ -59,10 +67,16 @@ True/ends-in-sort : ends-in-sort (esort lzero)
 
 True/rec-name : name "True.rec" (is-rec-for "True").
 
-True/name : name "True" (is-decl (esort lzero) indt).
+True/clf : count-leading-foralls (esort lzero) liz
+   = (count-leading-foralls/zero not-forall/sort).
 
-True/decl : declared "True" (esort lzero) indt
-   = declared/ok True/name (dkind-ok/indt True/type-wf True/ends-in-sort).
+True/cnd : cnames-distinct (ccons "True.intro" cnil)
+   = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
+
+True/name : name "True" (is-decl (esort lzero) (indt (ccons "True.intro" cnil) liz)).
+
+True/decl : declared "True" (esort lzero) (indt (ccons "True.intro" cnil) liz)
+   = declared/ok-indt True/name True/rec-name True/clf True/cnd (dkind-ok/indt True/type-wf True/ends-in-sort).
 
 %% ctor True.intro (of True)
 True_intro/type-wf-sort : lvl
@@ -77,13 +91,16 @@ True_intro/positivity : ctor-positive "True" lnil (econst "True" lnil)
 True_intro/eisl : ends-in-sort-with-level (esort lzero) lzero
    = ends-in-sort-with-level/sort.
 
+True_intro/cmem : cmem "True.intro" (ccons "True.intro" cnil)
+   = cmem/here.
+
 %%% HOLE: True_intro/fuo — prover for field-universes-ok-skip-params not yet implemented
 True_intro/fuo : field-universes-ok-skip-params liz (econst "True" lnil) lzero.
 
-True_intro/name : name "True.intro" (is-decl (econst "True" lnil) ctor).
+True_intro/name : name "True.intro" (is-decl (econst "True" lnil) (ctor "True" liz)).
 
-True_intro/decl : declared "True.intro" (econst "True" lnil) ctor
-   = declared/ok True_intro/name (dkind-ok/ctor True_intro/type-wf True_intro/positivity True/decl True_intro/eisl True_intro/fuo).
+True_intro/decl : declared "True.intro" (econst "True" lnil) (ctor "True" liz)
+   = declared/ok-ctor True_intro/name True/name True_intro/cmem True_intro/eisl True_intro/fuo (dkind-ok/ctor True_intro/type-wf True_intro/positivity).
 
 %% recursor True.rec
 True_rec/type-wf-sort : lvl
@@ -110,7 +127,9 @@ True_rec/type-wf : of
                    (defeq/const True/decl (inst-expr/sort lvl-inst/zero))
                    ([z] ([h2] (defeq/app h h2)))))))))).
 
-True_rec/decl : declared "True.rec" (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) irec
+True_rec/decl : declared "True.rec"
+  (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z)))))))
+  (irec "True")
    = declared/ok-irec True/rec-name (dkind-ok/irec True_rec/type-wf).
 
 %% inductive Bool
@@ -125,10 +144,18 @@ Bool/ends-in-sort : ends-in-sort (esort (lsucc lzero))
 
 Bool/rec-name : name "Bool.rec" (is-rec-for "Bool").
 
-Bool/name : name "Bool" (is-decl (esort (lsucc lzero)) indt).
+Bool/clf : count-leading-foralls (esort (lsucc lzero)) liz
+   = (count-leading-foralls/zero not-forall/sort).
 
-Bool/decl : declared "Bool" (esort (lsucc lzero)) indt
-   = declared/ok Bool/name (dkind-ok/indt Bool/type-wf Bool/ends-in-sort).
+Bool/cnd : cnames-distinct (ccons "Bool.false" (ccons "Bool.true" cnil))
+   = (cnames-distinct/cons
+       (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil)
+       (all-string-neq/cons sneq/0 all-string-neq/nil)).
+
+Bool/name : name "Bool" (is-decl (esort (lsucc lzero)) (indt (ccons "Bool.false" (ccons "Bool.true" cnil)) liz)).
+
+Bool/decl : declared "Bool" (esort (lsucc lzero)) (indt (ccons "Bool.false" (ccons "Bool.true" cnil)) liz)
+   = declared/ok-indt Bool/name Bool/rec-name Bool/clf Bool/cnd (dkind-ok/indt Bool/type-wf Bool/ends-in-sort).
 
 %% ctor Bool.false (of Bool)
 Bool_false/type-wf-sort : lvl
@@ -143,13 +170,16 @@ Bool_false/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil)
 Bool_false/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
+Bool_false/cmem : cmem "Bool.false" (ccons "Bool.false" (ccons "Bool.true" cnil))
+   = cmem/here.
+
 %%% HOLE: Bool_false/fuo — prover for field-universes-ok-skip-params not yet implemented
 Bool_false/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
 
-Bool_false/name : name "Bool.false" (is-decl (econst "Bool" lnil) ctor).
+Bool_false/name : name "Bool.false" (is-decl (econst "Bool" lnil) (ctor "Bool" liz)).
 
-Bool_false/decl : declared "Bool.false" (econst "Bool" lnil) ctor
-   = declared/ok Bool_false/name (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity Bool/decl Bool_false/eisl Bool_false/fuo).
+Bool_false/decl : declared "Bool.false" (econst "Bool" lnil) (ctor "Bool" liz)
+   = declared/ok-ctor Bool_false/name Bool/name Bool_false/cmem Bool_false/eisl Bool_false/fuo (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity).
 
 %% ctor Bool.true (of Bool)
 Bool_true/type-wf-sort : lvl
@@ -164,13 +194,16 @@ Bool_true/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil)
 Bool_true/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
+Bool_true/cmem : cmem "Bool.true" (ccons "Bool.false" (ccons "Bool.true" cnil))
+   = (cmem/there cmem/here).
+
 %%% HOLE: Bool_true/fuo — prover for field-universes-ok-skip-params not yet implemented
 Bool_true/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
 
-Bool_true/name : name "Bool.true" (is-decl (econst "Bool" lnil) ctor).
+Bool_true/name : name "Bool.true" (is-decl (econst "Bool" lnil) (ctor "Bool" (lis liz))).
 
-Bool_true/decl : declared "Bool.true" (econst "Bool" lnil) ctor
-   = declared/ok Bool_true/name (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity Bool/decl Bool_true/eisl Bool_true/fuo).
+Bool_true/decl : declared "Bool.true" (econst "Bool" lnil) (ctor "Bool" (lis liz))
+   = declared/ok-ctor Bool_true/name Bool/name Bool_true/cmem Bool_true/eisl Bool_true/fuo (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity).
 
 %% recursor Bool.rec
 Bool_rec/type-wf-sort : lvl
@@ -211,7 +244,7 @@ Bool_rec/type-wf : of
 Bool_rec/decl : declared "Bool.rec"
   (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz))))
     ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w)))))))))
-  irec
+  (irec "Bool")
    = declared/ok-irec Bool/rec-name (dkind-ok/irec Bool_rec/type-wf).
 
 %% def down

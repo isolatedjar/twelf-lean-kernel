@@ -27,10 +27,16 @@ dup_ind_def/ends-in-sort : ends-in-sort (esort (lsucc lzero))
 
 dup_ind_def/rec-name : name "dup_ind_def.rec" (is-rec-for "dup_ind_def").
 
-dup_ind_def/name : name "dup_ind_def" (is-decl (esort (lsucc lzero)) indt).
+dup_ind_def/clf : count-leading-foralls (esort (lsucc lzero)) liz
+   = (count-leading-foralls/zero not-forall/sort).
 
-dup_ind_def/decl : declared "dup_ind_def" (esort (lsucc lzero)) indt
-   = declared/ok dup_ind_def/name (dkind-ok/indt dup_ind_def/type-wf dup_ind_def/ends-in-sort).
+dup_ind_def/cnd : cnames-distinct (ccons "dup_ind_def.mk" cnil)
+   = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
+
+dup_ind_def/name : name "dup_ind_def" (is-decl (esort (lsucc lzero)) (indt (ccons "dup_ind_def.mk" cnil) liz)).
+
+dup_ind_def/decl : declared "dup_ind_def" (esort (lsucc lzero)) (indt (ccons "dup_ind_def.mk" cnil) liz)
+   = declared/ok-indt dup_ind_def/name dup_ind_def/rec-name dup_ind_def/clf dup_ind_def/cnd (dkind-ok/indt dup_ind_def/type-wf dup_ind_def/ends-in-sort).
 
 %% ctor dup_ind_def.mk (of dup_ind_def)
 dup_ind_def_mk/type-wf-sort : lvl
@@ -47,13 +53,16 @@ dup_ind_def_mk/positivity : ctor-positive "dup_ind_def" lnil (econst "dup_ind_de
 dup_ind_def_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
+dup_ind_def_mk/cmem : cmem "dup_ind_def.mk" (ccons "dup_ind_def.mk" cnil)
+   = cmem/here.
+
 %%% HOLE: dup_ind_def_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
 dup_ind_def_mk/fuo : field-universes-ok-skip-params liz (econst "dup_ind_def" lnil) (lsucc lzero).
 
-dup_ind_def_mk/name : name "dup_ind_def.mk" (is-decl (econst "dup_ind_def" lnil) ctor).
+dup_ind_def_mk/name : name "dup_ind_def.mk" (is-decl (econst "dup_ind_def" lnil) (ctor "dup_ind_def" liz)).
 
-dup_ind_def_mk/decl : declared "dup_ind_def.mk" (econst "dup_ind_def" lnil) ctor
-   = declared/ok dup_ind_def_mk/name (dkind-ok/ctor dup_ind_def_mk/type-wf dup_ind_def_mk/positivity dup_ind_def/decl dup_ind_def_mk/eisl dup_ind_def_mk/fuo).
+dup_ind_def_mk/decl : declared "dup_ind_def.mk" (econst "dup_ind_def" lnil) (ctor "dup_ind_def" liz)
+   = declared/ok-ctor dup_ind_def_mk/name dup_ind_def/name dup_ind_def_mk/cmem dup_ind_def_mk/eisl dup_ind_def_mk/fuo (dkind-ok/ctor dup_ind_def_mk/type-wf dup_ind_def_mk/positivity).
 
 %% recursor dup_ind_def.rec
 dup_ind_def_rec/type-wf-sort : lvl
@@ -88,5 +97,5 @@ dup_ind_def_rec/type-wf : of
 
 dup_ind_def_rec/decl : declared "dup_ind_def.rec"
   (eforall (eforall (econst "dup_ind_def" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ind_def.mk" lnil)) ([y] (eforall (econst "dup_ind_def" lnil) ([z] (eapp x z)))))))
-  irec
+  (irec "dup_ind_def")
    = declared/ok-irec dup_ind_def/rec-name (dkind-ok/irec dup_ind_def_rec/type-wf).

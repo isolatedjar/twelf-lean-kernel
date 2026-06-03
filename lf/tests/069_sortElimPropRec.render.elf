@@ -1,6 +1,8 @@
 %%% Render-only view of: 069_sortElimPropRec
 %%% Inductive predicates eliminate into Sort if they have one constructors and it carries data, but the data is
 %%% known from the type, e.g. a parameter or an index
+sneq/0 : string-neq "Bool.false" "Bool.true".
+
 %% inductive Bool
 %%% HOLE
 Bool/type-wf-sort : lvl.
@@ -13,10 +15,18 @@ Bool/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
 Bool/rec-name : name "Bool.rec" (is-rec-for "Bool").
 
-Bool/name : name "Bool" (is-decl (esort (lsucc lzero)) indt).
+Bool/clf : count-leading-foralls (esort (lsucc lzero)) liz
+   = (count-leading-foralls/zero not-forall/sort).
 
-Bool/decl : declared "Bool" (esort (lsucc lzero)) indt
-   = declared/ok Bool/name (dkind-ok/indt Bool/type-wf Bool/ends-in-sort).
+Bool/cnd : cnames-distinct (ccons "Bool.false" (ccons "Bool.true" cnil))
+   = (cnames-distinct/cons
+       (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil)
+       (all-string-neq/cons sneq/0 all-string-neq/nil)).
+
+Bool/name : name "Bool" (is-decl (esort (lsucc lzero)) (indt (ccons "Bool.false" (ccons "Bool.true" cnil)) liz)).
+
+Bool/decl : declared "Bool" (esort (lsucc lzero)) (indt (ccons "Bool.false" (ccons "Bool.true" cnil)) liz)
+   = declared/ok-indt Bool/name Bool/rec-name Bool/clf Bool/cnd (dkind-ok/indt Bool/type-wf Bool/ends-in-sort).
 
 %% ctor Bool.false (of Bool)
 %%% HOLE
@@ -31,13 +41,16 @@ Bool_false/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil).
 Bool_false/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
+Bool_false/cmem : cmem "Bool.false" (ccons "Bool.false" (ccons "Bool.true" cnil))
+   = cmem/here.
+
 %%% HOLE: Bool_false/fuo — prover for field-universes-ok-skip-params not yet implemented
 Bool_false/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
 
-Bool_false/name : name "Bool.false" (is-decl (econst "Bool" lnil) ctor).
+Bool_false/name : name "Bool.false" (is-decl (econst "Bool" lnil) (ctor "Bool" liz)).
 
-Bool_false/decl : declared "Bool.false" (econst "Bool" lnil) ctor
-   = declared/ok Bool_false/name (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity Bool/decl Bool_false/eisl Bool_false/fuo).
+Bool_false/decl : declared "Bool.false" (econst "Bool" lnil) (ctor "Bool" liz)
+   = declared/ok-ctor Bool_false/name Bool/name Bool_false/cmem Bool_false/eisl Bool_false/fuo (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity).
 
 %% ctor Bool.true (of Bool)
 %%% HOLE
@@ -52,13 +65,16 @@ Bool_true/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil).
 Bool_true/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
+Bool_true/cmem : cmem "Bool.true" (ccons "Bool.false" (ccons "Bool.true" cnil))
+   = (cmem/there cmem/here).
+
 %%% HOLE: Bool_true/fuo — prover for field-universes-ok-skip-params not yet implemented
 Bool_true/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
 
-Bool_true/name : name "Bool.true" (is-decl (econst "Bool" lnil) ctor).
+Bool_true/name : name "Bool.true" (is-decl (econst "Bool" lnil) (ctor "Bool" (lis liz))).
 
-Bool_true/decl : declared "Bool.true" (econst "Bool" lnil) ctor
-   = declared/ok Bool_true/name (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity Bool/decl Bool_true/eisl Bool_true/fuo).
+Bool_true/decl : declared "Bool.true" (econst "Bool" lnil) (ctor "Bool" (lis liz))
+   = declared/ok-ctor Bool_true/name Bool/name Bool_true/cmem Bool_true/eisl Bool_true/fuo (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity).
 
 %% recursor Bool.rec
 %%% HOLE
@@ -73,7 +89,7 @@ Bool_rec/type-wf : of
 Bool_rec/decl : declared "Bool.rec"
   (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz))))
     ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w)))))))))
-  irec
+  (irec "Bool")
    = declared/ok-irec Bool/rec-name (dkind-ok/irec Bool_rec/type-wf).
 
 %% inductive SortElimProp
@@ -88,10 +104,25 @@ SortElimProp/ends-in-sort : ends-in-sort (eforall (econst "Bool" lnil) ([x] (efo
 
 SortElimProp/rec-name : name "SortElimProp.rec" (is-rec-for "SortElimProp").
 
-SortElimProp/name : name "SortElimProp" (is-decl (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (esort lzero))))))) indt).
+SortElimProp/clf : count-leading-foralls (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (esort lzero))))))) (lis (lis (lis liz)))
+   = (count-leading-foralls/succ
+       ([x]
+         (count-leading-foralls/succ
+           ([y]
+             (count-leading-foralls/succ
+               ([z] (count-leading-foralls/zero not-forall/sort))))))).
 
-SortElimProp/decl : declared "SortElimProp" (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (esort lzero))))))) indt
-   = declared/ok SortElimProp/name (dkind-ok/indt SortElimProp/type-wf SortElimProp/ends-in-sort).
+SortElimProp/cnd : cnames-distinct (ccons "SortElimProp.mk" cnil)
+   = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
+
+SortElimProp/name : name "SortElimProp" (is-decl
+  (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (esort lzero)))))))
+  (indt (ccons "SortElimProp.mk" cnil) (lis (lis (lis liz))))).
+
+SortElimProp/decl : declared "SortElimProp"
+  (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (esort lzero)))))))
+  (indt (ccons "SortElimProp.mk" cnil) (lis (lis (lis liz))))
+   = declared/ok-indt SortElimProp/name SortElimProp/rec-name SortElimProp/clf SortElimProp/cnd (dkind-ok/indt SortElimProp/type-wf SortElimProp/ends-in-sort).
 
 %% ctor SortElimProp.mk (of SortElimProp)
 %%% HOLE
@@ -113,15 +144,20 @@ SortElimProp_mk/eisl : ends-in-sort-with-level (eforall (econst "Bool" lnil) ([x
              (ends-in-sort-with-level/forall
                ([z] ends-in-sort-with-level/sort)))))).
 
+SortElimProp_mk/cmem : cmem "SortElimProp.mk" (ccons "SortElimProp.mk" cnil)
+   = cmem/here.
+
 %%% HOLE: SortElimProp_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
-SortElimProp_mk/fuo : field-universes-ok-skip-params (lis liz) (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp (eapp (eapp (econst "SortElimProp" lnil) x) z) y))))))) lzero.
+SortElimProp_mk/fuo : field-universes-ok-skip-params (lis (lis (lis liz))) (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp (eapp (eapp (econst "SortElimProp" lnil) x) z) y))))))) lzero.
 
 SortElimProp_mk/name : name "SortElimProp.mk" (is-decl
   (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp (eapp (eapp (econst "SortElimProp" lnil) x) z) y)))))))
-  ctor).
+  (ctor "SortElimProp" liz)).
 
-SortElimProp_mk/decl : declared "SortElimProp.mk" (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp (eapp (eapp (econst "SortElimProp" lnil) x) z) y))))))) ctor
-   = declared/ok SortElimProp_mk/name (dkind-ok/ctor SortElimProp_mk/type-wf SortElimProp_mk/positivity SortElimProp/decl SortElimProp_mk/eisl SortElimProp_mk/fuo).
+SortElimProp_mk/decl : declared "SortElimProp.mk"
+  (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp (eapp (eapp (econst "SortElimProp" lnil) x) z) y)))))))
+  (ctor "SortElimProp" liz)
+   = declared/ok-ctor SortElimProp_mk/name SortElimProp/name SortElimProp_mk/cmem SortElimProp_mk/eisl SortElimProp_mk/fuo (dkind-ok/ctor SortElimProp_mk/type-wf SortElimProp_mk/positivity).
 
 %% recursor SortElimProp.rec
 %%% HOLE
@@ -146,7 +182,7 @@ SortElimProp_rec/decl : declared "SortElimProp.rec"
           (eforall (eforall (econst "Bool" lnil) ([z] (eforall (econst "Bool" lnil) ([w] (eapp (eapp (eapp y w) z) (eapp (eapp (eapp (econst "SortElimProp.mk" lnil) x) z) w))))))
             ([z]
               (eforall (econst "Bool" lnil) ([w] (eforall (econst "Bool" lnil) ([x1] (eforall (eapp (eapp (eapp (econst "SortElimProp" lnil) x) w) x1) ([y1] (eapp (eapp (eapp y w) x1) y1)))))))))))))
-  irec
+  (irec "SortElimProp")
    = declared/ok-irec SortElimProp/rec-name (dkind-ok/irec SortElimProp_rec/type-wf).
 
 %% def sortElimPropRec

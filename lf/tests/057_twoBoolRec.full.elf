@@ -1,6 +1,7 @@
 %%% Expected outcome: accept
 %%% Asserting the type of the generated recursor
-sneq/0 : string-neq "Bool" "TwoBool".
+sneq/0 : string-neq "Bool.false" "Bool.true".
+sneq/1 : string-neq "Bool" "TwoBool".
 
 %% inductive Bool
 Bool/type-wf-sort : lvl
@@ -14,10 +15,18 @@ Bool/ends-in-sort : ends-in-sort (esort (lsucc lzero))
 
 Bool/rec-name : name "Bool.rec" (is-rec-for "Bool").
 
-Bool/name : name "Bool" (is-decl (esort (lsucc lzero)) indt).
+Bool/clf : count-leading-foralls (esort (lsucc lzero)) liz
+   = (count-leading-foralls/zero not-forall/sort).
 
-Bool/decl : declared "Bool" (esort (lsucc lzero)) indt
-   = declared/ok Bool/name (dkind-ok/indt Bool/type-wf Bool/ends-in-sort).
+Bool/cnd : cnames-distinct (ccons "Bool.false" (ccons "Bool.true" cnil))
+   = (cnames-distinct/cons
+       (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil)
+       (all-string-neq/cons sneq/0 all-string-neq/nil)).
+
+Bool/name : name "Bool" (is-decl (esort (lsucc lzero)) (indt (ccons "Bool.false" (ccons "Bool.true" cnil)) liz)).
+
+Bool/decl : declared "Bool" (esort (lsucc lzero)) (indt (ccons "Bool.false" (ccons "Bool.true" cnil)) liz)
+   = declared/ok-indt Bool/name Bool/rec-name Bool/clf Bool/cnd (dkind-ok/indt Bool/type-wf Bool/ends-in-sort).
 
 %% ctor Bool.false (of Bool)
 Bool_false/type-wf-sort : lvl
@@ -32,13 +41,16 @@ Bool_false/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil)
 Bool_false/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
+Bool_false/cmem : cmem "Bool.false" (ccons "Bool.false" (ccons "Bool.true" cnil))
+   = cmem/here.
+
 %%% HOLE: Bool_false/fuo — prover for field-universes-ok-skip-params not yet implemented
 Bool_false/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
 
-Bool_false/name : name "Bool.false" (is-decl (econst "Bool" lnil) ctor).
+Bool_false/name : name "Bool.false" (is-decl (econst "Bool" lnil) (ctor "Bool" liz)).
 
-Bool_false/decl : declared "Bool.false" (econst "Bool" lnil) ctor
-   = declared/ok Bool_false/name (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity Bool/decl Bool_false/eisl Bool_false/fuo).
+Bool_false/decl : declared "Bool.false" (econst "Bool" lnil) (ctor "Bool" liz)
+   = declared/ok-ctor Bool_false/name Bool/name Bool_false/cmem Bool_false/eisl Bool_false/fuo (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity).
 
 %% ctor Bool.true (of Bool)
 Bool_true/type-wf-sort : lvl
@@ -53,13 +65,16 @@ Bool_true/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil)
 Bool_true/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
+Bool_true/cmem : cmem "Bool.true" (ccons "Bool.false" (ccons "Bool.true" cnil))
+   = (cmem/there cmem/here).
+
 %%% HOLE: Bool_true/fuo — prover for field-universes-ok-skip-params not yet implemented
 Bool_true/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
 
-Bool_true/name : name "Bool.true" (is-decl (econst "Bool" lnil) ctor).
+Bool_true/name : name "Bool.true" (is-decl (econst "Bool" lnil) (ctor "Bool" (lis liz))).
 
-Bool_true/decl : declared "Bool.true" (econst "Bool" lnil) ctor
-   = declared/ok Bool_true/name (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity Bool/decl Bool_true/eisl Bool_true/fuo).
+Bool_true/decl : declared "Bool.true" (econst "Bool" lnil) (ctor "Bool" (lis liz))
+   = declared/ok-ctor Bool_true/name Bool/name Bool_true/cmem Bool_true/eisl Bool_true/fuo (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity).
 
 %% recursor Bool.rec
 Bool_rec/type-wf-sort : lvl
@@ -100,7 +115,7 @@ Bool_rec/type-wf : of
 Bool_rec/decl : declared "Bool.rec"
   (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz))))
     ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w)))))))))
-  irec
+  (irec "Bool")
    = declared/ok-irec Bool/rec-name (dkind-ok/irec Bool_rec/type-wf).
 
 %% inductive TwoBool
@@ -115,10 +130,16 @@ TwoBool/ends-in-sort : ends-in-sort (esort (lsucc lzero))
 
 TwoBool/rec-name : name "TwoBool.rec" (is-rec-for "TwoBool").
 
-TwoBool/name : name "TwoBool" (is-decl (esort (lsucc lzero)) indt).
+TwoBool/clf : count-leading-foralls (esort (lsucc lzero)) liz
+   = (count-leading-foralls/zero not-forall/sort).
 
-TwoBool/decl : declared "TwoBool" (esort (lsucc lzero)) indt
-   = declared/ok TwoBool/name (dkind-ok/indt TwoBool/type-wf TwoBool/ends-in-sort).
+TwoBool/cnd : cnames-distinct (ccons "TwoBool.mk" cnil)
+   = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
+
+TwoBool/name : name "TwoBool" (is-decl (esort (lsucc lzero)) (indt (ccons "TwoBool.mk" cnil) liz)).
+
+TwoBool/decl : declared "TwoBool" (esort (lsucc lzero)) (indt (ccons "TwoBool.mk" cnil) liz)
+   = declared/ok-indt TwoBool/name TwoBool/rec-name TwoBool/clf TwoBool/cnd (dkind-ok/indt TwoBool/type-wf TwoBool/ends-in-sort).
 
 %% ctor TwoBool.mk (of TwoBool)
 TwoBool_mk/type-wf-sort : lvl
@@ -141,25 +162,28 @@ TwoBool_mk/type-wf : of (eforall (econst "Bool" lnil) ([x] (eforall (econst "Boo
 
 TwoBool_mk/positivity : ctor-positive "TwoBool" lnil (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (econst "TwoBool" lnil)))))
    = (ctor-positive/intro ([S] (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] S))))) (ctor-spine/arg
-       (strict-pos/no-occur (econst "Bool" lnil) (no-self-ref/const sneq/0))
+       (strict-pos/no-occur (econst "Bool" lnil) (no-self-ref/const sneq/1))
        ([x]
          ([y]
            (ctor-spine/arg
              (strict-pos/no-occur
                (econst "Bool" lnil)
-               (no-self-ref/const sneq/0))
+               (no-self-ref/const sneq/1))
              ([z] ([w] (ctor-spine/result applies-self/refl)))))))).
 
 TwoBool_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
+TwoBool_mk/cmem : cmem "TwoBool.mk" (ccons "TwoBool.mk" cnil)
+   = cmem/here.
+
 %%% HOLE: TwoBool_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
 TwoBool_mk/fuo : field-universes-ok-skip-params liz (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (econst "TwoBool" lnil))))) (lsucc lzero).
 
-TwoBool_mk/name : name "TwoBool.mk" (is-decl (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (econst "TwoBool" lnil))))) ctor).
+TwoBool_mk/name : name "TwoBool.mk" (is-decl (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (econst "TwoBool" lnil))))) (ctor "TwoBool" liz)).
 
-TwoBool_mk/decl : declared "TwoBool.mk" (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (econst "TwoBool" lnil))))) ctor
-   = declared/ok TwoBool_mk/name (dkind-ok/ctor TwoBool_mk/type-wf TwoBool_mk/positivity TwoBool/decl TwoBool_mk/eisl TwoBool_mk/fuo).
+TwoBool_mk/decl : declared "TwoBool.mk" (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (econst "TwoBool" lnil))))) (ctor "TwoBool" liz)
+   = declared/ok-ctor TwoBool_mk/name TwoBool/name TwoBool_mk/cmem TwoBool_mk/eisl TwoBool_mk/fuo (dkind-ok/ctor TwoBool_mk/type-wf TwoBool_mk/positivity).
 
 %% recursor TwoBool.rec
 TwoBool_rec/type-wf-sort : lvl
@@ -227,7 +251,7 @@ TwoBool_rec/decl : declared "TwoBool.rec"
     ([x]
       (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp x (eapp (eapp (econst "TwoBool.mk" lnil) y) z))))))
         ([y] (eforall (econst "TwoBool" lnil) ([z] (eapp x z)))))))
-  irec
+  (irec "TwoBool")
    = declared/ok-irec TwoBool/rec-name (dkind-ok/irec TwoBool_rec/type-wf).
 
 %% def twoBoolRec

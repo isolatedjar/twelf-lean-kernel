@@ -12,10 +12,19 @@ And/ends-in-sort : ends-in-sort (eforall (esort lzero) ([x] (eforall (esort lzer
 
 And/rec-name : name "And.rec" (is-rec-for "And").
 
-And/name : name "And" (is-decl (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) indt).
+And/clf : count-leading-foralls (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (lis (lis liz))
+   = (count-leading-foralls/succ
+       ([x]
+         (count-leading-foralls/succ
+           ([y] (count-leading-foralls/zero not-forall/sort))))).
 
-And/decl : declared "And" (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) indt
-   = declared/ok And/name (dkind-ok/indt And/type-wf And/ends-in-sort).
+And/cnd : cnames-distinct (ccons "And.intro" cnil)
+   = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
+
+And/name : name "And" (is-decl (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (indt (ccons "And.intro" cnil) (lis (lis liz)))).
+
+And/decl : declared "And" (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (indt (ccons "And.intro" cnil) (lis (lis liz)))
+   = declared/ok-indt And/name And/rec-name And/clf And/cnd (dkind-ok/indt And/type-wf And/ends-in-sort).
 
 %% ctor And.intro (of And)
 %%% HOLE
@@ -32,13 +41,16 @@ And_intro/eisl : ends-in-sort-with-level (eforall (esort lzero) ([x] (eforall (e
        ([x]
          (ends-in-sort-with-level/forall ([y] ends-in-sort-with-level/sort)))).
 
+And_intro/cmem : cmem "And.intro" (ccons "And.intro" cnil)
+   = cmem/here.
+
 %%% HOLE: And_intro/fuo — prover for field-universes-ok-skip-params not yet implemented
 And_intro/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) lzero.
 
-And_intro/name : name "And.intro" (is-decl (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) ctor).
+And_intro/name : name "And.intro" (is-decl (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) (ctor "And" liz)).
 
-And_intro/decl : declared "And.intro" (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) ctor
-   = declared/ok And_intro/name (dkind-ok/ctor And_intro/type-wf And_intro/positivity And/decl And_intro/eisl And_intro/fuo).
+And_intro/decl : declared "And.intro" (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) (ctor "And" liz)
+   = declared/ok-ctor And_intro/name And/name And_intro/cmem And_intro/eisl And_intro/fuo (dkind-ok/ctor And_intro/type-wf And_intro/positivity).
 
 %% recursor And.rec
 %%% HOLE
@@ -65,7 +77,7 @@ And_rec/decl : declared "And.rec"
             ([z]
               (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "And.intro" lnil) x) y) w) x1))))))
                 ([w] (eforall (eapp (eapp (econst "And" lnil) x) y) ([x1] (eapp z x1)))))))))))
-  irec
+  (irec "And")
    = declared/ok-irec And/rec-name (dkind-ok/irec And_rec/type-wf).
 
 %% def andType

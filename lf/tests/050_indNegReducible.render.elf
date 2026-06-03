@@ -43,10 +43,16 @@ indNegReducible/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
 indNegReducible/rec-name : name "indNegReducible.rec" (is-rec-for "indNegReducible").
 
-indNegReducible/name : name "indNegReducible" (is-decl (esort (lsucc lzero)) indt).
+indNegReducible/clf : count-leading-foralls (esort (lsucc lzero)) liz
+   = (count-leading-foralls/zero not-forall/sort).
 
-indNegReducible/decl : declared "indNegReducible" (esort (lsucc lzero)) indt
-   = declared/ok indNegReducible/name (dkind-ok/indt indNegReducible/type-wf indNegReducible/ends-in-sort).
+indNegReducible/cnd : cnames-distinct (ccons "indNegReducible.mk" cnil)
+   = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
+
+indNegReducible/name : name "indNegReducible" (is-decl (esort (lsucc lzero)) (indt (ccons "indNegReducible.mk" cnil) liz)).
+
+indNegReducible/decl : declared "indNegReducible" (esort (lsucc lzero)) (indt (ccons "indNegReducible.mk" cnil) liz)
+   = declared/ok-indt indNegReducible/name indNegReducible/rec-name indNegReducible/clf indNegReducible/cnd (dkind-ok/indt indNegReducible/type-wf indNegReducible/ends-in-sort).
 
 %% ctor indNegReducible.mk (of indNegReducible)
 %%% HOLE
@@ -63,17 +69,20 @@ indNegReducible_mk/positivity : ctor-positive "indNegReducible" lnil (eforall (e
 indNegReducible_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
+indNegReducible_mk/cmem : cmem "indNegReducible.mk" (ccons "indNegReducible.mk" cnil)
+   = cmem/here.
+
 %%% HOLE: indNegReducible_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
 indNegReducible_mk/fuo : field-universes-ok-skip-params liz (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil))) (lsucc lzero).
 
 indNegReducible_mk/name : name "indNegReducible.mk" (is-decl
   (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil)))
-  ctor).
+  (ctor "indNegReducible" liz)).
 
 indNegReducible_mk/decl : declared "indNegReducible.mk"
   (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil)))
-  ctor
-   = declared/ok indNegReducible_mk/name (dkind-ok/ctor indNegReducible_mk/type-wf indNegReducible_mk/positivity indNegReducible/decl indNegReducible_mk/eisl indNegReducible_mk/fuo).
+  (ctor "indNegReducible" liz)
+   = declared/ok-ctor indNegReducible_mk/name indNegReducible/name indNegReducible_mk/cmem indNegReducible_mk/eisl indNegReducible_mk/fuo (dkind-ok/ctor indNegReducible_mk/type-wf indNegReducible_mk/positivity).
 
 %% recursor indNegReducible.rec
 %%% HOLE
@@ -82,5 +91,5 @@ indNegReducible_rec/type-wf-sort : lvl.
 %%% HOLE
 indNegReducible_rec/type-wf : of (esort lzero) (esort indNegReducible_rec/type-wf-sort).
 
-indNegReducible_rec/decl : declared "indNegReducible.rec" (esort lzero) irec
+indNegReducible_rec/decl : declared "indNegReducible.rec" (esort lzero) (irec "indNegReducible")
    = declared/ok-irec indNegReducible/rec-name (dkind-ok/irec indNegReducible_rec/type-wf).

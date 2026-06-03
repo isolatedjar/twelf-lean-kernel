@@ -12,10 +12,16 @@ Empty/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
 Empty/rec-name : name "Empty.rec" (is-rec-for "Empty").
 
-Empty/name : name "Empty" (is-decl (esort (lsucc lzero)) indt).
+Empty/clf : count-leading-foralls (esort (lsucc lzero)) liz
+   = (count-leading-foralls/zero not-forall/sort).
 
-Empty/decl : declared "Empty" (esort (lsucc lzero)) indt
-   = declared/ok Empty/name (dkind-ok/indt Empty/type-wf Empty/ends-in-sort).
+Empty/cnd : cnames-distinct cnil
+   = cnames-distinct/nil.
+
+Empty/name : name "Empty" (is-decl (esort (lsucc lzero)) (indt cnil liz)).
+
+Empty/decl : declared "Empty" (esort (lsucc lzero)) (indt cnil liz)
+   = declared/ok-indt Empty/name Empty/rec-name Empty/clf Empty/cnd (dkind-ok/indt Empty/type-wf Empty/ends-in-sort).
 
 %% recursor Empty.rec
 %%% HOLE
@@ -24,7 +30,7 @@ Empty_rec/type-wf-sort : lvl.
 %%% HOLE
 Empty_rec/type-wf : of (eforall (eforall (econst "Empty" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (esort Empty_rec/type-wf-sort).
 
-Empty_rec/decl : declared "Empty.rec" (eforall (eforall (econst "Empty" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) irec
+Empty_rec/decl : declared "Empty.rec" (eforall (eforall (econst "Empty" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (irec "Empty")
    = declared/ok-irec Empty/rec-name (dkind-ok/irec Empty_rec/type-wf).
 
 %% def emptyRec

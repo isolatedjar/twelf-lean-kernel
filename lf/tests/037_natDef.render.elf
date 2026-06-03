@@ -1,5 +1,7 @@
 %%% Render-only view of: 037_natDef
 %%% A recursive inductive data type
+sneq/0 : string-neq "N.zero" "N.succ".
+
 %% inductive N
 %%% HOLE
 N/type-wf-sort : lvl.
@@ -12,10 +14,18 @@ N/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
 N/rec-name : name "N.rec" (is-rec-for "N").
 
-N/name : name "N" (is-decl (esort (lsucc lzero)) indt).
+N/clf : count-leading-foralls (esort (lsucc lzero)) liz
+   = (count-leading-foralls/zero not-forall/sort).
 
-N/decl : declared "N" (esort (lsucc lzero)) indt
-   = declared/ok N/name (dkind-ok/indt N/type-wf N/ends-in-sort).
+N/cnd : cnames-distinct (ccons "N.zero" (ccons "N.succ" cnil))
+   = (cnames-distinct/cons
+       (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil)
+       (all-string-neq/cons sneq/0 all-string-neq/nil)).
+
+N/name : name "N" (is-decl (esort (lsucc lzero)) (indt (ccons "N.zero" (ccons "N.succ" cnil)) liz)).
+
+N/decl : declared "N" (esort (lsucc lzero)) (indt (ccons "N.zero" (ccons "N.succ" cnil)) liz)
+   = declared/ok-indt N/name N/rec-name N/clf N/cnd (dkind-ok/indt N/type-wf N/ends-in-sort).
 
 %% ctor N.zero (of N)
 %%% HOLE
@@ -30,13 +40,16 @@ N_zero/positivity : ctor-positive "N" lnil (econst "N" lnil).
 N_zero/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
+N_zero/cmem : cmem "N.zero" (ccons "N.zero" (ccons "N.succ" cnil))
+   = cmem/here.
+
 %%% HOLE: N_zero/fuo — prover for field-universes-ok-skip-params not yet implemented
 N_zero/fuo : field-universes-ok-skip-params liz (econst "N" lnil) (lsucc lzero).
 
-N_zero/name : name "N.zero" (is-decl (econst "N" lnil) ctor).
+N_zero/name : name "N.zero" (is-decl (econst "N" lnil) (ctor "N" liz)).
 
-N_zero/decl : declared "N.zero" (econst "N" lnil) ctor
-   = declared/ok N_zero/name (dkind-ok/ctor N_zero/type-wf N_zero/positivity N/decl N_zero/eisl N_zero/fuo).
+N_zero/decl : declared "N.zero" (econst "N" lnil) (ctor "N" liz)
+   = declared/ok-ctor N_zero/name N/name N_zero/cmem N_zero/eisl N_zero/fuo (dkind-ok/ctor N_zero/type-wf N_zero/positivity).
 
 %% ctor N.succ (of N)
 %%% HOLE
@@ -51,13 +64,16 @@ N_succ/positivity : ctor-positive "N" lnil (eforall (econst "N" lnil) ([x] (econ
 N_succ/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
+N_succ/cmem : cmem "N.succ" (ccons "N.zero" (ccons "N.succ" cnil))
+   = (cmem/there cmem/here).
+
 %%% HOLE: N_succ/fuo — prover for field-universes-ok-skip-params not yet implemented
 N_succ/fuo : field-universes-ok-skip-params liz (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (lsucc lzero).
 
-N_succ/name : name "N.succ" (is-decl (eforall (econst "N" lnil) ([x] (econst "N" lnil))) ctor).
+N_succ/name : name "N.succ" (is-decl (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (ctor "N" (lis liz))).
 
-N_succ/decl : declared "N.succ" (eforall (econst "N" lnil) ([x] (econst "N" lnil))) ctor
-   = declared/ok N_succ/name (dkind-ok/ctor N_succ/type-wf N_succ/positivity N/decl N_succ/eisl N_succ/fuo).
+N_succ/decl : declared "N.succ" (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (ctor "N" (lis liz))
+   = declared/ok-ctor N_succ/name N/name N_succ/cmem N_succ/eisl N_succ/fuo (dkind-ok/ctor N_succ/type-wf N_succ/positivity).
 
 %% recursor N.rec
 %%% HOLE
@@ -76,7 +92,7 @@ N_rec/decl : declared "N.rec"
     ([x]
       (eforall (eapp x (econst "N.zero" lnil))
         ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w)))))))))
-  irec
+  (irec "N")
    = declared/ok-irec N/rec-name (dkind-ok/irec N_rec/type-wf).
 
 %% def natDef

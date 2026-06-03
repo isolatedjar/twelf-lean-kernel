@@ -44,10 +44,17 @@ reduceCtorParam/ends-in-sort : ends-in-sort (eforall (esort (lsucc lzero)) ([x] 
 
 reduceCtorParam/rec-name : name "reduceCtorParam.rec" (is-rec-for "reduceCtorParam").
 
-reduceCtorParam/name : name "reduceCtorParam" (is-decl (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) indt).
+reduceCtorParam/clf : count-leading-foralls (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (lis liz)
+   = (count-leading-foralls/succ
+       ([x] (count-leading-foralls/zero not-forall/sort))).
 
-reduceCtorParam/decl : declared "reduceCtorParam" (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) indt
-   = declared/ok reduceCtorParam/name (dkind-ok/indt reduceCtorParam/type-wf reduceCtorParam/ends-in-sort).
+reduceCtorParam/cnd : cnames-distinct (ccons "reduceCtorParam.mk" cnil)
+   = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
+
+reduceCtorParam/name : name "reduceCtorParam" (is-decl (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (indt (ccons "reduceCtorParam.mk" cnil) (lis liz))).
+
+reduceCtorParam/decl : declared "reduceCtorParam" (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (indt (ccons "reduceCtorParam.mk" cnil) (lis liz))
+   = declared/ok-indt reduceCtorParam/name reduceCtorParam/rec-name reduceCtorParam/clf reduceCtorParam/cnd (dkind-ok/indt reduceCtorParam/type-wf reduceCtorParam/ends-in-sort).
 
 %% ctor reduceCtorParam.mk (of reduceCtorParam)
 %%% HOLE
@@ -65,19 +72,22 @@ reduceCtorParam_mk/positivity : ctor-positive "reduceCtorParam" lnil (eforall (e
 reduceCtorParam_mk/eisl : ends-in-sort-with-level (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (lsucc lzero)
    = (ends-in-sort-with-level/forall ([x] ends-in-sort-with-level/sort)).
 
+reduceCtorParam_mk/cmem : cmem "reduceCtorParam.mk" (ccons "reduceCtorParam.mk" cnil)
+   = cmem/here.
+
 %%% HOLE: reduceCtorParam_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
 reduceCtorParam_mk/fuo : field-universes-ok-skip-params (lis liz) (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero))) ([x] (eforall (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParam" lnil) x)) (eapp (econst "reduceCtorParam" lnil) x)) ([y] (eapp (econst "reduceCtorParam" lnil) x))))) (lsucc lzero).
 
 reduceCtorParam_mk/name : name "reduceCtorParam.mk" (is-decl
   (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero)))
     ([x] (eforall (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParam" lnil) x)) (eapp (econst "reduceCtorParam" lnil) x)) ([y] (eapp (econst "reduceCtorParam" lnil) x)))))
-  ctor).
+  (ctor "reduceCtorParam" liz)).
 
 reduceCtorParam_mk/decl : declared "reduceCtorParam.mk"
   (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero)))
     ([x] (eforall (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParam" lnil) x)) (eapp (econst "reduceCtorParam" lnil) x)) ([y] (eapp (econst "reduceCtorParam" lnil) x)))))
-  ctor
-   = declared/ok reduceCtorParam_mk/name (dkind-ok/ctor reduceCtorParam_mk/type-wf reduceCtorParam_mk/positivity reduceCtorParam/decl reduceCtorParam_mk/eisl reduceCtorParam_mk/fuo).
+  (ctor "reduceCtorParam" liz)
+   = declared/ok-ctor reduceCtorParam_mk/name reduceCtorParam/name reduceCtorParam_mk/cmem reduceCtorParam_mk/eisl reduceCtorParam_mk/fuo (dkind-ok/ctor reduceCtorParam_mk/type-wf reduceCtorParam_mk/positivity).
 
 %% recursor reduceCtorParam.rec
 %%% HOLE
@@ -102,5 +112,5 @@ reduceCtorParam_rec/decl : declared "reduceCtorParam.rec"
           (eforall (eforall (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParam" lnil) x)) (eapp (econst "reduceCtorParam" lnil) x))
             ([z] (eforall (eapp y z) ([w] (eapp y (eapp (eapp (econst "reduceCtorParam.mk" lnil) x) z))))))
             ([z] (eforall (eapp (econst "reduceCtorParam" lnil) x) ([w] (eapp y w)))))))))
-  irec
+  (irec "reduceCtorParam")
    = declared/ok-irec reduceCtorParam/rec-name (dkind-ok/irec reduceCtorParam_rec/type-wf).

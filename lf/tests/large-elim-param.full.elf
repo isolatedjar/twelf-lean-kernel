@@ -12,6 +12,8 @@
 %%% contradiction.
 %%% 
 %%% Found by Anthony Wang using Aristotle.
+sneq/0 : string-neq "MyBool.tt" "MyBool.ff".
+
 %% inductive False
 False/type-wf-sort : lvl
    = (lsucc lzero).
@@ -24,10 +26,16 @@ False/ends-in-sort : ends-in-sort (esort lzero)
 
 False/rec-name : name "False.rec" (is-rec-for "False").
 
-False/name : name "False" (is-decl (esort lzero) indt).
+False/clf : count-leading-foralls (esort lzero) liz
+   = (count-leading-foralls/zero not-forall/sort).
 
-False/decl : declared "False" (esort lzero) indt
-   = declared/ok False/name (dkind-ok/indt False/type-wf False/ends-in-sort).
+False/cnd : cnames-distinct cnil
+   = cnames-distinct/nil.
+
+False/name : name "False" (is-decl (esort lzero) (indt cnil liz)).
+
+False/decl : declared "False" (esort lzero) (indt cnil liz)
+   = declared/ok-indt False/name False/rec-name False/clf False/cnd (dkind-ok/indt False/type-wf False/ends-in-sort).
 
 %% inductive True
 True/type-wf-sort : lvl
@@ -41,10 +49,16 @@ True/ends-in-sort : ends-in-sort (esort lzero)
 
 True/rec-name : name "True.rec" (is-rec-for "True").
 
-True/name : name "True" (is-decl (esort lzero) indt).
+True/clf : count-leading-foralls (esort lzero) liz
+   = (count-leading-foralls/zero not-forall/sort).
 
-True/decl : declared "True" (esort lzero) indt
-   = declared/ok True/name (dkind-ok/indt True/type-wf True/ends-in-sort).
+True/cnd : cnames-distinct (ccons "True.intro" cnil)
+   = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
+
+True/name : name "True" (is-decl (esort lzero) (indt (ccons "True.intro" cnil) liz)).
+
+True/decl : declared "True" (esort lzero) (indt (ccons "True.intro" cnil) liz)
+   = declared/ok-indt True/name True/rec-name True/clf True/cnd (dkind-ok/indt True/type-wf True/ends-in-sort).
 
 %% ctor True.intro (of True)
 True_intro/type-wf-sort : lvl
@@ -59,13 +73,16 @@ True_intro/positivity : ctor-positive "True" lnil (econst "True" lnil)
 True_intro/eisl : ends-in-sort-with-level (esort lzero) lzero
    = ends-in-sort-with-level/sort.
 
+True_intro/cmem : cmem "True.intro" (ccons "True.intro" cnil)
+   = cmem/here.
+
 %%% HOLE: True_intro/fuo — prover for field-universes-ok-skip-params not yet implemented
 True_intro/fuo : field-universes-ok-skip-params liz (econst "True" lnil) lzero.
 
-True_intro/name : name "True.intro" (is-decl (econst "True" lnil) ctor).
+True_intro/name : name "True.intro" (is-decl (econst "True" lnil) (ctor "True" liz)).
 
-True_intro/decl : declared "True.intro" (econst "True" lnil) ctor
-   = declared/ok True_intro/name (dkind-ok/ctor True_intro/type-wf True_intro/positivity True/decl True_intro/eisl True_intro/fuo).
+True_intro/decl : declared "True.intro" (econst "True" lnil) (ctor "True" liz)
+   = declared/ok-ctor True_intro/name True/name True_intro/cmem True_intro/eisl True_intro/fuo (dkind-ok/ctor True_intro/type-wf True_intro/positivity).
 
 %% inductive MyBool
 MyBool/type-wf-sort : lvl
@@ -79,10 +96,18 @@ MyBool/ends-in-sort : ends-in-sort (esort (lvar liz))
 
 MyBool/rec-name : name "MyBool.rec" (is-rec-for "MyBool").
 
-MyBool/name : name "MyBool" (is-decl (esort (lvar liz)) indt).
+MyBool/clf : count-leading-foralls (esort (lvar liz)) liz
+   = (count-leading-foralls/zero not-forall/sort).
 
-MyBool/decl : declared "MyBool" (esort (lvar liz)) indt
-   = declared/ok MyBool/name (dkind-ok/indt MyBool/type-wf MyBool/ends-in-sort).
+MyBool/cnd : cnames-distinct (ccons "MyBool.tt" (ccons "MyBool.ff" cnil))
+   = (cnames-distinct/cons
+       (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil)
+       (all-string-neq/cons sneq/0 all-string-neq/nil)).
+
+MyBool/name : name "MyBool" (is-decl (esort (lvar liz)) (indt (ccons "MyBool.tt" (ccons "MyBool.ff" cnil)) liz)).
+
+MyBool/decl : declared "MyBool" (esort (lvar liz)) (indt (ccons "MyBool.tt" (ccons "MyBool.ff" cnil)) liz)
+   = declared/ok-indt MyBool/name MyBool/rec-name MyBool/clf MyBool/cnd (dkind-ok/indt MyBool/type-wf MyBool/ends-in-sort).
 
 %% ctor MyBool.tt (of MyBool)
 MyBool_tt/type-wf-sort : lvl
@@ -97,13 +122,16 @@ MyBool_tt/positivity : ctor-positive "MyBool" (lcons (lvar liz) lnil) (econst "M
 MyBool_tt/eisl : ends-in-sort-with-level (esort (lvar liz)) (lvar liz)
    = ends-in-sort-with-level/sort.
 
+MyBool_tt/cmem : cmem "MyBool.tt" (ccons "MyBool.tt" (ccons "MyBool.ff" cnil))
+   = cmem/here.
+
 %%% HOLE: MyBool_tt/fuo — prover for field-universes-ok-skip-params not yet implemented
 MyBool_tt/fuo : field-universes-ok-skip-params liz (econst "MyBool" (lcons (lvar liz) lnil)) (lvar liz).
 
-MyBool_tt/name : name "MyBool.tt" (is-decl (econst "MyBool" (lcons (lvar liz) lnil)) ctor).
+MyBool_tt/name : name "MyBool.tt" (is-decl (econst "MyBool" (lcons (lvar liz) lnil)) (ctor "MyBool" liz)).
 
-MyBool_tt/decl : declared "MyBool.tt" (econst "MyBool" (lcons (lvar liz) lnil)) ctor
-   = declared/ok MyBool_tt/name (dkind-ok/ctor MyBool_tt/type-wf MyBool_tt/positivity MyBool/decl MyBool_tt/eisl MyBool_tt/fuo).
+MyBool_tt/decl : declared "MyBool.tt" (econst "MyBool" (lcons (lvar liz) lnil)) (ctor "MyBool" liz)
+   = declared/ok-ctor MyBool_tt/name MyBool/name MyBool_tt/cmem MyBool_tt/eisl MyBool_tt/fuo (dkind-ok/ctor MyBool_tt/type-wf MyBool_tt/positivity).
 
 %% ctor MyBool.ff (of MyBool)
 MyBool_ff/type-wf-sort : lvl
@@ -118,13 +146,16 @@ MyBool_ff/positivity : ctor-positive "MyBool" (lcons (lvar liz) lnil) (econst "M
 MyBool_ff/eisl : ends-in-sort-with-level (esort (lvar liz)) (lvar liz)
    = ends-in-sort-with-level/sort.
 
+MyBool_ff/cmem : cmem "MyBool.ff" (ccons "MyBool.tt" (ccons "MyBool.ff" cnil))
+   = (cmem/there cmem/here).
+
 %%% HOLE: MyBool_ff/fuo — prover for field-universes-ok-skip-params not yet implemented
 MyBool_ff/fuo : field-universes-ok-skip-params liz (econst "MyBool" (lcons (lvar liz) lnil)) (lvar liz).
 
-MyBool_ff/name : name "MyBool.ff" (is-decl (econst "MyBool" (lcons (lvar liz) lnil)) ctor).
+MyBool_ff/name : name "MyBool.ff" (is-decl (econst "MyBool" (lcons (lvar liz) lnil)) (ctor "MyBool" (lis liz))).
 
-MyBool_ff/decl : declared "MyBool.ff" (econst "MyBool" (lcons (lvar liz) lnil)) ctor
-   = declared/ok MyBool_ff/name (dkind-ok/ctor MyBool_ff/type-wf MyBool_ff/positivity MyBool/decl MyBool_ff/eisl MyBool_ff/fuo).
+MyBool_ff/decl : declared "MyBool.ff" (econst "MyBool" (lcons (lvar liz) lnil)) (ctor "MyBool" (lis liz))
+   = declared/ok-ctor MyBool_ff/name MyBool/name MyBool_ff/cmem MyBool_ff/eisl MyBool_ff/fuo (dkind-ok/ctor MyBool_ff/type-wf MyBool_ff/positivity).
 
 %% def cast
 cast/type-wf-sort : lvl

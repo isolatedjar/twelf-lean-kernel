@@ -336,15 +336,59 @@ defeq/proof-irrel :
 %%% rules for recursors, they will pattern-match on `irec` and on the
 %%% corresponding inductive's ctors.
 
+%%% Ordered list of ctor names, by cidx.  Distinct from `lvls` — these
+%%% are names, not levels.  Moved up from §"enum recursors" (where it's
+%%% used by enum-rec-body) because `dkind`'s constructors now carry a
+%%% `cnames` payload on the inductive variant: `indt Ctors NParams`
+%%% records the inductive's full ctor list (in cidx order) and its param
+%%% count, so soundness checks downstream can consult them.
+
+cnames : type.   %name cnames CN.
+
+cnil  : cnames.
+ccons : string -> cnames -> cnames.
+
+%%% Positive list membership.  Used by `declared/ok-ctor` to prove a
+%%% ctor's name is in its parent inductive's reserved Ctors list — so
+%%% a "spurious" ctor (one whose name isn't on the list) has no proof
+%%% of membership and can't be declared.
+
+cmem : string -> cnames -> type.   %name cmem CMEM.
+
+cmem/here  : cmem C (ccons C Rest).
+cmem/there : cmem C Rest -> cmem C (ccons D Rest).
+
+%%% `cnames-distinct` lives below alongside `string-neq` (it depends on
+%%% the latter), see §"ctor-name distinctness".
+
+%%% --- `dkind` payloads --------------------------------------------------
+%%%
+%%% Each constructor of `dkind` carries the relational metadata Lean's
+%%% kernel keeps about that declaration kind:
+%%%
+%%%   indt Ctors NParams  — the inductive's full ctor list (cidx-ordered)
+%%%                          and its number of parameters.  Both consulted
+%%%                          by `declared/ok-ctor` for spurious-ctor
+%%%                          rejection (§3.5) and NumParams pinning
+%%%                          (§3.2.2).
+%%%   ctor IndN Cidx       — the parent inductive's name (so ctor can
+%%%                          look back at its inductive's reservation) and
+%%%                          this ctor's canonical 0-based cidx.
+%%%   irec IndN            — the parent inductive's name (for iota rules
+%%%                          to consult the reserved Ctors list).
+%%%
+%%% `quot`, `defn`, `thm`, `opq`, `ax` are unchanged — they have no
+%%% relational metadata.  See completeness-plan §3.5 for the design.
+
 dkind : type.   %name dkind DK.
 
 defn : expr -> dkind.
 thm  : expr -> dkind.
 opq  : expr -> dkind.
 ax   : dkind.
-indt : dkind.
-ctor : dkind.
-irec : dkind.
+indt : cnames -> lidx -> dkind.        %% Ctors list, NParams
+ctor : string -> lidx -> dkind.        %% parent IndN, cidx
+irec : string -> dkind.                %% parent IndN
 quot : dkind.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -400,6 +444,31 @@ name : string -> nkind -> type.
 %%% functional dependency.
 
 string-neq : string -> string -> type.
+
+%%% --- ctor-name distinctness (§3.4) ----------------------------------
+%%%
+%%% Pairwise distinctness of a ctor-name list, required as a premise of
+%%% `declared/ok-indt` to kill the duplicate-ctor iota gap
+%%% (`lf/soundness/dup-ctor-iota.elf`).  Distinctness is a disequality
+%%% property, so it uses the same `string-neq` posit + global
+%%% `%query 0 * string-neq X X` audit pattern as `no-self-ref` /
+%%% `ctor-positive`: building a `cnames-distinct` for a list with a
+%%% duplicate forces some leaf `string-neq C C`, which the global query
+%%% rejects.  Downstream rules consulting Ctors inherit distinctness
+%%% for free.
+
+all-string-neq : string -> cnames -> type.   %name all-string-neq ASN.
+
+all-string-neq/nil  : all-string-neq C cnil.
+all-string-neq/cons : string-neq C D -> all-string-neq C Rest
+                   -> all-string-neq C (ccons D Rest).
+
+cnames-distinct : cnames -> type.   %name cnames-distinct CND.
+
+cnames-distinct/nil  : cnames-distinct cnil.
+cnames-distinct/cons : cnames-distinct Rest
+                    -> all-string-neq C Rest
+                    -> cnames-distinct (ccons C Rest).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Declaration Well-Formedness
@@ -460,13 +529,13 @@ ends-in-sort-with-level/forall :
 
 not-forall : expr -> type.   %name not-forall NF.
 
-not-forall/sort  : {L:lvl} not-forall (esort L).
-not-forall/const : {N:string} {LS:lvls} not-forall (econst N LS).
-not-forall/app   : {F:expr} {A:expr} not-forall (eapp F A).
-not-forall/lam   : {T:expr} {B:expr -> expr} not-forall (elam T B).
-not-forall/proj  : {N:string} {I:integer} {S:expr} not-forall (eproj N I S).
-not-forall/nat   : {V:integer} {P:V >= 0} not-forall (enatlit V P).
-not-forall/str   : {S:string} not-forall (estrlit S).
+not-forall/sort  : not-forall (esort L).
+not-forall/const : not-forall (econst N LS).
+not-forall/app   : not-forall (eapp F A).
+not-forall/lam   : not-forall (elam T B).
+not-forall/proj  : not-forall (eproj N I S).
+not-forall/nat   : not-forall (enatlit V P).
+not-forall/str   : not-forall (estrlit S).
 
 %%% `field-universes-ok T UInd` : T is a ctor's RESIDUAL Π-chain (after the
 %%% inductive's params have been peeled), and every Π-binder's domain has
@@ -513,6 +582,26 @@ field-universes-ok-skip-params/start :
 field-universes-ok-skip-params/skip :
    ({x : expr} defeq x x A -> field-universes-ok-skip-params N (B x) UInd)
    -> field-universes-ok-skip-params (lis N) (eforall A B) UInd.
+
+%%% --- `count-leading-foralls T N` : T's leading Π chain has exactly N
+%%% binders (a closed structural judgment; N : lidx).  Used by
+%%% `declared/ok-indt` to pin the inductive's `NParams` payload to the
+%%% inductive's own type — the original §3.2 fix accepted any translator-
+%%% supplied NumParams, opening the §3.2.2 over-claim bypass (see
+%%% completeness-plan).  Once the inductive's NParams matches T, every
+%%% ctor's `field-universes-ok-skip-params NParams …` consults a
+%%% well-grounded count.
+
+count-leading-foralls : expr -> lidx -> type.
+   %name count-leading-foralls CLF.
+
+count-leading-foralls/zero :
+   not-forall T
+   -> count-leading-foralls T liz.
+
+count-leading-foralls/succ :
+   ({x : expr} count-leading-foralls (B x) N)
+   -> count-leading-foralls (eforall A B) (lis N).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Strict positivity for inductive constructors
@@ -782,36 +871,23 @@ dkind-ok/opq  :
 dkind-ok/ax   :
    defeq T T (esort U) -> dkind-ok ax T.
 
+%%% --- dkind-ok rules for the payloaded variants ----------------------
+%%%
+%%% indt / ctor / irec each carry inductive-family wiring (see §"dkind
+%%% payloads" above and completeness-plan §3.5).  `dkind-ok` ignores the
+%%% payload here; the cross-cutting checks that *consult* the payload
+%%% (cmem membership, NumParams pinning, rec-name reservation) live on
+%%% `declared/ok-indt` / `declared/ok-ctor` instead, because they need
+%%% to look at other `declared` / `name` reservations and so are properly
+%%% sealing-time, not dkind-time, conditions.
+
 dkind-ok/indt :
-   defeq T T (esort U) -> ends-in-sort T -> dkind-ok indt T.
+   defeq T T (esort U) -> ends-in-sort T -> dkind-ok (indt Ctors NParams) T.
 
 dkind-ok/ctor :
    defeq T T (esort U)
-   -> ctor-positive N0 LS0 T
-   -> declared N0 IndType indt                          %% the parent inductive
-   -> ends-in-sort-with-level IndType UInd              %% UInd = the inductive's sort
-   -> field-universes-ok-skip-params NumParams T UInd   %% §3.2: each field's sort ≤ UInd
-   -> dkind-ok ctor T.
-
-%%% The N0 and LS0 are the inductive type former's name and level
-%%% instantiation; the translator supplies them when building this
-%%% witness.  Soundness intent: every ctor that we add to `declared`
-%%% comes packaged with a proof that its type is strictly positive
-%%% in its inductive's self-reference.  When iota rules are added
-%%% later, they will pattern-match on `dkind-ok/ctor` derivations
-%%% and thus may rely on this positivity having been checked.
-%%%
-%%% Universe consistency (§3.2): every field's sort must be ≤ the
-%%% inductive's sort UInd, per Mario's `ctor_Pi` rule.  The new premises
-%%% are: (a) `declared N0 IndType indt` — recover the inductive itself;
-%%% (b) `ends-in-sort-with-level IndType UInd` — extract its sort;
-%%% (c) `field-universes-ok-skip-params NumParams T UInd` — walk T's Π
-%%% chain, skipping the first NumParams (the inductive's params, not
-%%% subject to the field-sort rule), and demand `mleq sortOf(D) UInd 0`
-%%% for each remaining domain D.  Closes `lf/soundness/universe-too-high-
-%%% field.elf` and `arena/bad/field-too-high-imax` (which slips past the
-%%% translator's syntactic preflight because `imax 1 1` isn't reduced;
-%%% `mleq` reduces it natively via the imax-simplification rules in §2).
+   -> ctor-positive IndN LS0 T
+   -> dkind-ok (ctor IndN Cidx) T.
 
 %%% A recursor is admitted on the strength of its type being well-formed.
 %%% This does NOT encode Lean's elimination-universe restriction: a Prop
@@ -825,7 +901,7 @@ dkind-ok/ctor :
 %%% inspects the motive's target sort against the inductive's universe and
 %%% subsingleton-eligibility; tracked in completeness-plan.md.
 dkind-ok/irec :
-   defeq T T (esort U) -> dkind-ok irec T.
+   defeq T T (esort U) -> dkind-ok (irec IndN) T.
 
 dkind-ok/quot :
    defeq T T (esort U) -> dkind-ok quot T.
@@ -836,20 +912,84 @@ dkind-ok/quot :
 %%% the polymorphism lives in the schema, instantiated at each use site.
 
 %%% (`declared` type already declared above next to `dkind-ok`.)
+%%%
+%%% `declared/ok` is the catch-all sealing rule for non-inductive-family
+%%% kinds: `defn`, `thm`, `opq`, `ax`, `quot`.  The inductive-family kinds
+%%% (`indt _ _`, `ctor _ _`, `irec _`) go through specialized rules below
+%%% that check the cross-decl relational metadata (§3.5).
 declared/ok :
    name N (is-decl T K)
    -> dkind-ok K T
    -> declared N T K.
 
-%%% Recursors use this rule instead of `declared/ok` so that their name must
-%%% have been reserved by a legitimate inductive via `is-rec-for`.  Combined
-%%% with %unique name, this means (a) any `def Foo.rec` conflicts with the
-%%% inductive's reservation and ABORTs the load, and (b) a recursor at an
-%%% un-reserved name has no witness and is rejected by %freeze as a bare decl.
+%%% --- declared/ok-indt: inductive declaration ------------------------
+%%%
+%%% Adds three premises beyond the catch-all sealing.  Each one closes a
+%%% concrete soundness gap demonstrated by a regression in `lf/soundness/`:
+%%%
+%%%   * `name MRec (is-rec-for N)` — the inductive must reserve its
+%%%     recursor-name slot.  §3.3 / `rec-name-slot.elf`: without this,
+%%%     a `def Foo.rec` can squat on the recursor slot because nothing
+%%%     was claimed there.  The reservation makes `%unique name` catch
+%%%     the collision (cf. `rec-slot-theft.elf`, which already passes).
+%%%   * `count-leading-foralls T NParams` — the inductive's NumParams
+%%%     payload must match the actual leading-Π count of its type.
+%%%     §3.2.2 NumParams-bypass: an adversarial translator was able to
+%%%     over-claim NumParams to make `field-universes-ok-skip-params/skip`
+%%%     consume a real field binder as a fake "param", bypassing the
+%%%     field-universe check.  Pinning NParams to T closes that.
+%%%   * `cnames-distinct Ctors` — see §3 below.  Required by §3.4 to kill
+%%%     the duplicate-ctor iota gap, but the premise lives here because
+%%%     the ctor list is on the inductive's reservation.
+declared/ok-indt :
+   name N (is-decl T (indt Ctors NParams))
+   -> name MRec (is-rec-for N)
+   -> count-leading-foralls T NParams
+   -> cnames-distinct Ctors
+   -> dkind-ok (indt Ctors NParams) T
+   -> declared N T (indt Ctors NParams).
+
+%%% --- declared/ok-ctor: ctor declaration -----------------------------
+%%%
+%%% A ctor consults its parent inductive's already-declared reservation
+%%% via `IndN`.  The new premises:
+%%%
+%%%   * `name IndN (is-decl IndType (indt Ctors NParams))` — look up the
+%%%     parent inductive's reserved payload (Ctors list + NParams).
+%%%   * `cmem N Ctors` — N must be on the parent's ctor list.  §3.5
+%%%     spurious-ctor gap: without this, a `name "FooEvil"
+%%%     (is-decl _ (ctor "Foo" _))` had no obstruction.  Now there's no
+%%%     `cmem "FooEvil" Ctors` proof when Ctors = (ccons "Foo.a"
+%%%     (ccons "Foo.b" cnil)) etc., so the seal fails.
+%%%   * `ends-in-sort-with-level IndType UInd` — extract the inductive's
+%%%     sort (used by the next premise).
+%%%   * `field-universes-ok-skip-params NParams T UInd` — §3.2 field-
+%%%     universe check.  NParams is now pinned via `count-leading-foralls`
+%%%     on the indt side, so this is well-grounded.
+declared/ok-ctor :
+   name N (is-decl T (ctor IndN Cidx))
+   -> name IndN (is-decl IndType (indt Ctors NParams))
+   -> cmem N Ctors
+   -> ends-in-sort-with-level IndType UInd
+   -> field-universes-ok-skip-params NParams T UInd
+   -> dkind-ok (ctor IndN Cidx) T
+   -> declared N T (ctor IndN Cidx).
+
+%%% --- declared/ok-irec: recursor declaration -------------------------
+%%%
+%%% Recursors use this rule instead of `declared/ok` so that their name
+%%% must have been reserved by a legitimate inductive via `is-rec-for`.
+%%% The reservation's `IndN` must match the recursor's payload `IndN`
+%%% (so a hand-written file can't claim `irec "Bar"` while reserving via
+%%% `is-rec-for "Foo"`).  Combined with %unique name, this means
+%%%   (a) any `def Foo.rec` conflicts with the inductive's reservation
+%%%       and ABORTs the load, and
+%%%   (b) a recursor at an un-reserved name has no witness and is
+%%%       rejected by %freeze as a bare decl.
 declared/ok-irec :
    name N (is-rec-for IndN)
-   -> dkind-ok irec T
-   -> declared N T irec.
+   -> dkind-ok (irec IndN) T
+   -> declared N T (irec IndN).
 
 %%% defeq facts earned by a well-formed declaration.  A use `econst N LS`
 %%% instantiates the stored schema Ts at LS to get the use-site type T.
@@ -896,13 +1036,8 @@ defeq/delta :
 %%%   4.  Indexed inductives (e.g., Eq, Vec).
 %%%   5.  Mutual / nested.
 
-%%% Ordered list of ctor names, by cidx.  Distinct from `lvls` — these
-%%% are names, not levels.
-
-cnames : type.   %name cnames CN.
-
-cnil  : cnames.
-ccons : string -> cnames -> cnames.
+%%% (`cnames` and its constructors are now defined earlier, alongside
+%%% `dkind` — see §"dkind payloads".)
 
 %%% --- `enum-rec-body M Body FooName FooLvls Ctors` :
 %%% Body is the body of an enum recursor's type, under the bound motive
@@ -958,10 +1093,22 @@ defeq/extra : defeq-extra E1 E2 A -> defeq E1 E2 A.
 %%% --- Iota for 1-ctor enums (e.g., Unit).
 %%% Foo.rec.{u} M m_1 Foo.c_1 ≡ m_1 : M Foo.c_1.
 
+%%% Each iota rule now (a) consumes the recursor's payloaded `(irec
+%%% FooName)` dkind (binding FooName from the recursor's wiring rather
+%%% than a free premise), (b) looks up the parent inductive's reservation
+%%% via `name FooName (is-decl _ (indt Ctors NParams))` so the ctor list
+%%% the rule uses is the *audited* one (distinct by §3.4, complete by
+%%% §3.5), and (c) consumes each ctor's payloaded `(ctor FooName CidxC_i)`
+%%% so a ctor of a different inductive can't be smuggled in.  Ctors
+%%% appearing on the LHS still come with a `defeq ... (esort ...)` typing
+%%% premise; the soundness story is that those ctors are bound by the
+%%% reservation lookup and the enum-rec-type list.
+
 defeq/iota-enum-1 :
-   declared RecName RecSchema irec
+   declared RecName RecSchema (irec FooName)
+   -> name FooName (is-decl IndType (indt (ccons C1 cnil) NParams))
    -> inst-expr RecSchema (lcons U lnil) RecType
-   -> declared C1 (econst FooName lnil) ctor
+   -> declared C1 (econst FooName lnil) (ctor FooName CidxC1)
    -> enum-rec-type RecType FooName lnil (ccons C1 cnil) U
    -> defeq M M (eforall (econst FooName lnil) ([_] esort U))
    -> defeq Mp1 Mp1 (eapp M (econst C1 lnil))
@@ -975,10 +1122,11 @@ defeq/iota-enum-1 :
 %%% Foo.rec.{u} M m_1 m_2 Foo.c_i ≡ m_i, for i ∈ {1, 2}.
 
 defeq/iota-enum-2-first :
-   declared RecName RecSchema irec
+   declared RecName RecSchema (irec FooName)
+   -> name FooName (is-decl IndType (indt (ccons C1 (ccons C2 cnil)) NParams))
    -> inst-expr RecSchema (lcons U lnil) RecType
-   -> declared C1 (econst FooName lnil) ctor
-   -> declared C2 (econst FooName lnil) ctor
+   -> declared C1 (econst FooName lnil) (ctor FooName CidxC1)
+   -> declared C2 (econst FooName lnil) (ctor FooName CidxC2)
    -> enum-rec-type RecType FooName lnil (ccons C1 (ccons C2 cnil)) U
    -> defeq M M (eforall (econst FooName lnil) ([_] esort U))
    -> defeq Mp1 Mp1 (eapp M (econst C1 lnil))
@@ -990,10 +1138,11 @@ defeq/iota-enum-2-first :
         (eapp M (econst C1 lnil)).
 
 defeq/iota-enum-2-second :
-   declared RecName RecSchema irec
+   declared RecName RecSchema (irec FooName)
+   -> name FooName (is-decl IndType (indt (ccons C1 (ccons C2 cnil)) NParams))
    -> inst-expr RecSchema (lcons U lnil) RecType
-   -> declared C1 (econst FooName lnil) ctor
-   -> declared C2 (econst FooName lnil) ctor
+   -> declared C1 (econst FooName lnil) (ctor FooName CidxC1)
+   -> declared C2 (econst FooName lnil) (ctor FooName CidxC2)
    -> enum-rec-type RecType FooName lnil (ccons C1 (ccons C2 cnil)) U
    -> defeq M M (eforall (econst FooName lnil) ([_] esort U))
    -> defeq Mp1 Mp1 (eapp M (econst C1 lnil))
@@ -1007,11 +1156,12 @@ defeq/iota-enum-2-second :
 %%% --- Iota for 3-ctor enums.
 
 defeq/iota-enum-3-first :
-   declared RecName RecSchema irec
+   declared RecName RecSchema (irec FooName)
+   -> name FooName (is-decl IndType (indt (ccons C1 (ccons C2 (ccons C3 cnil))) NParams))
    -> inst-expr RecSchema (lcons U lnil) RecType
-   -> declared C1 (econst FooName lnil) ctor
-   -> declared C2 (econst FooName lnil) ctor
-   -> declared C3 (econst FooName lnil) ctor
+   -> declared C1 (econst FooName lnil) (ctor FooName CidxC1)
+   -> declared C2 (econst FooName lnil) (ctor FooName CidxC2)
+   -> declared C3 (econst FooName lnil) (ctor FooName CidxC3)
    -> enum-rec-type RecType FooName lnil (ccons C1 (ccons C2 (ccons C3 cnil))) U
    -> defeq M M (eforall (econst FooName lnil) ([_] esort U))
    -> defeq Mp1 Mp1 (eapp M (econst C1 lnil))
@@ -1024,11 +1174,12 @@ defeq/iota-enum-3-first :
         (eapp M (econst C1 lnil)).
 
 defeq/iota-enum-3-second :
-   declared RecName RecSchema irec
+   declared RecName RecSchema (irec FooName)
+   -> name FooName (is-decl IndType (indt (ccons C1 (ccons C2 (ccons C3 cnil))) NParams))
    -> inst-expr RecSchema (lcons U lnil) RecType
-   -> declared C1 (econst FooName lnil) ctor
-   -> declared C2 (econst FooName lnil) ctor
-   -> declared C3 (econst FooName lnil) ctor
+   -> declared C1 (econst FooName lnil) (ctor FooName CidxC1)
+   -> declared C2 (econst FooName lnil) (ctor FooName CidxC2)
+   -> declared C3 (econst FooName lnil) (ctor FooName CidxC3)
    -> enum-rec-type RecType FooName lnil (ccons C1 (ccons C2 (ccons C3 cnil))) U
    -> defeq M M (eforall (econst FooName lnil) ([_] esort U))
    -> defeq Mp1 Mp1 (eapp M (econst C1 lnil))
@@ -1041,11 +1192,12 @@ defeq/iota-enum-3-second :
         (eapp M (econst C2 lnil)).
 
 defeq/iota-enum-3-third :
-   declared RecName RecSchema irec
+   declared RecName RecSchema (irec FooName)
+   -> name FooName (is-decl IndType (indt (ccons C1 (ccons C2 (ccons C3 cnil))) NParams))
    -> inst-expr RecSchema (lcons U lnil) RecType
-   -> declared C1 (econst FooName lnil) ctor
-   -> declared C2 (econst FooName lnil) ctor
-   -> declared C3 (econst FooName lnil) ctor
+   -> declared C1 (econst FooName lnil) (ctor FooName CidxC1)
+   -> declared C2 (econst FooName lnil) (ctor FooName CidxC2)
+   -> declared C3 (econst FooName lnil) (ctor FooName CidxC3)
    -> enum-rec-type RecType FooName lnil (ccons C1 (ccons C2 (ccons C3 cnil))) U
    -> defeq M M (eforall (econst FooName lnil) ([_] esort U))
    -> defeq Mp1 Mp1 (eapp M (econst C1 lnil))

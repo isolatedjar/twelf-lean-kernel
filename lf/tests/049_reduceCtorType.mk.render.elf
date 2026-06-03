@@ -28,10 +28,16 @@ reduceCtorType/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
 reduceCtorType/rec-name : name "reduceCtorType.rec" (is-rec-for "reduceCtorType").
 
-reduceCtorType/name : name "reduceCtorType" (is-decl (esort (lsucc lzero)) indt).
+reduceCtorType/clf : count-leading-foralls (esort (lsucc lzero)) liz
+   = (count-leading-foralls/zero not-forall/sort).
 
-reduceCtorType/decl : declared "reduceCtorType" (esort (lsucc lzero)) indt
-   = declared/ok reduceCtorType/name (dkind-ok/indt reduceCtorType/type-wf reduceCtorType/ends-in-sort).
+reduceCtorType/cnd : cnames-distinct (ccons "reduceCtorType.mk" cnil)
+   = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
+
+reduceCtorType/name : name "reduceCtorType" (is-decl (esort (lsucc lzero)) (indt (ccons "reduceCtorType.mk" cnil) liz)).
+
+reduceCtorType/decl : declared "reduceCtorType" (esort (lsucc lzero)) (indt (ccons "reduceCtorType.mk" cnil) liz)
+   = declared/ok-indt reduceCtorType/name reduceCtorType/rec-name reduceCtorType/clf reduceCtorType/cnd (dkind-ok/indt reduceCtorType/type-wf reduceCtorType/ends-in-sort).
 
 %% ctor reduceCtorType.mk (of reduceCtorType)
 %%% HOLE
@@ -46,13 +52,16 @@ reduceCtorType_mk/positivity : ctor-positive "reduceCtorType" lnil (eapp (eapp (
 reduceCtorType_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
+reduceCtorType_mk/cmem : cmem "reduceCtorType.mk" (ccons "reduceCtorType.mk" cnil)
+   = cmem/here.
+
 %%% HOLE: reduceCtorType_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
 reduceCtorType_mk/fuo : field-universes-ok-skip-params liz (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil)) (lsucc lzero).
 
-reduceCtorType_mk/name : name "reduceCtorType.mk" (is-decl (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil)) ctor).
+reduceCtorType_mk/name : name "reduceCtorType.mk" (is-decl (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil)) (ctor "reduceCtorType" liz)).
 
-reduceCtorType_mk/decl : declared "reduceCtorType.mk" (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil)) ctor
-   = declared/ok reduceCtorType_mk/name (dkind-ok/ctor reduceCtorType_mk/type-wf reduceCtorType_mk/positivity reduceCtorType/decl reduceCtorType_mk/eisl reduceCtorType_mk/fuo).
+reduceCtorType_mk/decl : declared "reduceCtorType.mk" (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil)) (ctor "reduceCtorType" liz)
+   = declared/ok-ctor reduceCtorType_mk/name reduceCtorType/name reduceCtorType_mk/cmem reduceCtorType_mk/eisl reduceCtorType_mk/fuo (dkind-ok/ctor reduceCtorType_mk/type-wf reduceCtorType_mk/positivity).
 
 %% recursor reduceCtorType.rec
 %%% HOLE
@@ -61,5 +70,5 @@ reduceCtorType_rec/type-wf-sort : lvl.
 %%% HOLE
 reduceCtorType_rec/type-wf : of (esort lzero) (esort reduceCtorType_rec/type-wf-sort).
 
-reduceCtorType_rec/decl : declared "reduceCtorType.rec" (esort lzero) irec
+reduceCtorType_rec/decl : declared "reduceCtorType.rec" (esort lzero) (irec "reduceCtorType")
    = declared/ok-irec reduceCtorType/rec-name (dkind-ok/irec reduceCtorType_rec/type-wf).

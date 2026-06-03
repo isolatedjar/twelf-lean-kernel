@@ -16,6 +16,8 @@
 %%% check). The plain `Sort 0` form of this is correctly SKIP-declined; the `imax`
 %%% disguise slips past. (rpylean also accepts large-elim recursors generally —
 %%% cf. large-elim-supplied-rec.)
+sneq/0 : string-neq "ImaxProp.a" "ImaxProp.b".
+
 %% inductive ImaxProp
 %%% HOLE
 ImaxProp/type-wf-sort : lvl.
@@ -28,10 +30,18 @@ ImaxProp/ends-in-sort : ends-in-sort (esort (limax (lsucc lzero) lzero)).
 
 ImaxProp/rec-name : name "ImaxProp.rec" (is-rec-for "ImaxProp").
 
-ImaxProp/name : name "ImaxProp" (is-decl (esort (limax (lsucc lzero) lzero)) indt).
+ImaxProp/clf : count-leading-foralls (esort (limax (lsucc lzero) lzero)) liz
+   = (count-leading-foralls/zero not-forall/sort).
 
-ImaxProp/decl : declared "ImaxProp" (esort (limax (lsucc lzero) lzero)) indt
-   = declared/ok ImaxProp/name (dkind-ok/indt ImaxProp/type-wf ImaxProp/ends-in-sort).
+ImaxProp/cnd : cnames-distinct (ccons "ImaxProp.a" (ccons "ImaxProp.b" cnil))
+   = (cnames-distinct/cons
+       (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil)
+       (all-string-neq/cons sneq/0 all-string-neq/nil)).
+
+ImaxProp/name : name "ImaxProp" (is-decl (esort (limax (lsucc lzero) lzero)) (indt (ccons "ImaxProp.a" (ccons "ImaxProp.b" cnil)) liz)).
+
+ImaxProp/decl : declared "ImaxProp" (esort (limax (lsucc lzero) lzero)) (indt (ccons "ImaxProp.a" (ccons "ImaxProp.b" cnil)) liz)
+   = declared/ok-indt ImaxProp/name ImaxProp/rec-name ImaxProp/clf ImaxProp/cnd (dkind-ok/indt ImaxProp/type-wf ImaxProp/ends-in-sort).
 
 %% ctor ImaxProp.a (of ImaxProp)
 %%% HOLE
@@ -46,13 +56,16 @@ ImaxProp_a/positivity : ctor-positive "ImaxProp" lnil (econst "ImaxProp" lnil).
 ImaxProp_a/eisl : ends-in-sort-with-level (esort (limax (lsucc lzero) lzero)) (limax (lsucc lzero) lzero)
    = ends-in-sort-with-level/sort.
 
+ImaxProp_a/cmem : cmem "ImaxProp.a" (ccons "ImaxProp.a" (ccons "ImaxProp.b" cnil))
+   = cmem/here.
+
 %%% HOLE: ImaxProp_a/fuo — prover for field-universes-ok-skip-params not yet implemented
 ImaxProp_a/fuo : field-universes-ok-skip-params liz (econst "ImaxProp" lnil) (limax (lsucc lzero) lzero).
 
-ImaxProp_a/name : name "ImaxProp.a" (is-decl (econst "ImaxProp" lnil) ctor).
+ImaxProp_a/name : name "ImaxProp.a" (is-decl (econst "ImaxProp" lnil) (ctor "ImaxProp" liz)).
 
-ImaxProp_a/decl : declared "ImaxProp.a" (econst "ImaxProp" lnil) ctor
-   = declared/ok ImaxProp_a/name (dkind-ok/ctor ImaxProp_a/type-wf ImaxProp_a/positivity ImaxProp/decl ImaxProp_a/eisl ImaxProp_a/fuo).
+ImaxProp_a/decl : declared "ImaxProp.a" (econst "ImaxProp" lnil) (ctor "ImaxProp" liz)
+   = declared/ok-ctor ImaxProp_a/name ImaxProp/name ImaxProp_a/cmem ImaxProp_a/eisl ImaxProp_a/fuo (dkind-ok/ctor ImaxProp_a/type-wf ImaxProp_a/positivity).
 
 %% ctor ImaxProp.b (of ImaxProp)
 %%% HOLE
@@ -67,13 +80,16 @@ ImaxProp_b/positivity : ctor-positive "ImaxProp" lnil (econst "ImaxProp" lnil).
 ImaxProp_b/eisl : ends-in-sort-with-level (esort (limax (lsucc lzero) lzero)) (limax (lsucc lzero) lzero)
    = ends-in-sort-with-level/sort.
 
+ImaxProp_b/cmem : cmem "ImaxProp.b" (ccons "ImaxProp.a" (ccons "ImaxProp.b" cnil))
+   = (cmem/there cmem/here).
+
 %%% HOLE: ImaxProp_b/fuo — prover for field-universes-ok-skip-params not yet implemented
 ImaxProp_b/fuo : field-universes-ok-skip-params liz (econst "ImaxProp" lnil) (limax (lsucc lzero) lzero).
 
-ImaxProp_b/name : name "ImaxProp.b" (is-decl (econst "ImaxProp" lnil) ctor).
+ImaxProp_b/name : name "ImaxProp.b" (is-decl (econst "ImaxProp" lnil) (ctor "ImaxProp" (lis liz))).
 
-ImaxProp_b/decl : declared "ImaxProp.b" (econst "ImaxProp" lnil) ctor
-   = declared/ok ImaxProp_b/name (dkind-ok/ctor ImaxProp_b/type-wf ImaxProp_b/positivity ImaxProp/decl ImaxProp_b/eisl ImaxProp_b/fuo).
+ImaxProp_b/decl : declared "ImaxProp.b" (econst "ImaxProp" lnil) (ctor "ImaxProp" (lis liz))
+   = declared/ok-ctor ImaxProp_b/name ImaxProp/name ImaxProp_b/cmem ImaxProp_b/eisl ImaxProp_b/fuo (dkind-ok/ctor ImaxProp_b/type-wf ImaxProp_b/positivity).
 
 %% recursor ImaxProp.rec
 %%% HOLE
@@ -88,5 +104,5 @@ ImaxProp_rec/type-wf : of
 ImaxProp_rec/decl : declared "ImaxProp.rec"
   (eforall (eforall (econst "ImaxProp" lnil) ([x] (esort (lsucc lzero))))
     ([x] (eforall (eapp x (econst "ImaxProp.a" lnil)) ([y] (eforall (eapp x (econst "ImaxProp.b" lnil)) ([z] (eforall (econst "ImaxProp" lnil) ([w] (eapp x w)))))))))
-  irec
+  (irec "ImaxProp")
    = declared/ok-irec ImaxProp/rec-name (dkind-ok/irec ImaxProp_rec/type-wf).

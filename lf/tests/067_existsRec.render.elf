@@ -12,10 +12,19 @@ Exists/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall (ef
 
 Exists/rec-name : name "Exists.rec" (is-rec-for "Exists").
 
-Exists/name : name "Exists" (is-decl (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (esort lzero))))) indt).
+Exists/clf : count-leading-foralls (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (esort lzero))))) (lis (lis liz))
+   = (count-leading-foralls/succ
+       ([x]
+         (count-leading-foralls/succ
+           ([y] (count-leading-foralls/zero not-forall/sort))))).
 
-Exists/decl : declared "Exists" (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (esort lzero))))) indt
-   = declared/ok Exists/name (dkind-ok/indt Exists/type-wf Exists/ends-in-sort).
+Exists/cnd : cnames-distinct (ccons "Exists.intro" cnil)
+   = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
+
+Exists/name : name "Exists" (is-decl (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (esort lzero))))) (indt (ccons "Exists.intro" cnil) (lis (lis liz)))).
+
+Exists/decl : declared "Exists" (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (esort lzero))))) (indt (ccons "Exists.intro" cnil) (lis (lis liz)))
+   = declared/ok-indt Exists/name Exists/rec-name Exists/clf Exists/cnd (dkind-ok/indt Exists/type-wf Exists/ends-in-sort).
 
 %% ctor Exists.intro (of Exists)
 %%% HOLE
@@ -34,17 +43,20 @@ Exists_intro/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (ef
        ([x]
          (ends-in-sort-with-level/forall ([y] ends-in-sort-with-level/sort)))).
 
+Exists_intro/cmem : cmem "Exists.intro" (ccons "Exists.intro" cnil)
+   = cmem/here.
+
 %%% HOLE: Exists_intro/fuo — prover for field-universes-ok-skip-params not yet implemented
 Exists_intro/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "Exists" (lcons (lvar liz) lnil)) x) y))))))))) lzero.
 
 Exists_intro/name : name "Exists.intro" (is-decl
   (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "Exists" (lcons (lvar liz) lnil)) x) y)))))))))
-  ctor).
+  (ctor "Exists" liz)).
 
 Exists_intro/decl : declared "Exists.intro"
   (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "Exists" (lcons (lvar liz) lnil)) x) y)))))))))
-  ctor
-   = declared/ok Exists_intro/name (dkind-ok/ctor Exists_intro/type-wf Exists_intro/positivity Exists/decl Exists_intro/eisl Exists_intro/fuo).
+  (ctor "Exists" liz)
+   = declared/ok-ctor Exists_intro/name Exists/name Exists_intro/cmem Exists_intro/eisl Exists_intro/fuo (dkind-ok/ctor Exists_intro/type-wf Exists_intro/positivity).
 
 %% recursor Exists.rec
 %%% HOLE
@@ -71,7 +83,7 @@ Exists_rec/decl : declared "Exists.rec"
             ([z]
               (eforall (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Exists.intro" (lcons (lvar liz) lnil)) x) y) w) x1))))))
                 ([w] (eforall (eapp (eapp (econst "Exists" (lcons (lvar liz) lnil)) x) y) ([x1] (eapp z x1)))))))))))
-  irec
+  (irec "Exists")
    = declared/ok-irec Exists/rec-name (dkind-ok/irec Exists_rec/type-wf).
 
 %% def existsRec

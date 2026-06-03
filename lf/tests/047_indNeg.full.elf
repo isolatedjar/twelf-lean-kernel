@@ -12,10 +12,16 @@ indNeg/ends-in-sort : ends-in-sort (esort (lsucc lzero))
 
 indNeg/rec-name : name "indNeg.rec" (is-rec-for "indNeg").
 
-indNeg/name : name "indNeg" (is-decl (esort (lsucc lzero)) indt).
+indNeg/clf : count-leading-foralls (esort (lsucc lzero)) liz
+   = (count-leading-foralls/zero not-forall/sort).
 
-indNeg/decl : declared "indNeg" (esort (lsucc lzero)) indt
-   = declared/ok indNeg/name (dkind-ok/indt indNeg/type-wf indNeg/ends-in-sort).
+indNeg/cnd : cnames-distinct (ccons "indNeg.mk" cnil)
+   = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
+
+indNeg/name : name "indNeg" (is-decl (esort (lsucc lzero)) (indt (ccons "indNeg.mk" cnil) liz)).
+
+indNeg/decl : declared "indNeg" (esort (lsucc lzero)) (indt (ccons "indNeg.mk" cnil) liz)
+   = declared/ok-indt indNeg/name indNeg/rec-name indNeg/clf indNeg/cnd (dkind-ok/indt indNeg/type-wf indNeg/ends-in-sort).
 
 %% ctor indNeg.mk (of indNeg)
 indNeg_mk/type-wf-sort : lvl
@@ -44,13 +50,16 @@ indNeg_mk/positivity : ctor-positive "indNeg" lnil (eforall (eforall (econst "in
 indNeg_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
+indNeg_mk/cmem : cmem "indNeg.mk" (ccons "indNeg.mk" cnil)
+   = cmem/here.
+
 %%% HOLE: indNeg_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
 indNeg_mk/fuo : field-universes-ok-skip-params liz (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (lsucc lzero).
 
-indNeg_mk/name : name "indNeg.mk" (is-decl (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) ctor).
+indNeg_mk/name : name "indNeg.mk" (is-decl (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (ctor "indNeg" liz)).
 
-indNeg_mk/decl : declared "indNeg.mk" (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) ctor
-   = declared/ok indNeg_mk/name (dkind-ok/ctor indNeg_mk/type-wf indNeg_mk/positivity indNeg/decl indNeg_mk/eisl indNeg_mk/fuo).
+indNeg_mk/decl : declared "indNeg.mk" (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (ctor "indNeg" liz)
+   = declared/ok-ctor indNeg_mk/name indNeg/name indNeg_mk/cmem indNeg_mk/eisl indNeg_mk/fuo (dkind-ok/ctor indNeg_mk/type-wf indNeg_mk/positivity).
 
 %% recursor indNeg.rec
 indNeg_rec/type-wf-sort : lvl
@@ -59,5 +68,5 @@ indNeg_rec/type-wf-sort : lvl
 indNeg_rec/type-wf : of (esort lzero) (esort indNeg_rec/type-wf-sort)
    = defeq/sort-refl.
 
-indNeg_rec/decl : declared "indNeg.rec" (esort lzero) irec
+indNeg_rec/decl : declared "indNeg.rec" (esort lzero) (irec "indNeg")
    = declared/ok-irec indNeg/rec-name (dkind-ok/irec indNeg_rec/type-wf).

@@ -13,10 +13,16 @@ misnamed_rec/ends-in-sort : ends-in-sort (esort (lsucc lzero))
 
 misnamed_rec/rec-name : name "misnamed_rec.rec" (is-rec-for "misnamed_rec").
 
-misnamed_rec/name : name "misnamed_rec" (is-decl (esort (lsucc lzero)) indt).
+misnamed_rec/clf : count-leading-foralls (esort (lsucc lzero)) liz
+   = (count-leading-foralls/zero not-forall/sort).
 
-misnamed_rec/decl : declared "misnamed_rec" (esort (lsucc lzero)) indt
-   = declared/ok misnamed_rec/name (dkind-ok/indt misnamed_rec/type-wf misnamed_rec/ends-in-sort).
+misnamed_rec/cnd : cnames-distinct (ccons "misnamed_rec.mk" cnil)
+   = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
+
+misnamed_rec/name : name "misnamed_rec" (is-decl (esort (lsucc lzero)) (indt (ccons "misnamed_rec.mk" cnil) liz)).
+
+misnamed_rec/decl : declared "misnamed_rec" (esort (lsucc lzero)) (indt (ccons "misnamed_rec.mk" cnil) liz)
+   = declared/ok-indt misnamed_rec/name misnamed_rec/rec-name misnamed_rec/clf misnamed_rec/cnd (dkind-ok/indt misnamed_rec/type-wf misnamed_rec/ends-in-sort).
 
 %% ctor misnamed_rec.mk (of misnamed_rec)
 misnamed_rec_mk/type-wf-sort : lvl
@@ -33,13 +39,16 @@ misnamed_rec_mk/positivity : ctor-positive "misnamed_rec" lnil (econst "misnamed
 misnamed_rec_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
+misnamed_rec_mk/cmem : cmem "misnamed_rec.mk" (ccons "misnamed_rec.mk" cnil)
+   = cmem/here.
+
 %%% HOLE: misnamed_rec_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
 misnamed_rec_mk/fuo : field-universes-ok-skip-params liz (econst "misnamed_rec" lnil) (lsucc lzero).
 
-misnamed_rec_mk/name : name "misnamed_rec.mk" (is-decl (econst "misnamed_rec" lnil) ctor).
+misnamed_rec_mk/name : name "misnamed_rec.mk" (is-decl (econst "misnamed_rec" lnil) (ctor "misnamed_rec" liz)).
 
-misnamed_rec_mk/decl : declared "misnamed_rec.mk" (econst "misnamed_rec" lnil) ctor
-   = declared/ok misnamed_rec_mk/name (dkind-ok/ctor misnamed_rec_mk/type-wf misnamed_rec_mk/positivity misnamed_rec/decl misnamed_rec_mk/eisl misnamed_rec_mk/fuo).
+misnamed_rec_mk/decl : declared "misnamed_rec.mk" (econst "misnamed_rec" lnil) (ctor "misnamed_rec" liz)
+   = declared/ok-ctor misnamed_rec_mk/name misnamed_rec/name misnamed_rec_mk/cmem misnamed_rec_mk/eisl misnamed_rec_mk/fuo (dkind-ok/ctor misnamed_rec_mk/type-wf misnamed_rec_mk/positivity).
 
 %% recursor misnamed_rec.not_rec
 misnamed_rec_not_rec/type-wf-sort : lvl
@@ -75,4 +84,4 @@ misnamed_rec_not_rec/type-wf : of
 %%% HOLE: recursor misnamed_rec.not_rec — name does not follow <inductive>.rec convention
 misnamed_rec_not_rec/decl : declared "misnamed_rec.not_rec"
   (eforall (eforall (econst "misnamed_rec" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "misnamed_rec.mk" lnil)) ([y] (eforall (econst "misnamed_rec" lnil) ([z] (eapp x z)))))))
-  irec.
+  (irec "<unknown>").

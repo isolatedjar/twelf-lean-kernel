@@ -14,10 +14,19 @@ inductWrongCtorResLevel/ends-in-sort : ends-in-sort (eforall (esort lzero) ([x] 
 
 inductWrongCtorResLevel/rec-name : name "inductWrongCtorResLevel.rec" (is-rec-for "inductWrongCtorResLevel").
 
-inductWrongCtorResLevel/name : name "inductWrongCtorResLevel" (is-decl (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) indt).
+inductWrongCtorResLevel/clf : count-leading-foralls (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) (lis (lis liz))
+   = (count-leading-foralls/succ
+       ([x]
+         (count-leading-foralls/succ
+           ([y] (count-leading-foralls/zero not-forall/sort))))).
 
-inductWrongCtorResLevel/decl : declared "inductWrongCtorResLevel" (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) indt
-   = declared/ok inductWrongCtorResLevel/name (dkind-ok/indt inductWrongCtorResLevel/type-wf inductWrongCtorResLevel/ends-in-sort).
+inductWrongCtorResLevel/cnd : cnames-distinct (ccons "inductWrongCtorResLevel.mk" cnil)
+   = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
+
+inductWrongCtorResLevel/name : name "inductWrongCtorResLevel" (is-decl (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) (indt (ccons "inductWrongCtorResLevel.mk" cnil) (lis (lis liz)))).
+
+inductWrongCtorResLevel/decl : declared "inductWrongCtorResLevel" (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) (indt (ccons "inductWrongCtorResLevel.mk" cnil) (lis (lis liz)))
+   = declared/ok-indt inductWrongCtorResLevel/name inductWrongCtorResLevel/rec-name inductWrongCtorResLevel/clf inductWrongCtorResLevel/cnd (dkind-ok/indt inductWrongCtorResLevel/type-wf inductWrongCtorResLevel/ends-in-sort).
 
 %% ctor inductWrongCtorResLevel.mk (of inductWrongCtorResLevel)
 inductWrongCtorResLevel_mk/type-wf-sort : lvl
@@ -59,17 +68,20 @@ inductWrongCtorResLevel_mk/eisl : ends-in-sort-with-level (eforall (esort lzero)
        ([x]
          (ends-in-sort-with-level/forall ([y] ends-in-sort-with-level/sort)))).
 
+inductWrongCtorResLevel_mk/cmem : cmem "inductWrongCtorResLevel.mk" (ccons "inductWrongCtorResLevel.mk" cnil)
+   = cmem/here.
+
 %%% HOLE: inductWrongCtorResLevel_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
 inductWrongCtorResLevel_mk/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResLevel" (lcons (lvar (lis liz)) (lcons (lvar liz) lnil))) x) y))))) (lsucc lzero).
 
 inductWrongCtorResLevel_mk/name : name "inductWrongCtorResLevel.mk" (is-decl
   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResLevel" (lcons (lvar (lis liz)) (lcons (lvar liz) lnil))) x) y)))))
-  ctor).
+  (ctor "inductWrongCtorResLevel" liz)).
 
 inductWrongCtorResLevel_mk/decl : declared "inductWrongCtorResLevel.mk"
   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResLevel" (lcons (lvar (lis liz)) (lcons (lvar liz) lnil))) x) y)))))
-  ctor
-   = declared/ok inductWrongCtorResLevel_mk/name (dkind-ok/ctor inductWrongCtorResLevel_mk/type-wf inductWrongCtorResLevel_mk/positivity inductWrongCtorResLevel/decl inductWrongCtorResLevel_mk/eisl inductWrongCtorResLevel_mk/fuo).
+  (ctor "inductWrongCtorResLevel" liz)
+   = declared/ok-ctor inductWrongCtorResLevel_mk/name inductWrongCtorResLevel/name inductWrongCtorResLevel_mk/cmem inductWrongCtorResLevel_mk/eisl inductWrongCtorResLevel_mk/fuo (dkind-ok/ctor inductWrongCtorResLevel_mk/type-wf inductWrongCtorResLevel_mk/positivity).
 
 %% recursor inductWrongCtorResLevel.rec
 inductWrongCtorResLevel_rec/type-wf-sort : lvl
@@ -78,5 +90,5 @@ inductWrongCtorResLevel_rec/type-wf-sort : lvl
 inductWrongCtorResLevel_rec/type-wf : of (esort lzero) (esort inductWrongCtorResLevel_rec/type-wf-sort)
    = defeq/sort-refl.
 
-inductWrongCtorResLevel_rec/decl : declared "inductWrongCtorResLevel.rec" (esort lzero) irec
+inductWrongCtorResLevel_rec/decl : declared "inductWrongCtorResLevel.rec" (esort lzero) (irec "inductWrongCtorResLevel")
    = declared/ok-irec inductWrongCtorResLevel/rec-name (dkind-ok/irec inductWrongCtorResLevel_rec/type-wf).
