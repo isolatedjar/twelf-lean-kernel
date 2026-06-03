@@ -194,10 +194,15 @@ NOT part of `IsDefEq`. They live in our TCB as separate closed families.
 
 The recursor and universe-consistency cases are notable because Lean's kernel
 _constructs_ the recursor and _enforces_ universe consistency during inductive
-elaboration. We accept whatever the export gives us. This is sound (we
-type-check what we're given) only if the export is trustworthy; the arena's
-threat model is the opposite, and `066_BogusRecursor` (§3.1) demonstrates a
-concrete attack the TCB lets through.
+elaboration, whereas our TCB re-derives neither — it accepts whatever recursor
+type and field universes the input supplies. That is a **soundness gap, full
+stop**, not a defensible trust choice: the kernel is supposed to validate these
+itself, and the arena's whole purpose is to feed it inputs that violate them.
+`066_BogusRecursor` (§3.1) is a concrete input the TCB wrongly accepts;
+`large-elim-prop` (`lf/soundness/`) drives the recursor gap all the way to a
+proof of `False`. Bringing recursor well-formedness and universe consistency
+*inside* the TCB is required, not optional. "The input is well-formed" is an
+assumption we explicitly reject.
 
 ### 3.1 Recursor-type soundness gap (the `066_BogusRecursor` finding)
 
@@ -705,14 +710,15 @@ term-level `name` to `string` throughout `tcb.elf` (mechanical; generated
 recursor's _own_ name to be `<ind>.rec` in general (needs a `+kind -string`
 uniqueness in the other direction).
 
-### 7.3 `lean.mm1` borrows + the trusted-export soundness gaps
+### 7.3 `lean.mm1` borrows + the inductive-acceptance soundness gaps
 
 Carneiro's `lean.mm1` is a _complete_ declarative spec of the same `IsDefEq`;
 where our TCB is partial it reads as a checklist. No bug found in rules we
-already check; the gaps are exactly the things §3 marks "we trust the export",
-which flip from _incomplete_ to _unsound_ if the export isn't trustworthy.
-**The §3.1 BogusRecursor finding turns "if the export isn't trustworthy"
-into "as soon as we run against the arena"**: the same audit applies to
+already check; the gaps are exactly the inductive-acceptance checks §3 marks
+missing/💥 — recursor well-formedness, ctor field-universe, ctor-set
+exhaustiveness. These are **soundness bugs**, not incompleteness: the TCB must
+perform these checks itself, and `066_BogusRecursor` / `large-elim-prop`
+already exhibit inputs that exploit their absence. The same audit applies to
 the two siblings below.
 
 - **Ctor field-universe constraints** — `lean.mm1`'s `ctor_Pi` carries
