@@ -53,10 +53,16 @@ reduceCtorType_mk/type-wf : of (eapp (eapp (econst "id" (lcons (lsucc (lsucc lze
 %%% HOLE
 reduceCtorType_mk/positivity : ctor-positive "reduceCtorType" lnil (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil)).
 
+reduceCtorType_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: reduceCtorType_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+reduceCtorType_mk/fuo : field-universes-ok-skip-params liz (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil)) (lsucc lzero).
+
 reduceCtorType_mk/name : name "reduceCtorType.mk" (is-decl (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil)) ctor).
 
 reduceCtorType_mk/decl : declared "reduceCtorType.mk" (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil)) ctor
-   = declared/ok reduceCtorType_mk/name (dkind-ok/ctor reduceCtorType_mk/type-wf reduceCtorType_mk/positivity).
+   = declared/ok reduceCtorType_mk/name (dkind-ok/ctor reduceCtorType_mk/type-wf reduceCtorType_mk/positivity reduceCtorType/decl reduceCtorType_mk/eisl reduceCtorType_mk/fuo).
 
 %% recursor reduceCtorType.rec
 reduceCtorType_rec/type-wf-sort : lvl

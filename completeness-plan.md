@@ -214,6 +214,7 @@ header and a comment explaining the attack. The table below is the
 current scoreboard (updated as fixes land; verify with a fresh
 `check-soundness.sh` run before quoting).
 
+<<<<<<< HEAD
 | File                                          | Type                            | Current verdict | Fix area              |
 | --------------------------------------------- | ------------------------------- | --------------- | --------------------- |
 | `arena tutorial/bad/066_BogusRecursor.ndjson` | true (recursor type wrong)      | 💥 accepted     | §3.1                  |
@@ -260,6 +261,30 @@ exactly the way `rec-slot-theft` already exercises.  A malicious
 translator that picks a non-canonical MRec doesn't get a False-route
 either — the env just has a non-standard recursor name, with `def
 <ind>.rec` as an unrelated definition.  Concrete plan moved to §3.3.
+=======
+| File                                            | Type                          | Current verdict | Fix area                |
+| ----------------------------------------------- | ----------------------------- | --------------- | ----------------------- |
+| `arena tutorial/bad/066_BogusRecursor.ndjson`    | true (recursor type wrong)    | 💥 accepted     | §3.1 rec-schema-canonical |
+| `arena bad/large-elim-imax-prop.ndjson`          | true (imax-disguised §3.1)    | 💥 accepted     | §3.1 (mleq handles imax) |
+| `lf/soundness/large-elim-prop.elf`               | true (derives `P ≡ Q : Prop`) | 💥 accepted     | §3.1 (LE-eligibility)   |
+| `arena bad/field-too-high-imax.ndjson`           | true (imax-disguised §3.2)    | 💥 accepted     | §3.2 (mleq handles imax) |
+| `lf/soundness/universe-too-high-field.elf`       | true (Girard route door)      | 💥 accepted     | §3.2 field-universe-ok  |
+| `lf/soundness/rec-name-slot.elf`                 | spec-compliance               | 💥 accepted     | §3.3 — hard w/o string ops |
+| `lf/soundness/level-var-elim-false.elf`          | regression                    | ✅ rejected      | already TCB             |
+| `lf/soundness/positivity-underabstraction.elf`   | regression                    | ✅ rejected      | already TCB             |
+| `lf/soundness/rec-slot-theft.elf`                | regression                    | ✅ rejected      | already TCB             |
+>>>>>>> 887b737 (updates - fewer trues, more soundness)
+
+**The two arena `imax`-disguised tests are *the same gap classes* as §3.1
+and §3.2** — they exploit a translator-side preflight bypass
+(`levelToNumber` doesn't normalize `imax 1 1 → 1` or `imax 1 0 → 0`), so the
+generator's gate misclassifies the sort and skips the check.  The TCB-side
+fixes in §3.1/§3.2 use `mleq` (Carneiro's algorithmic level inequality,
+§7.1), which handles `imax` natively — so closing §3.1 and §3.2 closes
+all four corresponding tests, not just the syntactic ones.  A translator-
+side `normalizeLevel` shim before `levelToNumber` would also close them,
+but that's a stopgap; the architectural move is to bring the check into
+the TCB so the translator's preflight cleverness is no longer load-bearing.
 
 ### 3.1 Recursor-type soundness gap (the `066_BogusRecursor` finding)
 
@@ -447,6 +472,46 @@ already malformed, which is exactly the desired behavior. The fix should
 require ~50 LF lines + a translator update to emit
 `field-universes-ok` witnesses (the translator can synthesize them
 mechanically by recursing on the ctor type).
+
+### 3.2.1 Status as of 2026-06-03 — partial landing
+
+**Landed in this session.** `lf/tcb.elf` now carries
+`ends-in-sort-with-level`, `not-forall`, `field-universes-ok`, and
+`field-universes-ok-skip-params`. `dkind-ok/ctor` requires the new
+premises. All four new families are frozen in `freeze.elf`. The translator
+in `src/generate-twelf.ts` synthesizes the structural `eisl` witness
+inline (a mechanical walk via `buildEisl`) and emits a bare-HOLE
+declaration for the `fuo` witness on the now-frozen
+`field-universes-ok-skip-params` family.
+
+**Arena verdict after the change** (145 tests):
+
+- Good: 25 ✅ / 58 🩹 / 10 ❌ — *28 previously-✅ tests dropped to 🩹*
+  (the expected cost of the soundness ratchet; recovers when the fuo
+  prover lands, below).
+- Bad: 17 ✅ / 35 🩹 / **0 💥** — soundness gap closed on the corpus.
+- Hand-written `lf/soundness/`: `universe-too-high-field.elf` aborts
+  cleanly (the file uses the *old* `dkind-ok/ctor` signature, which no
+  longer type-checks); `large-elim-prop.elf` also aborts for the same
+  reason (its ctors fail the signature change), though §3.1's `rec-
+  schema-canonical` is what actually closes the large-elim gap. (A file
+  that updates the ctor invocations to the new signature would re-expose
+  the large-elim soundness gap; the field-universes check is orthogonal.)
+- `rec-name-slot.elf` still 💥 — §3.3 work, not on this critical path.
+
+**Still open: fuo prover (planned for the next session).** The HOLE on
+every ctor's `fuo` is what's dropping 28 good tests. To recover them, a
+new Prover method (`fieldUniverses`) walks the ctor type, synthesizes
+each field's `defeq A A (esort UA)` via existing `synth.synthRec`
+machinery, and accumulates `mleq UA UInd 0` subgoals to be emitted as
+top-level `%solve` directives (mleq is decidable per §7.1; closed level
+expressions only, so the %solve never depends on LF binders).
+
+The prover's job is structural with one moving piece — the recursion
+under LF binders for each Π — and Twelf's `%solve` handles the per-field
+`mleq` cheaply.  Estimated: a day's work in `synth.ts`, plus the wiring
+through `prover.ts` + a small generator change to emit the witness
+inline instead of a HOLE.
 
 ### 3.3 Recursor-name slot (the `rec-name-slot.elf` finding)
 

@@ -68,10 +68,16 @@ Wrapper_mk/type-wf : of (eforall (econst "False" lnil) ([x] (econst "Wrapper" ln
 %%% HOLE
 Wrapper_mk/positivity : ctor-positive "Wrapper" lnil (eforall (econst "False" lnil) ([x] (econst "Wrapper" lnil))).
 
+Wrapper_mk/eisl : ends-in-sort-with-level (esort lzero) lzero
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: Wrapper_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+Wrapper_mk/fuo : field-universes-ok-skip-params liz (eforall (econst "False" lnil) ([x] (econst "Wrapper" lnil))) lzero.
+
 Wrapper_mk/name : name "Wrapper.mk" (is-decl (eforall (econst "False" lnil) ([x] (econst "Wrapper" lnil))) ctor).
 
 Wrapper_mk/decl : declared "Wrapper.mk" (eforall (econst "False" lnil) ([x] (econst "Wrapper" lnil))) ctor
-   = declared/ok Wrapper_mk/name (dkind-ok/ctor Wrapper_mk/type-wf Wrapper_mk/positivity).
+   = declared/ok Wrapper_mk/name (dkind-ok/ctor Wrapper_mk/type-wf Wrapper_mk/positivity Wrapper/decl Wrapper_mk/eisl Wrapper_mk/fuo).
 
 %% recursor Wrapper.rec
 %%% HOLE
@@ -113,10 +119,16 @@ True_intro/type-wf : of (econst "True" lnil) (esort True_intro/type-wf-sort).
 %%% HOLE
 True_intro/positivity : ctor-positive "True" lnil (econst "True" lnil).
 
+True_intro/eisl : ends-in-sort-with-level (esort lzero) lzero
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: True_intro/fuo — prover for field-universes-ok-skip-params not yet implemented
+True_intro/fuo : field-universes-ok-skip-params liz (econst "True" lnil) lzero.
+
 True_intro/name : name "True.intro" (is-decl (econst "True" lnil) ctor).
 
 True_intro/decl : declared "True.intro" (econst "True" lnil) ctor
-   = declared/ok True_intro/name (dkind-ok/ctor True_intro/type-wf True_intro/positivity).
+   = declared/ok True_intro/name (dkind-ok/ctor True_intro/type-wf True_intro/positivity True/decl True_intro/eisl True_intro/fuo).
 
 %% recursor True.rec
 %%% HOLE

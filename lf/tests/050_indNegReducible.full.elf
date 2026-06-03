@@ -93,10 +93,16 @@ indNegReducible_mk/type-wf : of (eforall (eforall (eapp (eapp (econst "constType
 %%% HOLE
 indNegReducible_mk/positivity : ctor-positive "indNegReducible" lnil (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil))).
 
+indNegReducible_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: indNegReducible_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+indNegReducible_mk/fuo : field-universes-ok-skip-params liz (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil))) (lsucc lzero).
+
 indNegReducible_mk/name : name "indNegReducible.mk" (is-decl (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil))) ctor).
 
 indNegReducible_mk/decl : declared "indNegReducible.mk" (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil))) ctor
-   = declared/ok indNegReducible_mk/name (dkind-ok/ctor indNegReducible_mk/type-wf indNegReducible_mk/positivity).
+   = declared/ok indNegReducible_mk/name (dkind-ok/ctor indNegReducible_mk/type-wf indNegReducible_mk/positivity indNegReducible/decl indNegReducible_mk/eisl indNegReducible_mk/fuo).
 
 %% recursor indNegReducible.rec
 indNegReducible_rec/type-wf-sort : lvl

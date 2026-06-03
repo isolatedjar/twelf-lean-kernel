@@ -30,10 +30,18 @@ Prod_mk/type-wf : of (eforall (esort (lsucc (lvar liz)))
 %%% HOLE
 Prod_mk/positivity : ctor-positive "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil)) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))).
 
+Prod_mk/eisl : ends-in-sort-with-level (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (esort (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz))))))))) (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz))))
+   = (ends-in-sort-with-level/forall
+       ([x]
+         (ends-in-sort-with-level/forall ([y] ends-in-sort-with-level/sort)))).
+
+%%% HOLE: Prod_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+Prod_mk/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz)))).
+
 Prod_mk/name : name "Prod.mk" (is-decl (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) ctor).
 
 Prod_mk/decl : declared "Prod.mk" (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) ctor
-   = declared/ok Prod_mk/name (dkind-ok/ctor Prod_mk/type-wf Prod_mk/positivity).
+   = declared/ok Prod_mk/name (dkind-ok/ctor Prod_mk/type-wf Prod_mk/positivity Prod/decl Prod_mk/eisl Prod_mk/fuo).
 
 %% recursor Prod.rec
 %%% HOLE
@@ -80,10 +88,21 @@ Eq_refl/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eap
 %%% HOLE
 Eq_refl/positivity : ctor-positive "Eq" (lcons (lvar liz) lnil) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))).
 
+Eq_refl/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) lzero
+   = (ends-in-sort-with-level/forall
+       ([x]
+         (ends-in-sort-with-level/forall
+           ([y]
+             (ends-in-sort-with-level/forall
+               ([z] ends-in-sort-with-level/sort)))))).
+
+%%% HOLE: Eq_refl/fuo — prover for field-universes-ok-skip-params not yet implemented
+Eq_refl/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) lzero.
+
 Eq_refl/name : name "Eq.refl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) ctor).
 
 Eq_refl/decl : declared "Eq.refl" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) ctor
-   = declared/ok Eq_refl/name (dkind-ok/ctor Eq_refl/type-wf Eq_refl/positivity).
+   = declared/ok Eq_refl/name (dkind-ok/ctor Eq_refl/type-wf Eq_refl/positivity Eq/decl Eq_refl/eisl Eq_refl/fuo).
 
 %% recursor Eq.rec
 %%% HOLE

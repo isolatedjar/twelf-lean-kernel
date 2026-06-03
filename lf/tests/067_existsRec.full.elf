@@ -102,10 +102,18 @@ Exists_intro/positivity : ctor-positive "Exists" (lcons (lvar liz) lnil) (eforal
                                  (applies-self/app
                                    applies-self/refl)))))))))))))))).
 
+Exists_intro/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (esort lzero))))) lzero
+   = (ends-in-sort-with-level/forall
+       ([x]
+         (ends-in-sort-with-level/forall ([y] ends-in-sort-with-level/sort)))).
+
+%%% HOLE: Exists_intro/fuo — prover for field-universes-ok-skip-params not yet implemented
+Exists_intro/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "Exists" (lcons (lvar liz) lnil)) x) y))))))))) lzero.
+
 Exists_intro/name : name "Exists.intro" (is-decl (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "Exists" (lcons (lvar liz) lnil)) x) y))))))))) ctor).
 
 Exists_intro/decl : declared "Exists.intro" (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "Exists" (lcons (lvar liz) lnil)) x) y))))))))) ctor
-   = declared/ok Exists_intro/name (dkind-ok/ctor Exists_intro/type-wf Exists_intro/positivity).
+   = declared/ok Exists_intro/name (dkind-ok/ctor Exists_intro/type-wf Exists_intro/positivity Exists/decl Exists_intro/eisl Exists_intro/fuo).
 
 %% recursor Exists.rec
 Exists_rec/type-wf-sort : lvl

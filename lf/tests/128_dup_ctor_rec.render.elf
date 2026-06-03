@@ -27,10 +27,16 @@ dup_ctor_rec_rec/type-wf : of (econst "dup_ctor_rec" lnil) (esort dup_ctor_rec_r
 %%% HOLE
 dup_ctor_rec_rec/positivity : ctor-positive "dup_ctor_rec" lnil (econst "dup_ctor_rec" lnil).
 
+dup_ctor_rec_rec/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: dup_ctor_rec_rec/fuo — prover for field-universes-ok-skip-params not yet implemented
+dup_ctor_rec_rec/fuo : field-universes-ok-skip-params liz (econst "dup_ctor_rec" lnil) (lsucc lzero).
+
 dup_ctor_rec_rec/name : name "dup_ctor_rec.rec" (is-decl (econst "dup_ctor_rec" lnil) ctor).
 
 dup_ctor_rec_rec/decl : declared "dup_ctor_rec.rec" (econst "dup_ctor_rec" lnil) ctor
-   = declared/ok dup_ctor_rec_rec/name (dkind-ok/ctor dup_ctor_rec_rec/type-wf dup_ctor_rec_rec/positivity).
+   = declared/ok dup_ctor_rec_rec/name (dkind-ok/ctor dup_ctor_rec_rec/type-wf dup_ctor_rec_rec/positivity dup_ctor_rec/decl dup_ctor_rec_rec/eisl dup_ctor_rec_rec/fuo).
 
 %% recursor dup_ctor_rec.rec
 %%% HOLE

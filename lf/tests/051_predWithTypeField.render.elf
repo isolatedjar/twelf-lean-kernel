@@ -27,10 +27,16 @@ PredWithTypeField_mk/type-wf : of (eforall (esort (lsucc lzero)) ([x] (econst "P
 %%% HOLE
 PredWithTypeField_mk/positivity : ctor-positive "PredWithTypeField" lnil (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil))).
 
+PredWithTypeField_mk/eisl : ends-in-sort-with-level (esort lzero) lzero
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: PredWithTypeField_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+PredWithTypeField_mk/fuo : field-universes-ok-skip-params liz (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil))) lzero.
+
 PredWithTypeField_mk/name : name "PredWithTypeField.mk" (is-decl (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil))) ctor).
 
 PredWithTypeField_mk/decl : declared "PredWithTypeField.mk" (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil))) ctor
-   = declared/ok PredWithTypeField_mk/name (dkind-ok/ctor PredWithTypeField_mk/type-wf PredWithTypeField_mk/positivity).
+   = declared/ok PredWithTypeField_mk/name (dkind-ok/ctor PredWithTypeField_mk/type-wf PredWithTypeField_mk/positivity PredWithTypeField/decl PredWithTypeField_mk/eisl PredWithTypeField_mk/fuo).
 
 %% recursor PredWithTypeField.rec
 %%% HOLE

@@ -27,10 +27,16 @@ BoolProp_a/type-wf : of (econst "BoolProp" lnil) (esort BoolProp_a/type-wf-sort)
 BoolProp_a/positivity : ctor-positive "BoolProp" lnil (econst "BoolProp" lnil)
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
+BoolProp_a/eisl : ends-in-sort-with-level (esort lzero) lzero
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: BoolProp_a/fuo — prover for field-universes-ok-skip-params not yet implemented
+BoolProp_a/fuo : field-universes-ok-skip-params liz (econst "BoolProp" lnil) lzero.
+
 BoolProp_a/name : name "BoolProp.a" (is-decl (econst "BoolProp" lnil) ctor).
 
 BoolProp_a/decl : declared "BoolProp.a" (econst "BoolProp" lnil) ctor
-   = declared/ok BoolProp_a/name (dkind-ok/ctor BoolProp_a/type-wf BoolProp_a/positivity).
+   = declared/ok BoolProp_a/name (dkind-ok/ctor BoolProp_a/type-wf BoolProp_a/positivity BoolProp/decl BoolProp_a/eisl BoolProp_a/fuo).
 
 %% ctor BoolProp.b (of BoolProp)
 BoolProp_b/type-wf-sort : lvl
@@ -42,10 +48,16 @@ BoolProp_b/type-wf : of (econst "BoolProp" lnil) (esort BoolProp_b/type-wf-sort)
 BoolProp_b/positivity : ctor-positive "BoolProp" lnil (econst "BoolProp" lnil)
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
+BoolProp_b/eisl : ends-in-sort-with-level (esort lzero) lzero
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: BoolProp_b/fuo — prover for field-universes-ok-skip-params not yet implemented
+BoolProp_b/fuo : field-universes-ok-skip-params liz (econst "BoolProp" lnil) lzero.
+
 BoolProp_b/name : name "BoolProp.b" (is-decl (econst "BoolProp" lnil) ctor).
 
 BoolProp_b/decl : declared "BoolProp.b" (econst "BoolProp" lnil) ctor
-   = declared/ok BoolProp_b/name (dkind-ok/ctor BoolProp_b/type-wf BoolProp_b/positivity).
+   = declared/ok BoolProp_b/name (dkind-ok/ctor BoolProp_b/type-wf BoolProp_b/positivity BoolProp/decl BoolProp_b/eisl BoolProp_b/fuo).
 
 %% recursor BoolProp.rec
 BoolProp_rec/type-wf-sort : lvl

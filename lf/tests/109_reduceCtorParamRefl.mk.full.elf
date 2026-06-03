@@ -229,10 +229,16 @@ reduceCtorParamRefl_mk/type-wf : of (eforall (eapp (eapp (econst "id" (lcons (ls
 %%% HOLE
 reduceCtorParamRefl_mk/positivity : ctor-positive "reduceCtorParamRefl" lnil (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero))) ([x] (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl" lnil) x)) (eapp (econst "reduceCtorParamRefl" lnil) x)))) ([y] (eapp (econst "reduceCtorParamRefl" lnil) x))))).
 
+reduceCtorParamRefl_mk/eisl : ends-in-sort-with-level (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (lsucc lzero)
+   = (ends-in-sort-with-level/forall ([x] ends-in-sort-with-level/sort)).
+
+%%% HOLE: reduceCtorParamRefl_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+reduceCtorParamRefl_mk/fuo : field-universes-ok-skip-params (lis liz) (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero))) ([x] (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl" lnil) x)) (eapp (econst "reduceCtorParamRefl" lnil) x)))) ([y] (eapp (econst "reduceCtorParamRefl" lnil) x))))) (lsucc lzero).
+
 reduceCtorParamRefl_mk/name : name "reduceCtorParamRefl.mk" (is-decl (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero))) ([x] (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl" lnil) x)) (eapp (econst "reduceCtorParamRefl" lnil) x)))) ([y] (eapp (econst "reduceCtorParamRefl" lnil) x))))) ctor).
 
 reduceCtorParamRefl_mk/decl : declared "reduceCtorParamRefl.mk" (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero))) ([x] (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl" lnil) x)) (eapp (econst "reduceCtorParamRefl" lnil) x)))) ([y] (eapp (econst "reduceCtorParamRefl" lnil) x))))) ctor
-   = declared/ok reduceCtorParamRefl_mk/name (dkind-ok/ctor reduceCtorParamRefl_mk/type-wf reduceCtorParamRefl_mk/positivity).
+   = declared/ok reduceCtorParamRefl_mk/name (dkind-ok/ctor reduceCtorParamRefl_mk/type-wf reduceCtorParamRefl_mk/positivity reduceCtorParamRefl/decl reduceCtorParamRefl_mk/eisl reduceCtorParamRefl_mk/fuo).
 
 %% recursor reduceCtorParamRefl.rec
 reduceCtorParamRefl_rec/type-wf-sort : lvl

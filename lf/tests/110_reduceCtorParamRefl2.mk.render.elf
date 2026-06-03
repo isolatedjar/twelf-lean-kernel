@@ -61,10 +61,16 @@ reduceCtorParamRefl2_mk/type-wf : of (eforall (eapp (eapp (econst "id" (lcons (l
 %%% HOLE
 reduceCtorParamRefl2_mk/positivity : ctor-positive "reduceCtorParamRefl2" lnil (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero))) ([x] (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x))) ([y] (eapp (econst "reduceCtorParamRefl2" lnil) x))))).
 
+reduceCtorParamRefl2_mk/eisl : ends-in-sort-with-level (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (lsucc lzero)
+   = (ends-in-sort-with-level/forall ([x] ends-in-sort-with-level/sort)).
+
+%%% HOLE: reduceCtorParamRefl2_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+reduceCtorParamRefl2_mk/fuo : field-universes-ok-skip-params (lis liz) (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero))) ([x] (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x))) ([y] (eapp (econst "reduceCtorParamRefl2" lnil) x))))) (lsucc lzero).
+
 reduceCtorParamRefl2_mk/name : name "reduceCtorParamRefl2.mk" (is-decl (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero))) ([x] (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x))) ([y] (eapp (econst "reduceCtorParamRefl2" lnil) x))))) ctor).
 
 reduceCtorParamRefl2_mk/decl : declared "reduceCtorParamRefl2.mk" (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero))) ([x] (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x))) ([y] (eapp (econst "reduceCtorParamRefl2" lnil) x))))) ctor
-   = declared/ok reduceCtorParamRefl2_mk/name (dkind-ok/ctor reduceCtorParamRefl2_mk/type-wf reduceCtorParamRefl2_mk/positivity).
+   = declared/ok reduceCtorParamRefl2_mk/name (dkind-ok/ctor reduceCtorParamRefl2_mk/type-wf reduceCtorParamRefl2_mk/positivity reduceCtorParamRefl2/decl reduceCtorParamRefl2_mk/eisl reduceCtorParamRefl2_mk/fuo).
 
 %% recursor reduceCtorParamRefl2.rec
 %%% HOLE

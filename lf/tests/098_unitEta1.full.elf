@@ -27,10 +27,16 @@ PUnit_unit/type-wf : of (econst "PUnit" (lcons (lvar liz) lnil)) (esort PUnit_un
 PUnit_unit/positivity : ctor-positive "PUnit" (lcons (lvar liz) lnil) (econst "PUnit" (lcons (lvar liz) lnil))
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
+PUnit_unit/eisl : ends-in-sort-with-level (esort (lvar liz)) (lvar liz)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: PUnit_unit/fuo — prover for field-universes-ok-skip-params not yet implemented
+PUnit_unit/fuo : field-universes-ok-skip-params liz (econst "PUnit" (lcons (lvar liz) lnil)) (lvar liz).
+
 PUnit_unit/name : name "PUnit.unit" (is-decl (econst "PUnit" (lcons (lvar liz) lnil)) ctor).
 
 PUnit_unit/decl : declared "PUnit.unit" (econst "PUnit" (lcons (lvar liz) lnil)) ctor
-   = declared/ok PUnit_unit/name (dkind-ok/ctor PUnit_unit/type-wf PUnit_unit/positivity).
+   = declared/ok PUnit_unit/name (dkind-ok/ctor PUnit_unit/type-wf PUnit_unit/positivity PUnit/decl PUnit_unit/eisl PUnit_unit/fuo).
 
 %% recursor PUnit.rec
 PUnit_rec/type-wf-sort : lvl
@@ -159,10 +165,21 @@ Eq_refl/positivity : ctor-positive "Eq" (lcons (lvar liz) lnil) (eforall (esort 
                      (applies-self/app
                        (applies-self/app applies-self/refl))))))))))).
 
+Eq_refl/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) lzero
+   = (ends-in-sort-with-level/forall
+       ([x]
+         (ends-in-sort-with-level/forall
+           ([y]
+             (ends-in-sort-with-level/forall
+               ([z] ends-in-sort-with-level/sort)))))).
+
+%%% HOLE: Eq_refl/fuo — prover for field-universes-ok-skip-params not yet implemented
+Eq_refl/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) lzero.
+
 Eq_refl/name : name "Eq.refl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) ctor).
 
 Eq_refl/decl : declared "Eq.refl" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) ctor
-   = declared/ok Eq_refl/name (dkind-ok/ctor Eq_refl/type-wf Eq_refl/positivity).
+   = declared/ok Eq_refl/name (dkind-ok/ctor Eq_refl/type-wf Eq_refl/positivity Eq/decl Eq_refl/eisl Eq_refl/fuo).
 
 %% recursor Eq.rec
 Eq_rec/type-wf-sort : lvl

@@ -41,10 +41,16 @@ indNeg_mk/type-wf : of (eforall (eforall (econst "indNeg" lnil) ([x] (econst "in
 %%% HOLE
 indNeg_mk/positivity : ctor-positive "indNeg" lnil (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))).
 
+indNeg_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: indNeg_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+indNeg_mk/fuo : field-universes-ok-skip-params liz (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (lsucc lzero).
+
 indNeg_mk/name : name "indNeg.mk" (is-decl (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) ctor).
 
 indNeg_mk/decl : declared "indNeg.mk" (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) ctor
-   = declared/ok indNeg_mk/name (dkind-ok/ctor indNeg_mk/type-wf indNeg_mk/positivity).
+   = declared/ok indNeg_mk/name (dkind-ok/ctor indNeg_mk/type-wf indNeg_mk/positivity indNeg/decl indNeg_mk/eisl indNeg_mk/fuo).
 
 %% recursor indNeg.rec
 indNeg_rec/type-wf-sort : lvl

@@ -27,6 +27,7 @@ import {
   levelParamIndices,
   lfExpr,
   lfExprDoc,
+  lfLevel,
   mangle,
   natLiteralsSeen,
   stringNeqFacts,
@@ -44,7 +45,8 @@ import type {
   Prover,
   TypeWfResult,
 } from "./shared.ts";
-import { nameToString, transformNamesFromJSON } from "./shared.ts";
+import { app, atom, lam, nameToString, transformNamesFromJSON } from "./shared.ts";
+import { freshVar } from "./render.ts";
 
 // =====================================================================
 // Output + Fmt pretty-printer (trusted, anti-injection)
@@ -496,6 +498,26 @@ function mentionsConst(e: Expr, name: string): boolean {
   }
 }
 
+// Structural witness for `ends-in-sort-with-level T L`: T is a Π chain ending
+// in `esort L`.  Both rules are determined by the syntactic shape of T:
+// at each `eforall A B` introduce a fresh LF variable and recurse on B,
+// emitting `(ends-in-sort-with-level/forall ([x] <rest>))`; at the result
+// `esort L`, emit `ends-in-sort-with-level/sort` (with L inferred).
+//
+// Called by the ctor emission to provide the eisl premise to `dkind-ok/ctor`.
+// No prover involvement — the witness is mechanical.
+function buildEisl(t: Expr, used: string[] = []): Fmt {
+  if (t.kind === "forallE") {
+    const x = freshVar(used);
+    const body = buildEisl(t.body, [x, ...used]);
+    return app(atom("ends-in-sort-with-level/forall"), lam(x, body));
+  }
+  // At a non-forall expression — must be esort for ends-in-sort-with-level
+  // to inhabit.  If it's not, Twelf will fail to type-check our witness;
+  // either way the ctor declines.
+  return atom("ends-in-sort-with-level/sort");
+}
+
 // A chain of `succ` over `zero` as a number, else null (we don't reason about
 // max/imax/param universes here).
 function levelToNumber(l: Level): number | null {
@@ -683,7 +705,48 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
         false,
       );
       const cp = emitCtorPositive(prover, c, indName, indLevels, mn, T);
-      emitDeclared(mn, declName, T, `ctor`, `(dkind-ok/ctor ${tw} ${cp})`);
+      // §3.2: dkind-ok/ctor now requires three more witnesses — the parent
+      // inductive's `declared`, an `ends-in-sort-with-level` derivation to
+      // surface its sort, and a `field-universes-ok-skip-params` derivation
+      // ensuring each field's sort is ≤ that sort (mleq).
+      //
+      // `eisl` is structural and we build it directly here (a fully-determined
+      // walk of the inductive's Π chain to the result sort).  `fuo` needs
+      // defeq + mleq subgoals for each field; that's prover work and lives
+      // behind `prover.fieldUniverses`.  When the prover returns null (the
+      // common case while the prover is incomplete), we emit a bare
+      // declaration on the frozen `field-universes-ok-skip-params` family,
+      // which %freeze rejects — so the ctor (and its env) declines.  That's
+      // a loss of completeness, not of soundness.
+      const indSpec = ind.types.find((t) => nameToString(t.name) === indName);
+      if (indSpec === undefined) {
+        skip(`ctor ${declName} — couldn't locate parent inductive ${indName}`);
+        return;
+      }
+      const indMn = mangle(indSpec.name);
+      const indUInd = inductiveResultUniverse(indSpec.type);
+      if (indUInd === null) {
+        skip(`ctor ${declName} — inductive ${indName} doesn't end in a concrete sort`);
+        return;
+      }
+      // eisl: structural walk of the inductive's Π chain.  ends-in-sort-with-
+      // level is closed, every node is determined by the syntactic shape.
+      const eislFmt = buildEisl(indSpec.type);
+      emit(`${mn}/eisl : ends-in-sort-with-level ${flatStr(lfExprDoc(indSpec.type, []))} ${lfLevel(indUInd)}`);
+      emit(`   = ${ppFmt(eislFmt, 5)}.`);
+      emit(``);
+      // fuo: bare HOLE on a frozen family until the prover can synthesize it.
+      // Freeze rejects bare declarations, so the ctor's whole env declines.
+      emit(`%%% HOLE: ${mn}/fuo — prover for field-universes-ok-skip-params not yet implemented`);
+      emit(`${mn}/fuo : field-universes-ok-skip-params ${lidxLit(c.numParams)} ${T} ${lfLevel(indUInd)}.`);
+      emit(``);
+      emitDeclared(
+        mn,
+        declName,
+        T,
+        `ctor`,
+        `(dkind-ok/ctor ${tw} ${cp} ${indMn}/decl ${mn}/eisl ${mn}/fuo)`,
+      );
     });
   }
   // Recursors.

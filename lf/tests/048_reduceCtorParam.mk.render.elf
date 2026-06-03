@@ -60,10 +60,16 @@ reduceCtorParam_mk/type-wf : of (eforall (eapp (eapp (econst "id" (lcons (lsucc 
 %%% HOLE
 reduceCtorParam_mk/positivity : ctor-positive "reduceCtorParam" lnil (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero))) ([x] (eforall (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParam" lnil) x)) (eapp (econst "reduceCtorParam" lnil) x)) ([y] (eapp (econst "reduceCtorParam" lnil) x))))).
 
+reduceCtorParam_mk/eisl : ends-in-sort-with-level (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (lsucc lzero)
+   = (ends-in-sort-with-level/forall ([x] ends-in-sort-with-level/sort)).
+
+%%% HOLE: reduceCtorParam_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+reduceCtorParam_mk/fuo : field-universes-ok-skip-params (lis liz) (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero))) ([x] (eforall (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParam" lnil) x)) (eapp (econst "reduceCtorParam" lnil) x)) ([y] (eapp (econst "reduceCtorParam" lnil) x))))) (lsucc lzero).
+
 reduceCtorParam_mk/name : name "reduceCtorParam.mk" (is-decl (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero))) ([x] (eforall (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParam" lnil) x)) (eapp (econst "reduceCtorParam" lnil) x)) ([y] (eapp (econst "reduceCtorParam" lnil) x))))) ctor).
 
 reduceCtorParam_mk/decl : declared "reduceCtorParam.mk" (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero))) ([x] (eforall (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParam" lnil) x)) (eapp (econst "reduceCtorParam" lnil) x)) ([y] (eapp (econst "reduceCtorParam" lnil) x))))) ctor
-   = declared/ok reduceCtorParam_mk/name (dkind-ok/ctor reduceCtorParam_mk/type-wf reduceCtorParam_mk/positivity).
+   = declared/ok reduceCtorParam_mk/name (dkind-ok/ctor reduceCtorParam_mk/type-wf reduceCtorParam_mk/positivity reduceCtorParam/decl reduceCtorParam_mk/eisl reduceCtorParam_mk/fuo).
 
 %% recursor reduceCtorParam.rec
 %%% HOLE

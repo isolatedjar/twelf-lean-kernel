@@ -31,10 +31,16 @@ Bool_false/type-wf : of (econst "Bool" lnil) (esort Bool_false/type-wf-sort)
 Bool_false/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil)
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
+Bool_false/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: Bool_false/fuo — prover for field-universes-ok-skip-params not yet implemented
+Bool_false/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
+
 Bool_false/name : name "Bool.false" (is-decl (econst "Bool" lnil) ctor).
 
 Bool_false/decl : declared "Bool.false" (econst "Bool" lnil) ctor
-   = declared/ok Bool_false/name (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity).
+   = declared/ok Bool_false/name (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity Bool/decl Bool_false/eisl Bool_false/fuo).
 
 %% ctor Bool.true (of Bool)
 Bool_true/type-wf-sort : lvl
@@ -46,10 +52,16 @@ Bool_true/type-wf : of (econst "Bool" lnil) (esort Bool_true/type-wf-sort)
 Bool_true/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil)
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
+Bool_true/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: Bool_true/fuo — prover for field-universes-ok-skip-params not yet implemented
+Bool_true/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
+
 Bool_true/name : name "Bool.true" (is-decl (econst "Bool" lnil) ctor).
 
 Bool_true/decl : declared "Bool.true" (econst "Bool" lnil) ctor
-   = declared/ok Bool_true/name (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity).
+   = declared/ok Bool_true/name (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity Bool/decl Bool_true/eisl Bool_true/fuo).
 
 %% recursor Bool.rec
 Bool_rec/type-wf-sort : lvl
@@ -225,10 +237,21 @@ SortElimProp2_mk/positivity : ctor-positive "SortElimProp2" lnil (eforall (econs
                            (applies-self/app
                              (applies-self/app applies-self/refl)))))))))))))).
 
+SortElimProp2_mk/eisl : ends-in-sort-with-level (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (esort lzero))))))) lzero
+   = (ends-in-sort-with-level/forall
+       ([x]
+         (ends-in-sort-with-level/forall
+           ([y]
+             (ends-in-sort-with-level/forall
+               ([z] ends-in-sort-with-level/sort)))))).
+
+%%% HOLE: SortElimProp2_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+SortElimProp2_mk/fuo : field-universes-ok-skip-params (lis liz) (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) z) (eapp (eapp (econst "id" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) y)))))))) lzero.
+
 SortElimProp2_mk/name : name "SortElimProp2.mk" (is-decl (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) z) (eapp (eapp (econst "id" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) y)))))))) ctor).
 
 SortElimProp2_mk/decl : declared "SortElimProp2.mk" (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp (eapp (eapp (econst "SortElimProp2" lnil) x) z) (eapp (eapp (econst "id" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) y)))))))) ctor
-   = declared/ok SortElimProp2_mk/name (dkind-ok/ctor SortElimProp2_mk/type-wf SortElimProp2_mk/positivity).
+   = declared/ok SortElimProp2_mk/name (dkind-ok/ctor SortElimProp2_mk/type-wf SortElimProp2_mk/positivity SortElimProp2/decl SortElimProp2_mk/eisl SortElimProp2_mk/fuo).
 
 %% recursor SortElimProp2.rec
 SortElimProp2_rec/type-wf-sort : lvl

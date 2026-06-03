@@ -27,10 +27,16 @@ PUnit_unit/type-wf : of (econst "PUnit" (lcons (lvar liz) lnil)) (esort PUnit_un
 %%% HOLE
 PUnit_unit/positivity : ctor-positive "PUnit" (lcons (lvar liz) lnil) (econst "PUnit" (lcons (lvar liz) lnil)).
 
+PUnit_unit/eisl : ends-in-sort-with-level (esort (lvar liz)) (lvar liz)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: PUnit_unit/fuo — prover for field-universes-ok-skip-params not yet implemented
+PUnit_unit/fuo : field-universes-ok-skip-params liz (econst "PUnit" (lcons (lvar liz) lnil)) (lvar liz).
+
 PUnit_unit/name : name "PUnit.unit" (is-decl (econst "PUnit" (lcons (lvar liz) lnil)) ctor).
 
 PUnit_unit/decl : declared "PUnit.unit" (econst "PUnit" (lcons (lvar liz) lnil)) ctor
-   = declared/ok PUnit_unit/name (dkind-ok/ctor PUnit_unit/type-wf PUnit_unit/positivity).
+   = declared/ok PUnit_unit/name (dkind-ok/ctor PUnit_unit/type-wf PUnit_unit/positivity PUnit/decl PUnit_unit/eisl PUnit_unit/fuo).
 
 %% recursor PUnit.rec
 %%% HOLE

@@ -30,10 +30,18 @@ PProd_mk/type-wf : of (eforall (esort (lvar liz))
 %%% HOLE
 PProd_mk/positivity : ctor-positive "PProd" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil)) (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "PProd" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))).
 
+PProd_mk/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (esort (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))))) (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))
+   = (ends-in-sort-with-level/forall
+       ([x]
+         (ends-in-sort-with-level/forall ([y] ends-in-sort-with-level/sort)))).
+
+%%% HOLE: PProd_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+PProd_mk/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "PProd" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz))).
+
 PProd_mk/name : name "PProd.mk" (is-decl (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "PProd" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) ctor).
 
 PProd_mk/decl : declared "PProd.mk" (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "PProd" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) ctor
-   = declared/ok PProd_mk/name (dkind-ok/ctor PProd_mk/type-wf PProd_mk/positivity).
+   = declared/ok PProd_mk/name (dkind-ok/ctor PProd_mk/type-wf PProd_mk/positivity PProd/decl PProd_mk/eisl PProd_mk/fuo).
 
 %% recursor PProd.rec
 %%% HOLE

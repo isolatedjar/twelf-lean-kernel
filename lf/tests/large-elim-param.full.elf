@@ -56,10 +56,16 @@ True_intro/type-wf : of (econst "True" lnil) (esort True_intro/type-wf-sort)
 True_intro/positivity : ctor-positive "True" lnil (econst "True" lnil)
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
+True_intro/eisl : ends-in-sort-with-level (esort lzero) lzero
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: True_intro/fuo — prover for field-universes-ok-skip-params not yet implemented
+True_intro/fuo : field-universes-ok-skip-params liz (econst "True" lnil) lzero.
+
 True_intro/name : name "True.intro" (is-decl (econst "True" lnil) ctor).
 
 True_intro/decl : declared "True.intro" (econst "True" lnil) ctor
-   = declared/ok True_intro/name (dkind-ok/ctor True_intro/type-wf True_intro/positivity).
+   = declared/ok True_intro/name (dkind-ok/ctor True_intro/type-wf True_intro/positivity True/decl True_intro/eisl True_intro/fuo).
 
 %% inductive MyBool
 MyBool/type-wf-sort : lvl
@@ -88,10 +94,16 @@ MyBool_tt/type-wf : of (econst "MyBool" (lcons (lvar liz) lnil)) (esort MyBool_t
 MyBool_tt/positivity : ctor-positive "MyBool" (lcons (lvar liz) lnil) (econst "MyBool" (lcons (lvar liz) lnil))
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
+MyBool_tt/eisl : ends-in-sort-with-level (esort (lvar liz)) (lvar liz)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: MyBool_tt/fuo — prover for field-universes-ok-skip-params not yet implemented
+MyBool_tt/fuo : field-universes-ok-skip-params liz (econst "MyBool" (lcons (lvar liz) lnil)) (lvar liz).
+
 MyBool_tt/name : name "MyBool.tt" (is-decl (econst "MyBool" (lcons (lvar liz) lnil)) ctor).
 
 MyBool_tt/decl : declared "MyBool.tt" (econst "MyBool" (lcons (lvar liz) lnil)) ctor
-   = declared/ok MyBool_tt/name (dkind-ok/ctor MyBool_tt/type-wf MyBool_tt/positivity).
+   = declared/ok MyBool_tt/name (dkind-ok/ctor MyBool_tt/type-wf MyBool_tt/positivity MyBool/decl MyBool_tt/eisl MyBool_tt/fuo).
 
 %% ctor MyBool.ff (of MyBool)
 MyBool_ff/type-wf-sort : lvl
@@ -103,10 +115,16 @@ MyBool_ff/type-wf : of (econst "MyBool" (lcons (lvar liz) lnil)) (esort MyBool_f
 MyBool_ff/positivity : ctor-positive "MyBool" (lcons (lvar liz) lnil) (econst "MyBool" (lcons (lvar liz) lnil))
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
+MyBool_ff/eisl : ends-in-sort-with-level (esort (lvar liz)) (lvar liz)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: MyBool_ff/fuo — prover for field-universes-ok-skip-params not yet implemented
+MyBool_ff/fuo : field-universes-ok-skip-params liz (econst "MyBool" (lcons (lvar liz) lnil)) (lvar liz).
+
 MyBool_ff/name : name "MyBool.ff" (is-decl (econst "MyBool" (lcons (lvar liz) lnil)) ctor).
 
 MyBool_ff/decl : declared "MyBool.ff" (econst "MyBool" (lcons (lvar liz) lnil)) ctor
-   = declared/ok MyBool_ff/name (dkind-ok/ctor MyBool_ff/type-wf MyBool_ff/positivity).
+   = declared/ok MyBool_ff/name (dkind-ok/ctor MyBool_ff/type-wf MyBool_ff/positivity MyBool/decl MyBool_ff/eisl MyBool_ff/fuo).
 
 %% def cast
 cast/type-wf-sort : lvl

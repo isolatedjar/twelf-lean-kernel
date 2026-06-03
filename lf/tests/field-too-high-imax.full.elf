@@ -53,10 +53,16 @@ Foo_mk/positivity : ctor-positive "Foo" lnil (eforall (esort (limax (lsucc lzero
          no-self-ref/sort)
        ([x] ([y] (ctor-spine/result applies-self/refl))))).
 
+Foo_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: Foo_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+Foo_mk/fuo : field-universes-ok-skip-params liz (eforall (esort (limax (lsucc lzero) (lsucc lzero))) ([x] (econst "Foo" lnil))) (lsucc lzero).
+
 Foo_mk/name : name "Foo.mk" (is-decl (eforall (esort (limax (lsucc lzero) (lsucc lzero))) ([x] (econst "Foo" lnil))) ctor).
 
 Foo_mk/decl : declared "Foo.mk" (eforall (esort (limax (lsucc lzero) (lsucc lzero))) ([x] (econst "Foo" lnil))) ctor
-   = declared/ok Foo_mk/name (dkind-ok/ctor Foo_mk/type-wf Foo_mk/positivity).
+   = declared/ok Foo_mk/name (dkind-ok/ctor Foo_mk/type-wf Foo_mk/positivity Foo/decl Foo_mk/eisl Foo_mk/fuo).
 
 %% recursor Foo.rec
 Foo_rec/type-wf-sort : lvl

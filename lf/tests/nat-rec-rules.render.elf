@@ -69,10 +69,16 @@ True_intro/type-wf : of (econst "True" lnil) (esort True_intro/type-wf-sort).
 %%% HOLE
 True_intro/positivity : ctor-positive "True" lnil (econst "True" lnil).
 
+True_intro/eisl : ends-in-sort-with-level (esort lzero) lzero
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: True_intro/fuo — prover for field-universes-ok-skip-params not yet implemented
+True_intro/fuo : field-universes-ok-skip-params liz (econst "True" lnil) lzero.
+
 True_intro/name : name "True.intro" (is-decl (econst "True" lnil) ctor).
 
 True_intro/decl : declared "True.intro" (econst "True" lnil) ctor
-   = declared/ok True_intro/name (dkind-ok/ctor True_intro/type-wf True_intro/positivity).
+   = declared/ok True_intro/name (dkind-ok/ctor True_intro/type-wf True_intro/positivity True/decl True_intro/eisl True_intro/fuo).
 
 %% recursor True.rec
 %%% HOLE
@@ -112,10 +118,16 @@ Bool_false/type-wf : of (econst "Bool" lnil) (esort Bool_false/type-wf-sort).
 %%% HOLE
 Bool_false/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil).
 
+Bool_false/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: Bool_false/fuo — prover for field-universes-ok-skip-params not yet implemented
+Bool_false/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
+
 Bool_false/name : name "Bool.false" (is-decl (econst "Bool" lnil) ctor).
 
 Bool_false/decl : declared "Bool.false" (econst "Bool" lnil) ctor
-   = declared/ok Bool_false/name (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity).
+   = declared/ok Bool_false/name (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity Bool/decl Bool_false/eisl Bool_false/fuo).
 
 %% ctor Bool.true (of Bool)
 %%% HOLE
@@ -127,10 +139,16 @@ Bool_true/type-wf : of (econst "Bool" lnil) (esort Bool_true/type-wf-sort).
 %%% HOLE
 Bool_true/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil).
 
+Bool_true/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: Bool_true/fuo — prover for field-universes-ok-skip-params not yet implemented
+Bool_true/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
+
 Bool_true/name : name "Bool.true" (is-decl (econst "Bool" lnil) ctor).
 
 Bool_true/decl : declared "Bool.true" (econst "Bool" lnil) ctor
-   = declared/ok Bool_true/name (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity).
+   = declared/ok Bool_true/name (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity Bool/decl Bool_true/eisl Bool_true/fuo).
 
 %% recursor Bool.rec
 %%% HOLE
@@ -172,10 +190,16 @@ Nat_zero/type-wf : of (econst "Nat" lnil) (esort Nat_zero/type-wf-sort).
 %%% HOLE
 Nat_zero/positivity : ctor-positive "Nat" lnil (econst "Nat" lnil).
 
+Nat_zero/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: Nat_zero/fuo — prover for field-universes-ok-skip-params not yet implemented
+Nat_zero/fuo : field-universes-ok-skip-params liz (econst "Nat" lnil) (lsucc lzero).
+
 Nat_zero/name : name "Nat.zero" (is-decl (econst "Nat" lnil) ctor).
 
 Nat_zero/decl : declared "Nat.zero" (econst "Nat" lnil) ctor
-   = declared/ok Nat_zero/name (dkind-ok/ctor Nat_zero/type-wf Nat_zero/positivity).
+   = declared/ok Nat_zero/name (dkind-ok/ctor Nat_zero/type-wf Nat_zero/positivity Nat/decl Nat_zero/eisl Nat_zero/fuo).
 
 %% ctor Nat.succ (of Nat)
 %%% HOLE
@@ -187,10 +211,16 @@ Nat_succ/type-wf : of (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (e
 %%% HOLE
 Nat_succ/positivity : ctor-positive "Nat" lnil (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))).
 
+Nat_succ/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: Nat_succ/fuo — prover for field-universes-ok-skip-params not yet implemented
+Nat_succ/fuo : field-universes-ok-skip-params liz (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (lsucc lzero).
+
 Nat_succ/name : name "Nat.succ" (is-decl (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) ctor).
 
 Nat_succ/decl : declared "Nat.succ" (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) ctor
-   = declared/ok Nat_succ/name (dkind-ok/ctor Nat_succ/type-wf Nat_succ/positivity).
+   = declared/ok Nat_succ/name (dkind-ok/ctor Nat_succ/type-wf Nat_succ/positivity Nat/decl Nat_succ/eisl Nat_succ/fuo).
 
 %% recursor Nat.rec
 %%% HOLE

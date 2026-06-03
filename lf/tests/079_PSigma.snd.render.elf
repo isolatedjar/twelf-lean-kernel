@@ -31,10 +31,18 @@ PSigma_mk/type-wf : of (eforall (esort (lvar liz))
 %%% HOLE
 PSigma_mk/positivity : ctor-positive "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil)) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))).
 
+PSigma_mk/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (esort (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))))) (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))
+   = (ends-in-sort-with-level/forall
+       ([x]
+         (ends-in-sort-with-level/forall ([y] ends-in-sort-with-level/sort)))).
+
+%%% HOLE: PSigma_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+PSigma_mk/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz))).
+
 PSigma_mk/name : name "PSigma.mk" (is-decl (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) ctor).
 
 PSigma_mk/decl : declared "PSigma.mk" (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) ctor
-   = declared/ok PSigma_mk/name (dkind-ok/ctor PSigma_mk/type-wf PSigma_mk/positivity).
+   = declared/ok PSigma_mk/name (dkind-ok/ctor PSigma_mk/type-wf PSigma_mk/positivity PSigma/decl PSigma_mk/eisl PSigma_mk/fuo).
 
 %% recursor PSigma.rec
 %%% HOLE

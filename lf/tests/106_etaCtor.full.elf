@@ -37,10 +37,16 @@ True_intro/type-wf : of (econst "True" lnil) (esort True_intro/type-wf-sort)
 True_intro/positivity : ctor-positive "True" lnil (econst "True" lnil)
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
+True_intro/eisl : ends-in-sort-with-level (esort lzero) lzero
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: True_intro/fuo — prover for field-universes-ok-skip-params not yet implemented
+True_intro/fuo : field-universes-ok-skip-params liz (econst "True" lnil) lzero.
+
 True_intro/name : name "True.intro" (is-decl (econst "True" lnil) ctor).
 
 True_intro/decl : declared "True.intro" (econst "True" lnil) ctor
-   = declared/ok True_intro/name (dkind-ok/ctor True_intro/type-wf True_intro/positivity).
+   = declared/ok True_intro/name (dkind-ok/ctor True_intro/type-wf True_intro/positivity True/decl True_intro/eisl True_intro/fuo).
 
 %% recursor True.rec
 True_rec/type-wf-sort : lvl
@@ -96,10 +102,16 @@ Bool_false/type-wf : of (econst "Bool" lnil) (esort Bool_false/type-wf-sort)
 Bool_false/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil)
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
+Bool_false/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: Bool_false/fuo — prover for field-universes-ok-skip-params not yet implemented
+Bool_false/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
+
 Bool_false/name : name "Bool.false" (is-decl (econst "Bool" lnil) ctor).
 
 Bool_false/decl : declared "Bool.false" (econst "Bool" lnil) ctor
-   = declared/ok Bool_false/name (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity).
+   = declared/ok Bool_false/name (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity Bool/decl Bool_false/eisl Bool_false/fuo).
 
 %% ctor Bool.true (of Bool)
 Bool_true/type-wf-sort : lvl
@@ -111,10 +123,16 @@ Bool_true/type-wf : of (econst "Bool" lnil) (esort Bool_true/type-wf-sort)
 Bool_true/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil)
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
+Bool_true/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: Bool_true/fuo — prover for field-universes-ok-skip-params not yet implemented
+Bool_true/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
+
 Bool_true/name : name "Bool.true" (is-decl (econst "Bool" lnil) ctor).
 
 Bool_true/decl : declared "Bool.true" (econst "Bool" lnil) ctor
-   = declared/ok Bool_true/name (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity).
+   = declared/ok Bool_true/name (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity Bool/decl Bool_true/eisl Bool_true/fuo).
 
 %% recursor Bool.rec
 Bool_rec/type-wf-sort : lvl
@@ -200,10 +218,16 @@ T_mk/positivity : ctor-positive "T" lnil (eforall (econst "Bool" lnil) ([x] (efo
                (no-self-ref/const sneq/1))
              ([z] ([w] (ctor-spine/result applies-self/refl)))))))).
 
+T_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: T_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+T_mk/fuo : field-universes-ok-skip-params liz (eforall (econst "Bool" lnil) ([x] (eforall (econst "True" lnil) ([y] (econst "T" lnil))))) (lsucc lzero).
+
 T_mk/name : name "T.mk" (is-decl (eforall (econst "Bool" lnil) ([x] (eforall (econst "True" lnil) ([y] (econst "T" lnil))))) ctor).
 
 T_mk/decl : declared "T.mk" (eforall (econst "Bool" lnil) ([x] (eforall (econst "True" lnil) ([y] (econst "T" lnil))))) ctor
-   = declared/ok T_mk/name (dkind-ok/ctor T_mk/type-wf T_mk/positivity).
+   = declared/ok T_mk/name (dkind-ok/ctor T_mk/type-wf T_mk/positivity T/decl T_mk/eisl T_mk/fuo).
 
 %% recursor T.rec
 T_rec/type-wf-sort : lvl
@@ -341,10 +365,21 @@ Eq_refl/positivity : ctor-positive "Eq" (lcons (lvar liz) lnil) (eforall (esort 
                      (applies-self/app
                        (applies-self/app applies-self/refl))))))))))).
 
+Eq_refl/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) lzero
+   = (ends-in-sort-with-level/forall
+       ([x]
+         (ends-in-sort-with-level/forall
+           ([y]
+             (ends-in-sort-with-level/forall
+               ([z] ends-in-sort-with-level/sort)))))).
+
+%%% HOLE: Eq_refl/fuo — prover for field-universes-ok-skip-params not yet implemented
+Eq_refl/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) lzero.
+
 Eq_refl/name : name "Eq.refl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) ctor).
 
 Eq_refl/decl : declared "Eq.refl" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) ctor
-   = declared/ok Eq_refl/name (dkind-ok/ctor Eq_refl/type-wf Eq_refl/positivity).
+   = declared/ok Eq_refl/name (dkind-ok/ctor Eq_refl/type-wf Eq_refl/positivity Eq/decl Eq_refl/eisl Eq_refl/fuo).
 
 %% recursor Eq.rec
 Eq_rec/type-wf-sort : lvl

@@ -28,10 +28,16 @@ N_zero/type-wf : of (econst "N" lnil) (esort N_zero/type-wf-sort).
 %%% HOLE
 N_zero/positivity : ctor-positive "N" lnil (econst "N" lnil).
 
+N_zero/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: N_zero/fuo — prover for field-universes-ok-skip-params not yet implemented
+N_zero/fuo : field-universes-ok-skip-params liz (econst "N" lnil) (lsucc lzero).
+
 N_zero/name : name "N.zero" (is-decl (econst "N" lnil) ctor).
 
 N_zero/decl : declared "N.zero" (econst "N" lnil) ctor
-   = declared/ok N_zero/name (dkind-ok/ctor N_zero/type-wf N_zero/positivity).
+   = declared/ok N_zero/name (dkind-ok/ctor N_zero/type-wf N_zero/positivity N/decl N_zero/eisl N_zero/fuo).
 
 %% ctor N.succ (of N)
 %%% HOLE
@@ -43,10 +49,16 @@ N_succ/type-wf : of (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (esort N
 %%% HOLE
 N_succ/positivity : ctor-positive "N" lnil (eforall (econst "N" lnil) ([x] (econst "N" lnil))).
 
+N_succ/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: N_succ/fuo — prover for field-universes-ok-skip-params not yet implemented
+N_succ/fuo : field-universes-ok-skip-params liz (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (lsucc lzero).
+
 N_succ/name : name "N.succ" (is-decl (eforall (econst "N" lnil) ([x] (econst "N" lnil))) ctor).
 
 N_succ/decl : declared "N.succ" (eforall (econst "N" lnil) ([x] (econst "N" lnil))) ctor
-   = declared/ok N_succ/name (dkind-ok/ctor N_succ/type-wf N_succ/positivity).
+   = declared/ok N_succ/name (dkind-ok/ctor N_succ/type-wf N_succ/positivity N/decl N_succ/eisl N_succ/fuo).
 
 %% recursor N.rec
 %%% HOLE
@@ -90,10 +102,16 @@ True_intro/type-wf : of (econst "True" lnil) (esort True_intro/type-wf-sort).
 %%% HOLE
 True_intro/positivity : ctor-positive "True" lnil (econst "True" lnil).
 
+True_intro/eisl : ends-in-sort-with-level (esort lzero) lzero
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: True_intro/fuo — prover for field-universes-ok-skip-params not yet implemented
+True_intro/fuo : field-universes-ok-skip-params liz (econst "True" lnil) lzero.
+
 True_intro/name : name "True.intro" (is-decl (econst "True" lnil) ctor).
 
 True_intro/decl : declared "True.intro" (econst "True" lnil) ctor
-   = declared/ok True_intro/name (dkind-ok/ctor True_intro/type-wf True_intro/positivity).
+   = declared/ok True_intro/name (dkind-ok/ctor True_intro/type-wf True_intro/positivity True/decl True_intro/eisl True_intro/fuo).
 
 %% recursor True.rec
 %%% HOLE
@@ -133,10 +151,16 @@ ProjDataIndex_mk/type-wf : of (eforall (econst "N" lnil) ([x] (eforall (econst "
 %%% HOLE
 ProjDataIndex_mk/positivity : ctor-positive "ProjDataIndex" lnil (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp (econst "ProjDataIndex" lnil) x))))).
 
+ProjDataIndex_mk/eisl : ends-in-sort-with-level (eforall (econst "N" lnil) ([x] (esort lzero))) lzero
+   = (ends-in-sort-with-level/forall ([x] ends-in-sort-with-level/sort)).
+
+%%% HOLE: ProjDataIndex_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+ProjDataIndex_mk/fuo : field-universes-ok-skip-params (lis liz) (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp (econst "ProjDataIndex" lnil) x))))) lzero.
+
 ProjDataIndex_mk/name : name "ProjDataIndex.mk" (is-decl (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp (econst "ProjDataIndex" lnil) x))))) ctor).
 
 ProjDataIndex_mk/decl : declared "ProjDataIndex.mk" (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp (econst "ProjDataIndex" lnil) x))))) ctor
-   = declared/ok ProjDataIndex_mk/name (dkind-ok/ctor ProjDataIndex_mk/type-wf ProjDataIndex_mk/positivity).
+   = declared/ok ProjDataIndex_mk/name (dkind-ok/ctor ProjDataIndex_mk/type-wf ProjDataIndex_mk/positivity ProjDataIndex/decl ProjDataIndex_mk/eisl ProjDataIndex_mk/fuo).
 
 %% recursor ProjDataIndex.rec
 %%% HOLE

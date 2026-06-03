@@ -27,10 +27,16 @@ TypeWithTypeField_mk/type-wf : of (eforall (esort (lsucc lzero)) ([x] (econst "T
 %%% HOLE
 TypeWithTypeField_mk/positivity : ctor-positive "TypeWithTypeField" lnil (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil))).
 
+TypeWithTypeField_mk/eisl : ends-in-sort-with-level (esort (lsucc (lsucc lzero))) (lsucc (lsucc lzero))
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: TypeWithTypeField_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+TypeWithTypeField_mk/fuo : field-universes-ok-skip-params liz (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil))) (lsucc (lsucc lzero)).
+
 TypeWithTypeField_mk/name : name "TypeWithTypeField.mk" (is-decl (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil))) ctor).
 
 TypeWithTypeField_mk/decl : declared "TypeWithTypeField.mk" (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil))) ctor
-   = declared/ok TypeWithTypeField_mk/name (dkind-ok/ctor TypeWithTypeField_mk/type-wf TypeWithTypeField_mk/positivity).
+   = declared/ok TypeWithTypeField_mk/name (dkind-ok/ctor TypeWithTypeField_mk/type-wf TypeWithTypeField_mk/positivity TypeWithTypeField/decl TypeWithTypeField_mk/eisl TypeWithTypeField_mk/fuo).
 
 %% recursor TypeWithTypeField.rec
 %%% HOLE

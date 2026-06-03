@@ -29,10 +29,16 @@ PUnit_unit/type-wf : of (econst "PUnit" (lcons (lvar liz) lnil)) (esort PUnit_un
 %%% HOLE
 PUnit_unit/positivity : ctor-positive "PUnit" (lcons (lvar liz) lnil) (econst "PUnit" (lcons (lvar liz) lnil)).
 
+PUnit_unit/eisl : ends-in-sort-with-level (esort (lvar liz)) (lvar liz)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: PUnit_unit/fuo — prover for field-universes-ok-skip-params not yet implemented
+PUnit_unit/fuo : field-universes-ok-skip-params liz (econst "PUnit" (lcons (lvar liz) lnil)) (lvar liz).
+
 PUnit_unit/name : name "PUnit.unit" (is-decl (econst "PUnit" (lcons (lvar liz) lnil)) ctor).
 
 PUnit_unit/decl : declared "PUnit.unit" (econst "PUnit" (lcons (lvar liz) lnil)) ctor
-   = declared/ok PUnit_unit/name (dkind-ok/ctor PUnit_unit/type-wf PUnit_unit/positivity).
+   = declared/ok PUnit_unit/name (dkind-ok/ctor PUnit_unit/type-wf PUnit_unit/positivity PUnit/decl PUnit_unit/eisl PUnit_unit/fuo).
 
 %% recursor PUnit.rec
 %%% HOLE
@@ -74,10 +80,21 @@ Eq_refl/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eap
 %%% HOLE
 Eq_refl/positivity : ctor-positive "Eq" (lcons (lvar liz) lnil) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))).
 
+Eq_refl/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) lzero
+   = (ends-in-sort-with-level/forall
+       ([x]
+         (ends-in-sort-with-level/forall
+           ([y]
+             (ends-in-sort-with-level/forall
+               ([z] ends-in-sort-with-level/sort)))))).
+
+%%% HOLE: Eq_refl/fuo — prover for field-universes-ok-skip-params not yet implemented
+Eq_refl/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) lzero.
+
 Eq_refl/name : name "Eq.refl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) ctor).
 
 Eq_refl/decl : declared "Eq.refl" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) ctor
-   = declared/ok Eq_refl/name (dkind-ok/ctor Eq_refl/type-wf Eq_refl/positivity).
+   = declared/ok Eq_refl/name (dkind-ok/ctor Eq_refl/type-wf Eq_refl/positivity Eq/decl Eq_refl/eisl Eq_refl/fuo).
 
 %% recursor Eq.rec
 %%% HOLE
@@ -135,10 +152,16 @@ PropStructure_mk/type-wf : of (eforall (econst "PUnit" (lcons (lvar liz) lnil))
 %%% HOLE
 PropStructure_mk/positivity : ctor-positive "PropStructure" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil)) (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([x] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([y] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([z] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([w] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) (econst "PUnit" (lcons (lvar (lis liz)) lnil))) w) w) ([x1] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([y1] (econst "PropStructure" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))))))))))))))).
 
+PropStructure_mk/eisl : ends-in-sort-with-level (esort lzero) lzero
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: PropStructure_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+PropStructure_mk/fuo : field-universes-ok-skip-params liz (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([x] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([y] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([z] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([w] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) (econst "PUnit" (lcons (lvar (lis liz)) lnil))) w) w) ([x1] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([y1] (econst "PropStructure" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))))))))))))))) lzero.
+
 PropStructure_mk/name : name "PropStructure.mk" (is-decl (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([x] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([y] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([z] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([w] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) (econst "PUnit" (lcons (lvar (lis liz)) lnil))) w) w) ([x1] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([y1] (econst "PropStructure" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))))))))))))))) ctor).
 
 PropStructure_mk/decl : declared "PropStructure.mk" (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([x] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([y] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([z] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([w] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) (econst "PUnit" (lcons (lvar (lis liz)) lnil))) w) w) ([x1] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([y1] (econst "PropStructure" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))))))))))))))) ctor
-   = declared/ok PropStructure_mk/name (dkind-ok/ctor PropStructure_mk/type-wf PropStructure_mk/positivity).
+   = declared/ok PropStructure_mk/name (dkind-ok/ctor PropStructure_mk/type-wf PropStructure_mk/positivity PropStructure/decl PropStructure_mk/eisl PropStructure_mk/fuo).
 
 %% recursor PropStructure.rec
 %%% HOLE

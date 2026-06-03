@@ -44,10 +44,16 @@ dup_rec_def_mk/type-wf : of (econst "dup_rec_def" lnil) (esort dup_rec_def_mk/ty
 dup_rec_def_mk/positivity : ctor-positive "dup_rec_def" lnil (econst "dup_rec_def" lnil)
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
+dup_rec_def_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: dup_rec_def_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+dup_rec_def_mk/fuo : field-universes-ok-skip-params liz (econst "dup_rec_def" lnil) (lsucc lzero).
+
 dup_rec_def_mk/name : name "dup_rec_def.mk" (is-decl (econst "dup_rec_def" lnil) ctor).
 
 dup_rec_def_mk/decl : declared "dup_rec_def.mk" (econst "dup_rec_def" lnil) ctor
-   = declared/ok dup_rec_def_mk/name (dkind-ok/ctor dup_rec_def_mk/type-wf dup_rec_def_mk/positivity).
+   = declared/ok dup_rec_def_mk/name (dkind-ok/ctor dup_rec_def_mk/type-wf dup_rec_def_mk/positivity dup_rec_def/decl dup_rec_def_mk/eisl dup_rec_def_mk/fuo).
 
 %% recursor dup_rec_def.rec
 dup_rec_def_rec/type-wf-sort : lvl

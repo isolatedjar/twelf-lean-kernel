@@ -27,10 +27,16 @@ List_nil/type-wf : of (eforall (esort (lsucc (lvar liz))) ([x] (eapp (econst "Li
 %%% HOLE
 List_nil/positivity : ctor-positive "List" (lcons (lvar liz) lnil) (eforall (esort (lsucc (lvar liz))) ([x] (eapp (econst "List" (lcons (lvar liz) lnil)) x))).
 
+List_nil/eisl : ends-in-sort-with-level (eforall (esort (lsucc (lvar liz))) ([x] (esort (lsucc (lvar liz))))) (lsucc (lvar liz))
+   = (ends-in-sort-with-level/forall ([x] ends-in-sort-with-level/sort)).
+
+%%% HOLE: List_nil/fuo — prover for field-universes-ok-skip-params not yet implemented
+List_nil/fuo : field-universes-ok-skip-params (lis liz) (eforall (esort (lsucc (lvar liz))) ([x] (eapp (econst "List" (lcons (lvar liz) lnil)) x))) (lsucc (lvar liz)).
+
 List_nil/name : name "List.nil" (is-decl (eforall (esort (lsucc (lvar liz))) ([x] (eapp (econst "List" (lcons (lvar liz) lnil)) x))) ctor).
 
 List_nil/decl : declared "List.nil" (eforall (esort (lsucc (lvar liz))) ([x] (eapp (econst "List" (lcons (lvar liz) lnil)) x))) ctor
-   = declared/ok List_nil/name (dkind-ok/ctor List_nil/type-wf List_nil/positivity).
+   = declared/ok List_nil/name (dkind-ok/ctor List_nil/type-wf List_nil/positivity List/decl List_nil/eisl List_nil/fuo).
 
 %% ctor List.cons (of List)
 %%% HOLE
@@ -43,10 +49,16 @@ List_cons/type-wf : of (eforall (esort (lsucc (lvar liz)))
 %%% HOLE
 List_cons/positivity : ctor-positive "List" (lcons (lvar liz) lnil) (eforall (esort (lsucc (lvar liz))) ([x] (eforall x ([y] (eforall (eapp (econst "List" (lcons (lvar liz) lnil)) x) ([z] (eapp (econst "List" (lcons (lvar liz) lnil)) x))))))).
 
+List_cons/eisl : ends-in-sort-with-level (eforall (esort (lsucc (lvar liz))) ([x] (esort (lsucc (lvar liz))))) (lsucc (lvar liz))
+   = (ends-in-sort-with-level/forall ([x] ends-in-sort-with-level/sort)).
+
+%%% HOLE: List_cons/fuo — prover for field-universes-ok-skip-params not yet implemented
+List_cons/fuo : field-universes-ok-skip-params (lis liz) (eforall (esort (lsucc (lvar liz))) ([x] (eforall x ([y] (eforall (eapp (econst "List" (lcons (lvar liz) lnil)) x) ([z] (eapp (econst "List" (lcons (lvar liz) lnil)) x))))))) (lsucc (lvar liz)).
+
 List_cons/name : name "List.cons" (is-decl (eforall (esort (lsucc (lvar liz))) ([x] (eforall x ([y] (eforall (eapp (econst "List" (lcons (lvar liz) lnil)) x) ([z] (eapp (econst "List" (lcons (lvar liz) lnil)) x))))))) ctor).
 
 List_cons/decl : declared "List.cons" (eforall (esort (lsucc (lvar liz))) ([x] (eforall x ([y] (eforall (eapp (econst "List" (lcons (lvar liz) lnil)) x) ([z] (eapp (econst "List" (lcons (lvar liz) lnil)) x))))))) ctor
-   = declared/ok List_cons/name (dkind-ok/ctor List_cons/type-wf List_cons/positivity).
+   = declared/ok List_cons/name (dkind-ok/ctor List_cons/type-wf List_cons/positivity List/decl List_cons/eisl List_cons/fuo).
 
 %% recursor List.rec
 %%% HOLE
@@ -95,10 +107,18 @@ And_intro/type-wf : of (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (
 %%% HOLE
 And_intro/positivity : ctor-positive "And" lnil (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))).
 
+And_intro/eisl : ends-in-sort-with-level (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) lzero
+   = (ends-in-sort-with-level/forall
+       ([x]
+         (ends-in-sort-with-level/forall ([y] ends-in-sort-with-level/sort)))).
+
+%%% HOLE: And_intro/fuo — prover for field-universes-ok-skip-params not yet implemented
+And_intro/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) lzero.
+
 And_intro/name : name "And.intro" (is-decl (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) ctor).
 
 And_intro/decl : declared "And.intro" (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) ctor
-   = declared/ok And_intro/name (dkind-ok/ctor And_intro/type-wf And_intro/positivity).
+   = declared/ok And_intro/name (dkind-ok/ctor And_intro/type-wf And_intro/positivity And/decl And_intro/eisl And_intro/fuo).
 
 %% recursor And.rec
 %%% HOLE
@@ -144,10 +164,21 @@ Eq_refl/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eap
 %%% HOLE
 Eq_refl/positivity : ctor-positive "Eq" (lcons (lvar liz) lnil) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))).
 
+Eq_refl/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) lzero
+   = (ends-in-sort-with-level/forall
+       ([x]
+         (ends-in-sort-with-level/forall
+           ([y]
+             (ends-in-sort-with-level/forall
+               ([z] ends-in-sort-with-level/sort)))))).
+
+%%% HOLE: Eq_refl/fuo — prover for field-universes-ok-skip-params not yet implemented
+Eq_refl/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) lzero.
+
 Eq_refl/name : name "Eq.refl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) ctor).
 
 Eq_refl/decl : declared "Eq.refl" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) ctor
-   = declared/ok Eq_refl/name (dkind-ok/ctor Eq_refl/type-wf Eq_refl/positivity).
+   = declared/ok Eq_refl/name (dkind-ok/ctor Eq_refl/type-wf Eq_refl/positivity Eq/decl Eq_refl/eisl Eq_refl/fuo).
 
 %% recursor Eq.rec
 %%% HOLE

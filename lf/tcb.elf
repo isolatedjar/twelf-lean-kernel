@@ -436,6 +436,84 @@ ends-in-sort/forall :
    ({x : expr} ends-in-sort (B x))
    -> ends-in-sort (eforall A B).
 
+%%% Same as `ends-in-sort` but also exposes the final sort's level — needed
+%%% by `dkind-ok/ctor`'s field-universe check (§3.2 of completeness-plan)
+%%% which compares each field's sort against the inductive's sort.  Closed
+%%% family, same structure: walk Π chain, terminate at `esort L` and yield L.
+
+ends-in-sort-with-level : expr -> lvl -> type.
+   %name ends-in-sort-with-level EISL.
+
+ends-in-sort-with-level/sort :
+   ends-in-sort-with-level (esort L) L.
+
+ends-in-sort-with-level/forall :
+   ({x : expr} ends-in-sort-with-level (B x) L)
+   -> ends-in-sort-with-level (eforall A B) L.
+
+%%% `not-forall E` : E's outermost constructor is not `eforall`.  Closed
+%%% family — one rule per non-forall expr kind, so the predicate is
+%%% unambiguously decidable structurally.  Used by `field-universes-ok` to
+%%% pin the walk's termination point (the ctor type's result must not be
+%%% another Π).  `bvar` is intentionally omitted: a bare bvar can't sit at
+%%% the top of a closed expression — LF would not have bound it.
+
+not-forall : expr -> type.   %name not-forall NF.
+
+not-forall/sort  : {L:lvl} not-forall (esort L).
+not-forall/const : {N:string} {LS:lvls} not-forall (econst N LS).
+not-forall/app   : {F:expr} {A:expr} not-forall (eapp F A).
+not-forall/lam   : {T:expr} {B:expr -> expr} not-forall (elam T B).
+not-forall/proj  : {N:string} {I:integer} {S:expr} not-forall (eproj N I S).
+not-forall/nat   : {V:integer} {P:V >= 0} not-forall (enatlit V P).
+not-forall/str   : {S:string} not-forall (estrlit S).
+
+%%% `field-universes-ok T UInd` : T is a ctor's RESIDUAL Π-chain (after the
+%%% inductive's params have been peeled), and every Π-binder's domain has
+%%% sort ≤ UInd.  Walks T's Π chain; at each domain A, demands a sort UA
+%%% and an `mleq UA UInd 0` derivation (Mario's `ctor_Pi` rule `l2 ≤ l`).
+%%% Terminates when the head is `not-forall` (the applied inductive at the
+%%% ctor's result position).
+%%%
+%%% Note on impredicativity: when UInd = lzero (Prop), the imax-collapse
+%%% rules in §2 mean a strict `mleq UA lzero 0` fails for UA ≠ lzero —
+%%% which is what Lean wants for Prop ctors.  The stronger rule
+%%% `imax UA UInd ≤ UInd` (which would always hold for Prop) is *not*
+%%% what `ctor_Pi` carries; `lean.mm1` uses the strict form l2 ≤ l on
+%%% non-recursive args.  Recursive args (per `ctorR_S`, `imax l2 l ≤ l`)
+%%% are not yet distinguished here — the strict form is conservative.
+
+field-universes-ok : expr -> lvl -> type.   %name field-universes-ok FUO.
+
+field-universes-ok/done :
+   not-forall E
+   -> field-universes-ok E UInd.
+
+field-universes-ok/forall :
+   defeq A A (esort UA)
+   -> mleq UA UInd 0
+   -> ({x : expr} defeq x x A -> field-universes-ok (B x) UInd)
+   -> field-universes-ok (eforall A B) UInd.
+
+%%% `field-universes-ok-skip-params N T UInd` : skip N leading Π binders
+%%% (the inductive's params) before checking field universes against UInd.
+%%% N is the translator-claimed param count.  A lying translator that
+%%% under-claims still gets rejected on the first param (it'd be checked
+%%% as a field, and params at sort > UInd fail); over-claiming runs out
+%%% of binders before reaching `liz`.  Only the correct count produces a
+%%% derivation.
+
+field-universes-ok-skip-params : lidx -> expr -> lvl -> type.
+   %name field-universes-ok-skip-params FUOSP.
+
+field-universes-ok-skip-params/start :
+   field-universes-ok T UInd
+   -> field-universes-ok-skip-params liz T UInd.
+
+field-universes-ok-skip-params/skip :
+   ({x : expr} defeq x x A -> field-universes-ok-skip-params N (B x) UInd)
+   -> field-universes-ok-skip-params (lis N) (eforall A B) UInd.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Strict positivity for inductive constructors
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -687,6 +765,11 @@ ctor-positive/intro :
 
 dkind-ok : dkind -> expr -> type.
 
+%%% Forward declaration of `declared` (full definition below at §"declared").
+%%% Needed here because `dkind-ok/ctor` references `declared <ind> _ indt`
+%%% to recover the parent inductive's sort for the §3.2 field-universe check.
+declared : string -> expr -> dkind -> type.
+
 dkind-ok/defn :
    defeq T T (esort U) -> defeq V V T -> dkind-ok (defn V) T.
 
@@ -705,6 +788,9 @@ dkind-ok/indt :
 dkind-ok/ctor :
    defeq T T (esort U)
    -> ctor-positive N0 LS0 T
+   -> declared N0 IndType indt                          %% the parent inductive
+   -> ends-in-sort-with-level IndType UInd              %% UInd = the inductive's sort
+   -> field-universes-ok-skip-params NumParams T UInd   %% §3.2: each field's sort ≤ UInd
    -> dkind-ok ctor T.
 
 %%% The N0 and LS0 are the inductive type former's name and level
@@ -714,6 +800,18 @@ dkind-ok/ctor :
 %%% in its inductive's self-reference.  When iota rules are added
 %%% later, they will pattern-match on `dkind-ok/ctor` derivations
 %%% and thus may rely on this positivity having been checked.
+%%%
+%%% Universe consistency (§3.2): every field's sort must be ≤ the
+%%% inductive's sort UInd, per Mario's `ctor_Pi` rule.  The new premises
+%%% are: (a) `declared N0 IndType indt` — recover the inductive itself;
+%%% (b) `ends-in-sort-with-level IndType UInd` — extract its sort;
+%%% (c) `field-universes-ok-skip-params NumParams T UInd` — walk T's Π
+%%% chain, skipping the first NumParams (the inductive's params, not
+%%% subject to the field-sort rule), and demand `mleq sortOf(D) UInd 0`
+%%% for each remaining domain D.  Closes `lf/soundness/universe-too-high-
+%%% field.elf` and `arena/bad/field-too-high-imax` (which slips past the
+%%% translator's syntactic preflight because `imax 1 1` isn't reduced;
+%%% `mleq` reduces it natively via the imax-simplification rules in §2).
 
 %%% A recursor is admitted on the strength of its type being well-formed.
 %%% This does NOT encode Lean's elimination-universe restriction: a Prop
@@ -737,8 +835,7 @@ dkind-ok/quot :
 %%% name and witnessed by a `dkind-ok` derivation.  There is no level slot:
 %%% the polymorphism lives in the schema, instantiated at each use site.
 
-declared : string -> expr -> dkind -> type.
-
+%%% (`declared` type already declared above next to `dkind-ok`.)
 declared/ok :
    name N (is-decl T K)
    -> dkind-ok K T

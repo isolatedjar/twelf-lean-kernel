@@ -43,10 +43,16 @@ ImaxProp_a/type-wf : of (econst "ImaxProp" lnil) (esort ImaxProp_a/type-wf-sort)
 %%% HOLE
 ImaxProp_a/positivity : ctor-positive "ImaxProp" lnil (econst "ImaxProp" lnil).
 
+ImaxProp_a/eisl : ends-in-sort-with-level (esort (limax (lsucc lzero) lzero)) (limax (lsucc lzero) lzero)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: ImaxProp_a/fuo — prover for field-universes-ok-skip-params not yet implemented
+ImaxProp_a/fuo : field-universes-ok-skip-params liz (econst "ImaxProp" lnil) (limax (lsucc lzero) lzero).
+
 ImaxProp_a/name : name "ImaxProp.a" (is-decl (econst "ImaxProp" lnil) ctor).
 
 ImaxProp_a/decl : declared "ImaxProp.a" (econst "ImaxProp" lnil) ctor
-   = declared/ok ImaxProp_a/name (dkind-ok/ctor ImaxProp_a/type-wf ImaxProp_a/positivity).
+   = declared/ok ImaxProp_a/name (dkind-ok/ctor ImaxProp_a/type-wf ImaxProp_a/positivity ImaxProp/decl ImaxProp_a/eisl ImaxProp_a/fuo).
 
 %% ctor ImaxProp.b (of ImaxProp)
 %%% HOLE
@@ -58,10 +64,16 @@ ImaxProp_b/type-wf : of (econst "ImaxProp" lnil) (esort ImaxProp_b/type-wf-sort)
 %%% HOLE
 ImaxProp_b/positivity : ctor-positive "ImaxProp" lnil (econst "ImaxProp" lnil).
 
+ImaxProp_b/eisl : ends-in-sort-with-level (esort (limax (lsucc lzero) lzero)) (limax (lsucc lzero) lzero)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: ImaxProp_b/fuo — prover for field-universes-ok-skip-params not yet implemented
+ImaxProp_b/fuo : field-universes-ok-skip-params liz (econst "ImaxProp" lnil) (limax (lsucc lzero) lzero).
+
 ImaxProp_b/name : name "ImaxProp.b" (is-decl (econst "ImaxProp" lnil) ctor).
 
 ImaxProp_b/decl : declared "ImaxProp.b" (econst "ImaxProp" lnil) ctor
-   = declared/ok ImaxProp_b/name (dkind-ok/ctor ImaxProp_b/type-wf ImaxProp_b/positivity).
+   = declared/ok ImaxProp_b/name (dkind-ok/ctor ImaxProp_b/type-wf ImaxProp_b/positivity ImaxProp/decl ImaxProp_b/eisl ImaxProp_b/fuo).
 
 %% recursor ImaxProp.rec
 %%% HOLE

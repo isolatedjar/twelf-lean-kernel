@@ -30,10 +30,21 @@ Eq_refl/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eap
 %%% HOLE
 Eq_refl/positivity : ctor-positive "Eq" (lcons (lvar liz) lnil) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))).
 
+Eq_refl/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) lzero
+   = (ends-in-sort-with-level/forall
+       ([x]
+         (ends-in-sort-with-level/forall
+           ([y]
+             (ends-in-sort-with-level/forall
+               ([z] ends-in-sort-with-level/sort)))))).
+
+%%% HOLE: Eq_refl/fuo — prover for field-universes-ok-skip-params not yet implemented
+Eq_refl/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) lzero.
+
 Eq_refl/name : name "Eq.refl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) ctor).
 
 Eq_refl/decl : declared "Eq.refl" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) ctor
-   = declared/ok Eq_refl/name (dkind-ok/ctor Eq_refl/type-wf Eq_refl/positivity).
+   = declared/ok Eq_refl/name (dkind-ok/ctor Eq_refl/type-wf Eq_refl/positivity Eq/decl Eq_refl/eisl Eq_refl/fuo).
 
 %% recursor Eq.rec
 %%% HOLE
@@ -80,10 +91,16 @@ Nat_zero/type-wf : of (econst "Nat" lnil) (esort Nat_zero/type-wf-sort).
 %%% HOLE
 Nat_zero/positivity : ctor-positive "Nat" lnil (econst "Nat" lnil).
 
+Nat_zero/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: Nat_zero/fuo — prover for field-universes-ok-skip-params not yet implemented
+Nat_zero/fuo : field-universes-ok-skip-params liz (econst "Nat" lnil) (lsucc lzero).
+
 Nat_zero/name : name "Nat.zero" (is-decl (econst "Nat" lnil) ctor).
 
 Nat_zero/decl : declared "Nat.zero" (econst "Nat" lnil) ctor
-   = declared/ok Nat_zero/name (dkind-ok/ctor Nat_zero/type-wf Nat_zero/positivity).
+   = declared/ok Nat_zero/name (dkind-ok/ctor Nat_zero/type-wf Nat_zero/positivity Nat/decl Nat_zero/eisl Nat_zero/fuo).
 
 %% ctor Nat.succ (of Nat)
 %%% HOLE
@@ -95,10 +112,16 @@ Nat_succ/type-wf : of (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (e
 %%% HOLE
 Nat_succ/positivity : ctor-positive "Nat" lnil (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))).
 
+Nat_succ/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: Nat_succ/fuo — prover for field-universes-ok-skip-params not yet implemented
+Nat_succ/fuo : field-universes-ok-skip-params liz (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (lsucc lzero).
+
 Nat_succ/name : name "Nat.succ" (is-decl (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) ctor).
 
 Nat_succ/decl : declared "Nat.succ" (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) ctor
-   = declared/ok Nat_succ/name (dkind-ok/ctor Nat_succ/type-wf Nat_succ/positivity).
+   = declared/ok Nat_succ/name (dkind-ok/ctor Nat_succ/type-wf Nat_succ/positivity Nat/decl Nat_succ/eisl Nat_succ/fuo).
 
 %% recursor Nat.rec
 %%% HOLE
@@ -143,10 +166,18 @@ OfNat_mk/type-wf : of (eforall (esort (lsucc (lvar liz)))
 %%% HOLE
 OfNat_mk/positivity : ctor-positive "OfNat" (lcons (lvar liz) lnil) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "Nat" lnil) ([y] (eforall x ([z] (eapp (eapp (econst "OfNat" (lcons (lvar liz) lnil)) x) y))))))).
 
+OfNat_mk/eisl : ends-in-sort-with-level (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "Nat" lnil) ([y] (esort (lsucc (lvar liz))))))) (lsucc (lvar liz))
+   = (ends-in-sort-with-level/forall
+       ([x]
+         (ends-in-sort-with-level/forall ([y] ends-in-sort-with-level/sort)))).
+
+%%% HOLE: OfNat_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+OfNat_mk/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "Nat" lnil) ([y] (eforall x ([z] (eapp (eapp (econst "OfNat" (lcons (lvar liz) lnil)) x) y))))))) (lsucc (lvar liz)).
+
 OfNat_mk/name : name "OfNat.mk" (is-decl (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "Nat" lnil) ([y] (eforall x ([z] (eapp (eapp (econst "OfNat" (lcons (lvar liz) lnil)) x) y))))))) ctor).
 
 OfNat_mk/decl : declared "OfNat.mk" (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "Nat" lnil) ([y] (eforall x ([z] (eapp (eapp (econst "OfNat" (lcons (lvar liz) lnil)) x) y))))))) ctor
-   = declared/ok OfNat_mk/name (dkind-ok/ctor OfNat_mk/type-wf OfNat_mk/positivity).
+   = declared/ok OfNat_mk/name (dkind-ok/ctor OfNat_mk/type-wf OfNat_mk/positivity OfNat/decl OfNat_mk/eisl OfNat_mk/fuo).
 
 %% recursor OfNat.rec
 %%% HOLE
@@ -234,10 +265,16 @@ True_intro/type-wf : of (econst "True" lnil) (esort True_intro/type-wf-sort).
 %%% HOLE
 True_intro/positivity : ctor-positive "True" lnil (econst "True" lnil).
 
+True_intro/eisl : ends-in-sort-with-level (esort lzero) lzero
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: True_intro/fuo — prover for field-universes-ok-skip-params not yet implemented
+True_intro/fuo : field-universes-ok-skip-params liz (econst "True" lnil) lzero.
+
 True_intro/name : name "True.intro" (is-decl (econst "True" lnil) ctor).
 
 True_intro/decl : declared "True.intro" (econst "True" lnil) ctor
-   = declared/ok True_intro/name (dkind-ok/ctor True_intro/type-wf True_intro/positivity).
+   = declared/ok True_intro/name (dkind-ok/ctor True_intro/type-wf True_intro/positivity True/decl True_intro/eisl True_intro/fuo).
 
 %% recursor True.rec
 %%% HOLE

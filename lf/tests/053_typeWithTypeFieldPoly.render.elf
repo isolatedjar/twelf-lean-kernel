@@ -27,10 +27,16 @@ TypeWithTypeFieldPoly_mk/type-wf : of (eforall (esort (lsucc (lvar liz))) ([x] (
 %%% HOLE
 TypeWithTypeFieldPoly_mk/positivity : ctor-positive "TypeWithTypeFieldPoly" (lcons (lvar liz) lnil) (eforall (esort (lsucc (lvar liz))) ([x] (econst "TypeWithTypeFieldPoly" (lcons (lvar liz) lnil)))).
 
+TypeWithTypeFieldPoly_mk/eisl : ends-in-sort-with-level (esort (lsucc (lsucc (lvar liz)))) (lsucc (lsucc (lvar liz)))
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: TypeWithTypeFieldPoly_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+TypeWithTypeFieldPoly_mk/fuo : field-universes-ok-skip-params liz (eforall (esort (lsucc (lvar liz))) ([x] (econst "TypeWithTypeFieldPoly" (lcons (lvar liz) lnil)))) (lsucc (lsucc (lvar liz))).
+
 TypeWithTypeFieldPoly_mk/name : name "TypeWithTypeFieldPoly.mk" (is-decl (eforall (esort (lsucc (lvar liz))) ([x] (econst "TypeWithTypeFieldPoly" (lcons (lvar liz) lnil)))) ctor).
 
 TypeWithTypeFieldPoly_mk/decl : declared "TypeWithTypeFieldPoly.mk" (eforall (esort (lsucc (lvar liz))) ([x] (econst "TypeWithTypeFieldPoly" (lcons (lvar liz) lnil)))) ctor
-   = declared/ok TypeWithTypeFieldPoly_mk/name (dkind-ok/ctor TypeWithTypeFieldPoly_mk/type-wf TypeWithTypeFieldPoly_mk/positivity).
+   = declared/ok TypeWithTypeFieldPoly_mk/name (dkind-ok/ctor TypeWithTypeFieldPoly_mk/type-wf TypeWithTypeFieldPoly_mk/positivity TypeWithTypeFieldPoly/decl TypeWithTypeFieldPoly_mk/eisl TypeWithTypeFieldPoly_mk/fuo).
 
 %% recursor TypeWithTypeFieldPoly.rec
 %%% HOLE

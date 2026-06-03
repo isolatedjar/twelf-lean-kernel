@@ -27,10 +27,16 @@ N_zero/type-wf : of (econst "N" lnil) (esort N_zero/type-wf-sort)
 N_zero/positivity : ctor-positive "N" lnil (econst "N" lnil)
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
+N_zero/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: N_zero/fuo — prover for field-universes-ok-skip-params not yet implemented
+N_zero/fuo : field-universes-ok-skip-params liz (econst "N" lnil) (lsucc lzero).
+
 N_zero/name : name "N.zero" (is-decl (econst "N" lnil) ctor).
 
 N_zero/decl : declared "N.zero" (econst "N" lnil) ctor
-   = declared/ok N_zero/name (dkind-ok/ctor N_zero/type-wf N_zero/positivity).
+   = declared/ok N_zero/name (dkind-ok/ctor N_zero/type-wf N_zero/positivity N/decl N_zero/eisl N_zero/fuo).
 
 %% ctor N.succ (of N)
 N_succ/type-wf-sort : lvl
@@ -50,10 +56,16 @@ N_succ/positivity : ctor-positive "N" lnil (eforall (econst "N" lnil) ([x] (econ
        (strict-pos/head applies-self/refl)
        ([x] ([y] (ctor-spine/result applies-self/refl))))).
 
+N_succ/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
+
+%%% HOLE: N_succ/fuo — prover for field-universes-ok-skip-params not yet implemented
+N_succ/fuo : field-universes-ok-skip-params liz (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (lsucc lzero).
+
 N_succ/name : name "N.succ" (is-decl (eforall (econst "N" lnil) ([x] (econst "N" lnil))) ctor).
 
 N_succ/decl : declared "N.succ" (eforall (econst "N" lnil) ([x] (econst "N" lnil))) ctor
-   = declared/ok N_succ/name (dkind-ok/ctor N_succ/type-wf N_succ/positivity).
+   = declared/ok N_succ/name (dkind-ok/ctor N_succ/type-wf N_succ/positivity N/decl N_succ/eisl N_succ/fuo).
 
 %% recursor N.rec
 N_rec/type-wf-sort : lvl
