@@ -233,11 +233,7 @@ export function lfExprDoc(e: Expr, boundVars: string[], self?: SelfSubst): Doc {
       return text(self && s === self.selfStr ? self.varName : s);
     }
     case "app":
-      return lfApp2Doc(
-        "eapp",
-        lfExprDoc(e.fn, boundVars, self),
-        lfExprDoc(e.arg, boundVars, self),
-      );
+      return lfApp2Doc("eapp", lfExprDoc(e.fn, boundVars, self), lfExprDoc(e.arg, boundVars, self));
     case "lam": {
       const v = freshVar(boundVars);
       return lfApp2Doc(
@@ -277,14 +273,7 @@ export function lfExprDoc(e: Expr, boundVars: string[], self?: SelfSubst): Doc {
 // line as the head; B hangs at +2.  When A itself is a group that has
 // already broken, A's internal lines indent from its own outer paren.
 function lfApp2Doc(head: string, a: Doc, b: Doc): Doc {
-  return group(
-    concat(
-      text(`(${head} `),
-      a,
-      nest(2, concat(line, b)),
-      text(")"),
-    ),
-  );
+  return group(concat(text(`(${head} `), a, nest(2, concat(line, b)), text(")")));
 }
 
 // `([v] body)` — flat, or when broken, `([v]\n  body)`.

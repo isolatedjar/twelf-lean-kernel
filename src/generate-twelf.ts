@@ -216,12 +216,7 @@ function emitTypeWf(result: TypeWfResult, mn: string, T: Doc, isThm: boolean): s
 // hang=0)`: the obligation's args land at column 0 + nest (= column 2) on a
 // continuation line rather than hung under the `: ` column of the prefix.
 function ofSort(T: Doc, U: Doc): Doc {
-  return group(
-    concat(
-      text("of"),
-      nest(2, concat(line, T, line, text("(esort "), U, text(")"))),
-    ),
-  );
+  return group(concat(text("of"), nest(2, concat(line, T, line, text("(esort "), U, text(")")))));
 }
 
 // Same shape for `of <V> <T>` (value-has-type).
@@ -344,10 +339,7 @@ function emitDeclared(
   emit(``);
 
   const declDoc = group(
-    concat(
-      text(`declared "${declName}"`),
-      nest(2, concat(line, tDoc, line, text(kExpr))),
-    ),
+    concat(text(`declared "${declName}"`), nest(2, concat(line, tDoc, line, text(kExpr)))),
   );
   emit(`${mn}/decl : ${render(TYPE_WIDTH, declDoc)}`);
   emit(`   = declared/ok ${mn}/name ${okWitness}.`);
@@ -770,13 +762,17 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
       // eisl: structural walk of the inductive's Π chain.  ends-in-sort-with-
       // level is closed, every node is determined by the syntactic shape.
       const eislFmt = buildEisl(indSpec.type);
-      emit(`${mn}/eisl : ends-in-sort-with-level ${flatStr(lfExprDoc(indSpec.type, []))} ${lfLevel(indUInd)}`);
+      emit(
+        `${mn}/eisl : ends-in-sort-with-level ${flatStr(lfExprDoc(indSpec.type, []))} ${lfLevel(indUInd)}`,
+      );
       emit(`   = ${ppFmt(eislFmt, 5)}.`);
       emit(``);
       // fuo: bare HOLE on a frozen family until the prover can synthesize it.
       // Freeze rejects bare declarations, so the ctor's whole env declines.
       emit(`%%% HOLE: ${mn}/fuo — prover for field-universes-ok-skip-params not yet implemented`);
-      emit(`${mn}/fuo : field-universes-ok-skip-params ${lidxLit(c.numParams)} ${T} ${lfLevel(indUInd)}.`);
+      emit(
+        `${mn}/fuo : field-universes-ok-skip-params ${lidxLit(c.numParams)} ${T} ${lfLevel(indUInd)}.`,
+      );
       emit(``);
       emitDeclared(
         mn,
@@ -819,10 +815,7 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
       // stay flat; the killer N_rec / Eq_rec types wrap with `declared "..."`
       // alone on the prefix line and args at col 2.
       const declDoc = group(
-        concat(
-          text(`declared "${declName}"`),
-          nest(2, concat(line, tDoc, line, text("irec"))),
-        ),
+        concat(text(`declared "${declName}"`), nest(2, concat(line, tDoc, line, text("irec")))),
       );
       const declStr = render(TYPE_WIDTH, declDoc);
       if (indMn !== null) {

@@ -21,34 +21,25 @@ function check(name: string, actual: string, expected: string): void {
 }
 
 function indent(p: string, s: string): string {
-  return s.split("\n").map((l) => p + l).join("\n");
+  return s
+    .split("\n")
+    .map((l) => p + l)
+    .join("\n");
 }
 
 // ----- Atoms -----------------------------------------------------------
 
 check("plain text", render(80, text("hello")), "hello");
 
-check(
-  "concat of texts",
-  render(80, concat(text("("), text("fn"), text(")"))),
-  "(fn)",
-);
+check("concat of texts", render(80, concat(text("("), text("fn"), text(")"))), "(fn)");
 
 // ----- Lines and groups ------------------------------------------------
 
 const fnArgs = group(
-  concat(
-    text("(fn"),
-    nest(2, concat(line, text("arg1"), line, text("arg2"))),
-    text(")"),
-  ),
+  concat(text("(fn"), nest(2, concat(line, text("arg1"), line, text("arg2"))), text(")")),
 );
 
-check(
-  "group fits on one line at width 80",
-  render(80, fnArgs),
-  "(fn arg1 arg2)",
-);
+check("group fits on one line at width 80", render(80, fnArgs), "(fn arg1 arg2)");
 
 check(
   "group breaks at narrow width with proper nest indent",
@@ -62,21 +53,22 @@ const outer = group(
   concat(
     text("("),
     text("outer"),
-    nest(2, concat(
-      line,
-      group(concat(text("(inner"), nest(2, concat(line, text("x"), line, text("y"))), text(")"))),
-      line,
-      group(concat(text("(inner2"), nest(2, concat(line, text("a"), line, text("b"))), text(")"))),
-    )),
+    nest(
+      2,
+      concat(
+        line,
+        group(concat(text("(inner"), nest(2, concat(line, text("x"), line, text("y"))), text(")"))),
+        line,
+        group(
+          concat(text("(inner2"), nest(2, concat(line, text("a"), line, text("b"))), text(")")),
+        ),
+      ),
+    ),
     text(")"),
   ),
 );
 
-check(
-  "everything fits → flat",
-  render(80, outer),
-  "(outer (inner x y) (inner2 a b))",
-);
+check("everything fits → flat", render(80, outer), "(outer (inner x y) (inner2 a b))");
 
 // At a width where the outer can't fit but each inner can.
 check(
@@ -115,21 +107,30 @@ type SArg = string | Doc;
 function sexp(head: string, ...args: SArg[]): Doc {
   const argDocs: Doc[] = args.map((a) => (typeof a === "string" ? text(a) : a));
   const argsDoc: Doc =
-    argDocs.length === 0
-      ? nil
-      : concat(...argDocs.flatMap((d): Doc[] => [line, d]));
+    argDocs.length === 0 ? nil : concat(...argDocs.flatMap((d): Doc[] => [line, d]));
   return group(concat(text("("), text(head), nest(2, argsDoc), text(")")));
 }
 
 const recursorTypeShape = sexp(
   "eforall",
-  sexp("eforall", sexp("econst", "\"Bool\"", "lnil"), sexp("[x]", sexp("esort", sexp("lvar", "liz")))),
+  sexp(
+    "eforall",
+    sexp("econst", '"Bool"', "lnil"),
+    sexp("[x]", sexp("esort", sexp("lvar", "liz"))),
+  ),
   sexp(
     "[x]",
     sexp(
       "eforall",
-      sexp("eapp", "x", sexp("econst", "\"Bool.false\"", "lnil")),
-      sexp("[y]", sexp("eforall", sexp("eapp", "x", sexp("econst", "\"Bool.true\"", "lnil")), sexp("[z]", "..."))),
+      sexp("eapp", "x", sexp("econst", '"Bool.false"', "lnil")),
+      sexp(
+        "[y]",
+        sexp(
+          "eforall",
+          sexp("eapp", "x", sexp("econst", '"Bool.true"', "lnil")),
+          sexp("[z]", "..."),
+        ),
+      ),
     ),
   ),
 );
