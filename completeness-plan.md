@@ -196,6 +196,7 @@ NOT part of `IsDefEq`. They live in our TCB as separate closed families.
 | Universe consistency (ctor field sorts ≤ inductive sort) | —                                 | **💥 demonstrated unsound on `lf/soundness/universe-too-high-field.elf` — see §3.2**                             |
 | Subsingleton elimination check                           | generator pre-flight (check f)    | **💥 demonstrated unsound on `lf/soundness/large-elim-prop.elf` (rolled into §3.1's fix)**                       |
 | Recursor lives at `<ind>.rec`                            | translator emits the reservation  | **◑ spec-compliance gap on `lf/soundness/rec-name-slot.elf` — see §3.3** (no False, but env Lean would reject)   |
+| Recursor iota faithfulness (ctor list duplicate-free)    | enum iota reconstructs positionally | **💥 demonstrated unsound on `lf/soundness/dup-ctor-iota.elf` (literal `False`) — see §3.4; latent: no iota generation yet** |
 | Positivity modulo defeq                                  | —                                 | **✗ deepest open issue: lifting `ctor-positive` through `defeq` stops being a closed-family operation**         |
 
 elaboration, whereas our TCB re-derives neither — it accepts whatever recursor
@@ -222,6 +223,7 @@ current scoreboard (updated as fixes land; verify with a fresh
 | `lf/soundness/universe-too-high-field.elf`    | true (Girard doorway)           | ✅ aborts (a)   | §3.2 (partial — §3.2.1) |
 | `arena bad/field-too-high-imax.ndjson`        | true (imax-disguised §3.2)      | 🩹 declines (b) | §3.2 (partial — §3.2.1) |
 | `lf/soundness/rec-name-slot.elf`              | spec-compliance, no False-route | 💥 accepted     | §3.3                  |
+| `lf/soundness/dup-ctor-iota.elf`              | true (literal `False`)          | 💥 accepted     | §3.4                  |
 | `lf/soundness/rec-slot-theft.elf`             | passing regression              | ✅ rejected      | already TCB           |
 | `lf/soundness/level-var-elim-false.elf`       | passing regression              | ✅ rejected      | already TCB           |
 | `lf/soundness/positivity-underabstraction.elf`| passing regression              | ✅ rejected      | already TCB           |
@@ -579,6 +581,110 @@ rec-name reservation is always emitted.  Result: `rec-name-slot.elf`
 ABORTs, the canonical-name story stays "translator-audited" without
 needing string concat, and the `rec-slot-theft` mechanism keeps
 catching the dual attack as before.
+
+### 3.4 Duplicate-constructor iota gap (the `dup-ctor-iota.elf` finding)
+
+**The attack.** The enum iota rules are split by *position*
+(`defeq/iota-enum-2-first`/`-second`, `-3-first/second/third`, …), and
+`enum-rec-type`/`enum-rec-body` walk the supplied ctor list structurally — with
+**no distinctness check**. So declare `B : Type` with one real ctor `B.a`, but a
+recursor `B.rec : {M} → M B.a → M B.a → (t) → M t` whose `enum-rec-type` lists
+`[B.a; B.a]`. `dkind-ok/irec` accepts the type (it's well-formed), and then
+`iota-enum-2-first` (its `C1 = B.a`) gives `B.rec M m₁ m₂ B.a ≡ m₁` while
+`iota-enum-2-second` (its `C2 = B.a`) gives `… ≡ m₂` — *same LHS*, so
+**`m₁ ≡ m₂`** for arbitrary minors. With `m₁ = true`, `m₂ = false`:
+`defeq Bool.true Bool.false Bool`; a `decode = Bool.rec (fun _ => Prop) True False`
+plus congruence then yields `defeq True False`, and `True.intro` inhabits
+`False`. `lf/soundness/dup-ctor-iota.elf` carries this all the way to a literal
+`falseProof : False` — the strongest of the soundness regressions.
+
+**Root cause (see §3.5).** The recursor's authoritative reduction rules
+(`recInfo.rules`: one `{ctor, nfields, rhs}` per ctor) are dropped in
+translation; the TCB *reconstructs* iota positionally from the recursor type's
+minor chain. A duplicated ctor in that chain makes two per-position rules fire
+on one ctor application. Lean's own `rules` (one per `cidx`) never duplicate, so
+this only bites adversarial input — exactly the threat model.
+
+**Arena-boostability: NOT today, but LATENT-live.** The generator currently
+emits **no iota witnesses at all** (`iota`/`defeq/extra`/`enum-rec-type` occur in
+zero `lf/tests/*.full.elf` and nowhere in `generate-twelf.ts`/`synth.ts` — only a
+stale `parse.ts` comment; the "stage-1 enum iota working" claim elsewhere is out
+of date). So every iota-dependent proof HOLEs and declines (`boolRecEqns`,
+`nRecReduction`, … are all `🩹`), and an ndjson can't drive this collapse to an
+accept — it declines (⊘). The only arena-reachable residue is Twelf accepting a
+dup-*minor* recursor *declaration*, which is the same `dkind-ok/irec` gap §3.1
+already covers. **But** the moment stage-1 enum-iota *generation* lands, this
+flips to live + arena-boostable (a real proof-of-`False` from an ndjson).
+
+**Fix.** Require the ctor list to be pairwise-distinct, via the existing
+`string-neq` posit + global `%query 0 * string-neq X X` audit: a duplicate forces
+a reflexive `string-neq C C`, which sinks the load. Enforce it on the list
+`enum-rec-type` consumes — ideally the list *derived from the inductive's
+reserved ctor set* (§3.5), not a free premise. **Sequencing constraint: this
+must land before (or with) enabling iota generation**, or turning iota on
+re-opens the hole.
+
+### 3.5 Common root: the NDJSON→LF translation drops the inductive family's relational metadata
+
+§§3.1–3.4 are, at bottom, **one omission**. Compare an NDJSON declaration to its
+`.render.elf` image: the render keeps each declaration's **type** (+ value for
+`defn`/`thm`/`opq`) and a **kind tag**, and discards the *structural metadata*
+Lean's kernel uses to know how an inductive family's pieces fit together. Because
+`.render.elf` is the moral (NullProver) view that structurally contains
+everything `.full.elf` does, **a field absent from the render is one no prover
+can recover** — it is simply not translated into any checkable LF fact. Auditing
+the render against the NDJSON schema is therefore the precise lens for "what
+invariants are we unable to check," and the dropped fields *are* those
+invariants.
+
+Dropped fields, by soundness priority:
+
+**Tier 1 — the inductive family's wiring (one gap, three faces):**
+
+- **recursor `rules`** (per-ctor `{ctor, nfields, rhs}` iota equations) — the
+  authoritative ctor→minor→rhs map. Dropped; iota reconstructed positionally
+  from the recursor type (root of §3.4, and means the recursor's *computational
+  behavior* is never checked against Lean's).
+- **constructor `cidx`** (canonical 0-based index) — the authoritative position
+  that should pin which minor a ctor maps to. Dropped; minor↔ctor falls back to
+  name/list-position.
+- **inductive `ctors`** (the constructor set) — dropped; no exhaustiveness, no
+  "these are the only ctors" (§3's spurious-ctor / exhaustiveness gap).
+
+  These are the *same* omission: the LF stores each declaration's type but throws
+  away **which ctors belong to which inductive, in what order, which minor each
+  maps to, under which reduction rule.** Lean constructs that wiring and checks
+  it; the TCB reconstructs it positionally from types. The fix is one family
+  (the `name`/`%unique` reservation discipline): carry the ctor set onto the
+  inductive (`indt Ctors`), `cidx`+`induct` onto each ctor, and have the
+  recursor/iota rules *consult* that wiring — with the distinctness audit of
+  §3.4 — instead of reconstructing positionally.
+
+**Tier 2 — soundness-relevant but latent / deferred:**
+
+- **recursor `k`** (K-like reduction eligibility, e.g. `Eq.rec`) — dropped; once
+  iota lands, K-reduction must fire only when `k = true` and only for legitimate
+  subsingletons.
+- **inductive `isReflexive` / `isRec` / `numNested`** — govern which
+  positivity/recursor forms are legal (reflexive, nested); deferred, so latent.
+- **inductive `numParams` / `numIndices`** — the param/index split. Used by the
+  *translator* preflight (`checkCtorStructure`) but not stored in LF, so not
+  re-checkable there; the split itself is the dropped datum (not recoverable from
+  the type alone).
+
+**Tier 3 — recoverable from the type or not soundness-relevant:**
+
+- ctor `numFields` / `numParams` — recoverable by counting Πs given the split.
+- def `hints` (regular/abbrev) — reducibility only; the `defn`/`opq` tag already
+  captures the delta-relevant distinction.
+- `isUnsafe` / `safety = partial` / `all` (mutual blocks) — translator
+  rejects/defers, so moot.
+
+**Adjacent (same shape, worth its own audit):** structure **projections**
+(`eproj StructName fieldIdx e`) need the structure's field list/types to type
+soundly — the same "structure metadata" omission as the ctor set, for `proj`
+rather than `rec`. `proj-of-prop` exercises one corner; whether field *types* are
+pinned vs trusted deserves the same check.
 
 ## 4. Other things in Mario's spec that aren't defeq rules
 
