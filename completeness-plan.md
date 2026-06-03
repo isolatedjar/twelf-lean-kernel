@@ -214,7 +214,6 @@ header and a comment explaining the attack. The table below is the
 current scoreboard (updated as fixes land; verify with a fresh
 `check-soundness.sh` run before quoting).
 
-<<<<<<< HEAD
 | File                                          | Type                            | Current verdict | Fix area              |
 | --------------------------------------------- | ------------------------------- | --------------- | --------------------- |
 | `arena tutorial/bad/066_BogusRecursor.ndjson` | true (recursor type wrong)      | 💥 accepted     | §3.1                  |
@@ -261,19 +260,6 @@ exactly the way `rec-slot-theft` already exercises.  A malicious
 translator that picks a non-canonical MRec doesn't get a False-route
 either — the env just has a non-standard recursor name, with `def
 <ind>.rec` as an unrelated definition.  Concrete plan moved to §3.3.
-=======
-| File                                            | Type                          | Current verdict | Fix area                |
-| ----------------------------------------------- | ----------------------------- | --------------- | ----------------------- |
-| `arena tutorial/bad/066_BogusRecursor.ndjson`    | true (recursor type wrong)    | 💥 accepted     | §3.1 rec-schema-canonical |
-| `arena bad/large-elim-imax-prop.ndjson`          | true (imax-disguised §3.1)    | 💥 accepted     | §3.1 (mleq handles imax) |
-| `lf/soundness/large-elim-prop.elf`               | true (derives `P ≡ Q : Prop`) | 💥 accepted     | §3.1 (LE-eligibility)   |
-| `arena bad/field-too-high-imax.ndjson`           | true (imax-disguised §3.2)    | 💥 accepted     | §3.2 (mleq handles imax) |
-| `lf/soundness/universe-too-high-field.elf`       | true (Girard route door)      | 💥 accepted     | §3.2 field-universe-ok  |
-| `lf/soundness/rec-name-slot.elf`                 | spec-compliance               | 💥 accepted     | §3.3 — hard w/o string ops |
-| `lf/soundness/level-var-elim-false.elf`          | regression                    | ✅ rejected      | already TCB             |
-| `lf/soundness/positivity-underabstraction.elf`   | regression                    | ✅ rejected      | already TCB             |
-| `lf/soundness/rec-slot-theft.elf`                | regression                    | ✅ rejected      | already TCB             |
->>>>>>> 887b737 (updates - fewer trues, more soundness)
 
 **The two arena `imax`-disguised tests are *the same gap classes* as §3.1
 and §3.2** — they exploit a translator-side preflight bypass
