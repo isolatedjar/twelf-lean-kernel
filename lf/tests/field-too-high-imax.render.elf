@@ -1,0 +1,59 @@
+%%% Render-only view of: field-too-high-imax
+%%% Constructor field universe exceeds the inductive's, disguised behind `imax`.
+%%% 
+%%% `inductive Foo : Type 0` with `mk (a : Sort (imax 1 1)) : Foo`.  Since
+%%% `imax 1 1 = 1`, the field's type is `Sort 1 = Type 0` (which lives at `Sort 2`),
+%%% exceeding the inductive's `Sort 1` — tutorial 054 (`typeWithTooHighTypeField`),
+%%% rejected by Lean.
+%%% 
+%%% A sound checker must reject it. official / lean4lean / nanoda normalize the
+%%% field level and reject the universe-inconsistent constructor.
+%%% 
+%%% Regression for a **translator-bypass** in twelf-lean-kernel: the field-universe
+%%% preflight (`checkCtorStructure`) only fires when `levelToNumber(fieldLvl)` is a
+%%% concrete number, and `levelToNumber` does not normalize `imax 1 1` (returns
+%%% `null`), so the check is skipped; the LF TCB has no universe check, so the bad
+%%% ctor is accepted.  Same `levelToNumber` non-normalization bug as the large-elim
+%%% gate (`large-elim-imax-prop`).  The plain `Sort 1` field (tutorial 054) is
+%%% correctly SKIP-declined; the `imax` disguise slips past.
+%% inductive Foo
+%%% HOLE
+Foo/type-wf-sort : lvl.
+
+%%% HOLE
+Foo/type-wf : of (esort (lsucc lzero)) (esort Foo/type-wf-sort).
+
+%%% HOLE
+Foo/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
+
+Foo/rec-name : name "Foo.rec" (is-rec-for "Foo").
+
+Foo/name : name "Foo" (is-decl (esort (lsucc lzero)) indt).
+
+Foo/decl : declared "Foo" (esort (lsucc lzero)) indt
+   = declared/ok Foo/name (dkind-ok/indt Foo/type-wf Foo/ends-in-sort).
+
+%% ctor Foo.mk (of Foo)
+%%% HOLE
+Foo_mk/type-wf-sort : lvl.
+
+%%% HOLE
+Foo_mk/type-wf : of (eforall (esort (limax (lsucc lzero) (lsucc lzero))) ([x] (econst "Foo" lnil))) (esort Foo_mk/type-wf-sort).
+
+%%% HOLE
+Foo_mk/positivity : ctor-positive "Foo" lnil (eforall (esort (limax (lsucc lzero) (lsucc lzero))) ([x] (econst "Foo" lnil))).
+
+Foo_mk/name : name "Foo.mk" (is-decl (eforall (esort (limax (lsucc lzero) (lsucc lzero))) ([x] (econst "Foo" lnil))) ctor).
+
+Foo_mk/decl : declared "Foo.mk" (eforall (esort (limax (lsucc lzero) (lsucc lzero))) ([x] (econst "Foo" lnil))) ctor
+   = declared/ok Foo_mk/name (dkind-ok/ctor Foo_mk/type-wf Foo_mk/positivity).
+
+%% recursor Foo.rec
+%%% HOLE
+Foo_rec/type-wf-sort : lvl.
+
+%%% HOLE
+Foo_rec/type-wf : of (esort lzero) (esort Foo_rec/type-wf-sort).
+
+Foo_rec/decl : declared "Foo.rec" (esort lzero) irec
+   = declared/ok-irec Foo/rec-name (dkind-ok/irec Foo_rec/type-wf).

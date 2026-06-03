@@ -1,0 +1,158 @@
+{
+  "decls": [
+    {
+      "kind": "inductive",
+      "types": [
+        {
+          "name": { "_n": ["ImaxProp"] },
+          "levelParams": [],
+          "type": {
+            "kind": "sort",
+            "level": {
+              "kind": "imax",
+              "l": { "kind": "succ", "arg": { "kind": "zero" } },
+              "r": { "kind": "zero" }
+            }
+          },
+          "numParams": 0,
+          "numIndices": 0
+        }
+      ],
+      "ctors": [
+        {
+          "name": { "_n": ["ImaxProp", "a"] },
+          "levelParams": [],
+          "type": { "kind": "const", "name": { "_n": ["ImaxProp"] }, "us": [] },
+          "numParams": 0,
+          "numFields": 0,
+          "induct": { "_n": ["ImaxProp"] }
+        },
+        {
+          "name": { "_n": ["ImaxProp", "b"] },
+          "levelParams": [],
+          "type": { "kind": "const", "name": { "_n": ["ImaxProp"] }, "us": [] },
+          "numParams": 0,
+          "numFields": 0,
+          "induct": { "_n": ["ImaxProp"] }
+        }
+      ],
+      "recursors": [
+        {
+          "name": { "_n": ["ImaxProp", "rec"] },
+          "levelParams": [],
+          "type": {
+            "kind": "forallE",
+            "name": { "_n": ["motive"] },
+            "type": {
+              "kind": "forallE",
+              "name": { "_n": ["a"] },
+              "type": { "kind": "const", "name": { "_n": ["ImaxProp"] }, "us": [] },
+              "body": { "kind": "sort", "level": { "kind": "succ", "arg": { "kind": "zero" } } }
+            },
+            "body": {
+              "kind": "forallE",
+              "name": { "_n": ["a"] },
+              "type": {
+                "kind": "app",
+                "fn": { "kind": "bvar", "deBruijn": 0 },
+                "arg": { "kind": "const", "name": { "_n": ["ImaxProp", "a"] }, "us": [] }
+              },
+              "body": {
+                "kind": "forallE",
+                "name": { "_n": ["a"] },
+                "type": {
+                  "kind": "app",
+                  "fn": { "kind": "bvar", "deBruijn": 1 },
+                  "arg": { "kind": "const", "name": { "_n": ["ImaxProp", "b"] }, "us": [] }
+                },
+                "body": {
+                  "kind": "forallE",
+                  "name": { "_n": ["t"] },
+                  "type": { "kind": "const", "name": { "_n": ["ImaxProp"] }, "us": [] },
+                  "body": {
+                    "kind": "app",
+                    "fn": { "kind": "bvar", "deBruijn": 3 },
+                    "arg": { "kind": "bvar", "deBruijn": 0 }
+                  }
+                }
+              }
+            }
+          },
+          "numParams": 0,
+          "numIndices": 0,
+          "numMotives": 1,
+          "numMinors": 2,
+          "rules": [
+            {
+              "ctor": { "_n": ["ImaxProp", "a"] },
+              "nfields": 0,
+              "rhs": {
+                "kind": "lam",
+                "name": { "_n": ["motive"] },
+                "type": {
+                  "kind": "forallE",
+                  "name": { "_n": ["a"] },
+                  "type": { "kind": "const", "name": { "_n": ["ImaxProp"] }, "us": [] },
+                  "body": { "kind": "sort", "level": { "kind": "succ", "arg": { "kind": "zero" } } }
+                },
+                "body": {
+                  "kind": "lam",
+                  "name": { "_n": ["ma"] },
+                  "type": {
+                    "kind": "app",
+                    "fn": { "kind": "bvar", "deBruijn": 0 },
+                    "arg": { "kind": "const", "name": { "_n": ["ImaxProp", "a"] }, "us": [] }
+                  },
+                  "body": {
+                    "kind": "lam",
+                    "name": { "_n": ["mb"] },
+                    "type": {
+                      "kind": "app",
+                      "fn": { "kind": "bvar", "deBruijn": 1 },
+                      "arg": { "kind": "const", "name": { "_n": ["ImaxProp", "b"] }, "us": [] }
+                    },
+                    "body": { "kind": "bvar", "deBruijn": 1 }
+                  }
+                }
+              }
+            },
+            {
+              "ctor": { "_n": ["ImaxProp", "b"] },
+              "nfields": 0,
+              "rhs": {
+                "kind": "lam",
+                "name": { "_n": ["motive"] },
+                "type": {
+                  "kind": "forallE",
+                  "name": { "_n": ["a"] },
+                  "type": { "kind": "const", "name": { "_n": ["ImaxProp"] }, "us": [] },
+                  "body": { "kind": "sort", "level": { "kind": "succ", "arg": { "kind": "zero" } } }
+                },
+                "body": {
+                  "kind": "lam",
+                  "name": { "_n": ["ma"] },
+                  "type": {
+                    "kind": "app",
+                    "fn": { "kind": "bvar", "deBruijn": 0 },
+                    "arg": { "kind": "const", "name": { "_n": ["ImaxProp", "a"] }, "us": [] }
+                  },
+                  "body": {
+                    "kind": "lam",
+                    "name": { "_n": ["mb"] },
+                    "type": {
+                      "kind": "app",
+                      "fn": { "kind": "bvar", "deBruijn": 1 },
+                      "arg": { "kind": "const", "name": { "_n": ["ImaxProp", "b"] }, "us": [] }
+                    },
+                    "body": { "kind": "bvar", "deBruijn": 0 }
+                  }
+                }
+              }
+            }
+          ],
+          "k": false
+        }
+      ]
+    }
+  ]
+}

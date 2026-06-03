@@ -1,0 +1,77 @@
+%%% Render-only view of: large-elim-imax-prop
+%%% Large elimination of a multi-constructor `Prop` disguised behind `Sort (imax 1 0)`.
+%%% 
+%%% `imax a 0 = 0` for every `a`, so `ImaxProp : Sort (imax 1 0)` is `Prop`. It has
+%%% two constructors and is shipped with a large-elimination recursor (motive into
+%%% `Sort 1`) — unsound for a ≥2-ctor Prop, and rejected by Lean.
+%%% 
+%%% A sound checker must reject it. official / lean4lean / nanoda normalize the
+%%% level to `Sort 0`, see a 2-ctor Prop with a large-elim recursor, and reject.
+%%% 
+%%% This is a regression for a **translator-bypass** in twelf-lean-kernel: its
+%%% large-elimination preflight gate only fires when the inductive's universe is a
+%%% *concrete* `Sort 0` (`levelToNumber(indU) === 0`), and `levelToNumber` does not
+%%% normalize `imax 1 0` (returns `null`), so the gate is skipped and the bad
+%%% recursor is accepted (the LF TCB's `dkind-ok/irec` performs no elimination
+%%% check). The plain `Sort 0` form of this is correctly SKIP-declined; the `imax`
+%%% disguise slips past. (rpylean also accepts large-elim recursors generally —
+%%% cf. large-elim-supplied-rec.)
+%% inductive ImaxProp
+%%% HOLE
+ImaxProp/type-wf-sort : lvl.
+
+%%% HOLE
+ImaxProp/type-wf : of (esort (limax (lsucc lzero) lzero)) (esort ImaxProp/type-wf-sort).
+
+%%% HOLE
+ImaxProp/ends-in-sort : ends-in-sort (esort (limax (lsucc lzero) lzero)).
+
+ImaxProp/rec-name : name "ImaxProp.rec" (is-rec-for "ImaxProp").
+
+ImaxProp/name : name "ImaxProp" (is-decl (esort (limax (lsucc lzero) lzero)) indt).
+
+ImaxProp/decl : declared "ImaxProp" (esort (limax (lsucc lzero) lzero)) indt
+   = declared/ok ImaxProp/name (dkind-ok/indt ImaxProp/type-wf ImaxProp/ends-in-sort).
+
+%% ctor ImaxProp.a (of ImaxProp)
+%%% HOLE
+ImaxProp_a/type-wf-sort : lvl.
+
+%%% HOLE
+ImaxProp_a/type-wf : of (econst "ImaxProp" lnil) (esort ImaxProp_a/type-wf-sort).
+
+%%% HOLE
+ImaxProp_a/positivity : ctor-positive "ImaxProp" lnil (econst "ImaxProp" lnil).
+
+ImaxProp_a/name : name "ImaxProp.a" (is-decl (econst "ImaxProp" lnil) ctor).
+
+ImaxProp_a/decl : declared "ImaxProp.a" (econst "ImaxProp" lnil) ctor
+   = declared/ok ImaxProp_a/name (dkind-ok/ctor ImaxProp_a/type-wf ImaxProp_a/positivity).
+
+%% ctor ImaxProp.b (of ImaxProp)
+%%% HOLE
+ImaxProp_b/type-wf-sort : lvl.
+
+%%% HOLE
+ImaxProp_b/type-wf : of (econst "ImaxProp" lnil) (esort ImaxProp_b/type-wf-sort).
+
+%%% HOLE
+ImaxProp_b/positivity : ctor-positive "ImaxProp" lnil (econst "ImaxProp" lnil).
+
+ImaxProp_b/name : name "ImaxProp.b" (is-decl (econst "ImaxProp" lnil) ctor).
+
+ImaxProp_b/decl : declared "ImaxProp.b" (econst "ImaxProp" lnil) ctor
+   = declared/ok ImaxProp_b/name (dkind-ok/ctor ImaxProp_b/type-wf ImaxProp_b/positivity).
+
+%% recursor ImaxProp.rec
+%%% HOLE
+ImaxProp_rec/type-wf-sort : lvl.
+
+%%% HOLE
+ImaxProp_rec/type-wf : of (eforall (eforall (econst "ImaxProp" lnil) ([x] (esort (lsucc lzero))))
+                         ([x]
+                           (eforall (eapp x (econst "ImaxProp.a" lnil))
+                             ([y] (eforall (eapp x (econst "ImaxProp.b" lnil)) ([z] (eforall (econst "ImaxProp" lnil) ([w] (eapp x w))))))))) (esort ImaxProp_rec/type-wf-sort).
+
+ImaxProp_rec/decl : declared "ImaxProp.rec" (eforall (eforall (econst "ImaxProp" lnil) ([x] (esort (lsucc lzero)))) ([x] (eforall (eapp x (econst "ImaxProp.a" lnil)) ([y] (eforall (eapp x (econst "ImaxProp.b" lnil)) ([z] (eforall (econst "ImaxProp" lnil) ([w] (eapp x w))))))))) irec
+   = declared/ok-irec ImaxProp/rec-name (dkind-ok/irec ImaxProp_rec/type-wf).

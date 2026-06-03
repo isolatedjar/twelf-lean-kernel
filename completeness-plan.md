@@ -20,21 +20,26 @@ wrapper gives:
 | ❌ fail   | 8  | `.full.elf` rejected even without freeze (concrete error / fail-on-purpose) |
 | 💥 sound  | 1  | **bad-test wrongly accepted: `tutorial/bad/066_BogusRecursor`** |
 
-The 1 💥 is the headline finding from this session. It is *not* a gap in
-the translator (the prover) — it is a gap in the **TCB**: `dkind-ok/irec`
-requires only that the supplied recursor type be well-formed, not that it
-match the type the inductive's declaration would mandate. The arena's
-`066_BogusRecursor` test exercises exactly this: it declares
-`inductive BogusRecursor where | mk` and then claims `BogusRecursor.rec` has
-type `Prop` (`esort lzero`). `Prop` is well-formed, so the rule fires and
-the load goes through. See §3.1 for the fix design.
+The 1 💥 is the original headline finding. A subsequent
+soundness-regression refresh (commit `e43b96d Add more soundness checks`)
+added three more adversarial `.elf` files in `lf/soundness/` to widen the
+audit: **`large-elim-prop.elf`** (a closed proof of `defeq P Q : Prop`
+constructed via large-elim + proof-irrel + iota), **`universe-too-high-
+field.elf`** (a ctor with a field-universe exceeding the inductive's,
+the Girard-paradox doorway), and **`rec-name-slot.elf`** (the `<ind>.rec`
+slot squatted by a non-recursor). The first two are true soundness gaps;
+the third is a spec-compliance gap with no False-route. All three are
+currently **accepted by the TCB**, alongside `066_BogusRecursor`. Detailed
+fix designs are in §3.1 (recursor-type, rolls in large-elim), §3.2
+(field-universe), and §3.3 (rec-name).
 
 This was previously framed in §3 / §7.3 as a "we trust the export" choice
 under the assumption that the export is trustworthy. The arena's threat
 model includes adversarial exports, so what was incomplete-but-defensible
-under the prior framing is now demonstrated-unsound: bringing recursor-type
-checking inside the TCB is the **#0 priority** (above the existing
-completeness gaps, which are at worst loss-of-completeness).
+under the prior framing is now demonstrated-unsound on four independent
+adversarial inputs: bringing the missing checks inside the TCB is the
+**#0 priority** (above the existing completeness gaps, which are at worst
+loss-of-completeness).
 
 The wrapper, the YAML submission, and the standalone-soundness mapping
 (✅ → exit 0, 🩹/🤷/🔴 → exit 2, ❌/fail-on-purpose → exit 1) are documented
@@ -181,19 +186,18 @@ Peano tests via `var-elim`.
 Lean's kernel performs structural checks on inductive declarations that are
 NOT part of `IsDefEq`. They live in our TCB as separate closed families.
 
-| Check                                                    | Our TCB                           | Status                                                                                                  |
-| -------------------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Inductive type ends in `Sort _`                          | `ends-in-sort`                    | ✓                                                                                                       |
-| Constructor strict positivity                            | `ctor-positive` + `no-self-ref`   | ✓ (single-self, non-nested; sound in-TCB via `string-neq` + global `%query`)                            |
-| Mutual inductives                                        | —                                 | ✗ deferred — generalize `ctor-positive` to a _list_ of self-refs                                        |
-| Nested inductives                                        | —                                 | ✗ deferred — per-type-former "positivity-preserving" predicate                                          |
-| Recursor type well-formedness                            | none beyond `defeq T T (esort U)` | **💥 demonstrated unsound on `066_BogusRecursor` — see §3.1**                                            |
-| Universe consistency (ctor field sorts ≤ inductive sort) | —                                 | **✗ missing**                                                                                           |
-| Subsingleton elimination check                           | generator pre-flight (check f)    | ◑ ≥2-ctor Prop large-elim rejected translator-side (127); ≤1-ctor subsingleton case not LF-verified     |
-| Positivity modulo defeq                                  | —                                 | **✗ deepest open issue: lifting `ctor-positive` through `defeq` stops being a closed-family operation** |
+| Check                                                    | Our TCB                           | Status                                                                                                          |
+| -------------------------------------------------------- | --------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Inductive type ends in `Sort _`                          | `ends-in-sort`                    | ✓                                                                                                               |
+| Constructor strict positivity                            | `ctor-positive` + `no-self-ref`   | ✓ (single-self, non-nested; sound in-TCB via `string-neq` + global `%query`)                                    |
+| Mutual inductives                                        | —                                 | ✗ deferred — generalize `ctor-positive` to a _list_ of self-refs                                                |
+| Nested inductives                                        | —                                 | ✗ deferred — per-type-former "positivity-preserving" predicate                                                  |
+| Recursor type well-formedness                            | none beyond `defeq T T (esort U)` | **💥 demonstrated unsound on `066_BogusRecursor` + `lf/soundness/large-elim-prop.elf` — see §3.1**               |
+| Universe consistency (ctor field sorts ≤ inductive sort) | —                                 | **💥 demonstrated unsound on `lf/soundness/universe-too-high-field.elf` — see §3.2**                             |
+| Subsingleton elimination check                           | generator pre-flight (check f)    | **💥 demonstrated unsound on `lf/soundness/large-elim-prop.elf` (rolled into §3.1's fix)**                       |
+| Recursor lives at `<ind>.rec`                            | translator emits the reservation  | **◑ spec-compliance gap on `lf/soundness/rec-name-slot.elf` — see §3.3** (no False, but env Lean would reject)   |
+| Positivity modulo defeq                                  | —                                 | **✗ deepest open issue: lifting `ctor-positive` through `defeq` stops being a closed-family operation**         |
 
-The recursor and universe-consistency cases are notable because Lean's kernel
-_constructs_ the recursor and _enforces_ universe consistency during inductive
 elaboration, whereas our TCB re-derives neither — it accepts whatever recursor
 type and field universes the input supplies. That is a **soundness gap, full
 stop**, not a defensible trust choice: the kernel is supposed to validate these
@@ -203,6 +207,59 @@ itself, and the arena's whole purpose is to feed it inputs that violate them.
 proof of `False`. Bringing recursor well-formedness and universe consistency
 *inside* the TCB is required, not optional. "The input is well-formed" is an
 assumption we explicitly reject.
+
+The `lf/soundness/` adversarial corpus and `scripts/check-soundness.sh` are
+the audit instruments; each `.elf` carries an `Expected outcome: ABORT`
+header and a comment explaining the attack. The table below is the
+current scoreboard (updated as fixes land; verify with a fresh
+`check-soundness.sh` run before quoting).
+
+| File                                          | Type                            | Current verdict | Fix area              |
+| --------------------------------------------- | ------------------------------- | --------------- | --------------------- |
+| `arena tutorial/bad/066_BogusRecursor.ndjson` | true (recursor type wrong)      | 💥 accepted     | §3.1                  |
+| `lf/soundness/large-elim-prop.elf`            | true (`defeq P Q : Prop`)       | ✅ aborts (a)   | §3.1                  |
+| `arena bad/large-elim-imax-prop.ndjson`       | true (imax-disguised §3.1)      | 💥 accepted     | §3.1                  |
+| `lf/soundness/universe-too-high-field.elf`    | true (Girard doorway)           | ✅ aborts (a)   | §3.2 (partial — §3.2.1) |
+| `arena bad/field-too-high-imax.ndjson`        | true (imax-disguised §3.2)      | 🩹 declines (b) | §3.2 (partial — §3.2.1) |
+| `lf/soundness/rec-name-slot.elf`              | spec-compliance, no False-route | 💥 accepted     | §3.3                  |
+| `lf/soundness/rec-slot-theft.elf`             | passing regression              | ✅ rejected      | already TCB           |
+| `lf/soundness/level-var-elim-false.elf`       | passing regression              | ✅ rejected      | already TCB           |
+| `lf/soundness/positivity-underabstraction.elf`| passing regression              | ✅ rejected      | already TCB           |
+
+(a) After §3.2's partial landing, the hand-written attacks use the *old*
+`dkind-ok/ctor` signature (no `field-universes-ok-skip-params` premise),
+which no longer type-checks — so they ABORT, but for the schematic reason
+that the file is out-of-date, not because the field-universe check fires
+on them.  An updated `large-elim-prop.elf` that supplies the new ctor
+premises would re-expose §3.1's recursor-type gap; the field-universe
+check is orthogonal to large-elim soundness.  See §3.2.1 for the
+post-§3.2 state.
+
+(b) Generator-emitted `.full.elf` for these arena tests supplies the new
+`dkind-ok/ctor` premises, but the `field-universes-ok-skip-params` slot
+is a HOLE on a frozen family (the prover-side fuo synthesis isn't yet
+implemented), so the ctor declines.  For a bad test, decline counts as
+correct rejection from the arena's perspective.
+
+**rec-name-slot vs. rec-slot-theft: what the pair tells us (§3.3).**
+The TCB already catches a *different* rec-slot attack via `%unique name`:
+`rec-slot-theft.elf` reserves `name "Foo.rec" (is-rec-for "Foo")`
+alongside the inductive, then tries to also declare
+`name "Foo.rec" (is-decl T (defn V))` — two `nkind`s for the same
+string, so `%unique name` aborts the load.  That mechanism is sound
+*provided the reservation is in place*.  `rec-name-slot.elf` is the
+inductive that *omits* the reservation; nothing collides, and the
+junk `def Foo.rec` is accepted.
+
+So the §3.3 fix isn't "add string concat" — it's the weaker but
+sufficient: **require `declared/ok-indt` to take a `name MRec (is-rec-for
+N)` premise.**  Then no inductive can be declared without *some*
+rec-name reservation, the translator picks a canonical `<ind>.rec` by
+convention, and `def <ind>.rec` then collides with that reservation
+exactly the way `rec-slot-theft` already exercises.  A malicious
+translator that picks a non-canonical MRec doesn't get a False-route
+either — the env just has a non-standard recursor name, with `def
+<ind>.rec` as an unrelated definition.  Concrete plan moved to §3.3.
 
 ### 3.1 Recursor-type soundness gap (the `066_BogusRecursor` finding)
 
@@ -273,11 +330,41 @@ self-contained edit to `dkind-ok/irec` + a new `rec-schema-canonical`
 family. Fix B is the asymptotically right design but pulls in the recursor
 across every iota-stage rule we eventually add.
 
-**Regression.** Whichever fix lands, mirror the attack in
-`lf/soundness/bogus-recursor.elf`: a hand-written `.elf` that declares
-`indtype` + `mk` correctly and then asserts a `Prop`-typed `.rec`, and
-gets ABORTed by the TCB on its own (no generator in the loop).
-`scripts/check-soundness.sh` runs it on every CI tick.
+**Sibling attack: `large-elim-prop.elf`.** Same root cause, different symptom.
+The hand-written `lf/soundness/large-elim-prop.elf` declares
+`inductive PropTwo : Prop | a | b`, then asserts a Bool-style recursor whose
+motive's universe is `Type 0`. The TCB's `dkind-ok/irec` accepts it (the type
+*is* well-formed at some sort). Combined with `defeq/proof-irrel`
+(`a ≡ b : PropTwo : Prop` because both are proofs of the same Prop) and the
+existing `defeq/iota-enum-2-*` rules, the file derives a closed witness
+`boom : defeq P Q (esort lzero)` for two distinct axioms `P`, `Q : Prop` —
+that's the inconsistency. So `dkind-ok/irec` must enforce *both* (a) the
+recursor type matches the canonical schema and (b) the motive universe `U`
+is eligible (Prop inductives with ≥2 ctors may only large-eliminate when `U
+= lzero`). One premise covers both:
+
+```twelf
+dkind-ok/irec :
+   declared IndN (esort UInd) indt
+   -> rec-schema-canonical IndN UInd U T   %% T = canonical recursor type for
+                                            %% IndN at sort UInd eliminating to U;
+                                            %% relation enforces LE-eligibility
+                                            %% when UInd = lzero & ≥2 ctors
+   -> dkind-ok irec T.
+```
+
+Building `rec-schema-canonical` is the major piece of work. Lean's spec gives
+the recipe; the LF transliteration is bounded (one rule per "shape" — enum,
+recursive enum, params, indices, etc.). The existing `enum-rec-type` in
+`tcb.elf` is the 1-3-ctor-enum case of this family and serves as the
+prototype.
+
+**Regression.** Both `066_BogusRecursor.full.elf` (already auto-generated
+from the arena) and `lf/soundness/large-elim-prop.elf` (already
+hand-written) will flip from 💥 to ✅ as soon as `rec-schema-canonical` is
+in place. Add `lf/soundness/bogus-recursor.elf` if you want a hand-written
+mirror of the 066 attack independent of the generator (currently the only
+trace is the auto-generated `lf/tests/066_BogusRecursor.full.elf`).
 
 **Cost of the fix.** 98 of 143 arena tests currently exercise
 `declared/ok-irec` (and so flow through `dkind-ok/irec`); 31 of those are
@@ -291,6 +378,156 @@ fix will convert a number of currently-✅ tests into 🩹 (decline). Net
 the right trade — the TCB stops admitting recursors it can't audit — but
 worth flagging that the immediate arena-accept count will fall before
 the completeness work catches it back up.
+
+### 3.2 Ctor field-universe gap (the `universe-too-high-field.elf` finding)
+
+**The attack.** `lf/soundness/universe-too-high-field.elf` declares
+`inductive TooHigh : Type 0 | mk (a : Type 0) : TooHigh`. The field `a`'s
+type `Type 0` lives at `Sort 1`, but the inductive itself is at `Sort 1`
+(`Type 0`). Lean's rule (`l2 ≤ l` in `lean.mm1`'s `ctor_Pi`) demands each
+field's sort be ≤ the inductive's sort; here it isn't, so Lean rejects.
+
+This is the classic doorway to Girard's paradox — once you can pack types
+into smaller universes via a constructor, a closed proof of `False` is a
+few rules away. The hand-written file stops short of actually building the
+False proof; the TCB accepting the declaration is enough to demonstrate the
+gap.
+
+**Why the TCB lets it through.** `lf/tcb.elf:dkind-ok/ctor` checks only that
+the ctor type is well-formed at *some* sort plus `ctor-positive`. There is
+no premise relating any field's sort to the inductive's:
+
+```twelf
+dkind-ok/ctor :
+   defeq T T (esort U) -> ctor-positive ... T -> dkind-ok ctor T.
+```
+
+`U` is the ctor type's sort, not the inductive's. Nothing in the rule
+chases through the Π chain of `T` to bound each domain's sort.
+
+**Proposed fix.** Add a `field-universes-ok T UInd` premise that walks `T`'s
+Π chain and, for each field domain `D`, demands `mleq sortOf(D) UInd 0`
+(D's sort ≤ inductive's sort, per §7.1's algorithmic level inequality).
+The inductive's sort `UInd` is recovered from the parent inductive's
+`declared` witness:
+
+```twelf
+dkind-ok/ctor :
+   declared IndN (esort UInd) indt
+   -> defeq T T (esort UCtor)
+   -> ctor-positive IndN _ T
+   -> field-universes-ok T UInd     %% new: each field's sort ≤ UInd
+   -> dkind-ok ctor T.
+
+field-universes-ok : expr -> lvl -> type.
+field-universes-ok/result :
+   field-universes-ok (econst _ _) _.    %% reached the result type — done
+field-universes-ok/forall :
+   defeq D D (esort UD)                    %% domain's sort UD
+   -> mleq UD UInd 0                       %% UD ≤ UInd (§7.1)
+   -> ({x:expr} field-universes-ok (B x) UInd)
+   -> field-universes-ok (eforall D B) UInd.
+```
+
+The recursion in `field-universes-ok/forall` walks under the LF binder, so
+each field's `(esort UD)` is computed at the point that field is introduced.
+The `mleq UD UInd 0` premise is the algorithmic level-inequality from
+§7.1 (already implemented per `Complete mleq …` in commit history) —
+reused, no new level machinery.
+
+`Prop` (sort `lzero`) is its own special case via the standard
+`l2 ≤_imax l` impredicativity rule; that drops out of `mleq`'s `imax` cases
+without a separate Prop carve-out.
+
+**Cost.** Tighter than §3.1: a single new judgment + one new premise on
+`dkind-ok/ctor`. Existing tests that already satisfy the universe constraint
+(the entire arena's good corpus — Lean's elaborator ensures this) stay
+green. The only new failures are translator outputs where the env is
+already malformed, which is exactly the desired behavior. The fix should
+require ~50 LF lines + a translator update to emit
+`field-universes-ok` witnesses (the translator can synthesize them
+mechanically by recursing on the ctor type).
+
+### 3.3 Recursor-name slot (the `rec-name-slot.elf` finding)
+
+**The attack.** `lf/soundness/rec-name-slot.elf` declares `inductive Foo`
+*without* reserving `name "Foo.rec" (is-rec-for "Foo")` — only the trusted
+generator emits that reservation; a hand-written file may omit it — then
+declares `def Foo.rec : Type 0 := Foo`. The TCB accepts; Lean rejects (the
+recursor slot is reserved by elaboration regardless of source-text).
+
+**Not a soundness bug.** The resulting environment has a definition named
+`Foo.rec` and an inductive `Foo` with no recursor. That's weird but it
+doesn't construct a proof of False. The motivation to fix it is
+spec-compliance: every Lean env our TCB admits should be one Lean would
+also admit.
+
+**What the rec-slot-theft regression already buys us.** A *companion*
+hand-written file `lf/soundness/rec-slot-theft.elf` is already passing
+(rejected): it declares `inductive Foo` *and* a rec-name reservation
+`name "Foo.rec" (is-rec-for "Foo")`, then attempts to declare a junk
+`def Foo.rec` whose `name "Foo.rec" (is-decl T (defn V))` clashes with
+the reservation under `%unique name +N -K`.  Two different `nkind`s for
+the same string → ABORT.  So the global mechanism that catches the attack
+is *already in place* in the TCB; what's missing is the guarantee that
+the rec-name reservation always exists at all.
+
+That reframes the problem.  We don't need to *constrain the rec-name
+string* to be `<ind>.rec` (which would require LF-level string concat —
+see "String-concat in LF" below for why that's a dead end).  We only need
+to **require that an inductive's declaration come with some `is-rec-for`
+reservation**.  The translator emits the canonical `<ind>.rec` by
+convention; `%unique` does the rest.
+
+**Concrete fix.**  Split `declared/ok` into a separate
+`declared/ok-indt` (parallel to the existing `declared/ok-irec`) that
+takes the rec-name reservation as a premise:
+
+```twelf
+declared/ok-indt :
+   name N (is-decl T indt)
+   -> name MRec (is-rec-for N)         %% rec-name slot reserved (some MRec)
+   -> dkind-ok indt T
+   -> declared N T indt.
+```
+
+`MRec` is a translator-chosen string.  The premise demands *some*
+`is-rec-for N` reservation exists; without one, no `declared N T indt`
+witness can be constructed and the inductive declaration is rejected.
+That closes `rec-name-slot.elf` directly — Foo declares no reservation,
+so no `declared "Foo" _ indt` is provable.
+
+**What this does *not* close.**  A malicious translator that picks
+`MRec = "FooWeirdName"` (not the canonical "Foo.rec") would still get
+through, with the env's recursor slot at the weird name and `def
+Foo.rec` proceeding as an unrelated definition.  That's *not* a
+False-route: the kernel doesn't perform iota-reduction on `def
+Foo.rec` because it isn't reserved as a recursor; the env is just
+internally inconsistent with Lean's naming convention.  Spec-compliance
+loss, soundness preserved.
+
+**Why we don't pursue full canonicality.**  Pinning `MRec = "<N>.rec"`
+in pure LF would require a `string-cat` family with a `%query`-style
+audit, paralleling §3's `string-neq` discipline.  But unlike
+`string-neq` (where `%query 0 * string-neq X X` decides the audit by
+reflexive pattern-match, no string introspection required), a posited
+`string-cat N ".rec" M` claim is *unverifiable* without inspecting the
+strings' characters.  We can't catch a lie like
+`string-cat "Foo" ".rec" "FooWeirdName"` with a closed Twelf query.
+Bringing real string structure into the TCB (strings as cons-lists of
+characters) would solve it but is a major refactor with pervasive
+fallout.  The translator-side audit ("the trusted generator emits
+canonical `<ind>.rec`") is what we lean on instead.
+
+**Recommendation.**  Land `declared/ok-indt` with the rec-name premise
+alongside §3.1's `dkind-ok/ctor` restructure (they both touch
+`declared`-family rules).  Cost: ~10 LF lines, one matching change in
+the translator (emit `Foo/decl = declared/ok-indt Foo/name Foo/rec-name
+(dkind-ok/indt …)`), audit `generate-twelf.ts` to confirm the canonical
+rec-name reservation is always emitted.  Result: `rec-name-slot.elf`
+ABORTs, the canonical-name story stays "translator-audited" without
+needing string concat, and the `rec-slot-theft` mechanism keeps
+catching the dual attack as before.
 
 ## 4. Other things in Mario's spec that aren't defeq rules
 
