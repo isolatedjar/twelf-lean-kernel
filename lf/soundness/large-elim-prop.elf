@@ -12,10 +12,15 @@
 %%%   PropTwo.rec (λ_.Prop) P Q a ≡ P   and   …b ≡ Q
 %%% collapse to P ≡ Q for two DISTINCT declared propositions — soundness fail.
 %%%
-%%% This was NOT closed by the 2026-06-02 inductive rewrite: that work added
-%%% ctor-distinctness, ctor-membership, field-universe and NParams checks, none
-%%% of which constrain elimination.  This file is migrated to the new
-%%% indt/ctor/irec-payload API and still loads clean.
+%%% This was NOT closed by the 2026-06-02 inductive rewrite NOR by the
+%%% 2026-06-03 "Patch holes" commit: neither added any elimination-universe
+%%% check.  WARNING: between those commits this file briefly read as green —
+%%% but only because the patch changed two TCB signatures
+%%% (`count-leading-foralls/zero` dropped its `not-forall` premise; `declared/ok`
+%%% gained a `dkind-non-inductive K` premise) and the file still called the OLD
+%%% ones, so it ABORTed on a SCHEMATIC type mismatch, not on any real check.
+%%% Updating those two stale calls (done below — no change to exploit logic)
+%%% restores the genuine 💥.
 %%%
 %%% STATUS (2026-06-03): EXPECTED-FAIL — loads CLEAN (the TCB *accepts* the
 %%% false `boom : defeq P Q Prop`), so check-soundness.sh reports 💥.  Fix: an
@@ -47,7 +52,7 @@ PropTwo/ends-in-sort : ends-in-sort (esort lzero) = ends-in-sort/sort.
 PropTwo/eisl : ends-in-sort-with-level (esort lzero) lzero = ends-in-sort-with-level/sort.
 PropTwo/rec-name : name "PropTwo.rec" (is-rec-for "PropTwo").
 PropTwo/name : name "PropTwo" (is-decl (esort lzero) (indt ctorsPT liz)).
-PropTwo/clf : count-leading-foralls (esort lzero) liz = count-leading-foralls/zero not-forall/sort.
+PropTwo/clf : count-leading-foralls (esort lzero) liz = count-leading-foralls/zero.
 %% honest disequality of the two distinct ctor names
 ab-neq : string-neq "PropTwo.a" "PropTwo.b".
 PropTwo/cnd : cnames-distinct ctorsPT
@@ -82,9 +87,9 @@ PropTwo_rec/decl : declared "PropTwo.rec" recSchema (irec "PropTwo")
    = declared/ok-irec PropTwo/rec-name (dkind-ok/irec PropTwo_rec/type-wf).
 
 P/name : name "P" (is-decl (esort lzero) ax).
-P/decl : declared "P" (esort lzero) ax = declared/ok P/name (dkind-ok/ax defeq/sort-refl).
+P/decl : declared "P" (esort lzero) ax = declared/ok P/name dkind-non-inductive/ax (dkind-ok/ax defeq/sort-refl).
 Q/name : name "Q" (is-decl (esort lzero) ax).
-Q/decl : declared "Q" (esort lzero) ax = declared/ok Q/name (dkind-ok/ax defeq/sort-refl).
+Q/decl : declared "Q" (esort lzero) ax = declared/ok Q/name dkind-non-inductive/ax (dkind-ok/ax defeq/sort-refl).
 
 %solve ie0   : inst-expr recSchema (lcons (lsucc lzero) lnil) recType1.
 %solve enumT : enum-rec-type recType1 "PropTwo" lnil ctorsPT (lsucc lzero).

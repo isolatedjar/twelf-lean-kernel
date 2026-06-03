@@ -17,6 +17,14 @@
 %%% name-shape check or a translator-side guarantee surfaced into the TCB
 %%% (see completeness-plan.md §3.3).
 %%%
+%%% The 2026-06-03 "Patch holes" commit did NOT add a name-shape check.  It
+%%% briefly read as green only because that commit changed two TCB signatures
+%%% (`count-leading-foralls/zero` dropped its `not-forall` premise; `declared/ok`
+%%% gained a `dkind-non-inductive K` premise) and this file still called the OLD
+%%% ones, ABORTing on a SCHEMATIC type mismatch rather than any real check.
+%%% Updating those two stale calls (done below — no change to exploit logic)
+%%% restores the genuine 💥.
+%%%
 %%% STATUS (2026-06-03): EXPECTED-FAIL — loads CLEAN, so check-soundness.sh
 %%% reports 💥.  Not a proof of False; a missing spec-compliance check.
 
@@ -29,7 +37,7 @@ Foo/name : name "Foo" (is-decl (esort (lsucc lzero)) (indt cnil liz)).
 %% Nothing in the TCB requires this to be "Foo.rec".
 Foo/evilrec-name : name "Foo.evilrec" (is-rec-for "Foo").
 Foo/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = count-leading-foralls/zero not-forall/sort.
+   = count-leading-foralls/zero.
 Foo/cnd : cnames-distinct cnil = cnames-distinct/nil.
 Foo/decl : declared "Foo" (esort (lsucc lzero)) (indt cnil liz)
    = declared/ok-indt Foo/name Foo/evilrec-name Foo/clf Foo/cnd
@@ -44,4 +52,4 @@ FooRec/value-typed : defeq (econst "Foo" lnil) (econst "Foo" lnil) (esort (lsucc
    = defeq/const Foo/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)).
 FooRec/name : name "Foo.rec" (is-decl (esort (lsucc lzero)) (defn (econst "Foo" lnil))).
 FooRec/decl : declared "Foo.rec" (esort (lsucc lzero)) (defn (econst "Foo" lnil))
-   = declared/ok FooRec/name (dkind-ok/defn FooRec/type-wf FooRec/value-typed).
+   = declared/ok FooRec/name dkind-non-inductive/defn (dkind-ok/defn FooRec/type-wf FooRec/value-typed).
