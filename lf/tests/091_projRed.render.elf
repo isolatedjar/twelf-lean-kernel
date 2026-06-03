@@ -58,7 +58,14 @@ Eq_rec/type-wf : of (eforall (esort (lvar (lis liz)))
                                ([w]
                                  (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Eq_rec/type-wf-sort).
 
-Eq_rec/decl : declared "Eq.rec" (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) irec
+Eq_rec/decl : declared "Eq.rec" (eforall (esort (lvar (lis liz)))
+                                  ([x]
+                                    (eforall x
+                                      ([y]
+                                        (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz))))))
+                                          ([z]
+                                            (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y))
+                                              ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) irec
    = declared/ok-irec Eq/rec-name (dkind-ok/irec Eq_rec/type-wf).
 
 %% inductive Bool
@@ -130,7 +137,8 @@ Bool_rec/type-wf : of (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar l
                        (eforall (eapp x (econst "Bool.false" lnil))
                          ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort Bool_rec/type-wf-sort).
 
-Bool_rec/decl : declared "Bool.rec" (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) irec
+Bool_rec/decl : declared "Bool.rec" (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz))))
+                                      ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) irec
    = declared/ok-irec Bool/rec-name (dkind-ok/irec Bool_rec/type-wf).
 
 %% inductive Prod
@@ -171,9 +179,15 @@ Prod_mk/eisl : ends-in-sort-with-level (eforall (esort (lsucc (lvar liz))) ([x] 
 %%% HOLE: Prod_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
 Prod_mk/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz)))).
 
-Prod_mk/name : name "Prod.mk" (is-decl (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) ctor).
+Prod_mk/name : name "Prod.mk" (is-decl (eforall (esort (lsucc (lvar liz)))
+                                         ([x]
+                                           (eforall (esort (lsucc (lvar (lis liz))))
+                                             ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) ctor).
 
-Prod_mk/decl : declared "Prod.mk" (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) ctor
+Prod_mk/decl : declared "Prod.mk" (eforall (esort (lsucc (lvar liz)))
+                                    ([x]
+                                      (eforall (esort (lsucc (lvar (lis liz))))
+                                        ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) ctor
    = declared/ok Prod_mk/name (dkind-ok/ctor Prod_mk/type-wf Prod_mk/positivity Prod/decl Prod_mk/eisl Prod_mk/fuo).
 
 %% recursor Prod.rec
@@ -191,7 +205,16 @@ Prod_rec/type-wf : of (eforall (esort (lsucc (lvar (lis liz))))
                                  ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) w) x1))))))
                                  ([w] (eforall (eapp (eapp (econst "Prod" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([x1] (eapp z x1))))))))))) (esort Prod_rec/type-wf-sort).
 
-Prod_rec/decl : declared "Prod.rec" (eforall (esort (lsucc (lvar (lis liz)))) ([x] (eforall (esort (lsucc (lvar (lis (lis liz))))) ([y] (eforall (eforall (eapp (eapp (econst "Prod" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([z] (esort (lvar liz)))) ([z] (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "Prod" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([x1] (eapp z x1))))))))))) irec
+Prod_rec/decl : declared "Prod.rec" (eforall (esort (lsucc (lvar (lis liz))))
+                                      ([x]
+                                        (eforall (esort (lsucc (lvar (lis (lis liz)))))
+                                          ([y]
+                                            (eforall (eforall (eapp (eapp (econst "Prod" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([z] (esort (lvar liz))))
+                                              ([z]
+                                                (eforall (eforall x
+                                                  ([w]
+                                                    (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) w) x1))))))
+                                                  ([w] (eforall (eapp (eapp (econst "Prod" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([x1] (eapp z x1))))))))))) irec
    = declared/ok-irec Prod/rec-name (dkind-ok/irec Prod_rec/type-wf).
 
 %% def Prod.snd
@@ -215,9 +238,11 @@ Prod_snd/value-typed : of (elam (esort (lsucc (lvar liz)))
                                      z))))))) (eforall (esort (lsucc (lvar liz)))
                          ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] y)))))).
 
-Prod_snd/name : name "Prod.snd" (is-decl (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] y)))))) (defn (elam (esort (lsucc (lvar liz))) ([x] (elam (esort (lsucc (lvar (lis liz)))) ([y] (elam (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (eproj "Prod" 1 z))))))))).
+Prod_snd/name : name "Prod.snd" (is-decl (eforall (esort (lsucc (lvar liz)))
+                                           ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] y)))))) (defn (elam (esort (lsucc (lvar liz))) ([x] (elam (esort (lsucc (lvar (lis liz)))) ([y] (elam (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (eproj "Prod" 1 z))))))))).
 
-Prod_snd/decl : declared "Prod.snd" (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] y)))))) (defn (elam (esort (lsucc (lvar liz))) ([x] (elam (esort (lsucc (lvar (lis liz)))) ([y] (elam (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (eproj "Prod" 1 z))))))))
+Prod_snd/decl : declared "Prod.snd" (eforall (esort (lsucc (lvar liz)))
+                                      ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] y)))))) (defn (elam (esort (lsucc (lvar liz))) ([x] (elam (esort (lsucc (lvar (lis liz)))) ([y] (elam (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (eproj "Prod" 1 z))))))))
    = declared/ok Prod_snd/name (dkind-ok/defn Prod_snd/type-wf Prod_snd/value-typed).
 
 %% def rfl
@@ -260,7 +285,15 @@ projRed/value-typed : of (eapp (eapp (econst "rfl" (lcons (lsucc lzero) lnil)) (
                             (econst "Bool.false" lnil))))
                         (econst "Bool.false" lnil)).
 
-projRed/name : name "projRed" (is-decl (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (econst "Prod.snd" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (econst "Bool.false" lnil)))) (econst "Bool.false" lnil)) (defn (eapp (eapp (econst "rfl" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (econst "Prod.snd" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (econst "Bool.false" lnil)))))).
+projRed/name : name "projRed" (is-decl (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil))
+                                         (eapp (eapp (eapp (econst "Prod.snd" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil))
+                                           (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil))
+                                             (econst "Bool.false" lnil))))
+                                         (econst "Bool.false" lnil)) (defn (eapp (eapp (econst "rfl" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (econst "Prod.snd" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (econst "Bool.false" lnil)))))).
 
-projRed/decl : declared "projRed" (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (econst "Prod.snd" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (econst "Bool.false" lnil)))) (econst "Bool.false" lnil)) (defn (eapp (eapp (econst "rfl" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (econst "Prod.snd" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (econst "Bool.false" lnil)))))
+projRed/decl : declared "projRed" (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil))
+                                    (eapp (eapp (eapp (econst "Prod.snd" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil))
+                                      (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil))
+                                        (econst "Bool.false" lnil))))
+                                    (econst "Bool.false" lnil)) (defn (eapp (eapp (econst "rfl" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (econst "Prod.snd" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons lzero (lcons lzero lnil))) (econst "Bool" lnil)) (econst "Bool" lnil)) (econst "Bool.true" lnil)) (econst "Bool.false" lnil)))))
    = declared/ok projRed/name (dkind-ok/defn projRed/type-wf projRed/value-typed).

@@ -305,13 +305,21 @@ function emitCtorPositive(
 function emitDeclared(
   mn: string,
   declName: string,
-  T: string,
+  tDoc: Doc,
   kExpr: string,
   okWitness: string,
 ): void {
-  emit(`${mn}/name : name "${declName}" (is-decl ${T} ${kExpr}).`);
+  // Pretty-print the type at each emit site, hanging multi-line types under
+  // the column where they begin so big recursor types wrap into a readable
+  // nested form instead of one giant flat line.
+  const nameLine = `${mn}/name : name "${declName}" (is-decl `;
+  const nameTypeStr = ppType(tDoc, nameLine.length);
+  emit(`${nameLine}${nameTypeStr} ${kExpr}).`);
   emit(``);
-  emit(`${mn}/decl : declared "${declName}" ${T} ${kExpr}`);
+
+  const declLine = `${mn}/decl : declared "${declName}" `;
+  const declTypeStr = ppType(tDoc, declLine.length);
+  emit(`${declLine}${declTypeStr} ${kExpr}`);
   emit(`   = declared/ok ${mn}/name ${okWitness}.`);
   emit(``);
 }
@@ -416,7 +424,7 @@ function generateValDecl(prover: Prover, d: Decl & { kind: "def" | "opaque" | "t
     const dkindCtor = d.kind === "def" ? "defn" : d.kind === "opaque" ? "opq" : "thm";
     const okCtor =
       d.kind === "def" ? "dkind-ok/defn" : d.kind === "opaque" ? "dkind-ok/opq" : "dkind-ok/thm";
-    emitDeclared(mn, declName, T, `(${dkindCtor} ${V})`, `(${okCtor} ${tw} ${vt})`);
+    emitDeclared(mn, declName, tDoc, `(${dkindCtor} ${V})`, `(${okCtor} ${tw} ${vt})`);
   });
 }
 
@@ -437,7 +445,7 @@ function generateAxiom(prover: Prover, d: Decl & { kind: "axiom" }): void {
       tDoc,
       false,
     );
-    emitDeclared(mn, declName, T, `ax`, `(dkind-ok/ax ${tw})`);
+    emitDeclared(mn, declName, tDoc, `ax`, `(dkind-ok/ax ${tw})`);
   });
 }
 
@@ -743,7 +751,7 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
       emitDeclared(
         mn,
         declName,
-        T,
+        tDoc,
         `ctor`,
         `(dkind-ok/ctor ${tw} ${cp} ${indMn}/decl ${mn}/eisl ${mn}/fuo)`,
       );
@@ -777,13 +785,18 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
       const indType =
         IndN !== null ? ind.types.find((t) => nameToString(t.name) === IndN) : undefined;
       const indMn = indType !== undefined ? mangle(indType.name) : null;
+      // Same pretty-print treatment as emitDeclared: pretty `tDoc` under the
+      // column where it begins so large recursor types wrap readably instead
+      // of emitting one ~340-char flat line.
+      const declLine = `${mn}/decl : declared "${declName}" `;
+      const declTypeStr = ppType(tDoc, declLine.length);
       if (indMn !== null) {
-        emit(`${mn}/decl : declared "${declName}" ${T} irec`);
+        emit(`${declLine}${declTypeStr} irec`);
         emit(`   = declared/ok-irec ${indMn}/rec-name (dkind-ok/irec ${tw}).`);
         emit(``);
       } else {
         emit(`%%% HOLE: recursor ${declName} — name does not follow <inductive>.rec convention`);
-        emit(`${mn}/decl : declared "${declName}" ${T} irec.`);
+        emit(`${declLine}${declTypeStr} irec.`);
         emit(``);
       }
     });
@@ -816,7 +829,7 @@ function generateIndType(prover: Prover, t: IndType): void {
     // declaration can claim this string (e.g., a def with the recursor name).
     emit(`${mn}/rec-name : name "${declName}.rec" (is-rec-for "${declName}").`);
     emit(``);
-    emitDeclared(mn, declName, T, `indt`, `(dkind-ok/indt ${tw} ${eis})`);
+    emitDeclared(mn, declName, tDoc, `indt`, `(dkind-ok/indt ${tw} ${eis})`);
   });
 }
 

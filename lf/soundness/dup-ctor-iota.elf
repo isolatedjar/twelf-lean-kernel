@@ -24,12 +24,16 @@ Bool/name : name "Bool" (is-decl (esort (lsucc lzero)) indt).
 Bool/decl : declared "Bool" (esort (lsucc lzero)) indt = declared/ok Bool/name (dkind-ok/indt Bool/type-wf Bool/ends-in-sort).
 Bool_true/type-wf : defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort (lsucc lzero)) = defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)).
 Bool_true/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil) = ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl).
+Bool_true/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero) = ends-in-sort-with-level/sort.
+Bool_true/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero) = field-universes-ok-skip-params/start (field-universes-ok/done (not-forall/const "Bool" lnil)).
 Bool_true/name : name "Bool.true" (is-decl (econst "Bool" lnil) ctor).
-Bool_true/decl : declared "Bool.true" (econst "Bool" lnil) ctor = declared/ok Bool_true/name (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity).
+Bool_true/decl : declared "Bool.true" (econst "Bool" lnil) ctor = declared/ok Bool_true/name (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity Bool/decl Bool_true/eisl Bool_true/fuo).
 Bool_false/type-wf : defeq (econst "Bool" lnil) (econst "Bool" lnil) (esort (lsucc lzero)) = defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)).
 Bool_false/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil) = ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl).
+Bool_false/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero) = ends-in-sort-with-level/sort.
+Bool_false/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero) = field-universes-ok-skip-params/start (field-universes-ok/done (not-forall/const "Bool" lnil)).
 Bool_false/name : name "Bool.false" (is-decl (econst "Bool" lnil) ctor).
-Bool_false/decl : declared "Bool.false" (econst "Bool" lnil) ctor = declared/ok Bool_false/name (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity).
+Bool_false/decl : declared "Bool.false" (econst "Bool" lnil) ctor = declared/ok Bool_false/name (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity Bool/decl Bool_false/eisl Bool_false/fuo).
 
 %% --- B : Type, one ctor B.a, recursor with DUP minors (both M B.a) ---
 B/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero))) = defeq/sort-refl.
@@ -39,8 +43,10 @@ B/name : name "B" (is-decl (esort (lsucc lzero)) indt).
 B/decl : declared "B" (esort (lsucc lzero)) indt = declared/ok B/name (dkind-ok/indt B/type-wf B/ends-in-sort).
 B_a/type-wf : defeq (econst "B" lnil) (econst "B" lnil) (esort (lsucc lzero)) = defeq/const B/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)).
 B_a/positivity : ctor-positive "B" lnil (econst "B" lnil) = ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl).
+B_a/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero) = ends-in-sort-with-level/sort.
+B_a/fuo : field-universes-ok-skip-params liz (econst "B" lnil) (lsucc lzero) = field-universes-ok-skip-params/start (field-universes-ok/done (not-forall/const "B" lnil)).
 B_a/name : name "B.a" (is-decl (econst "B" lnil) ctor).
-B_a/decl : declared "B.a" (econst "B" lnil) ctor = declared/ok B_a/name (dkind-ok/ctor B_a/type-wf B_a/positivity).
+B_a/decl : declared "B.a" (econst "B" lnil) ctor = declared/ok B_a/name (dkind-ok/ctor B_a/type-wf B_a/positivity B/decl B_a/eisl B_a/fuo).
 
 recSchema : expr =
    eforall (eforall (econst "B" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "B.a" lnil)) ([y] (eforall (eapp x (econst "B.a" lnil)) ([z] (eforall (econst "B" lnil) ([w] (eapp x w)))))))).
@@ -87,8 +93,10 @@ True/name : name "True" (is-decl (esort lzero) indt).
 True/decl : declared "True" (esort lzero) indt = declared/ok True/name (dkind-ok/indt True/type-wf True/ends-in-sort).
 True_intro/type-wf : defeq (econst "True" lnil) (econst "True" lnil) (esort lzero) = defeq/const True/decl (inst-expr/sort lvl-inst/zero).
 True_intro/positivity : ctor-positive "True" lnil (econst "True" lnil) = ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl).
+True_intro/eisl : ends-in-sort-with-level (esort lzero) lzero = ends-in-sort-with-level/sort.
+True_intro/fuo : field-universes-ok-skip-params liz (econst "True" lnil) lzero = field-universes-ok-skip-params/start (field-universes-ok/done (not-forall/const "True" lnil)).
 True_intro/name : name "True.intro" (is-decl (econst "True" lnil) ctor).
-True_intro/decl : declared "True.intro" (econst "True" lnil) ctor = declared/ok True_intro/name (dkind-ok/ctor True_intro/type-wf True_intro/positivity).
+True_intro/decl : declared "True.intro" (econst "True" lnil) ctor = declared/ok True_intro/name (dkind-ok/ctor True_intro/type-wf True_intro/positivity True/decl True_intro/eisl True_intro/fuo).
 False/type-wf : defeq (esort lzero) (esort lzero) (esort (lsucc lzero)) = defeq/sort-refl.
 False/ends-in-sort : ends-in-sort (esort lzero) = ends-in-sort/sort.
 False/name : name "False" (is-decl (esort lzero) indt).

@@ -142,9 +142,11 @@ cast/value-typed : of (elam (eforall (econst "MyBool" (lcons lzero lnil)) ([x] (
                            y)))) (eforall (eforall (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero)))
                      ([x] (eforall (eapp x (econst "MyBool.tt" (lcons lzero lnil))) ([y] (eapp x (econst "MyBool.ff" (lcons lzero lnil))))))).
 
-cast/name : name "cast" (is-decl (eforall (eforall (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "MyBool.tt" (lcons lzero lnil))) ([y] (eapp x (econst "MyBool.ff" (lcons lzero lnil))))))) (defn (elam (eforall (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero))) ([x] (elam (eapp x (econst "MyBool.tt" (lcons lzero lnil))) ([y] y)))))).
+cast/name : name "cast" (is-decl (eforall (eforall (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero)))
+                                   ([x] (eforall (eapp x (econst "MyBool.tt" (lcons lzero lnil))) ([y] (eapp x (econst "MyBool.ff" (lcons lzero lnil))))))) (defn (elam (eforall (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero))) ([x] (elam (eapp x (econst "MyBool.tt" (lcons lzero lnil))) ([y] y)))))).
 
-cast/decl : declared "cast" (eforall (eforall (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "MyBool.tt" (lcons lzero lnil))) ([y] (eapp x (econst "MyBool.ff" (lcons lzero lnil))))))) (defn (elam (eforall (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero))) ([x] (elam (eapp x (econst "MyBool.tt" (lcons lzero lnil))) ([y] y)))))
+cast/decl : declared "cast" (eforall (eforall (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero)))
+                              ([x] (eforall (eapp x (econst "MyBool.tt" (lcons lzero lnil))) ([y] (eapp x (econst "MyBool.ff" (lcons lzero lnil))))))) (defn (elam (eforall (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero))) ([x] (elam (eapp x (econst "MyBool.tt" (lcons lzero lnil))) ([y] y)))))
    = declared/ok cast/name (dkind-ok/defn cast/type-wf cast/value-typed).
 
 %% thm false_proof

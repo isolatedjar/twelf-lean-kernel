@@ -98,7 +98,11 @@ TypeWithTypeFieldPoly_rec/type-wf : of (eforall (eforall (econst "TypeWithTypeFi
                          (lvl-inst/succ (lvl-inst/var lvl-nth/zero)))))
                    ([z] ([h2] (defeq/app h h2)))))))))).
 
-TypeWithTypeFieldPoly_rec/decl : declared "TypeWithTypeFieldPoly.rec" (eforall (eforall (econst "TypeWithTypeFieldPoly" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (eforall (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eapp x (eapp (econst "TypeWithTypeFieldPoly.mk" (lcons (lvar (lis liz)) lnil)) y)))) ([y] (eforall (econst "TypeWithTypeFieldPoly" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z))))))) irec
+TypeWithTypeFieldPoly_rec/decl : declared "TypeWithTypeFieldPoly.rec" (eforall (eforall (econst "TypeWithTypeFieldPoly" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz))))
+                                                                        ([x]
+                                                                          (eforall (eforall (esort (lsucc (lvar (lis liz))))
+                                                                            ([y] (eapp x (eapp (econst "TypeWithTypeFieldPoly.mk" (lcons (lvar (lis liz)) lnil)) y))))
+                                                                            ([y] (eforall (econst "TypeWithTypeFieldPoly" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z))))))) irec
    = declared/ok-irec TypeWithTypeFieldPoly/rec-name (dkind-ok/irec TypeWithTypeFieldPoly_rec/type-wf).
 
 %% def typeWithTypeFieldPoly

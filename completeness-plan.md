@@ -501,6 +501,55 @@ under LF binders for each Π — and Twelf's `%solve` handles the per-field
 through `prover.ts` + a small generator change to emit the witness
 inline instead of a HOLE.
 
+### 3.2.2 NumParams-bypass — §3.2 has a hole until §3.5 lands
+
+**Finding (2026-06-03).** The `NumParams` argument of
+`field-universes-ok-skip-params` is a translator-supplied `lidx` with
+nothing in the TCB constraining it to match the inductive's actual
+leading-Π count.  An adversarial translator can *over-claim*
+`NumParams`, in which case the rule's `/skip` case consumes the
+would-be-field's Π binder as a "param" and the `field-universes-ok/forall`
+mleq check never fires on it.
+
+**Concrete probe** (out-of-tree, `/tmp/numparams-bypass.elf`).  Re-derives
+the `universe-too-high-field.elf` attack under the new `dkind-ok/ctor`
+signature, but claims `NumParams = (lis liz)` (= 1) for an inductive
+with no params:
+
+```twelf
+TooHigh_mk/fuo : field-universes-ok-skip-params (lis liz)
+                   (eforall (esort (lsucc lzero)) ([x] (econst "TooHigh" lnil)))
+                   (lsucc lzero)
+   = field-universes-ok-skip-params/skip
+       ([x] [h] (field-universes-ok-skip-params/start
+                  (field-universes-ok/done (not-forall/const "TooHigh" lnil)))).
+```
+
+This loads CLEAN through `final-checks.elf` — `TooHigh.mk` is admitted
+despite its field-universe violation.  So §3.2 as landed doesn't actually
+close the field-universe gap against an adversarial translator; it only
+catches *honest* translators that report the correct param count.
+
+**Why this is a §3.5 problem.**  The bypass is the same shape as §3.4's
+dup-ctor and §3.3's rec-name-slot: a piece of inductive-family wiring
+(the param count) is translator-supplied free metadata, not stored on
+the inductive's reservation and not consulted at check time.  §3.5's
+Tier 2 lists `numParams`/`numIndices` as exactly this — dropped
+relational metadata.  Closing it requires the same architectural move
+§3.4/§3.5 prescribe: pull `numParams` onto the inductive's `is-decl`
+payload (or somewhere `%unique name` pins it), and have
+`dkind-ok/ctor`'s skip-params consult the inductive's reservation
+rather than accept a free argument.
+
+**Stopgap until §3.5 lands.**  We could constrain `NumParams` by
+deriving it from `IndType` structurally: a `count-leading-foralls
+IndType N` judgment forces `N` to match the inductive's actual leading-Π
+count.  Composed with the existing `ends-in-sort-with-level IndType
+UInd` premise, this would close the over-claim path without waiting on
+the full §3.5 reservation refactor.  Trade-off: bolt-on, won't survive
+the §3.5 restructure cleanly.  Worth doing if §3.5 is more than a
+session away; skip if §3.5 is next on the agenda.
+
 ### 3.3 Recursor-name slot (the `rec-name-slot.elf` finding)
 
 **The attack.** `lf/soundness/rec-name-slot.elf` declares `inductive Foo`

@@ -89,7 +89,10 @@ TypeWithTypeField_rec/type-wf : of (eforall (eforall (econst "TypeWithTypeField"
                        (lvl-inst/succ (lvl-inst/succ lvl-inst/zero))))
                    ([z] ([h2] (defeq/app h h2)))))))))).
 
-TypeWithTypeField_rec/decl : declared "TypeWithTypeField.rec" (eforall (eforall (econst "TypeWithTypeField" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "TypeWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "TypeWithTypeField" lnil) ([z] (eapp x z))))))) irec
+TypeWithTypeField_rec/decl : declared "TypeWithTypeField.rec" (eforall (eforall (econst "TypeWithTypeField" lnil) ([x] (esort (lvar liz))))
+                                                                ([x]
+                                                                  (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "TypeWithTypeField.mk" lnil) y))))
+                                                                    ([y] (eforall (econst "TypeWithTypeField" lnil) ([z] (eapp x z))))))) irec
    = declared/ok-irec TypeWithTypeField/rec-name (dkind-ok/irec TypeWithTypeField_rec/type-wf).
 
 %% def typeWithTypeField

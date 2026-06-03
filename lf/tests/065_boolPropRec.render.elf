@@ -69,7 +69,10 @@ BoolProp_rec/type-wf : of (eforall (eforall (econst "BoolProp" lnil) ([x] (esort
                            (eforall (eapp x (econst "BoolProp.a" lnil))
                              ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w))))))))) (esort BoolProp_rec/type-wf-sort).
 
-BoolProp_rec/decl : declared "BoolProp.rec" (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "BoolProp.a" lnil)) ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w))))))))) irec
+BoolProp_rec/decl : declared "BoolProp.rec" (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero)))
+                                              ([x]
+                                                (eforall (eapp x (econst "BoolProp.a" lnil))
+                                                  ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w))))))))) irec
    = declared/ok-irec BoolProp/rec-name (dkind-ok/irec BoolProp_rec/type-wf).
 
 %% def boolPropRec
@@ -86,7 +89,13 @@ boolPropRec/type-wf : of (eforall (eforall (econst "BoolProp" lnil) ([x] (esort 
 boolPropRec/value-typed : of (econst "BoolProp.rec" lnil) (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero)))
                             ([x] (eforall (eapp x (econst "BoolProp.a" lnil)) ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w))))))))).
 
-boolPropRec/name : name "boolPropRec" (is-decl (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "BoolProp.a" lnil)) ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w))))))))) (defn (econst "BoolProp.rec" lnil))).
+boolPropRec/name : name "boolPropRec" (is-decl (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero)))
+                                                 ([x]
+                                                   (eforall (eapp x (econst "BoolProp.a" lnil))
+                                                     ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w))))))))) (defn (econst "BoolProp.rec" lnil))).
 
-boolPropRec/decl : declared "boolPropRec" (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "BoolProp.a" lnil)) ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w))))))))) (defn (econst "BoolProp.rec" lnil))
+boolPropRec/decl : declared "boolPropRec" (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero)))
+                                            ([x]
+                                              (eforall (eapp x (econst "BoolProp.a" lnil))
+                                                ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w))))))))) (defn (econst "BoolProp.rec" lnil))
    = declared/ok boolPropRec/name (dkind-ok/defn boolPropRec/type-wf boolPropRec/value-typed).

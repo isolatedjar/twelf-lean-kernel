@@ -125,7 +125,12 @@ N_rec/type-wf : of (eforall (eforall (econst "N" lnil) ([x] (esort (lvar liz))))
                            (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
                          ([w] ([h3] (defeq/app h h3))))))))))))).
 
-N_rec/decl : declared "N.rec" (eforall (eforall (econst "N" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) irec
+N_rec/decl : declared "N.rec" (eforall (eforall (econst "N" lnil) ([x] (esort (lvar liz))))
+                                ([x]
+                                  (eforall (eapp x (econst "N.zero" lnil))
+                                    ([y]
+                                      (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z))))))
+                                        ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) irec
    = declared/ok-irec N/rec-name (dkind-ok/irec N_rec/type-wf).
 
 %% def nRec
@@ -222,7 +227,17 @@ nRec/value-typed : of (econst "N.rec" (lcons (lvar liz) lnil)) (eforall (eforall
                            (inst-expr/const lvls-inst/nil)
                            ([w] ([h3] (inst-expr/app h h3)))))))))))))).
 
-nRec/name : name "nRec" (is-decl (eforall (eforall (econst "N" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) (defn (econst "N.rec" (lcons (lvar liz) lnil)))).
+nRec/name : name "nRec" (is-decl (eforall (eforall (econst "N" lnil) ([x] (esort (lvar liz))))
+                                   ([x]
+                                     (eforall (eapp x (econst "N.zero" lnil))
+                                       ([y]
+                                         (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z))))))
+                                           ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) (defn (econst "N.rec" (lcons (lvar liz) lnil)))).
 
-nRec/decl : declared "nRec" (eforall (eforall (econst "N" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) (defn (econst "N.rec" (lcons (lvar liz) lnil)))
+nRec/decl : declared "nRec" (eforall (eforall (econst "N" lnil) ([x] (esort (lvar liz))))
+                              ([x]
+                                (eforall (eapp x (econst "N.zero" lnil))
+                                  ([y]
+                                    (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z))))))
+                                      ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))) (defn (econst "N.rec" (lcons (lvar liz) lnil)))
    = declared/ok nRec/name (dkind-ok/defn nRec/type-wf nRec/value-typed).

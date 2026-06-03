@@ -97,7 +97,8 @@ Bool_rec/type-wf : of (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar l
                            (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
                          ([w] ([h3] (defeq/app h h3))))))))))))).
 
-Bool_rec/decl : declared "Bool.rec" (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) irec
+Bool_rec/decl : declared "Bool.rec" (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz))))
+                                      ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) irec
    = declared/ok-irec Bool/rec-name (dkind-ok/irec Bool_rec/type-wf).
 
 %% inductive TwoBool
@@ -217,7 +218,10 @@ TwoBool_rec/type-wf : of (eforall (eforall (econst "TwoBool" lnil) ([x] (esort (
                      (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
                    ([z] ([h2] (defeq/app h h2)))))))))).
 
-TwoBool_rec/decl : declared "TwoBool.rec" (eforall (eforall (econst "TwoBool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp x (eapp (eapp (econst "TwoBool.mk" lnil) y) z)))))) ([y] (eforall (econst "TwoBool" lnil) ([z] (eapp x z))))))) irec
+TwoBool_rec/decl : declared "TwoBool.rec" (eforall (eforall (econst "TwoBool" lnil) ([x] (esort (lvar liz))))
+                                            ([x]
+                                              (eforall (eforall (econst "Bool" lnil) ([y] (eforall (econst "Bool" lnil) ([z] (eapp x (eapp (eapp (econst "TwoBool.mk" lnil) y) z))))))
+                                                ([y] (eforall (econst "TwoBool" lnil) ([z] (eapp x z))))))) irec
    = declared/ok-irec TwoBool/rec-name (dkind-ok/irec TwoBool_rec/type-wf).
 
 %% def twoBool
