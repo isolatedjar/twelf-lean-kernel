@@ -116,7 +116,7 @@ PN/value-typed : of (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] x)
 PN/name : name "PN" (is-decl (esort (limax (lsucc (lvar liz)) (lvar liz))) (defn (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] x)) ([y] (eforall x ([z] x)))))))).
 
 PN/decl : declared "PN" (esort (limax (lsucc (lvar liz)) (lvar liz))) (defn (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] x)) ([y] (eforall x ([z] x)))))))
-   = declared/ok PN/name (dkind-ok/defn PN/type-wf PN/value-typed).
+   = declared/ok PN/name dkind-non-inductive/defn (dkind-ok/defn PN/type-wf PN/value-typed).
 
 %% def PN.succ
 PN_succ/type-wf-sort : lvl
@@ -344,7 +344,7 @@ PN_succ/name : name "PN.succ" (is-decl
 PN_succ/decl : declared "PN.succ"
   (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (econst "PN" (lcons (lvar liz) lnil))))
   (defn (elam (econst "PN" (lcons (lvar liz) lnil)) ([x] (elam (esort (lvar liz)) ([y] (elam (eforall y ([z] y)) ([z] (elam y ([w] (eapp z (eapp (eapp (eapp x y) z) w)))))))))))
-   = declared/ok PN_succ/name (dkind-ok/defn PN_succ/type-wf PN_succ/value-typed).
+   = declared/ok PN_succ/name dkind-non-inductive/defn (dkind-ok/defn PN_succ/type-wf PN_succ/value-typed).
 
 %% def PN.zero
 PN_zero/type-wf-sort : lvl
@@ -492,7 +492,7 @@ PN_zero/value-typed : of (elam (esort (lvar liz)) ([x] (elam (eforall x ([y] x))
 PN_zero/name : name "PN.zero" (is-decl (econst "PN" (lcons (lvar liz) lnil)) (defn (elam (esort (lvar liz)) ([x] (elam (eforall x ([y] x)) ([y] (elam x ([z] z)))))))).
 
 PN_zero/decl : declared "PN.zero" (econst "PN" (lcons (lvar liz) lnil)) (defn (elam (esort (lvar liz)) ([x] (elam (eforall x ([y] x)) ([y] (elam x ([z] z)))))))
-   = declared/ok PN_zero/name (dkind-ok/defn PN_zero/type-wf PN_zero/value-typed).
+   = declared/ok PN_zero/name dkind-non-inductive/defn (dkind-ok/defn PN_zero/type-wf PN_zero/value-typed).
 
 %% def PN.lit0
 PN_lit0/type-wf-sort : lvl
@@ -515,7 +515,7 @@ PN_lit0/value-typed : of (econst "PN.zero" (lcons (lvar liz) lnil)) (econst "PN"
 PN_lit0/name : name "PN.lit0" (is-decl (econst "PN" (lcons (lvar liz) lnil)) (defn (econst "PN.zero" (lcons (lvar liz) lnil)))).
 
 PN_lit0/decl : declared "PN.lit0" (econst "PN" (lcons (lvar liz) lnil)) (defn (econst "PN.zero" (lcons (lvar liz) lnil)))
-   = declared/ok PN_lit0/name (dkind-ok/defn PN_lit0/type-wf PN_lit0/value-typed).
+   = declared/ok PN_lit0/name dkind-non-inductive/defn (dkind-ok/defn PN_lit0/type-wf PN_lit0/value-typed).
 
 %% def PN.lit1
 PN_lit1/type-wf-sort : lvl
@@ -548,7 +548,7 @@ PN_lit1/value-typed : of (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econs
 PN_lit1/name : name "PN.lit1" (is-decl (econst "PN" (lcons (lvar liz) lnil)) (defn (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econst "PN.lit0" (lcons (lvar liz) lnil))))).
 
 PN_lit1/decl : declared "PN.lit1" (econst "PN" (lcons (lvar liz) lnil)) (defn (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econst "PN.lit0" (lcons (lvar liz) lnil))))
-   = declared/ok PN_lit1/name (dkind-ok/defn PN_lit1/type-wf PN_lit1/value-typed).
+   = declared/ok PN_lit1/name dkind-non-inductive/defn (dkind-ok/defn PN_lit1/type-wf PN_lit1/value-typed).
 
 %% def PN.lit2
 PN_lit2/type-wf-sort : lvl
@@ -581,7 +581,7 @@ PN_lit2/value-typed : of (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econs
 PN_lit2/name : name "PN.lit2" (is-decl (econst "PN" (lcons (lvar liz) lnil)) (defn (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econst "PN.lit1" (lcons (lvar liz) lnil))))).
 
 PN_lit2/decl : declared "PN.lit2" (econst "PN" (lcons (lvar liz) lnil)) (defn (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econst "PN.lit1" (lcons (lvar liz) lnil))))
-   = declared/ok PN_lit2/name (dkind-ok/defn PN_lit2/type-wf PN_lit2/value-typed).
+   = declared/ok PN_lit2/name dkind-non-inductive/defn (dkind-ok/defn PN_lit2/type-wf PN_lit2/value-typed).
 
 %% def PN.lit3
 PN_lit3/type-wf-sort : lvl
@@ -614,7 +614,7 @@ PN_lit3/value-typed : of (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econs
 PN_lit3/name : name "PN.lit3" (is-decl (econst "PN" (lcons (lvar liz) lnil)) (defn (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econst "PN.lit2" (lcons (lvar liz) lnil))))).
 
 PN_lit3/decl : declared "PN.lit3" (econst "PN" (lcons (lvar liz) lnil)) (defn (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econst "PN.lit2" (lcons (lvar liz) lnil))))
-   = declared/ok PN_lit3/name (dkind-ok/defn PN_lit3/type-wf PN_lit3/value-typed).
+   = declared/ok PN_lit3/name dkind-non-inductive/defn (dkind-ok/defn PN_lit3/type-wf PN_lit3/value-typed).
 
 %% def PN.lit4
 PN_lit4/type-wf-sort : lvl
@@ -647,7 +647,7 @@ PN_lit4/value-typed : of (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econs
 PN_lit4/name : name "PN.lit4" (is-decl (econst "PN" (lcons (lvar liz) lnil)) (defn (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econst "PN.lit3" (lcons (lvar liz) lnil))))).
 
 PN_lit4/decl : declared "PN.lit4" (econst "PN" (lcons (lvar liz) lnil)) (defn (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econst "PN.lit3" (lcons (lvar liz) lnil))))
-   = declared/ok PN_lit4/name (dkind-ok/defn PN_lit4/type-wf PN_lit4/value-typed).
+   = declared/ok PN_lit4/name dkind-non-inductive/defn (dkind-ok/defn PN_lit4/type-wf PN_lit4/value-typed).
 
 %% def PN.mul
 PN_mul/type-wf-sort : lvl
@@ -950,7 +950,7 @@ PN_mul/name : name "PN.mul" (is-decl
 PN_mul/decl : declared "PN.mul"
   (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (econst "PN" (lcons (lvar liz) lnil))))))
   (defn (elam (econst "PN" (lcons (lvar liz) lnil)) ([x] (elam (econst "PN" (lcons (lvar liz) lnil)) ([y] (elam (esort (lvar liz)) ([z] (elam (eforall z ([w] z)) ([w] (elam z ([x1] (eapp (eapp (eapp x z) (eapp (eapp y z) w)) x1))))))))))))
-   = declared/ok PN_mul/name (dkind-ok/defn PN_mul/type-wf PN_mul/value-typed).
+   = declared/ok PN_mul/name dkind-non-inductive/defn (dkind-ok/defn PN_mul/type-wf PN_mul/value-typed).
 
 %% thm peano3
 peano3/type-wf : of
@@ -1014,4 +1014,4 @@ peano3/decl : declared "peano3"
   (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero)))
     ([x] (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp x (econst "PN.lit4" (lcons (lvar liz) lnil)))))))
   (thm (elam (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero))) ([x] (elam (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp y (eapp (eapp (econst "PN.mul" (lcons (lvar liz) lnil)) (econst "PN.lit2" (lcons (lvar liz) lnil))) (econst "PN.lit2" (lcons (lvar liz) lnil)))))))))
-   = declared/ok peano3/name (dkind-ok/thm peano3/type-wf peano3/value-typed).
+   = declared/ok peano3/name dkind-non-inductive/thm (dkind-ok/thm peano3/type-wf peano3/value-typed).

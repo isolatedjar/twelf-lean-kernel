@@ -31,7 +31,7 @@ ImaxProp/ends-in-sort : ends-in-sort (esort (limax (lsucc lzero) lzero))
 ImaxProp/rec-name : name "ImaxProp.rec" (is-rec-for "ImaxProp").
 
 ImaxProp/clf : count-leading-foralls (esort (limax (lsucc lzero) lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 ImaxProp/cnd : cnames-distinct (ccons "ImaxProp.a" (ccons "ImaxProp.b" cnil))
    = (cnames-distinct/cons
@@ -62,8 +62,9 @@ ImaxProp_a/eisl : ends-in-sort-with-level (esort (limax (lsucc lzero) lzero)) (l
 ImaxProp_a/cmem : cmem "ImaxProp.a" (ccons "ImaxProp.a" (ccons "ImaxProp.b" cnil))
    = cmem/here.
 
-%%% HOLE: ImaxProp_a/fuo — prover for field-universes-ok-skip-params not yet implemented
-ImaxProp_a/fuo : field-universes-ok-skip-params liz (econst "ImaxProp" lnil) (limax (lsucc lzero) lzero).
+ImaxProp_a/fuo : field-universes-ok-skip-params liz (econst "ImaxProp" lnil) (limax (lsucc lzero) lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 ImaxProp_a/name : name "ImaxProp.a" (is-decl (econst "ImaxProp" lnil) (ctor "ImaxProp" liz)).
 
@@ -89,8 +90,9 @@ ImaxProp_b/eisl : ends-in-sort-with-level (esort (limax (lsucc lzero) lzero)) (l
 ImaxProp_b/cmem : cmem "ImaxProp.b" (ccons "ImaxProp.a" (ccons "ImaxProp.b" cnil))
    = (cmem/there cmem/here).
 
-%%% HOLE: ImaxProp_b/fuo — prover for field-universes-ok-skip-params not yet implemented
-ImaxProp_b/fuo : field-universes-ok-skip-params liz (econst "ImaxProp" lnil) (limax (lsucc lzero) lzero).
+ImaxProp_b/fuo : field-universes-ok-skip-params liz (econst "ImaxProp" lnil) (limax (lsucc lzero) lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 ImaxProp_b/name : name "ImaxProp.b" (is-decl (econst "ImaxProp" lnil) (ctor "ImaxProp" (lis liz))).
 

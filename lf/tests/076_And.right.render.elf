@@ -14,9 +14,7 @@ And/rec-name : name "And.rec" (is-rec-for "And").
 
 And/clf : count-leading-foralls (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (lis (lis liz))
    = (count-leading-foralls/succ
-       ([x]
-         (count-leading-foralls/succ
-           ([y] (count-leading-foralls/zero not-forall/sort))))).
+       ([x] (count-leading-foralls/succ ([y] count-leading-foralls/zero)))).
 
 And/cnd : cnames-distinct (ccons "And.intro" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -44,7 +42,7 @@ And_intro/eisl : ends-in-sort-with-level (eforall (esort lzero) ([x] (eforall (e
 And_intro/cmem : cmem "And.intro" (ccons "And.intro" cnil)
    = cmem/here.
 
-%%% HOLE: And_intro/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: And_intro/fuo
 And_intro/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) lzero.
 
 And_intro/name : name "And.intro" (is-decl (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) (ctor "And" liz)).
@@ -96,7 +94,7 @@ And_left/name : name "And.left" (is-decl
 And_left/decl : declared "And.left"
   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] x))))))
   (thm (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 0 z))))))))
-   = declared/ok And_left/name (dkind-ok/thm And_left/type-wf And_left/value-typed).
+   = declared/ok And_left/name dkind-non-inductive/thm (dkind-ok/thm And_left/type-wf And_left/value-typed).
 
 %% thm And.right
 %%% HOLE
@@ -114,4 +112,4 @@ And_right/name : name "And.right" (is-decl
 And_right/decl : declared "And.right"
   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] y))))))
   (thm (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 1 z))))))))
-   = declared/ok And_right/name (dkind-ok/thm And_right/type-wf And_right/value-typed).
+   = declared/ok And_right/name dkind-non-inductive/thm (dkind-ok/thm And_right/type-wf And_right/value-typed).

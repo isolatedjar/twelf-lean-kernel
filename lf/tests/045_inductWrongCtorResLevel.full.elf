@@ -16,9 +16,7 @@ inductWrongCtorResLevel/rec-name : name "inductWrongCtorResLevel.rec" (is-rec-fo
 
 inductWrongCtorResLevel/clf : count-leading-foralls (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) (lis (lis liz))
    = (count-leading-foralls/succ
-       ([x]
-         (count-leading-foralls/succ
-           ([y] (count-leading-foralls/zero not-forall/sort))))).
+       ([x] (count-leading-foralls/succ ([y] count-leading-foralls/zero)))).
 
 inductWrongCtorResLevel/cnd : cnames-distinct (ccons "inductWrongCtorResLevel.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -71,8 +69,15 @@ inductWrongCtorResLevel_mk/eisl : ends-in-sort-with-level (eforall (esort lzero)
 inductWrongCtorResLevel_mk/cmem : cmem "inductWrongCtorResLevel.mk" (ccons "inductWrongCtorResLevel.mk" cnil)
    = cmem/here.
 
-%%% HOLE: inductWrongCtorResLevel_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
-inductWrongCtorResLevel_mk/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResLevel" (lcons (lvar (lis liz)) (lcons (lvar liz) lnil))) x) y))))) (lsucc lzero).
+inductWrongCtorResLevel_mk/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResLevel" (lcons (lvar (lis liz)) (lcons (lvar liz) lnil))) x) y))))) (lsucc lzero)
+   = (field-universes-ok-skip-params/skip
+       ([x]
+         ([h]
+           (field-universes-ok-skip-params/skip
+             ([y]
+               ([h1]
+                 (field-universes-ok-skip-params/start
+                   (field-universes-ok/done not-forall/app)))))))).
 
 inductWrongCtorResLevel_mk/name : name "inductWrongCtorResLevel.mk" (is-decl
   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResLevel" (lcons (lvar (lis liz)) (lcons (lvar liz) lnil))) x) y)))))

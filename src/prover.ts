@@ -10,6 +10,7 @@ import {
   bridge,
   buildCtorSpine,
   buildEnvMap,
+  buildFieldUniverses,
   endsInSortProof,
   type EnvMap,
   levelToFmt,
@@ -31,6 +32,9 @@ export const NullProver: Prover = {
     return null;
   },
   ctorPositive(): ProofResult {
+    return null;
+  },
+  fieldUniverses(): ProofResult {
     return null;
   },
 };
@@ -80,6 +84,13 @@ export function makeRealProver(env: ParsedEnv): Prover {
     ctorPositive({ ctorType, indName, indLevels, levelParams }): ProofResult {
       try {
         return buildCtorSpine(ctorType, nameToString(indName), indLevels, [], [], levelParams);
+      } catch {
+        return null;
+      }
+    },
+    fieldUniverses({ ctorType, nParams, indUInd }): ProofResult {
+      try {
+        return buildFieldUniverses(ctorType, nParams, indUInd, envMap);
       } catch {
         return null;
       }

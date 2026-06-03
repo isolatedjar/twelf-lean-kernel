@@ -22,9 +22,7 @@ Prod/rec-name : name "Prod.rec" (is-rec-for "Prod").
 
 Prod/clf : count-leading-foralls (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (esort (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz))))))))) (lis (lis liz))
    = (count-leading-foralls/succ
-       ([x]
-         (count-leading-foralls/succ
-           ([y] (count-leading-foralls/zero not-forall/sort))))).
+       ([x] (count-leading-foralls/succ ([y] count-leading-foralls/zero)))).
 
 Prod/cnd : cnames-distinct (ccons "Prod.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -131,8 +129,27 @@ Prod_mk/eisl : ends-in-sort-with-level (eforall (esort (lsucc (lvar liz))) ([x] 
 Prod_mk/cmem : cmem "Prod.mk" (ccons "Prod.mk" cnil)
    = cmem/here.
 
-%%% HOLE: Prod_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
-Prod_mk/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz)))).
+Prod_mk/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz))))
+   = (field-universes-ok-skip-params/skip
+       ([x]
+         ([h]
+           (field-universes-ok-skip-params/skip
+             ([y]
+               ([h1]
+                 (field-universes-ok-skip-params/start
+                   (field-universes-ok/forall
+                     h
+                     (mleq/sL (mleq/maxR-l (mleq/sR (mleq/self nonneg_0))))
+                     ([z]
+                       ([h2]
+                         (field-universes-ok/forall
+                           h1
+                           (mleq/sL
+                             (mleq/maxR-r (mleq/sR (mleq/self nonneg_0))))
+                           ([w]
+                             ([h3]
+                               (field-universes-ok/done
+                                 not-forall/app)))))))))))))).
 
 Prod_mk/name : name "Prod.mk" (is-decl
   (eforall (esort (lsucc (lvar liz)))
@@ -364,4 +381,4 @@ prodType/value-typed : of (econst "Prod" (lcons lzero (lcons lzero lnil))) (efor
 prodType/name : name "prodType" (is-decl (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (defn (econst "Prod" (lcons lzero (lcons lzero lnil))))).
 
 prodType/decl : declared "prodType" (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (defn (econst "Prod" (lcons lzero (lcons lzero lnil))))
-   = declared/ok prodType/name (dkind-ok/defn prodType/type-wf prodType/value-typed).
+   = declared/ok prodType/name dkind-non-inductive/defn (dkind-ok/defn prodType/type-wf prodType/value-typed).

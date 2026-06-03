@@ -13,7 +13,7 @@ PredWithTypeField/ends-in-sort : ends-in-sort (esort lzero)
 PredWithTypeField/rec-name : name "PredWithTypeField.rec" (is-rec-for "PredWithTypeField").
 
 PredWithTypeField/clf : count-leading-foralls (esort lzero) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 PredWithTypeField/cnd : cnames-distinct (ccons "PredWithTypeField.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -47,7 +47,7 @@ PredWithTypeField_mk/eisl : ends-in-sort-with-level (esort lzero) lzero
 PredWithTypeField_mk/cmem : cmem "PredWithTypeField.mk" (ccons "PredWithTypeField.mk" cnil)
    = cmem/here.
 
-%%% HOLE: PredWithTypeField_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: PredWithTypeField_mk/fuo
 PredWithTypeField_mk/fuo : field-universes-ok-skip-params liz (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil))) lzero.
 
 PredWithTypeField_mk/name : name "PredWithTypeField.mk" (is-decl (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil))) (ctor "PredWithTypeField" liz)).
@@ -112,4 +112,4 @@ predWithTypeField/value-typed : of (econst "PredWithTypeField" lnil) (esort lzer
 predWithTypeField/name : name "predWithTypeField" (is-decl (esort lzero) (defn (econst "PredWithTypeField" lnil))).
 
 predWithTypeField/decl : declared "predWithTypeField" (esort lzero) (defn (econst "PredWithTypeField" lnil))
-   = declared/ok predWithTypeField/name (dkind-ok/defn predWithTypeField/type-wf predWithTypeField/value-typed).
+   = declared/ok predWithTypeField/name dkind-non-inductive/defn (dkind-ok/defn predWithTypeField/type-wf predWithTypeField/value-typed).

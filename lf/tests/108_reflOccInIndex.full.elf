@@ -3,6 +3,8 @@
 %%% 
 %%% We build an indexed inductive `I : Type → Type` with a constructor argument
 %%% `Nat → I (I α)`, so the recursive occurrence appears as an index argument.
+%solve nonneg_0 : 0 >= 0.
+
 sneq/0 : string-neq "Nat.zero" "Nat.succ".
 
 %% inductive Nat
@@ -18,7 +20,7 @@ Nat/ends-in-sort : ends-in-sort (esort (lsucc lzero))
 Nat/rec-name : name "Nat.rec" (is-rec-for "Nat").
 
 Nat/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 Nat/cnd : cnames-distinct (ccons "Nat.zero" (ccons "Nat.succ" cnil))
    = (cnames-distinct/cons
@@ -46,8 +48,9 @@ Nat_zero/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Nat_zero/cmem : cmem "Nat.zero" (ccons "Nat.zero" (ccons "Nat.succ" cnil))
    = cmem/here.
 
-%%% HOLE: Nat_zero/fuo — prover for field-universes-ok-skip-params not yet implemented
-Nat_zero/fuo : field-universes-ok-skip-params liz (econst "Nat" lnil) (lsucc lzero).
+Nat_zero/fuo : field-universes-ok-skip-params liz (econst "Nat" lnil) (lsucc lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 Nat_zero/name : name "Nat.zero" (is-decl (econst "Nat" lnil) (ctor "Nat" liz)).
 
@@ -78,8 +81,12 @@ Nat_succ/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Nat_succ/cmem : cmem "Nat.succ" (ccons "Nat.zero" (ccons "Nat.succ" cnil))
    = (cmem/there cmem/here).
 
-%%% HOLE: Nat_succ/fuo — prover for field-universes-ok-skip-params not yet implemented
-Nat_succ/fuo : field-universes-ok-skip-params liz (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (lsucc lzero).
+Nat_succ/fuo : field-universes-ok-skip-params liz (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (lsucc lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/forall
+         (defeq/const Nat/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+         (mleq/self nonneg_0)
+         ([x] ([h] (field-universes-ok/done not-forall/const))))).
 
 Nat_succ/name : name "Nat.succ" (is-decl (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (ctor "Nat" (lis liz))).
 

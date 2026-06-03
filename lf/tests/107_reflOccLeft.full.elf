@@ -3,6 +3,8 @@
 %%% *behind further arrows* inside a constructor argument.
 %%% 
 %%% The constructor argument is a function type `Nat → (I → Nat)`.
+%solve nonneg_0 : 0 >= 0.
+
 sneq/0 : string-neq "Nat.zero" "Nat.succ".
 sneq/1 : string-neq "Nat" "reflOccLeft".
 
@@ -19,7 +21,7 @@ Nat/ends-in-sort : ends-in-sort (esort (lsucc lzero))
 Nat/rec-name : name "Nat.rec" (is-rec-for "Nat").
 
 Nat/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 Nat/cnd : cnames-distinct (ccons "Nat.zero" (ccons "Nat.succ" cnil))
    = (cnames-distinct/cons
@@ -47,8 +49,9 @@ Nat_zero/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Nat_zero/cmem : cmem "Nat.zero" (ccons "Nat.zero" (ccons "Nat.succ" cnil))
    = cmem/here.
 
-%%% HOLE: Nat_zero/fuo — prover for field-universes-ok-skip-params not yet implemented
-Nat_zero/fuo : field-universes-ok-skip-params liz (econst "Nat" lnil) (lsucc lzero).
+Nat_zero/fuo : field-universes-ok-skip-params liz (econst "Nat" lnil) (lsucc lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 Nat_zero/name : name "Nat.zero" (is-decl (econst "Nat" lnil) (ctor "Nat" liz)).
 
@@ -79,8 +82,12 @@ Nat_succ/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Nat_succ/cmem : cmem "Nat.succ" (ccons "Nat.zero" (ccons "Nat.succ" cnil))
    = (cmem/there cmem/here).
 
-%%% HOLE: Nat_succ/fuo — prover for field-universes-ok-skip-params not yet implemented
-Nat_succ/fuo : field-universes-ok-skip-params liz (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (lsucc lzero).
+Nat_succ/fuo : field-universes-ok-skip-params liz (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (lsucc lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/forall
+         (defeq/const Nat/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+         (mleq/self nonneg_0)
+         ([x] ([h] (field-universes-ok/done not-forall/const))))).
 
 Nat_succ/name : name "Nat.succ" (is-decl (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (ctor "Nat" (lis liz))).
 
@@ -166,7 +173,7 @@ reflOccLeft/ends-in-sort : ends-in-sort (esort (lsucc lzero))
 reflOccLeft/rec-name : name "reflOccLeft.rec" (is-rec-for "reflOccLeft").
 
 reflOccLeft/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 reflOccLeft/cnd : cnames-distinct (ccons "reflOccLeft.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -212,8 +219,34 @@ reflOccLeft_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero
 reflOccLeft_mk/cmem : cmem "reflOccLeft.mk" (ccons "reflOccLeft.mk" cnil)
    = cmem/here.
 
-%%% HOLE: reflOccLeft_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
-reflOccLeft_mk/fuo : field-universes-ok-skip-params liz (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil))) (lsucc lzero).
+reflOccLeft_mk/fuo : field-universes-ok-skip-params liz (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil))) (lsucc lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/forall
+         (defeq/forall
+           (defeq/const Nat/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+           ([x]
+             ([h]
+               (defeq/forall
+                 (defeq/const
+                   reflOccLeft/decl
+                   (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+                 ([y]
+                   ([h1]
+                     (defeq/const
+                       Nat/decl
+                       (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))))))
+         (mleq/imax-imL
+           (mleq/sR
+             (mleq/maxL
+               (mleq/imax-lsL
+                 (mleq/maxL
+                   (mleq/sL (mleq/self nonneg_0))
+                   (mleq/sL (mleq/self nonneg_0))))
+               (mleq/imax-lsL
+                 (mleq/maxL
+                   (mleq/sL (mleq/self nonneg_0))
+                   (mleq/sL (mleq/self nonneg_0)))))))
+         ([x] ([h] (field-universes-ok/done not-forall/const))))).
 
 reflOccLeft_mk/name : name "reflOccLeft.mk" (is-decl (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil))) (ctor "reflOccLeft" liz)).
 

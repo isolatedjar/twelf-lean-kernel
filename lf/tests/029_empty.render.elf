@@ -13,7 +13,7 @@ Empty/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 Empty/rec-name : name "Empty.rec" (is-rec-for "Empty").
 
 Empty/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 Empty/cnd : cnames-distinct cnil
    = cnames-distinct/nil.
@@ -46,4 +46,4 @@ empty/value-typed : of (econst "Empty" lnil) (esort (lsucc lzero)).
 empty/name : name "empty" (is-decl (esort (lsucc lzero)) (defn (econst "Empty" lnil))).
 
 empty/decl : declared "empty" (esort (lsucc lzero)) (defn (econst "Empty" lnil))
-   = declared/ok empty/name (dkind-ok/defn empty/type-wf empty/value-typed).
+   = declared/ok empty/name dkind-non-inductive/defn (dkind-ok/defn empty/type-wf empty/value-typed).

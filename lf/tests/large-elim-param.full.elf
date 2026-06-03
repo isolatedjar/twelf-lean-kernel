@@ -27,7 +27,7 @@ False/ends-in-sort : ends-in-sort (esort lzero)
 False/rec-name : name "False.rec" (is-rec-for "False").
 
 False/clf : count-leading-foralls (esort lzero) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 False/cnd : cnames-distinct cnil
    = cnames-distinct/nil.
@@ -50,7 +50,7 @@ True/ends-in-sort : ends-in-sort (esort lzero)
 True/rec-name : name "True.rec" (is-rec-for "True").
 
 True/clf : count-leading-foralls (esort lzero) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 True/cnd : cnames-distinct (ccons "True.intro" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -76,8 +76,9 @@ True_intro/eisl : ends-in-sort-with-level (esort lzero) lzero
 True_intro/cmem : cmem "True.intro" (ccons "True.intro" cnil)
    = cmem/here.
 
-%%% HOLE: True_intro/fuo — prover for field-universes-ok-skip-params not yet implemented
-True_intro/fuo : field-universes-ok-skip-params liz (econst "True" lnil) lzero.
+True_intro/fuo : field-universes-ok-skip-params liz (econst "True" lnil) lzero
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 True_intro/name : name "True.intro" (is-decl (econst "True" lnil) (ctor "True" liz)).
 
@@ -97,7 +98,7 @@ MyBool/ends-in-sort : ends-in-sort (esort (lvar liz))
 MyBool/rec-name : name "MyBool.rec" (is-rec-for "MyBool").
 
 MyBool/clf : count-leading-foralls (esort (lvar liz)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 MyBool/cnd : cnames-distinct (ccons "MyBool.tt" (ccons "MyBool.ff" cnil))
    = (cnames-distinct/cons
@@ -125,8 +126,9 @@ MyBool_tt/eisl : ends-in-sort-with-level (esort (lvar liz)) (lvar liz)
 MyBool_tt/cmem : cmem "MyBool.tt" (ccons "MyBool.tt" (ccons "MyBool.ff" cnil))
    = cmem/here.
 
-%%% HOLE: MyBool_tt/fuo — prover for field-universes-ok-skip-params not yet implemented
-MyBool_tt/fuo : field-universes-ok-skip-params liz (econst "MyBool" (lcons (lvar liz) lnil)) (lvar liz).
+MyBool_tt/fuo : field-universes-ok-skip-params liz (econst "MyBool" (lcons (lvar liz) lnil)) (lvar liz)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 MyBool_tt/name : name "MyBool.tt" (is-decl (econst "MyBool" (lcons (lvar liz) lnil)) (ctor "MyBool" liz)).
 
@@ -149,8 +151,9 @@ MyBool_ff/eisl : ends-in-sort-with-level (esort (lvar liz)) (lvar liz)
 MyBool_ff/cmem : cmem "MyBool.ff" (ccons "MyBool.tt" (ccons "MyBool.ff" cnil))
    = (cmem/there cmem/here).
 
-%%% HOLE: MyBool_ff/fuo — prover for field-universes-ok-skip-params not yet implemented
-MyBool_ff/fuo : field-universes-ok-skip-params liz (econst "MyBool" (lcons (lvar liz) lnil)) (lvar liz).
+MyBool_ff/fuo : field-universes-ok-skip-params liz (econst "MyBool" (lcons (lvar liz) lnil)) (lvar liz)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 MyBool_ff/name : name "MyBool.ff" (is-decl (econst "MyBool" (lcons (lvar liz) lnil)) (ctor "MyBool" (lis liz))).
 
@@ -200,7 +203,7 @@ cast/name : name "cast" (is-decl
 cast/decl : declared "cast"
   (eforall (eforall (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "MyBool.tt" (lcons lzero lnil))) ([y] (eapp x (econst "MyBool.ff" (lcons lzero lnil)))))))
   (defn (elam (eforall (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero))) ([x] (elam (eapp x (econst "MyBool.tt" (lcons lzero lnil))) ([y] y)))))
-   = declared/ok cast/name (dkind-ok/defn cast/type-wf cast/value-typed).
+   = declared/ok cast/name dkind-non-inductive/defn (dkind-ok/defn cast/type-wf cast/value-typed).
 
 %% thm false_proof
 false_proof/type-wf : of (econst "False" lnil) (esort lzero)
@@ -220,4 +223,4 @@ false_proof/name : name "false_proof" (is-decl
 false_proof/decl : declared "false_proof"
   (econst "False" lnil)
   (thm (eapp (eapp (econst "cast" lnil) (eapp (eapp (eapp (econst "MyBool.rec" (lcons (lsucc lzero) (lcons lzero lnil))) (elam (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero)))) (econst "True" lnil)) (econst "False" lnil))) (econst "True.intro" lnil)))
-   = declared/ok false_proof/name (dkind-ok/thm false_proof/type-wf false_proof/value-typed).
+   = declared/ok false_proof/name dkind-non-inductive/thm (dkind-ok/thm false_proof/type-wf false_proof/value-typed).

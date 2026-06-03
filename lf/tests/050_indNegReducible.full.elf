@@ -2,6 +2,8 @@
 %%% When checking inductives, we expect the kernel to **not** reduce the type of the constructor parameters
 %%% further than head normal form. Recursive occurrences nested inside the head normal form are considered
 %%% negative occurrences, even if they could be reduced to disappear.
+%solve nonneg_0 : 0 >= 0.
+
 %% def constType
 constType/type-wf-sort : lvl
    = (limax
@@ -23,7 +25,7 @@ constType/name : name "constType" (is-decl
   (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))).
 
 constType/decl : declared "constType" (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))
-   = declared/ok constType/name (dkind-ok/defn constType/type-wf constType/value-typed).
+   = declared/ok constType/name dkind-non-inductive/defn (dkind-ok/defn constType/type-wf constType/value-typed).
 
 %% axiom aType
 aType/type-wf-sort : lvl
@@ -35,7 +37,7 @@ aType/type-wf : of (esort (lsucc lzero)) (esort aType/type-wf-sort)
 aType/name : name "aType" (is-decl (esort (lsucc lzero)) ax).
 
 aType/decl : declared "aType" (esort (lsucc lzero)) ax
-   = declared/ok aType/name (dkind-ok/ax aType/type-wf).
+   = declared/ok aType/name dkind-non-inductive/ax (dkind-ok/ax aType/type-wf).
 
 %% inductive indNegReducible
 indNegReducible/type-wf-sort : lvl
@@ -50,7 +52,7 @@ indNegReducible/ends-in-sort : ends-in-sort (esort (lsucc lzero))
 indNegReducible/rec-name : name "indNegReducible.rec" (is-rec-for "indNegReducible").
 
 indNegReducible/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 indNegReducible/cnd : cnames-distinct (ccons "indNegReducible.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -108,8 +110,41 @@ indNegReducible_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc l
 indNegReducible_mk/cmem : cmem "indNegReducible.mk" (ccons "indNegReducible.mk" cnil)
    = cmem/here.
 
-%%% HOLE: indNegReducible_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
-indNegReducible_mk/fuo : field-universes-ok-skip-params liz (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil))) (lsucc lzero).
+indNegReducible_mk/fuo : field-universes-ok-skip-params liz (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil))) (lsucc lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/forall
+         (defeq/forall
+           (defeq/app
+             (defeq/app
+               (defeq/const
+                 constType/decl
+                 (inst-expr/forall
+                   (inst-expr/sort (lvl-inst/succ lvl-inst/zero))
+                   ([x]
+                     ([h]
+                       (inst-expr/forall
+                         (inst-expr/sort (lvl-inst/succ lvl-inst/zero))
+                         ([y]
+                           ([h1]
+                             (inst-expr/sort
+                               (lvl-inst/succ lvl-inst/zero)))))))))
+               (defeq/const
+                 aType/decl
+                 (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))
+             (defeq/const
+               indNegReducible/decl
+               (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))
+           ([x]
+             ([h]
+               (defeq/const
+                 indNegReducible/decl
+                 (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))))
+         (mleq/imax-lsL
+           (mleq/sR
+             (mleq/maxL
+               (mleq/sL (mleq/self nonneg_0))
+               (mleq/sL (mleq/self nonneg_0)))))
+         ([x] ([h] (field-universes-ok/done not-forall/const))))).
 
 indNegReducible_mk/name : name "indNegReducible.mk" (is-decl
   (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil)))

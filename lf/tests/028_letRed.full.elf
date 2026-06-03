@@ -10,7 +10,7 @@ aProp/type-wf : of (esort lzero) (esort aProp/type-wf-sort)
 aProp/name : name "aProp" (is-decl (esort lzero) ax).
 
 aProp/decl : declared "aProp" (esort lzero) ax
-   = declared/ok aProp/name (dkind-ok/ax aProp/type-wf).
+   = declared/ok aProp/name dkind-non-inductive/ax (dkind-ok/ax aProp/type-wf).
 
 %% def letRed
 letRed/type-wf-sort : lvl
@@ -29,4 +29,4 @@ letRed/value-typed : of (econst "aProp" lnil) (eapp (elam (esort (lsucc lzero)) 
 letRed/name : name "letRed" (is-decl (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (defn (econst "aProp" lnil))).
 
 letRed/decl : declared "letRed" (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (defn (econst "aProp" lnil))
-   = declared/ok letRed/name (dkind-ok/defn letRed/type-wf letRed/value-typed).
+   = declared/ok letRed/name dkind-non-inductive/defn (dkind-ok/defn letRed/type-wf letRed/value-typed).

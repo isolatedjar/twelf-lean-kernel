@@ -15,7 +15,7 @@ Bool/ends-in-sort : ends-in-sort (esort (lsucc lzero))
 Bool/rec-name : name "Bool.rec" (is-rec-for "Bool").
 
 Bool/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 Bool/cnd : cnames-distinct (ccons "Bool.false" (ccons "Bool.true" cnil))
    = (cnames-distinct/cons
@@ -43,8 +43,9 @@ Bool_false/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Bool_false/cmem : cmem "Bool.false" (ccons "Bool.false" (ccons "Bool.true" cnil))
    = cmem/here.
 
-%%% HOLE: Bool_false/fuo — prover for field-universes-ok-skip-params not yet implemented
-Bool_false/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
+Bool_false/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 Bool_false/name : name "Bool.false" (is-decl (econst "Bool" lnil) (ctor "Bool" liz)).
 
@@ -67,8 +68,9 @@ Bool_true/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Bool_true/cmem : cmem "Bool.true" (ccons "Bool.false" (ccons "Bool.true" cnil))
    = (cmem/there cmem/here).
 
-%%% HOLE: Bool_true/fuo — prover for field-universes-ok-skip-params not yet implemented
-Bool_true/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
+Bool_true/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 Bool_true/name : name "Bool.true" (is-decl (econst "Bool" lnil) (ctor "Bool" (lis liz))).
 
@@ -237,4 +239,4 @@ boolRec/decl : declared "boolRec"
   (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz))))
     ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w)))))))))
   (defn (elam (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] (elam (econst "Bool" lnil) ([w] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lvar liz) lnil)) x) y) z) w))))))))))
-   = declared/ok boolRec/name (dkind-ok/defn boolRec/type-wf boolRec/value-typed).
+   = declared/ok boolRec/name dkind-non-inductive/defn (dkind-ok/defn boolRec/type-wf boolRec/value-typed).

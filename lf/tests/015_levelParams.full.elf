@@ -19,7 +19,7 @@ levelParamF/value-typed : of (elam (esort (lvar liz)) ([x] (elam (esort (lvar li
 levelParamF/name : name "levelParamF" (is-decl (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar liz)) ([y] (esort (lvar liz)))))) (defn (elam (esort (lvar liz)) ([x] (elam (esort (lvar liz)) ([y] x)))))).
 
 levelParamF/decl : declared "levelParamF" (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar liz)) ([y] (esort (lvar liz)))))) (defn (elam (esort (lvar liz)) ([x] (elam (esort (lvar liz)) ([y] x)))))
-   = declared/ok levelParamF/name (dkind-ok/defn levelParamF/type-wf levelParamF/value-typed).
+   = declared/ok levelParamF/name dkind-non-inductive/defn (dkind-ok/defn levelParamF/type-wf levelParamF/value-typed).
 
 %% def levelParams
 levelParams/type-wf-sort : lvl
@@ -151,4 +151,4 @@ levelParams/value-typed : of (eforall (esort lzero) ([x] x)) (eapp (eapp (econst
 levelParams/name : name "levelParams" (is-decl (eapp (eapp (econst "levelParamF" (lcons (lsucc lzero) lnil)) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))) (defn (eforall (esort lzero) ([x] x)))).
 
 levelParams/decl : declared "levelParams" (eapp (eapp (econst "levelParamF" (lcons (lsucc lzero) lnil)) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))) (defn (eforall (esort lzero) ([x] x)))
-   = declared/ok levelParams/name (dkind-ok/defn levelParams/type-wf levelParams/value-typed).
+   = declared/ok levelParams/name dkind-non-inductive/defn (dkind-ok/defn levelParams/type-wf levelParams/value-typed).

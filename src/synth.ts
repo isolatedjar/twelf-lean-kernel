@@ -1412,3 +1412,138 @@ export function provablyDistinctSorts(a: Expr, b: Expr): boolean {
   const lb = evalClosedLevel(b.level);
   return la !== null && lb !== null && la !== lb;
 }
+
+// ---------------------------------------------------------------------------
+// `field-universes-ok-skip-params N T UInd` builder (§3.2 / §3.5)
+// ---------------------------------------------------------------------------
+//
+// Strategy: walk T's Π chain.
+//
+//   * For the first `nParams` binders (the inductive's params + indices,
+//     re-bound on the ctor), emit `field-universes-ok-skip-params/skip`
+//     and recurse under a fresh `(x : expr) (h : defeq x x A)` HOAS pair.
+//   * For each subsequent binder (a real field), emit `field-universes-
+//     ok/forall <domProof> <mleq> ([x][h] body)`, where:
+//       - `domProof : defeq A A (esort UA)` comes from `synthRec` on A
+//         (falling back to `reduceToSort` if A's synthesized type isn't
+//         literally a sort).
+//       - `mleq : mleq UA UInd 0` comes from `proveMleq`.
+//   * The walk terminates at the first non-forall expression (the result
+//     type — the inductive applied to params/indices/fields).  Emit
+//     `field-universes-ok/done <not-forall/<kind>>`.
+//
+// `nParams` here = inductive's `numParams + numIndices` (total leading-Π
+// count), matching the indt payload `count-leading-foralls` pins via
+// `declared/ok-indt`.  The generator computes this from the parent
+// inductive's IR.
+
+function notForallAtom(t: Expr): Fmt | null {
+  switch (t.kind) {
+    case "sort":
+      return atom("not-forall/sort");
+    case "const":
+      return atom("not-forall/const");
+    case "app":
+      return atom("not-forall/app");
+    case "lam":
+      return atom("not-forall/lam");
+    case "proj":
+      return atom("not-forall/proj");
+    case "natLit":
+      return atom("not-forall/nat");
+    case "strLit":
+      return atom("not-forall/str");
+    case "forallE":
+    case "bvar":
+    case "letE":
+      return null;
+  }
+}
+
+// Helper: build the field-universes-ok proof for the residual Π chain
+// (after skip-params has consumed the first nParams binders).  `scope`
+// is the synth-side Hyp chain accumulated under the skipped binders.
+function buildFieldUniversesOk(
+  t: Expr,
+  uInd: Level,
+  scope: Hyp[],
+  used: string[],
+  envMap: EnvMap,
+): Fmt | null {
+  if (t.kind !== "forallE") {
+    const nf = notForallAtom(t);
+    if (nf === null) return null;
+    return app(atom("field-universes-ok/done"), nf);
+  }
+  // Step 1: defeq A A (esort UA).  synthRec gives `defeq A A (synth.ty)`;
+  // if synth.ty isn't a sort, whnf-step it to one.
+  const rA = synthRec(t.type, scope, used, envMap);
+  if (!rA) return null;
+  let domProof = rA.proof;
+  let uA = sortLevel(rA.ty);
+  if (uA === null) {
+    const r = reduceToSort(rA.ty, rA.proof, envMap, scope, used);
+    if (!r) return null;
+    domProof = r.proof;
+    uA = r.level;
+  }
+  // Step 2: mleq UA UInd 0.
+  const mleqProof = proveMleq(uA, uInd, 0);
+  if (mleqProof === null) return null;
+  // Step 3: introduce HOAS binders for the field, recurse on body.
+  const x = freshVar(used);
+  const usedX = [x, ...used];
+  const h = freshHyp(usedX);
+  const usedH = [h, ...usedX];
+  const body = buildFieldUniversesOk(
+    t.body,
+    uInd,
+    [{ hyp: h, ty: t.type }, ...scope],
+    usedH,
+    envMap,
+  );
+  if (body === null) return null;
+  return app(
+    atom("field-universes-ok/forall"),
+    domProof,
+    mleqProof,
+    lam(x, lam(h, body)),
+  );
+}
+
+export function buildFieldUniverses(
+  t: Expr,
+  nParams: number,
+  uInd: Level,
+  envMap: EnvMap,
+): Fmt | null {
+  // Walk the first nParams Π binders, accumulating skip frames.  Each skip
+  // introduces a `(x : expr) (h : defeq x x A)` HOAS pair; the body recurses
+  // with one fewer skip to do.
+  function go(t: Expr, n: number, scope: Hyp[], used: string[]): Fmt | null {
+    if (n === 0) {
+      const inner = buildFieldUniversesOk(t, uInd, scope, used, envMap);
+      if (inner === null) return null;
+      return app(atom("field-universes-ok-skip-params/start"), inner);
+    }
+    if (t.kind !== "forallE") {
+      // We've been told to skip more params than the ctor has leading Πs.
+      // Shouldn't happen if NParams is pinned via count-leading-foralls
+      // (every well-typed ctor's type has ≥ NParams leading binders).
+      return null;
+    }
+    const x = freshVar(used);
+    const usedX = [x, ...used];
+    const h = freshHyp(usedX);
+    const usedH = [h, ...usedX];
+    const body = go(
+      t.body,
+      n - 1,
+      [{ hyp: h, ty: t.type }, ...scope],
+      usedH,
+    );
+    if (body === null) return null;
+    return app(atom("field-universes-ok-skip-params/skip"), lam(x, lam(h, body)));
+  }
+  return go(t, nParams, [], []);
+}

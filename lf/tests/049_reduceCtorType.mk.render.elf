@@ -14,7 +14,7 @@ id/value-typed : of (elam (esort (lvar liz)) ([x] (elam x ([y] y)))) (eforall (e
 id/name : name "id" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] x)))) (defn (elam (esort (lvar liz)) ([x] (elam x ([y] y)))))).
 
 id/decl : declared "id" (eforall (esort (lvar liz)) ([x] (eforall x ([y] x)))) (defn (elam (esort (lvar liz)) ([x] (elam x ([y] y)))))
-   = declared/ok id/name (dkind-ok/defn id/type-wf id/value-typed).
+   = declared/ok id/name dkind-non-inductive/defn (dkind-ok/defn id/type-wf id/value-typed).
 
 %% inductive reduceCtorType
 %%% HOLE
@@ -29,7 +29,7 @@ reduceCtorType/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 reduceCtorType/rec-name : name "reduceCtorType.rec" (is-rec-for "reduceCtorType").
 
 reduceCtorType/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 reduceCtorType/cnd : cnames-distinct (ccons "reduceCtorType.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -55,7 +55,7 @@ reduceCtorType_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lz
 reduceCtorType_mk/cmem : cmem "reduceCtorType.mk" (ccons "reduceCtorType.mk" cnil)
    = cmem/here.
 
-%%% HOLE: reduceCtorType_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: reduceCtorType_mk/fuo
 reduceCtorType_mk/fuo : field-universes-ok-skip-params liz (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil)) (lsucc lzero).
 
 reduceCtorType_mk/name : name "reduceCtorType.mk" (is-decl (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil)) (ctor "reduceCtorType" liz)).

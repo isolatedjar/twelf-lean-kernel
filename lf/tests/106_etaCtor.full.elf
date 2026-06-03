@@ -4,8 +4,8 @@
 %%% 
 %%% Taking the official kernel as the specification, the answer is no.
 %%% See <https://github.com/leanprover/lean4/issues/12520> for a discussion.
-%solve nonneg_1 : 1 >= 0.
 %solve nonneg_0 : 0 >= 0.
+%solve nonneg_1 : 1 >= 0.
 
 sneq/0 : string-neq "Bool.false" "Bool.true".
 sneq/1 : string-neq "Bool" "T".
@@ -24,7 +24,7 @@ True/ends-in-sort : ends-in-sort (esort lzero)
 True/rec-name : name "True.rec" (is-rec-for "True").
 
 True/clf : count-leading-foralls (esort lzero) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 True/cnd : cnames-distinct (ccons "True.intro" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -50,8 +50,9 @@ True_intro/eisl : ends-in-sort-with-level (esort lzero) lzero
 True_intro/cmem : cmem "True.intro" (ccons "True.intro" cnil)
    = cmem/here.
 
-%%% HOLE: True_intro/fuo — prover for field-universes-ok-skip-params not yet implemented
-True_intro/fuo : field-universes-ok-skip-params liz (econst "True" lnil) lzero.
+True_intro/fuo : field-universes-ok-skip-params liz (econst "True" lnil) lzero
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 True_intro/name : name "True.intro" (is-decl (econst "True" lnil) (ctor "True" liz)).
 
@@ -101,7 +102,7 @@ Bool/ends-in-sort : ends-in-sort (esort (lsucc lzero))
 Bool/rec-name : name "Bool.rec" (is-rec-for "Bool").
 
 Bool/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 Bool/cnd : cnames-distinct (ccons "Bool.false" (ccons "Bool.true" cnil))
    = (cnames-distinct/cons
@@ -129,8 +130,9 @@ Bool_false/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Bool_false/cmem : cmem "Bool.false" (ccons "Bool.false" (ccons "Bool.true" cnil))
    = cmem/here.
 
-%%% HOLE: Bool_false/fuo — prover for field-universes-ok-skip-params not yet implemented
-Bool_false/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
+Bool_false/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 Bool_false/name : name "Bool.false" (is-decl (econst "Bool" lnil) (ctor "Bool" liz)).
 
@@ -153,8 +155,9 @@ Bool_true/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Bool_true/cmem : cmem "Bool.true" (ccons "Bool.false" (ccons "Bool.true" cnil))
    = (cmem/there cmem/here).
 
-%%% HOLE: Bool_true/fuo — prover for field-universes-ok-skip-params not yet implemented
-Bool_true/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
+Bool_true/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 Bool_true/name : name "Bool.true" (is-decl (econst "Bool" lnil) (ctor "Bool" (lis liz))).
 
@@ -216,7 +219,7 @@ T/ends-in-sort : ends-in-sort (esort (lsucc lzero))
 T/rec-name : name "T.rec" (is-rec-for "T").
 
 T/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 T/cnd : cnames-distinct (ccons "T.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -260,8 +263,17 @@ T_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 T_mk/cmem : cmem "T.mk" (ccons "T.mk" cnil)
    = cmem/here.
 
-%%% HOLE: T_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
-T_mk/fuo : field-universes-ok-skip-params liz (eforall (econst "Bool" lnil) ([x] (eforall (econst "True" lnil) ([y] (econst "T" lnil))))) (lsucc lzero).
+T_mk/fuo : field-universes-ok-skip-params liz (eforall (econst "Bool" lnil) ([x] (eforall (econst "True" lnil) ([y] (econst "T" lnil))))) (lsucc lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/forall
+         (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+         (mleq/self nonneg_0)
+         ([x]
+           ([h]
+             (field-universes-ok/forall
+               (defeq/const True/decl (inst-expr/sort lvl-inst/zero))
+               (mleq/lz nonneg_0)
+               ([y] ([h1] (field-universes-ok/done not-forall/const)))))))).
 
 T_mk/name : name "T.mk" (is-decl (eforall (econst "Bool" lnil) ([x] (eforall (econst "True" lnil) ([y] (econst "T" lnil))))) (ctor "T" liz)).
 
@@ -352,20 +364,16 @@ Eq/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall x ([y] 
 
 Eq/rec-name : name "Eq.rec" (is-rec-for "Eq").
 
-Eq/clf : count-leading-foralls (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (lis (lis (lis liz)))
+Eq/clf : count-leading-foralls (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (lis (lis liz))
    = (count-leading-foralls/succ
-       ([x]
-         (count-leading-foralls/succ
-           ([y]
-             (count-leading-foralls/succ
-               ([z] (count-leading-foralls/zero not-forall/sort))))))).
+       ([x] (count-leading-foralls/succ ([y] count-leading-foralls/zero)))).
 
 Eq/cnd : cnames-distinct (ccons "Eq.refl" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
-Eq/name : name "Eq" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis (lis liz))))).
+Eq/name : name "Eq" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis liz)))).
 
-Eq/decl : declared "Eq" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis (lis liz))))
+Eq/decl : declared "Eq" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis liz)))
    = declared/ok-indt Eq/name Eq/rec-name Eq/clf Eq/cnd (dkind-ok/indt Eq/type-wf Eq/ends-in-sort).
 
 %% ctor Eq.refl (of Eq)
@@ -429,8 +437,15 @@ Eq_refl/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall
 Eq_refl/cmem : cmem "Eq.refl" (ccons "Eq.refl" cnil)
    = cmem/here.
 
-%%% HOLE: Eq_refl/fuo — prover for field-universes-ok-skip-params not yet implemented
-Eq_refl/fuo : field-universes-ok-skip-params (lis (lis (lis liz))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) lzero.
+Eq_refl/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) lzero
+   = (field-universes-ok-skip-params/skip
+       ([x]
+         ([h]
+           (field-universes-ok-skip-params/skip
+             ([y]
+               ([h1]
+                 (field-universes-ok-skip-params/start
+                   (field-universes-ok/done not-forall/app)))))))).
 
 Eq_refl/name : name "Eq.refl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (ctor "Eq" liz)).
 
@@ -594,7 +609,7 @@ T_val/value-typed : of (elam (econst "T" lnil) ([x] (eproj "T" 0 x))) (eforall (
 T_val/name : name "T.val" (is-decl (eforall (econst "T" lnil) ([x] (econst "Bool" lnil))) (defn (elam (econst "T" lnil) ([x] (eproj "T" 0 x))))).
 
 T_val/decl : declared "T.val" (eforall (econst "T" lnil) ([x] (econst "Bool" lnil))) (defn (elam (econst "T" lnil) ([x] (eproj "T" 0 x))))
-   = declared/ok T_val/name (dkind-ok/defn T_val/type-wf T_val/value-typed).
+   = declared/ok T_val/name dkind-non-inductive/defn (dkind-ok/defn T_val/type-wf T_val/value-typed).
 
 %% def etaCtor
 etaCtor/type-wf-sort : lvl
@@ -700,4 +715,4 @@ etaCtor/decl : declared "etaCtor"
         (eapp (econst "T.mk" lnil) (eapp (econst "T.val" lnil) (eapp x (econst "True.intro" lnil)))))
         x)))
   (defn (elam (eforall (econst "True" lnil) ([x] (econst "T" lnil))) ([x] (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (eforall (econst "True" lnil) ([y] (econst "T" lnil)))) x))))
-   = declared/ok etaCtor/name (dkind-ok/defn etaCtor/type-wf etaCtor/value-typed).
+   = declared/ok etaCtor/name dkind-non-inductive/defn (dkind-ok/defn etaCtor/type-wf etaCtor/value-typed).

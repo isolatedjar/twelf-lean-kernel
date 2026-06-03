@@ -13,7 +13,7 @@ PUnit/ends-in-sort : ends-in-sort (esort (lvar liz)).
 PUnit/rec-name : name "PUnit.rec" (is-rec-for "PUnit").
 
 PUnit/clf : count-leading-foralls (esort (lvar liz)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 PUnit/cnd : cnames-distinct (ccons "PUnit.unit" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -39,7 +39,7 @@ PUnit_unit/eisl : ends-in-sort-with-level (esort (lvar liz)) (lvar liz)
 PUnit_unit/cmem : cmem "PUnit.unit" (ccons "PUnit.unit" cnil)
    = cmem/here.
 
-%%% HOLE: PUnit_unit/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: PUnit_unit/fuo
 PUnit_unit/fuo : field-universes-ok-skip-params liz (econst "PUnit" (lcons (lvar liz) lnil)) (lvar liz).
 
 PUnit_unit/name : name "PUnit.unit" (is-decl (econst "PUnit" (lcons (lvar liz) lnil)) (ctor "PUnit" liz)).
@@ -76,4 +76,4 @@ pUnitType/value-typed : of (econst "PUnit" (lcons (lsucc lzero) lnil)) (esort (l
 pUnitType/name : name "pUnitType" (is-decl (esort (lsucc lzero)) (defn (econst "PUnit" (lcons (lsucc lzero) lnil)))).
 
 pUnitType/decl : declared "pUnitType" (esort (lsucc lzero)) (defn (econst "PUnit" (lcons (lsucc lzero) lnil)))
-   = declared/ok pUnitType/name (dkind-ok/defn pUnitType/type-wf pUnitType/value-typed).
+   = declared/ok pUnitType/name dkind-non-inductive/defn (dkind-ok/defn pUnitType/type-wf pUnitType/value-typed).

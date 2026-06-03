@@ -12,24 +12,18 @@ Acc/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall (efora
 
 Acc/rec-name : name "Acc.rec" (is-rec-for "Acc").
 
-Acc/clf : count-leading-foralls (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (esort lzero))))))) (lis (lis (lis liz)))
+Acc/clf : count-leading-foralls (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (esort lzero))))))) (lis (lis liz))
    = (count-leading-foralls/succ
-       ([x]
-         (count-leading-foralls/succ
-           ([y]
-             (count-leading-foralls/succ
-               ([z] (count-leading-foralls/zero not-forall/sort))))))).
+       ([x] (count-leading-foralls/succ ([y] count-leading-foralls/zero)))).
 
 Acc/cnd : cnames-distinct (ccons "Acc.intro" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
 Acc/name : name "Acc" (is-decl
   (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (esort lzero)))))))
-  (indt (ccons "Acc.intro" cnil) (lis (lis (lis liz))))).
+  (indt (ccons "Acc.intro" cnil) (lis (lis liz)))).
 
-Acc/decl : declared "Acc"
-  (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (esort lzero)))))))
-  (indt (ccons "Acc.intro" cnil) (lis (lis (lis liz))))
+Acc/decl : declared "Acc" (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Acc.intro" cnil) (lis (lis liz)))
    = declared/ok-indt Acc/name Acc/rec-name Acc/clf Acc/cnd (dkind-ok/indt Acc/type-wf Acc/ends-in-sort).
 
 %% ctor Acc.intro (of Acc)
@@ -62,8 +56,8 @@ Acc_intro/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (efora
 Acc_intro/cmem : cmem "Acc.intro" (ccons "Acc.intro" cnil)
    = cmem/here.
 
-%%% HOLE: Acc_intro/fuo — prover for field-universes-ok-skip-params not yet implemented
-Acc_intro/fuo : field-universes-ok-skip-params (lis (lis (lis liz))) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eforall (eforall x ([w] (eforall (eapp (eapp y w) z) ([x1] (eapp (eapp (eapp (econst "Acc" (lcons (lvar liz) lnil)) x) y) w))))) ([w] (eapp (eapp (eapp (econst "Acc" (lcons (lvar liz) lnil)) x) y) z))))))))) lzero.
+%%% HOLE: Acc_intro/fuo
+Acc_intro/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (eforall x ([z] (esort lzero))))) ([y] (eforall x ([z] (eforall (eforall x ([w] (eforall (eapp (eapp y w) z) ([x1] (eapp (eapp (eapp (econst "Acc" (lcons (lvar liz) lnil)) x) y) w))))) ([w] (eapp (eapp (eapp (econst "Acc" (lcons (lvar liz) lnil)) x) y) z))))))))) lzero.
 
 Acc_intro/name : name "Acc.intro" (is-decl
   (eforall (esort (lvar liz))
@@ -195,4 +189,4 @@ accRecType/decl : declared "accRecType"
                         ([y1] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "Acc.intro" (lcons (lvar liz) lnil)) x) y) w) x1))))))))
                 ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Acc" (lcons (lvar liz) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1)))))))))))))
   (defn (econst "Acc.rec" (lcons (lvar (lis liz)) (lcons (lvar liz) lnil))))
-   = declared/ok accRecType/name (dkind-ok/defn accRecType/type-wf accRecType/value-typed).
+   = declared/ok accRecType/name dkind-non-inductive/defn (dkind-ok/defn accRecType/type-wf accRecType/value-typed).

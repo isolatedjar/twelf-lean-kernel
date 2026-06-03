@@ -1,5 +1,7 @@
 %%% Expected outcome: reject
 %%% Projection out something that is not a structure
+%solve nonneg_0 : 0 >= 0.
+
 sneq/0 : string-neq "N.zero" "N.succ".
 
 %% inductive N
@@ -15,7 +17,7 @@ N/ends-in-sort : ends-in-sort (esort (lsucc lzero))
 N/rec-name : name "N.rec" (is-rec-for "N").
 
 N/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 N/cnd : cnames-distinct (ccons "N.zero" (ccons "N.succ" cnil))
    = (cnames-distinct/cons
@@ -43,8 +45,9 @@ N_zero/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 N_zero/cmem : cmem "N.zero" (ccons "N.zero" (ccons "N.succ" cnil))
    = cmem/here.
 
-%%% HOLE: N_zero/fuo — prover for field-universes-ok-skip-params not yet implemented
-N_zero/fuo : field-universes-ok-skip-params liz (econst "N" lnil) (lsucc lzero).
+N_zero/fuo : field-universes-ok-skip-params liz (econst "N" lnil) (lsucc lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 N_zero/name : name "N.zero" (is-decl (econst "N" lnil) (ctor "N" liz)).
 
@@ -75,8 +78,12 @@ N_succ/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 N_succ/cmem : cmem "N.succ" (ccons "N.zero" (ccons "N.succ" cnil))
    = (cmem/there cmem/here).
 
-%%% HOLE: N_succ/fuo — prover for field-universes-ok-skip-params not yet implemented
-N_succ/fuo : field-universes-ok-skip-params liz (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (lsucc lzero).
+N_succ/fuo : field-universes-ok-skip-params liz (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (lsucc lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/forall
+         (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+         (mleq/self nonneg_0)
+         ([x] ([h] (field-universes-ok/done not-forall/const))))).
 
 N_succ/name : name "N.succ" (is-decl (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (ctor "N" (lis liz))).
 
@@ -168,4 +175,4 @@ projNotStruct/value-typed : of (elam (econst "N" lnil) ([x] (eproj "N" 0 x))) (e
 projNotStruct/name : name "projNotStruct" (is-decl (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (defn (elam (econst "N" lnil) ([x] (eproj "N" 0 x))))).
 
 projNotStruct/decl : declared "projNotStruct" (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (defn (elam (econst "N" lnil) ([x] (eproj "N" 0 x))))
-   = declared/ok projNotStruct/name (dkind-ok/defn projNotStruct/type-wf projNotStruct/value-typed).
+   = declared/ok projNotStruct/name dkind-non-inductive/defn (dkind-ok/defn projNotStruct/type-wf projNotStruct/value-typed).

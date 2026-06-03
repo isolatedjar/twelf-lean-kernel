@@ -17,7 +17,7 @@ constType/name : name "constType" (is-decl
   (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))).
 
 constType/decl : declared "constType" (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))
-   = declared/ok constType/name (dkind-ok/defn constType/type-wf constType/value-typed).
+   = declared/ok constType/name dkind-non-inductive/defn (dkind-ok/defn constType/type-wf constType/value-typed).
 
 %% axiom aType
 %%% HOLE
@@ -29,7 +29,7 @@ aType/type-wf : of (esort (lsucc lzero)) (esort aType/type-wf-sort).
 aType/name : name "aType" (is-decl (esort (lsucc lzero)) ax).
 
 aType/decl : declared "aType" (esort (lsucc lzero)) ax
-   = declared/ok aType/name (dkind-ok/ax aType/type-wf).
+   = declared/ok aType/name dkind-non-inductive/ax (dkind-ok/ax aType/type-wf).
 
 %% inductive indNegReducible
 %%% HOLE
@@ -44,7 +44,7 @@ indNegReducible/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 indNegReducible/rec-name : name "indNegReducible.rec" (is-rec-for "indNegReducible").
 
 indNegReducible/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 indNegReducible/cnd : cnames-distinct (ccons "indNegReducible.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -72,7 +72,7 @@ indNegReducible_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc l
 indNegReducible_mk/cmem : cmem "indNegReducible.mk" (ccons "indNegReducible.mk" cnil)
    = cmem/here.
 
-%%% HOLE: indNegReducible_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: indNegReducible_mk/fuo
 indNegReducible_mk/fuo : field-universes-ok-skip-params liz (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil))) (lsucc lzero).
 
 indNegReducible_mk/name : name "indNegReducible.mk" (is-decl

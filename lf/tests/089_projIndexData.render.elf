@@ -16,7 +16,7 @@ N/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 N/rec-name : name "N.rec" (is-rec-for "N").
 
 N/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 N/cnd : cnames-distinct (ccons "N.zero" (ccons "N.succ" cnil))
    = (cnames-distinct/cons
@@ -44,7 +44,7 @@ N_zero/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 N_zero/cmem : cmem "N.zero" (ccons "N.zero" (ccons "N.succ" cnil))
    = cmem/here.
 
-%%% HOLE: N_zero/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: N_zero/fuo
 N_zero/fuo : field-universes-ok-skip-params liz (econst "N" lnil) (lsucc lzero).
 
 N_zero/name : name "N.zero" (is-decl (econst "N" lnil) (ctor "N" liz)).
@@ -68,7 +68,7 @@ N_succ/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 N_succ/cmem : cmem "N.succ" (ccons "N.zero" (ccons "N.succ" cnil))
    = (cmem/there cmem/here).
 
-%%% HOLE: N_succ/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: N_succ/fuo
 N_succ/fuo : field-universes-ok-skip-params liz (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (lsucc lzero).
 
 N_succ/name : name "N.succ" (is-decl (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (ctor "N" (lis liz))).
@@ -109,7 +109,7 @@ True/ends-in-sort : ends-in-sort (esort lzero).
 True/rec-name : name "True.rec" (is-rec-for "True").
 
 True/clf : count-leading-foralls (esort lzero) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 True/cnd : cnames-distinct (ccons "True.intro" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -135,7 +135,7 @@ True_intro/eisl : ends-in-sort-with-level (esort lzero) lzero
 True_intro/cmem : cmem "True.intro" (ccons "True.intro" cnil)
    = cmem/here.
 
-%%% HOLE: True_intro/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: True_intro/fuo
 True_intro/fuo : field-universes-ok-skip-params liz (econst "True" lnil) lzero.
 
 True_intro/name : name "True.intro" (is-decl (econst "True" lnil) (ctor "True" liz)).
@@ -170,8 +170,7 @@ ProjDataIndex/ends-in-sort : ends-in-sort (eforall (econst "N" lnil) ([x] (esort
 ProjDataIndex/rec-name : name "ProjDataIndex.rec" (is-rec-for "ProjDataIndex").
 
 ProjDataIndex/clf : count-leading-foralls (eforall (econst "N" lnil) ([x] (esort lzero))) (lis liz)
-   = (count-leading-foralls/succ
-       ([x] (count-leading-foralls/zero not-forall/sort))).
+   = (count-leading-foralls/succ ([x] count-leading-foralls/zero)).
 
 ProjDataIndex/cnd : cnames-distinct (ccons "ProjDataIndex.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -197,7 +196,7 @@ ProjDataIndex_mk/eisl : ends-in-sort-with-level (eforall (econst "N" lnil) ([x] 
 ProjDataIndex_mk/cmem : cmem "ProjDataIndex.mk" (ccons "ProjDataIndex.mk" cnil)
    = cmem/here.
 
-%%% HOLE: ProjDataIndex_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: ProjDataIndex_mk/fuo
 ProjDataIndex_mk/fuo : field-universes-ok-skip-params (lis liz) (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp (econst "ProjDataIndex" lnil) x))))) lzero.
 
 ProjDataIndex_mk/name : name "ProjDataIndex.mk" (is-decl (eforall (econst "N" lnil) ([x] (eforall (econst "True" lnil) ([y] (eapp (econst "ProjDataIndex" lnil) x))))) (ctor "ProjDataIndex" liz)).
@@ -244,4 +243,4 @@ projIndexData/name : name "projIndexData" (is-decl
 projIndexData/decl : declared "projIndexData"
   (eforall (econst "N" lnil) ([x] (eforall (eapp (econst "ProjDataIndex" lnil) x) ([y] (econst "N" lnil)))))
   (defn (elam (econst "N" lnil) ([x] (elam (eapp (econst "ProjDataIndex" lnil) x) ([y] (eproj "PropStructure" 0 y))))))
-   = declared/ok projIndexData/name (dkind-ok/defn projIndexData/type-wf projIndexData/value-typed).
+   = declared/ok projIndexData/name dkind-non-inductive/defn (dkind-ok/defn projIndexData/type-wf projIndexData/value-typed).

@@ -15,7 +15,7 @@ constType/name : name "constType" (is-decl
   (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))).
 
 constType/decl : declared "constType" (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))
-   = declared/ok constType/name (dkind-ok/defn constType/type-wf constType/value-typed).
+   = declared/ok constType/name dkind-non-inductive/defn (dkind-ok/defn constType/type-wf constType/value-typed).
 
 %% inductive inductBadNonSort
 %%% HOLE
@@ -30,7 +30,7 @@ inductBadNonSort/ends-in-sort : ends-in-sort (econst "constType" lnil).
 inductBadNonSort/rec-name : name "inductBadNonSort.rec" (is-rec-for "inductBadNonSort").
 
 inductBadNonSort/clf : count-leading-foralls (econst "constType" lnil) liz
-   = (count-leading-foralls/zero not-forall/const).
+   = count-leading-foralls/zero.
 
 inductBadNonSort/cnd : cnames-distinct cnil
    = cnames-distinct/nil.

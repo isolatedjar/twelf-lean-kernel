@@ -14,9 +14,7 @@ PProd/rec-name : name "PProd.rec" (is-rec-for "PProd").
 
 PProd/clf : count-leading-foralls (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (esort (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))))) (lis (lis liz))
    = (count-leading-foralls/succ
-       ([x]
-         (count-leading-foralls/succ
-           ([y] (count-leading-foralls/zero not-forall/sort))))).
+       ([x] (count-leading-foralls/succ ([y] count-leading-foralls/zero)))).
 
 PProd/cnd : cnames-distinct (ccons "PProd.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -50,7 +48,7 @@ PProd_mk/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforal
 PProd_mk/cmem : cmem "PProd.mk" (ccons "PProd.mk" cnil)
    = cmem/here.
 
-%%% HOLE: PProd_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: PProd_mk/fuo
 PProd_mk/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "PProd" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz))).
 
 PProd_mk/name : name "PProd.mk" (is-decl
@@ -139,4 +137,4 @@ pprodRec/decl : declared "pprodRec"
               (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PProd.mk" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) w) x1))))))
                 ([w] (eforall (eapp (eapp (econst "PProd" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([x1] (eapp z x1)))))))))))
   (defn (econst "PProd.rec" (lcons (lvar liz) (lcons (lvar liz) (lcons (lvar (lis liz)) lnil)))))
-   = declared/ok pprodRec/name (dkind-ok/defn pprodRec/type-wf pprodRec/value-typed).
+   = declared/ok pprodRec/name dkind-non-inductive/defn (dkind-ok/defn pprodRec/type-wf pprodRec/value-typed).

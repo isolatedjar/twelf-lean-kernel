@@ -200,6 +200,26 @@ export interface Prover {
     indLevels: Level[];
     levelParams: Name[];
   }): ProofResult;
+  // field-universes-ok-skip-params NParams T UInd — for a ctor of an inductive
+  // at sort UInd whose ctor type T has NParams leading binders (the
+  // inductive's params + indices, re-bound on the ctor), every remaining Π's
+  // domain has sort ≤ UInd.  See §3.2/§3.5 in completeness-plan.md.
+  //
+  // The prover walks T:
+  //   • the first NParams binders are skipped via field-universes-ok-skip-
+  //     params/skip; under each binder a fresh LF variable + defeq hypothesis
+  //     is introduced (HOAS).
+  //   • each remaining binder is checked via field-universes-ok/forall:
+  //     synthesize defeq A A (esort UA) for the domain, prove
+  //     mleq UA UInd 0 (Carneiro's algorithmic ≤), then recurse on body.
+  //   • the result (a not-forall expression) is discharged via
+  //     field-universes-ok/done.
+  fieldUniverses(ctx: {
+    ctorType: Expr;
+    nParams: number;
+    indUInd: Level;
+    levelParams: Name[];
+  }): ProofResult;
 }
 
 // --- Helpers ------------------------------------------------------------

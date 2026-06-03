@@ -13,7 +13,7 @@ dup_rec_def_rec/value-typed : of (esort lzero) (esort (lsucc lzero)).
 dup_rec_def_rec/name : name "dup_rec_def.rec" (is-decl (esort (lsucc lzero)) (defn (esort lzero))).
 
 dup_rec_def_rec/decl : declared "dup_rec_def.rec" (esort (lsucc lzero)) (defn (esort lzero))
-   = declared/ok dup_rec_def_rec/name (dkind-ok/defn dup_rec_def_rec/type-wf dup_rec_def_rec/value-typed).
+   = declared/ok dup_rec_def_rec/name dkind-non-inductive/defn (dkind-ok/defn dup_rec_def_rec/type-wf dup_rec_def_rec/value-typed).
 
 %% inductive dup_rec_def
 %%% HOLE
@@ -28,7 +28,7 @@ dup_rec_def/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 dup_rec_def/rec-name : name "dup_rec_def.rec" (is-rec-for "dup_rec_def").
 
 dup_rec_def/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 dup_rec_def/cnd : cnames-distinct (ccons "dup_rec_def.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -54,7 +54,7 @@ dup_rec_def_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero
 dup_rec_def_mk/cmem : cmem "dup_rec_def.mk" (ccons "dup_rec_def.mk" cnil)
    = cmem/here.
 
-%%% HOLE: dup_rec_def_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: dup_rec_def_mk/fuo
 dup_rec_def_mk/fuo : field-universes-ok-skip-params liz (econst "dup_rec_def" lnil) (lsucc lzero).
 
 dup_rec_def_mk/name : name "dup_rec_def.mk" (is-decl (econst "dup_rec_def" lnil) (ctor "dup_rec_def" liz)).

@@ -20,9 +20,7 @@ And/rec-name : name "And.rec" (is-rec-for "And").
 
 And/clf : count-leading-foralls (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (lis (lis liz))
    = (count-leading-foralls/succ
-       ([x]
-         (count-leading-foralls/succ
-           ([y] (count-leading-foralls/zero not-forall/sort))))).
+       ([x] (count-leading-foralls/succ ([y] count-leading-foralls/zero)))).
 
 And/cnd : cnames-distinct (ccons "And.intro" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -102,8 +100,26 @@ And_intro/eisl : ends-in-sort-with-level (eforall (esort lzero) ([x] (eforall (e
 And_intro/cmem : cmem "And.intro" (ccons "And.intro" cnil)
    = cmem/here.
 
-%%% HOLE: And_intro/fuo — prover for field-universes-ok-skip-params not yet implemented
-And_intro/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) lzero.
+And_intro/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) lzero
+   = (field-universes-ok-skip-params/skip
+       ([x]
+         ([h]
+           (field-universes-ok-skip-params/skip
+             ([y]
+               ([h1]
+                 (field-universes-ok-skip-params/start
+                   (field-universes-ok/forall
+                     h
+                     (mleq/self nonneg_0)
+                     ([z]
+                       ([h2]
+                         (field-universes-ok/forall
+                           h1
+                           (mleq/self nonneg_0)
+                           ([w]
+                             ([h3]
+                               (field-universes-ok/done
+                                 not-forall/app)))))))))))))).
 
 And_intro/name : name "And.intro" (is-decl (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) (ctor "And" liz)).
 
@@ -250,7 +266,7 @@ Bool/ends-in-sort : ends-in-sort (esort (lsucc lzero))
 Bool/rec-name : name "Bool.rec" (is-rec-for "Bool").
 
 Bool/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 Bool/cnd : cnames-distinct (ccons "Bool.false" (ccons "Bool.true" cnil))
    = (cnames-distinct/cons
@@ -278,8 +294,9 @@ Bool_false/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Bool_false/cmem : cmem "Bool.false" (ccons "Bool.false" (ccons "Bool.true" cnil))
    = cmem/here.
 
-%%% HOLE: Bool_false/fuo — prover for field-universes-ok-skip-params not yet implemented
-Bool_false/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
+Bool_false/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 Bool_false/name : name "Bool.false" (is-decl (econst "Bool" lnil) (ctor "Bool" liz)).
 
@@ -302,8 +319,9 @@ Bool_true/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Bool_true/cmem : cmem "Bool.true" (ccons "Bool.false" (ccons "Bool.true" cnil))
    = (cmem/there cmem/here).
 
-%%% HOLE: Bool_true/fuo — prover for field-universes-ok-skip-params not yet implemented
-Bool_true/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
+Bool_true/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 Bool_true/name : name "Bool.true" (is-decl (econst "Bool" lnil) (ctor "Bool" (lis liz))).
 
@@ -375,20 +393,16 @@ Eq/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall x ([y] 
 
 Eq/rec-name : name "Eq.rec" (is-rec-for "Eq").
 
-Eq/clf : count-leading-foralls (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (lis (lis (lis liz)))
+Eq/clf : count-leading-foralls (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (lis (lis liz))
    = (count-leading-foralls/succ
-       ([x]
-         (count-leading-foralls/succ
-           ([y]
-             (count-leading-foralls/succ
-               ([z] (count-leading-foralls/zero not-forall/sort))))))).
+       ([x] (count-leading-foralls/succ ([y] count-leading-foralls/zero)))).
 
 Eq/cnd : cnames-distinct (ccons "Eq.refl" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
-Eq/name : name "Eq" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis (lis liz))))).
+Eq/name : name "Eq" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis liz)))).
 
-Eq/decl : declared "Eq" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis (lis liz))))
+Eq/decl : declared "Eq" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis liz)))
    = declared/ok-indt Eq/name Eq/rec-name Eq/clf Eq/cnd (dkind-ok/indt Eq/type-wf Eq/ends-in-sort).
 
 %% ctor Eq.refl (of Eq)
@@ -452,8 +466,15 @@ Eq_refl/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall
 Eq_refl/cmem : cmem "Eq.refl" (ccons "Eq.refl" cnil)
    = cmem/here.
 
-%%% HOLE: Eq_refl/fuo — prover for field-universes-ok-skip-params not yet implemented
-Eq_refl/fuo : field-universes-ok-skip-params (lis (lis (lis liz))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) lzero.
+Eq_refl/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) lzero
+   = (field-universes-ok-skip-params/skip
+       ([x]
+         ([h]
+           (field-universes-ok-skip-params/skip
+             ([y]
+               ([h1]
+                 (field-universes-ok-skip-params/start
+                   (field-universes-ok/done not-forall/app)))))))).
 
 Eq_refl/name : name "Eq.refl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (ctor "Eq" liz)).
 
@@ -1039,4 +1060,4 @@ boolRecEqns/decl : declared "boolRecEqns"
                   (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lvar liz) lnil)) (elam (econst "Bool" lnil) ([w] (eapp x w)))) y) z) (econst "Bool.true" lnil)))
                   z))))))))
   (thm (eapp (eapp (eapp (eapp (econst "And.intro" lnil) (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) (eapp x (econst "Bool.false" lnil))) (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lvar liz) lnil)) (elam (econst "Bool" lnil) ([w] (eapp x w)))) y) z) (econst "Bool.false" lnil))) y)))))))) (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) (eapp x (econst "Bool.true" lnil))) (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lvar liz) lnil)) (elam (econst "Bool" lnil) ([w] (eapp x w)))) y) z) (econst "Bool.true" lnil))) z)))))))) (elam (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) (eapp x (econst "Bool.false" lnil))) (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lvar liz) lnil)) (elam (econst "Bool" lnil) ([w] (eapp x w)))) y) z) (econst "Bool.false" lnil)))))))))) (elam (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) (eapp x (econst "Bool.true" lnil))) (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lvar liz) lnil)) (elam (econst "Bool" lnil) ([w] (eapp x w)))) y) z) (econst "Bool.true" lnil)))))))))))
-   = declared/ok boolRecEqns/name (dkind-ok/thm boolRecEqns/type-wf boolRecEqns/value-typed).
+   = declared/ok boolRecEqns/name dkind-non-inductive/thm (dkind-ok/thm boolRecEqns/type-wf boolRecEqns/value-typed).

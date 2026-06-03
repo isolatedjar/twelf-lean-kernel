@@ -1,5 +1,7 @@
 %%% Expected outcome: accept
 %%% An inductive type can have fields of level up to that of the inductive.
+%solve nonneg_0 : 0 >= 0.
+
 %% inductive TypeWithTypeField
 TypeWithTypeField/type-wf-sort : lvl
    = (lsucc (lsucc (lsucc lzero))).
@@ -13,7 +15,7 @@ TypeWithTypeField/ends-in-sort : ends-in-sort (esort (lsucc (lsucc lzero)))
 TypeWithTypeField/rec-name : name "TypeWithTypeField.rec" (is-rec-for "TypeWithTypeField").
 
 TypeWithTypeField/clf : count-leading-foralls (esort (lsucc (lsucc lzero))) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 TypeWithTypeField/cnd : cnames-distinct (ccons "TypeWithTypeField.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -47,8 +49,12 @@ TypeWithTypeField_mk/eisl : ends-in-sort-with-level (esort (lsucc (lsucc lzero))
 TypeWithTypeField_mk/cmem : cmem "TypeWithTypeField.mk" (ccons "TypeWithTypeField.mk" cnil)
    = cmem/here.
 
-%%% HOLE: TypeWithTypeField_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
-TypeWithTypeField_mk/fuo : field-universes-ok-skip-params liz (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil))) (lsucc (lsucc lzero)).
+TypeWithTypeField_mk/fuo : field-universes-ok-skip-params liz (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil))) (lsucc (lsucc lzero))
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/forall
+         defeq/sort-refl
+         (mleq/self nonneg_0)
+         ([x] ([h] (field-universes-ok/done not-forall/const))))).
 
 TypeWithTypeField_mk/name : name "TypeWithTypeField.mk" (is-decl (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil))) (ctor "TypeWithTypeField" liz)).
 
@@ -119,4 +125,4 @@ typeWithTypeField/value-typed : of (econst "TypeWithTypeField" lnil) (esort (lsu
 typeWithTypeField/name : name "typeWithTypeField" (is-decl (esort (lsucc (lsucc lzero))) (defn (econst "TypeWithTypeField" lnil))).
 
 typeWithTypeField/decl : declared "typeWithTypeField" (esort (lsucc (lsucc lzero))) (defn (econst "TypeWithTypeField" lnil))
-   = declared/ok typeWithTypeField/name (dkind-ok/defn typeWithTypeField/type-wf typeWithTypeField/value-typed).
+   = declared/ok typeWithTypeField/name dkind-non-inductive/defn (dkind-ok/defn typeWithTypeField/type-wf typeWithTypeField/value-typed).

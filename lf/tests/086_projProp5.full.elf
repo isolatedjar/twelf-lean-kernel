@@ -18,7 +18,7 @@ PUnit/ends-in-sort : ends-in-sort (esort (lvar liz))
 PUnit/rec-name : name "PUnit.rec" (is-rec-for "PUnit").
 
 PUnit/clf : count-leading-foralls (esort (lvar liz)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 PUnit/cnd : cnames-distinct (ccons "PUnit.unit" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -44,8 +44,9 @@ PUnit_unit/eisl : ends-in-sort-with-level (esort (lvar liz)) (lvar liz)
 PUnit_unit/cmem : cmem "PUnit.unit" (ccons "PUnit.unit" cnil)
    = cmem/here.
 
-%%% HOLE: PUnit_unit/fuo — prover for field-universes-ok-skip-params not yet implemented
-PUnit_unit/fuo : field-universes-ok-skip-params liz (econst "PUnit" (lcons (lvar liz) lnil)) (lvar liz).
+PUnit_unit/fuo : field-universes-ok-skip-params liz (econst "PUnit" (lcons (lvar liz) lnil)) (lvar liz)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 PUnit_unit/name : name "PUnit.unit" (is-decl (econst "PUnit" (lcons (lvar liz) lnil)) (ctor "PUnit" liz)).
 
@@ -112,20 +113,16 @@ Eq/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall x ([y] 
 
 Eq/rec-name : name "Eq.rec" (is-rec-for "Eq").
 
-Eq/clf : count-leading-foralls (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (lis (lis (lis liz)))
+Eq/clf : count-leading-foralls (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (lis (lis liz))
    = (count-leading-foralls/succ
-       ([x]
-         (count-leading-foralls/succ
-           ([y]
-             (count-leading-foralls/succ
-               ([z] (count-leading-foralls/zero not-forall/sort))))))).
+       ([x] (count-leading-foralls/succ ([y] count-leading-foralls/zero)))).
 
 Eq/cnd : cnames-distinct (ccons "Eq.refl" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
-Eq/name : name "Eq" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis (lis liz))))).
+Eq/name : name "Eq" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis liz)))).
 
-Eq/decl : declared "Eq" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis (lis liz))))
+Eq/decl : declared "Eq" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis liz)))
    = declared/ok-indt Eq/name Eq/rec-name Eq/clf Eq/cnd (dkind-ok/indt Eq/type-wf Eq/ends-in-sort).
 
 %% ctor Eq.refl (of Eq)
@@ -189,8 +186,15 @@ Eq_refl/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall
 Eq_refl/cmem : cmem "Eq.refl" (ccons "Eq.refl" cnil)
    = cmem/here.
 
-%%% HOLE: Eq_refl/fuo — prover for field-universes-ok-skip-params not yet implemented
-Eq_refl/fuo : field-universes-ok-skip-params (lis (lis (lis liz))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) lzero.
+Eq_refl/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) lzero
+   = (field-universes-ok-skip-params/skip
+       ([x]
+         ([h]
+           (field-universes-ok-skip-params/skip
+             ([y]
+               ([h1]
+                 (field-universes-ok-skip-params/start
+                   (field-universes-ok/done not-forall/app)))))))).
 
 Eq_refl/name : name "Eq.refl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (ctor "Eq" liz)).
 
@@ -348,7 +352,7 @@ PropStructure/ends-in-sort : ends-in-sort (esort lzero)
 PropStructure/rec-name : name "PropStructure.rec" (is-rec-for "PropStructure").
 
 PropStructure/clf : count-leading-foralls (esort lzero) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 PropStructure/cnd : cnames-distinct (ccons "PropStructure.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -505,7 +509,7 @@ PropStructure_mk/eisl : ends-in-sort-with-level (esort lzero) lzero
 PropStructure_mk/cmem : cmem "PropStructure.mk" (ccons "PropStructure.mk" cnil)
    = cmem/here.
 
-%%% HOLE: PropStructure_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: PropStructure_mk/fuo
 PropStructure_mk/fuo : field-universes-ok-skip-params liz (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([x] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([y] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([z] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([w] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) (econst "PUnit" (lcons (lvar (lis liz)) lnil))) w) w) ([x1] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([y1] (econst "PropStructure" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))))))))))))))) lzero.
 
 PropStructure_mk/name : name "PropStructure.mk" (is-decl
@@ -774,4 +778,4 @@ projProp5/decl : declared "projProp5"
   (eforall (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil)))
     ([x] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "PUnit" (lcons (lsucc lzero) lnil))) (eproj "PropStructure" 3 x)) (eproj "PropStructure" 3 x))))
   (defn (elam (econst "PropStructure" (lcons lzero (lcons (lsucc lzero) lnil))) ([x] (eproj "PropStructure" 4 x))))
-   = declared/ok projProp5/name (dkind-ok/defn projProp5/type-wf projProp5/value-typed).
+   = declared/ok projProp5/name dkind-non-inductive/defn (dkind-ok/defn projProp5/type-wf projProp5/value-typed).

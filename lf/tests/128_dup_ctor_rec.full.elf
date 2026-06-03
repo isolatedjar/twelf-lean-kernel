@@ -13,7 +13,7 @@ dup_ctor_rec/ends-in-sort : ends-in-sort (esort (lsucc lzero))
 dup_ctor_rec/rec-name : name "dup_ctor_rec.rec" (is-rec-for "dup_ctor_rec").
 
 dup_ctor_rec/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 dup_ctor_rec/cnd : cnames-distinct (ccons "dup_ctor_rec.rec" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -41,8 +41,9 @@ dup_ctor_rec_rec/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lze
 dup_ctor_rec_rec/cmem : cmem "dup_ctor_rec.rec" (ccons "dup_ctor_rec.rec" cnil)
    = cmem/here.
 
-%%% HOLE: dup_ctor_rec_rec/fuo — prover for field-universes-ok-skip-params not yet implemented
-dup_ctor_rec_rec/fuo : field-universes-ok-skip-params liz (econst "dup_ctor_rec" lnil) (lsucc lzero).
+dup_ctor_rec_rec/fuo : field-universes-ok-skip-params liz (econst "dup_ctor_rec" lnil) (lsucc lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 dup_ctor_rec_rec/name : name "dup_ctor_rec.rec" (is-decl (econst "dup_ctor_rec" lnil) (ctor "dup_ctor_rec" liz)).
 

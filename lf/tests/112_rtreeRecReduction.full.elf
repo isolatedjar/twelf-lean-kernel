@@ -19,7 +19,7 @@ Bool/ends-in-sort : ends-in-sort (esort (lsucc lzero))
 Bool/rec-name : name "Bool.rec" (is-rec-for "Bool").
 
 Bool/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 Bool/cnd : cnames-distinct (ccons "Bool.false" (ccons "Bool.true" cnil))
    = (cnames-distinct/cons
@@ -47,8 +47,9 @@ Bool_false/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Bool_false/cmem : cmem "Bool.false" (ccons "Bool.false" (ccons "Bool.true" cnil))
    = cmem/here.
 
-%%% HOLE: Bool_false/fuo — prover for field-universes-ok-skip-params not yet implemented
-Bool_false/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
+Bool_false/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 Bool_false/name : name "Bool.false" (is-decl (econst "Bool" lnil) (ctor "Bool" liz)).
 
@@ -71,8 +72,9 @@ Bool_true/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Bool_true/cmem : cmem "Bool.true" (ccons "Bool.false" (ccons "Bool.true" cnil))
    = (cmem/there cmem/here).
 
-%%% HOLE: Bool_true/fuo — prover for field-universes-ok-skip-params not yet implemented
-Bool_true/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
+Bool_true/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 Bool_true/name : name "Bool.true" (is-decl (econst "Bool" lnil) (ctor "Bool" (lis liz))).
 
@@ -134,7 +136,7 @@ RTree/ends-in-sort : ends-in-sort (esort (lsucc lzero))
 RTree/rec-name : name "RTree.rec" (is-rec-for "RTree").
 
 RTree/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 RTree/cnd : cnames-distinct (ccons "RTree.leaf" (ccons "RTree.node" cnil))
    = (cnames-distinct/cons
@@ -162,8 +164,9 @@ RTree_leaf/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 RTree_leaf/cmem : cmem "RTree.leaf" (ccons "RTree.leaf" (ccons "RTree.node" cnil))
    = cmem/here.
 
-%%% HOLE: RTree_leaf/fuo — prover for field-universes-ok-skip-params not yet implemented
-RTree_leaf/fuo : field-universes-ok-skip-params liz (econst "RTree" lnil) (lsucc lzero).
+RTree_leaf/fuo : field-universes-ok-skip-params liz (econst "RTree" lnil) (lsucc lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 RTree_leaf/name : name "RTree.leaf" (is-decl (econst "RTree" lnil) (ctor "RTree" liz)).
 
@@ -203,8 +206,24 @@ RTree_node/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 RTree_node/cmem : cmem "RTree.node" (ccons "RTree.leaf" (ccons "RTree.node" cnil))
    = (cmem/there cmem/here).
 
-%%% HOLE: RTree_node/fuo — prover for field-universes-ok-skip-params not yet implemented
-RTree_node/fuo : field-universes-ok-skip-params liz (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil))) (lsucc lzero).
+RTree_node/fuo : field-universes-ok-skip-params liz (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil))) (lsucc lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/forall
+         (defeq/forall
+           (defeq/const
+             Bool/decl
+             (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+           ([x]
+             ([h]
+               (defeq/const
+                 RTree/decl
+                 (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))))
+         (mleq/imax-lsL
+           (mleq/sR
+             (mleq/maxL
+               (mleq/sL (mleq/self nonneg_0))
+               (mleq/sL (mleq/self nonneg_0)))))
+         ([x] ([h] (field-universes-ok/done not-forall/const))))).
 
 RTree_node/name : name "RTree.node" (is-decl (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil))) (ctor "RTree" (lis liz))).
 
@@ -322,20 +341,16 @@ Eq/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall x ([y] 
 
 Eq/rec-name : name "Eq.rec" (is-rec-for "Eq").
 
-Eq/clf : count-leading-foralls (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (lis (lis (lis liz)))
+Eq/clf : count-leading-foralls (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (lis (lis liz))
    = (count-leading-foralls/succ
-       ([x]
-         (count-leading-foralls/succ
-           ([y]
-             (count-leading-foralls/succ
-               ([z] (count-leading-foralls/zero not-forall/sort))))))).
+       ([x] (count-leading-foralls/succ ([y] count-leading-foralls/zero)))).
 
 Eq/cnd : cnames-distinct (ccons "Eq.refl" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
-Eq/name : name "Eq" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis (lis liz))))).
+Eq/name : name "Eq" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis liz)))).
 
-Eq/decl : declared "Eq" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis (lis liz))))
+Eq/decl : declared "Eq" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis liz)))
    = declared/ok-indt Eq/name Eq/rec-name Eq/clf Eq/cnd (dkind-ok/indt Eq/type-wf Eq/ends-in-sort).
 
 %% ctor Eq.refl (of Eq)
@@ -399,8 +414,15 @@ Eq_refl/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall
 Eq_refl/cmem : cmem "Eq.refl" (ccons "Eq.refl" cnil)
    = cmem/here.
 
-%%% HOLE: Eq_refl/fuo — prover for field-universes-ok-skip-params not yet implemented
-Eq_refl/fuo : field-universes-ok-skip-params (lis (lis (lis liz))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) lzero.
+Eq_refl/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) lzero
+   = (field-universes-ok-skip-params/skip
+       ([x]
+         ([h]
+           (field-universes-ok-skip-params/skip
+             ([y]
+               ([h1]
+                 (field-universes-ok-skip-params/start
+                   (field-universes-ok/done not-forall/app)))))))).
 
 Eq_refl/name : name "Eq.refl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (ctor "Eq" liz)).
 
@@ -775,7 +797,7 @@ RTree_left/name : name "RTree.left" (is-decl
 RTree_left/decl : declared "RTree.left"
   (eforall (econst "RTree" lnil) ([x] (econst "RTree" lnil)))
   (defn (elam (econst "RTree" lnil) ([x] (eapp (eapp (eapp (eapp (econst "RTree.rec" (lcons (lsucc lzero) lnil)) (elam (econst "RTree" lnil) ([y] (econst "RTree" lnil)))) (econst "RTree.leaf" lnil)) (elam (eforall (econst "Bool" lnil) ([y] (econst "RTree" lnil))) ([y] (elam (eforall (econst "Bool" lnil) ([z] (eapp (elam (econst "RTree" lnil) ([w] (econst "RTree" lnil))) (eapp y z)))) ([z] (eapp y (econst "Bool.true" lnil))))))) x))))
-   = declared/ok RTree_left/name (dkind-ok/defn RTree_left/type-wf RTree_left/value-typed).
+   = declared/ok RTree_left/name dkind-non-inductive/defn (dkind-ok/defn RTree_left/type-wf RTree_left/value-typed).
 
 %% def rfl
 rfl/type-wf-sort : lvl
@@ -856,7 +878,7 @@ rfl/name : name "rfl" (is-decl
 rfl/decl : declared "rfl"
   (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y)))))
   (defn (elam (esort (lvar liz)) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x) y))))))
-   = declared/ok rfl/name (dkind-ok/defn rfl/type-wf rfl/value-typed).
+   = declared/ok rfl/name dkind-non-inductive/defn (dkind-ok/defn rfl/type-wf rfl/value-typed).
 
 %% thm rtreeRecReduction
 rtreeRecReduction/type-wf : of
@@ -1086,4 +1108,4 @@ rtreeRecReduction/decl : declared "rtreeRecReduction"
                 (elam (econst "Bool" lnil) ([z] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([w] (econst "RTree" lnil)))) y) x) z))))))
             x)))))
   (thm (elam (econst "RTree" lnil) ([x] (elam (econst "RTree" lnil) ([y] (eapp (eapp (econst "rfl" (lcons (lsucc lzero) lnil)) (econst "RTree" lnil)) (eapp (econst "RTree.left" lnil) (eapp (econst "RTree.node" lnil) (elam (econst "Bool" lnil) ([z] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([w] (econst "RTree" lnil)))) y) x) z)))))))))))
-   = declared/ok rtreeRecReduction/name (dkind-ok/thm rtreeRecReduction/type-wf rtreeRecReduction/value-typed).
+   = declared/ok rtreeRecReduction/name dkind-non-inductive/thm (dkind-ok/thm rtreeRecReduction/type-wf rtreeRecReduction/value-typed).

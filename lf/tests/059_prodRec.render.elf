@@ -14,9 +14,7 @@ Prod/rec-name : name "Prod.rec" (is-rec-for "Prod").
 
 Prod/clf : count-leading-foralls (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (esort (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz))))))))) (lis (lis liz))
    = (count-leading-foralls/succ
-       ([x]
-         (count-leading-foralls/succ
-           ([y] (count-leading-foralls/zero not-forall/sort))))).
+       ([x] (count-leading-foralls/succ ([y] count-leading-foralls/zero)))).
 
 Prod/cnd : cnames-distinct (ccons "Prod.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -51,7 +49,7 @@ Prod_mk/eisl : ends-in-sort-with-level (eforall (esort (lsucc (lvar liz))) ([x] 
 Prod_mk/cmem : cmem "Prod.mk" (ccons "Prod.mk" cnil)
    = cmem/here.
 
-%%% HOLE: Prod_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: Prod_mk/fuo
 Prod_mk/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz)))).
 
 Prod_mk/name : name "Prod.mk" (is-decl
@@ -142,4 +140,4 @@ prodRec/decl : declared "prodRec"
               (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) w) x1))))))
                 ([w] (eforall (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([x1] (eapp z x1)))))))))))
   (defn (econst "Prod.rec" (lcons (lvar liz) (lcons (lvar liz) (lcons (lvar (lis liz)) lnil)))))
-   = declared/ok prodRec/name (dkind-ok/defn prodRec/type-wf prodRec/value-typed).
+   = declared/ok prodRec/name dkind-non-inductive/defn (dkind-ok/defn prodRec/type-wf prodRec/value-typed).

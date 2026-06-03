@@ -391,6 +391,33 @@ ctor : string -> lidx -> dkind.        %% parent IndN, cidx
 irec : string -> dkind.                %% parent IndN
 quot : dkind.
 
+%%% `dkind-non-inductive K` : K is one of the dkinds whose sealing has
+%%% no relational-metadata premises beyond `dkind-ok K T`.  Used to GUARD
+%%% the catch-all `declared/ok` rule so it CANNOT seal `indt _ _`, `ctor
+%%% _ _`, or `irec _` — those must go through the specialized
+%%% `declared/ok-indt`/-`ctor`/-`irec` rules where the soundness premises
+%%% (cnames-distinct, cmem, count-leading-foralls, is-rec-for, field-
+%%% universes-ok) live.
+%%%
+%%% Closed family — one rule per non-inductive-family kind, no rule for
+%%% the inductive-family kinds.  A translator that tries to seal an
+%%% `indt`/`ctor`/`irec` via `declared/ok` has no `dkind-non-inductive`
+%%% witness available and the sealing rule fails to apply.
+%%%
+%%% Background: this predicate was added 2026-06-03 after the companion
+%%% adversarial process caught that without it, `declared/ok`'s `K` was
+%%% unconstrained — every soundness premise on the specialized rules was
+%%% optional.  See the file headers of dup-ctor-iota.elf, universe-too-
+%%% high-field.elf for the exploit they enabled.
+
+dkind-non-inductive : dkind -> type.  %name dkind-non-inductive DKN.
+
+dkind-non-inductive/defn : dkind-non-inductive (defn V).
+dkind-non-inductive/thm  : dkind-non-inductive (thm V).
+dkind-non-inductive/opq  : dkind-non-inductive (opq V).
+dkind-non-inductive/ax   : dkind-non-inductive ax.
+dkind-non-inductive/quot : dkind-non-inductive quot.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Name reservation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -583,21 +610,29 @@ field-universes-ok-skip-params/skip :
    ({x : expr} defeq x x A -> field-universes-ok-skip-params N (B x) UInd)
    -> field-universes-ok-skip-params (lis N) (eforall A B) UInd.
 
-%%% --- `count-leading-foralls T N` : T's leading Π chain has exactly N
-%%% binders (a closed structural judgment; N : lidx).  Used by
-%%% `declared/ok-indt` to pin the inductive's `NParams` payload to the
-%%% inductive's own type — the original §3.2 fix accepted any translator-
-%%% supplied NumParams, opening the §3.2.2 over-claim bypass (see
-%%% completeness-plan).  Once the inductive's NParams matches T, every
-%%% ctor's `field-universes-ok-skip-params NParams …` consults a
-%%% well-grounded count.
+%%% --- `count-leading-foralls T N` : T has AT LEAST N leading Π binders
+%%% (a closed structural judgment; N : lidx).  Used by `declared/ok-indt`
+%%% to pin a *lower bound* on the inductive's `NParams` payload — the
+%%% inductive's leading-Π chain must be at least as long as the
+%%% translator-claimed NParams, so a translator that over-claims NParams
+%%% to bypass `field-universes-ok-skip-params/skip` (the §3.2.2 attack)
+%%% runs out of binders before reaching `liz` and the witness fails to
+%%% inhabit.
+%%%
+%%% The judgment is "at-least N" not "exactly N" because the inductive's
+%%% type chain ALSO carries the indices (binders after the params), which
+%%% aren't part of NParams.  E.g. `Eq.{u} : ∀ α a b, Prop` has numParams=1
+%%% and numIndices=2; a ctor of Eq skips the 1 param, not the 2 indices.
+%%% So pinning the inductive's payload at `numParams` while its type has
+%%% `numParams + numIndices` leading Πs requires the "at-least" form.
 
 count-leading-foralls : expr -> lidx -> type.
    %name count-leading-foralls CLF.
 
+%%% Zero base case: any T satisfies "at least 0 leading Πs", regardless
+%%% of its shape.  (Includes T being a Π itself — we stop counting.)
 count-leading-foralls/zero :
-   not-forall T
-   -> count-leading-foralls T liz.
+   count-leading-foralls T liz.
 
 count-leading-foralls/succ :
    ({x : expr} count-leading-foralls (B x) N)
@@ -914,11 +949,17 @@ dkind-ok/quot :
 %%% (`declared` type already declared above next to `dkind-ok`.)
 %%%
 %%% `declared/ok` is the catch-all sealing rule for non-inductive-family
-%%% kinds: `defn`, `thm`, `opq`, `ax`, `quot`.  The inductive-family kinds
-%%% (`indt _ _`, `ctor _ _`, `irec _`) go through specialized rules below
-%%% that check the cross-decl relational metadata (§3.5).
+%%% kinds: `defn`, `thm`, `opq`, `ax`, `quot`.  The `dkind-non-inductive
+%%% K` premise BLOCKS this rule from sealing `indt _ _`, `ctor _ _`, or
+%%% `irec _` — those must go through the specialized `declared/ok-indt`,
+%%% `declared/ok-ctor`, `declared/ok-irec` rules where the cross-decl
+%%% relational-metadata checks (§3.5) live.  Without this guard the
+%%% catch-all is a bypass: dup-ctor-iota, universe-too-high-field both
+%%% slipped through pre-guard sealing inductive-family kinds via
+%%% `declared/ok`.
 declared/ok :
    name N (is-decl T K)
+   -> dkind-non-inductive K
    -> dkind-ok K T
    -> declared N T K.
 

@@ -1,5 +1,7 @@
 %%% Expected outcome: accept
 %%% An inductive type can have fields of level up to that of the inductive (polymorphic variant).
+%solve nonneg_0 : 0 >= 0.
+
 %% inductive TypeWithTypeFieldPoly
 TypeWithTypeFieldPoly/type-wf-sort : lvl
    = (lsucc (lsucc (lsucc (lvar liz)))).
@@ -13,7 +15,7 @@ TypeWithTypeFieldPoly/ends-in-sort : ends-in-sort (esort (lsucc (lsucc (lvar liz
 TypeWithTypeFieldPoly/rec-name : name "TypeWithTypeFieldPoly.rec" (is-rec-for "TypeWithTypeFieldPoly").
 
 TypeWithTypeFieldPoly/clf : count-leading-foralls (esort (lsucc (lsucc (lvar liz)))) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 TypeWithTypeFieldPoly/cnd : cnames-distinct (ccons "TypeWithTypeFieldPoly.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -48,8 +50,12 @@ TypeWithTypeFieldPoly_mk/eisl : ends-in-sort-with-level (esort (lsucc (lsucc (lv
 TypeWithTypeFieldPoly_mk/cmem : cmem "TypeWithTypeFieldPoly.mk" (ccons "TypeWithTypeFieldPoly.mk" cnil)
    = cmem/here.
 
-%%% HOLE: TypeWithTypeFieldPoly_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
-TypeWithTypeFieldPoly_mk/fuo : field-universes-ok-skip-params liz (eforall (esort (lsucc (lvar liz))) ([x] (econst "TypeWithTypeFieldPoly" (lcons (lvar liz) lnil)))) (lsucc (lsucc (lvar liz))).
+TypeWithTypeFieldPoly_mk/fuo : field-universes-ok-skip-params liz (eforall (esort (lsucc (lvar liz))) ([x] (econst "TypeWithTypeFieldPoly" (lcons (lvar liz) lnil)))) (lsucc (lsucc (lvar liz)))
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/forall
+         defeq/sort-refl
+         (mleq/self nonneg_0)
+         ([x] ([h] (field-universes-ok/done not-forall/const))))).
 
 TypeWithTypeFieldPoly_mk/name : name "TypeWithTypeFieldPoly.mk" (is-decl (eforall (esort (lsucc (lvar liz))) ([x] (econst "TypeWithTypeFieldPoly" (lcons (lvar liz) lnil)))) (ctor "TypeWithTypeFieldPoly" liz)).
 
@@ -133,4 +139,4 @@ typeWithTypeFieldPoly/value-typed : of (econst "TypeWithTypeFieldPoly" (lcons (l
 typeWithTypeFieldPoly/name : name "typeWithTypeFieldPoly" (is-decl (esort (lsucc (lsucc (lvar liz)))) (defn (econst "TypeWithTypeFieldPoly" (lcons (lvar liz) lnil)))).
 
 typeWithTypeFieldPoly/decl : declared "typeWithTypeFieldPoly" (esort (lsucc (lsucc (lvar liz)))) (defn (econst "TypeWithTypeFieldPoly" (lcons (lvar liz) lnil)))
-   = declared/ok typeWithTypeFieldPoly/name (dkind-ok/defn typeWithTypeFieldPoly/type-wf typeWithTypeFieldPoly/value-typed).
+   = declared/ok typeWithTypeFieldPoly/name dkind-non-inductive/defn (dkind-ok/defn typeWithTypeFieldPoly/type-wf typeWithTypeFieldPoly/value-typed).

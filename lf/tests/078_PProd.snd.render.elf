@@ -14,9 +14,7 @@ PProd/rec-name : name "PProd.rec" (is-rec-for "PProd").
 
 PProd/clf : count-leading-foralls (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (esort (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))))) (lis (lis liz))
    = (count-leading-foralls/succ
-       ([x]
-         (count-leading-foralls/succ
-           ([y] (count-leading-foralls/zero not-forall/sort))))).
+       ([x] (count-leading-foralls/succ ([y] count-leading-foralls/zero)))).
 
 PProd/cnd : cnames-distinct (ccons "PProd.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -50,7 +48,7 @@ PProd_mk/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforal
 PProd_mk/cmem : cmem "PProd.mk" (ccons "PProd.mk" cnil)
    = cmem/here.
 
-%%% HOLE: PProd_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: PProd_mk/fuo
 PProd_mk/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "PProd" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz))).
 
 PProd_mk/name : name "PProd.mk" (is-decl
@@ -111,7 +109,7 @@ PProd_fst/name : name "PProd.fst" (is-decl
 PProd_fst/decl : declared "PProd.fst"
   (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (eforall (eapp (eapp (econst "PProd" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] x))))))
   (defn (elam (esort (lvar liz)) ([x] (elam (esort (lvar (lis liz))) ([y] (elam (eapp (eapp (econst "PProd" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (eproj "PProd" 0 z))))))))
-   = declared/ok PProd_fst/name (dkind-ok/defn PProd_fst/type-wf PProd_fst/value-typed).
+   = declared/ok PProd_fst/name dkind-non-inductive/defn (dkind-ok/defn PProd_fst/type-wf PProd_fst/value-typed).
 
 %% def PProd.snd
 %%% HOLE
@@ -134,4 +132,4 @@ PProd_snd/name : name "PProd.snd" (is-decl
 PProd_snd/decl : declared "PProd.snd"
   (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (eforall (eapp (eapp (econst "PProd" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] y))))))
   (defn (elam (esort (lvar liz)) ([x] (elam (esort (lvar (lis liz))) ([y] (elam (eapp (eapp (econst "PProd" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (eproj "PProd" 1 z))))))))
-   = declared/ok PProd_snd/name (dkind-ok/defn PProd_snd/type-wf PProd_snd/value-typed).
+   = declared/ok PProd_snd/name dkind-non-inductive/defn (dkind-ok/defn PProd_snd/type-wf PProd_snd/value-typed).

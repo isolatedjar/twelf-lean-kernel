@@ -16,7 +16,7 @@ Bool/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 Bool/rec-name : name "Bool.rec" (is-rec-for "Bool").
 
 Bool/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 Bool/cnd : cnames-distinct (ccons "Bool.false" (ccons "Bool.true" cnil))
    = (cnames-distinct/cons
@@ -44,7 +44,7 @@ Bool_false/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Bool_false/cmem : cmem "Bool.false" (ccons "Bool.false" (ccons "Bool.true" cnil))
    = cmem/here.
 
-%%% HOLE: Bool_false/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: Bool_false/fuo
 Bool_false/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
 
 Bool_false/name : name "Bool.false" (is-decl (econst "Bool" lnil) (ctor "Bool" liz)).
@@ -68,7 +68,7 @@ Bool_true/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Bool_true/cmem : cmem "Bool.true" (ccons "Bool.false" (ccons "Bool.true" cnil))
    = (cmem/there cmem/here).
 
-%%% HOLE: Bool_true/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: Bool_true/fuo
 Bool_true/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
 
 Bool_true/name : name "Bool.true" (is-decl (econst "Bool" lnil) (ctor "Bool" (lis liz))).
@@ -105,7 +105,7 @@ RTree/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 RTree/rec-name : name "RTree.rec" (is-rec-for "RTree").
 
 RTree/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 RTree/cnd : cnames-distinct (ccons "RTree.leaf" (ccons "RTree.node" cnil))
    = (cnames-distinct/cons
@@ -133,7 +133,7 @@ RTree_leaf/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 RTree_leaf/cmem : cmem "RTree.leaf" (ccons "RTree.leaf" (ccons "RTree.node" cnil))
    = cmem/here.
 
-%%% HOLE: RTree_leaf/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: RTree_leaf/fuo
 RTree_leaf/fuo : field-universes-ok-skip-params liz (econst "RTree" lnil) (lsucc lzero).
 
 RTree_leaf/name : name "RTree.leaf" (is-decl (econst "RTree" lnil) (ctor "RTree" liz)).
@@ -157,7 +157,7 @@ RTree_node/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 RTree_node/cmem : cmem "RTree.node" (ccons "RTree.leaf" (ccons "RTree.node" cnil))
    = (cmem/there cmem/here).
 
-%%% HOLE: RTree_node/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: RTree_node/fuo
 RTree_node/fuo : field-universes-ok-skip-params liz (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil))) (lsucc lzero).
 
 RTree_node/name : name "RTree.node" (is-decl (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil))) (ctor "RTree" (lis liz))).
@@ -236,4 +236,4 @@ rTreeRec/decl : declared "rTreeRec"
             ([z] (eforall (eforall (econst "Bool" lnil) ([w] (eapp x (eapp z w)))) ([w] (eapp x (eapp (econst "RTree.node" lnil) z))))))
             ([z] (eforall (econst "RTree" lnil) ([w] (eapp x w)))))))))
   (defn (econst "RTree.rec" (lcons (lvar liz) lnil)))
-   = declared/ok rTreeRec/name (dkind-ok/defn rTreeRec/type-wf rTreeRec/value-typed).
+   = declared/ok rTreeRec/name dkind-non-inductive/defn (dkind-ok/defn rTreeRec/type-wf rTreeRec/value-typed).

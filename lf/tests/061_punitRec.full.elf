@@ -13,7 +13,7 @@ PUnit/ends-in-sort : ends-in-sort (esort (lvar liz))
 PUnit/rec-name : name "PUnit.rec" (is-rec-for "PUnit").
 
 PUnit/clf : count-leading-foralls (esort (lvar liz)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 PUnit/cnd : cnames-distinct (ccons "PUnit.unit" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -39,8 +39,9 @@ PUnit_unit/eisl : ends-in-sort-with-level (esort (lvar liz)) (lvar liz)
 PUnit_unit/cmem : cmem "PUnit.unit" (ccons "PUnit.unit" cnil)
    = cmem/here.
 
-%%% HOLE: PUnit_unit/fuo — prover for field-universes-ok-skip-params not yet implemented
-PUnit_unit/fuo : field-universes-ok-skip-params liz (econst "PUnit" (lcons (lvar liz) lnil)) (lvar liz).
+PUnit_unit/fuo : field-universes-ok-skip-params liz (econst "PUnit" (lcons (lvar liz) lnil)) (lvar liz)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 PUnit_unit/name : name "PUnit.unit" (is-decl (econst "PUnit" (lcons (lvar liz) lnil)) (ctor "PUnit" liz)).
 
@@ -155,4 +156,4 @@ punitRec/decl : declared "punitRec"
   (eforall (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([x] (esort (lvar (lis liz)))))
     ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar liz) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([z] (eapp x z)))))))
   (defn (econst "PUnit.rec" (lcons (lvar (lis liz)) (lcons (lvar liz) lnil))))
-   = declared/ok punitRec/name (dkind-ok/defn punitRec/type-wf punitRec/value-typed).
+   = declared/ok punitRec/name dkind-non-inductive/defn (dkind-ok/defn punitRec/type-wf punitRec/value-typed).

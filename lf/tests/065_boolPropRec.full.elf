@@ -15,7 +15,7 @@ BoolProp/ends-in-sort : ends-in-sort (esort lzero)
 BoolProp/rec-name : name "BoolProp.rec" (is-rec-for "BoolProp").
 
 BoolProp/clf : count-leading-foralls (esort lzero) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 BoolProp/cnd : cnames-distinct (ccons "BoolProp.a" (ccons "BoolProp.b" cnil))
    = (cnames-distinct/cons
@@ -43,8 +43,9 @@ BoolProp_a/eisl : ends-in-sort-with-level (esort lzero) lzero
 BoolProp_a/cmem : cmem "BoolProp.a" (ccons "BoolProp.a" (ccons "BoolProp.b" cnil))
    = cmem/here.
 
-%%% HOLE: BoolProp_a/fuo — prover for field-universes-ok-skip-params not yet implemented
-BoolProp_a/fuo : field-universes-ok-skip-params liz (econst "BoolProp" lnil) lzero.
+BoolProp_a/fuo : field-universes-ok-skip-params liz (econst "BoolProp" lnil) lzero
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 BoolProp_a/name : name "BoolProp.a" (is-decl (econst "BoolProp" lnil) (ctor "BoolProp" liz)).
 
@@ -67,8 +68,9 @@ BoolProp_b/eisl : ends-in-sort-with-level (esort lzero) lzero
 BoolProp_b/cmem : cmem "BoolProp.b" (ccons "BoolProp.a" (ccons "BoolProp.b" cnil))
    = (cmem/there cmem/here).
 
-%%% HOLE: BoolProp_b/fuo — prover for field-universes-ok-skip-params not yet implemented
-BoolProp_b/fuo : field-universes-ok-skip-params liz (econst "BoolProp" lnil) lzero.
+BoolProp_b/fuo : field-universes-ok-skip-params liz (econst "BoolProp" lnil) lzero
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 BoolProp_b/name : name "BoolProp.b" (is-decl (econst "BoolProp" lnil) (ctor "BoolProp" (lis liz))).
 
@@ -186,4 +188,4 @@ boolPropRec/decl : declared "boolPropRec"
   (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero)))
     ([x] (eforall (eapp x (econst "BoolProp.a" lnil)) ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w)))))))))
   (defn (econst "BoolProp.rec" lnil))
-   = declared/ok boolPropRec/name (dkind-ok/defn boolPropRec/type-wf boolPropRec/value-typed).
+   = declared/ok boolPropRec/name dkind-non-inductive/defn (dkind-ok/defn boolPropRec/type-wf boolPropRec/value-typed).

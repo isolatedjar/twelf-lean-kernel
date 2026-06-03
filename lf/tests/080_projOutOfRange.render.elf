@@ -14,9 +14,7 @@ And/rec-name : name "And.rec" (is-rec-for "And").
 
 And/clf : count-leading-foralls (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (lis (lis liz))
    = (count-leading-foralls/succ
-       ([x]
-         (count-leading-foralls/succ
-           ([y] (count-leading-foralls/zero not-forall/sort))))).
+       ([x] (count-leading-foralls/succ ([y] count-leading-foralls/zero)))).
 
 And/cnd : cnames-distinct (ccons "And.intro" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -44,7 +42,7 @@ And_intro/eisl : ends-in-sort-with-level (eforall (esort lzero) ([x] (eforall (e
 And_intro/cmem : cmem "And.intro" (ccons "And.intro" cnil)
    = cmem/here.
 
-%%% HOLE: And_intro/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: And_intro/fuo
 And_intro/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) lzero.
 
 And_intro/name : name "And.intro" (is-decl (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) (ctor "And" liz)).
@@ -99,4 +97,4 @@ projOutOfRange/name : name "projOutOfRange" (is-decl
 projOutOfRange/decl : declared "projOutOfRange"
   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall (eapp (eapp (econst "And" lnil) x) y) ([z] x))))))
   (defn (elam (esort lzero) ([x] (elam (esort lzero) ([y] (elam (eapp (eapp (econst "And" lnil) x) y) ([z] (eproj "And" 2 z))))))))
-   = declared/ok projOutOfRange/name (dkind-ok/defn projOutOfRange/type-wf projOutOfRange/value-typed).
+   = declared/ok projOutOfRange/name dkind-non-inductive/defn (dkind-ok/defn projOutOfRange/type-wf projOutOfRange/value-typed).

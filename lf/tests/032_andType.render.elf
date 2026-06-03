@@ -14,9 +14,7 @@ And/rec-name : name "And.rec" (is-rec-for "And").
 
 And/clf : count-leading-foralls (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (lis (lis liz))
    = (count-leading-foralls/succ
-       ([x]
-         (count-leading-foralls/succ
-           ([y] (count-leading-foralls/zero not-forall/sort))))).
+       ([x] (count-leading-foralls/succ ([y] count-leading-foralls/zero)))).
 
 And/cnd : cnames-distinct (ccons "And.intro" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -44,7 +42,7 @@ And_intro/eisl : ends-in-sort-with-level (eforall (esort lzero) ([x] (eforall (e
 And_intro/cmem : cmem "And.intro" (ccons "And.intro" cnil)
    = cmem/here.
 
-%%% HOLE: And_intro/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: And_intro/fuo
 And_intro/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) lzero.
 
 And_intro/name : name "And.intro" (is-decl (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) (ctor "And" liz)).
@@ -93,4 +91,4 @@ andType/value-typed : of (econst "And" lnil) (eforall (esort lzero) ([x] (eforal
 andType/name : name "andType" (is-decl (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (defn (econst "And" lnil))).
 
 andType/decl : declared "andType" (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (defn (econst "And" lnil))
-   = declared/ok andType/name (dkind-ok/defn andType/type-wf andType/value-typed).
+   = declared/ok andType/name dkind-non-inductive/defn (dkind-ok/defn andType/type-wf andType/value-typed).

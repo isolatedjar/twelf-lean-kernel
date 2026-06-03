@@ -17,20 +17,16 @@ Eq/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall x ([y] 
 
 Eq/rec-name : name "Eq.rec" (is-rec-for "Eq").
 
-Eq/clf : count-leading-foralls (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (lis (lis (lis liz)))
+Eq/clf : count-leading-foralls (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (lis (lis liz))
    = (count-leading-foralls/succ
-       ([x]
-         (count-leading-foralls/succ
-           ([y]
-             (count-leading-foralls/succ
-               ([z] (count-leading-foralls/zero not-forall/sort))))))).
+       ([x] (count-leading-foralls/succ ([y] count-leading-foralls/zero)))).
 
 Eq/cnd : cnames-distinct (ccons "Eq.refl" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
-Eq/name : name "Eq" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis (lis liz))))).
+Eq/name : name "Eq" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis liz)))).
 
-Eq/decl : declared "Eq" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis (lis liz))))
+Eq/decl : declared "Eq" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis liz)))
    = declared/ok-indt Eq/name Eq/rec-name Eq/clf Eq/cnd (dkind-ok/indt Eq/type-wf Eq/ends-in-sort).
 
 %% ctor Eq.refl (of Eq)
@@ -54,8 +50,8 @@ Eq_refl/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall
 Eq_refl/cmem : cmem "Eq.refl" (ccons "Eq.refl" cnil)
    = cmem/here.
 
-%%% HOLE: Eq_refl/fuo — prover for field-universes-ok-skip-params not yet implemented
-Eq_refl/fuo : field-universes-ok-skip-params (lis (lis (lis liz))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) lzero.
+%%% HOLE: Eq_refl/fuo
+Eq_refl/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) lzero.
 
 Eq_refl/name : name "Eq.refl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (ctor "Eq" liz)).
 
@@ -103,7 +99,7 @@ Nat/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 Nat/rec-name : name "Nat.rec" (is-rec-for "Nat").
 
 Nat/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 Nat/cnd : cnames-distinct (ccons "Nat.zero" (ccons "Nat.succ" cnil))
    = (cnames-distinct/cons
@@ -131,7 +127,7 @@ Nat_zero/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Nat_zero/cmem : cmem "Nat.zero" (ccons "Nat.zero" (ccons "Nat.succ" cnil))
    = cmem/here.
 
-%%% HOLE: Nat_zero/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: Nat_zero/fuo
 Nat_zero/fuo : field-universes-ok-skip-params liz (econst "Nat" lnil) (lsucc lzero).
 
 Nat_zero/name : name "Nat.zero" (is-decl (econst "Nat" lnil) (ctor "Nat" liz)).
@@ -155,7 +151,7 @@ Nat_succ/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Nat_succ/cmem : cmem "Nat.succ" (ccons "Nat.zero" (ccons "Nat.succ" cnil))
    = (cmem/there cmem/here).
 
-%%% HOLE: Nat_succ/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: Nat_succ/fuo
 Nat_succ/fuo : field-universes-ok-skip-params liz (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (lsucc lzero).
 
 Nat_succ/name : name "Nat.succ" (is-decl (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (ctor "Nat" (lis liz))).
@@ -197,9 +193,7 @@ OfNat/rec-name : name "OfNat.rec" (is-rec-for "OfNat").
 
 OfNat/clf : count-leading-foralls (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "Nat" lnil) ([y] (esort (lsucc (lvar liz))))))) (lis (lis liz))
    = (count-leading-foralls/succ
-       ([x]
-         (count-leading-foralls/succ
-           ([y] (count-leading-foralls/zero not-forall/sort))))).
+       ([x] (count-leading-foralls/succ ([y] count-leading-foralls/zero)))).
 
 OfNat/cnd : cnames-distinct (ccons "OfNat.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -227,7 +221,7 @@ OfNat_mk/eisl : ends-in-sort-with-level (eforall (esort (lsucc (lvar liz))) ([x]
 OfNat_mk/cmem : cmem "OfNat.mk" (ccons "OfNat.mk" cnil)
    = cmem/here.
 
-%%% HOLE: OfNat_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: OfNat_mk/fuo
 OfNat_mk/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "Nat" lnil) ([y] (eforall x ([z] (eapp (eapp (econst "OfNat" (lcons (lvar liz) lnil)) x) y))))))) (lsucc (lvar liz)).
 
 OfNat_mk/name : name "OfNat.mk" (is-decl (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "Nat" lnil) ([y] (eforall x ([z] (eapp (eapp (econst "OfNat" (lcons (lvar liz) lnil)) x) y))))))) (ctor "OfNat" liz)).
@@ -282,7 +276,7 @@ OfNat_ofNat/name : name "OfNat.ofNat" (is-decl
 OfNat_ofNat/decl : declared "OfNat.ofNat"
   (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "Nat" lnil) ([y] (eforall (eapp (eapp (econst "OfNat" (lcons (lvar liz) lnil)) x) y) ([z] x))))))
   (defn (elam (esort (lsucc (lvar liz))) ([x] (elam (econst "Nat" lnil) ([y] (elam (eapp (eapp (econst "OfNat" (lcons (lvar liz) lnil)) x) y) ([z] (eproj "OfNat" 0 z))))))))
-   = declared/ok OfNat_ofNat/name (dkind-ok/defn OfNat_ofNat/type-wf OfNat_ofNat/value-typed).
+   = declared/ok OfNat_ofNat/name dkind-non-inductive/defn (dkind-ok/defn OfNat_ofNat/type-wf OfNat_ofNat/value-typed).
 
 %% def instOfNatNat
 %%% HOLE
@@ -303,7 +297,7 @@ instOfNatNat/name : name "instOfNatNat" (is-decl
 instOfNatNat/decl : declared "instOfNatNat"
   (eforall (econst "Nat" lnil) ([x] (eapp (eapp (econst "OfNat" (lcons lzero lnil)) (econst "Nat" lnil)) x)))
   (defn (elam (econst "Nat" lnil) ([x] (eapp (eapp (eapp (econst "OfNat.mk" (lcons lzero lnil)) (econst "Nat" lnil)) x) x))))
-   = declared/ok instOfNatNat/name (dkind-ok/defn instOfNatNat/type-wf instOfNatNat/value-typed).
+   = declared/ok instOfNatNat/name dkind-non-inductive/defn (dkind-ok/defn instOfNatNat/type-wf instOfNatNat/value-typed).
 
 %% inductive True
 %%% HOLE
@@ -318,7 +312,7 @@ True/ends-in-sort : ends-in-sort (esort lzero).
 True/rec-name : name "True.rec" (is-rec-for "True").
 
 True/clf : count-leading-foralls (esort lzero) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 True/cnd : cnames-distinct (ccons "True.intro" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -344,7 +338,7 @@ True_intro/eisl : ends-in-sort-with-level (esort lzero) lzero
 True_intro/cmem : cmem "True.intro" (ccons "True.intro" cnil)
    = cmem/here.
 
-%%% HOLE: True_intro/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: True_intro/fuo
 True_intro/fuo : field-universes-ok-skip-params liz (econst "True" lnil) lzero.
 
 True_intro/name : name "True.intro" (is-decl (econst "True" lnil) (ctor "True" liz)).
@@ -392,4 +386,4 @@ thm/decl : declared "thm"
     (eapp (eapp (eapp (econst "OfNat.ofNat" (lcons lzero lnil)) (econst "Nat" lnil)) (enatlit 0 nonneg_0)) (eapp (econst "instOfNatNat" lnil) (enatlit 0 nonneg_0))))
     (eapp (eapp (eapp (econst "OfNat.ofNat" (lcons lzero lnil)) (econst "Nat" lnil)) (enatlit 1 nonneg_1)) (eapp (econst "instOfNatNat" lnil) (enatlit 1 nonneg_1))))
   (thm (econst "True.intro" lnil))
-   = declared/ok thm/name (dkind-ok/thm thm/type-wf thm/value-typed).
+   = declared/ok thm/name dkind-non-inductive/thm (dkind-ok/thm thm/type-wf thm/value-typed).

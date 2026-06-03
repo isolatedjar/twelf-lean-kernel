@@ -17,7 +17,7 @@ Nat/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 Nat/rec-name : name "Nat.rec" (is-rec-for "Nat").
 
 Nat/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 Nat/cnd : cnames-distinct (ccons "Nat.zero" (ccons "Nat.succ" cnil))
    = (cnames-distinct/cons
@@ -45,7 +45,7 @@ Nat_zero/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Nat_zero/cmem : cmem "Nat.zero" (ccons "Nat.zero" (ccons "Nat.succ" cnil))
    = cmem/here.
 
-%%% HOLE: Nat_zero/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: Nat_zero/fuo
 Nat_zero/fuo : field-universes-ok-skip-params liz (econst "Nat" lnil) (lsucc lzero).
 
 Nat_zero/name : name "Nat.zero" (is-decl (econst "Nat" lnil) (ctor "Nat" liz)).
@@ -69,7 +69,7 @@ Nat_succ/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Nat_succ/cmem : cmem "Nat.succ" (ccons "Nat.zero" (ccons "Nat.succ" cnil))
    = (cmem/there cmem/here).
 
-%%% HOLE: Nat_succ/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: Nat_succ/fuo
 Nat_succ/fuo : field-universes-ok-skip-params liz (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (lsucc lzero).
 
 Nat_succ/name : name "Nat.succ" (is-decl (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (ctor "Nat" (lis liz))).
@@ -110,4 +110,4 @@ aNatLit/value-typed : of (enatlit 0 nonneg_0) (econst "Nat" lnil).
 aNatLit/name : name "aNatLit" (is-decl (econst "Nat" lnil) (defn (enatlit 0 nonneg_0))).
 
 aNatLit/decl : declared "aNatLit" (econst "Nat" lnil) (defn (enatlit 0 nonneg_0))
-   = declared/ok aNatLit/name (dkind-ok/defn aNatLit/type-wf aNatLit/value-typed).
+   = declared/ok aNatLit/name dkind-non-inductive/defn (dkind-ok/defn aNatLit/type-wf aNatLit/value-typed).

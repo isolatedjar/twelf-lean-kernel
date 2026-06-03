@@ -14,7 +14,7 @@ id/value-typed : of (elam (esort (lvar liz)) ([x] (elam x ([y] y)))) (eforall (e
 id/name : name "id" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] x)))) (defn (elam (esort (lvar liz)) ([x] (elam x ([y] y)))))).
 
 id/decl : declared "id" (eforall (esort (lvar liz)) ([x] (eforall x ([y] x)))) (defn (elam (esort (lvar liz)) ([x] (elam x ([y] y)))))
-   = declared/ok id/name (dkind-ok/defn id/type-wf id/value-typed).
+   = declared/ok id/name dkind-non-inductive/defn (dkind-ok/defn id/type-wf id/value-typed).
 
 %% def constType
 %%% HOLE
@@ -31,7 +31,7 @@ constType/name : name "constType" (is-decl
   (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))).
 
 constType/decl : declared "constType" (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))
-   = declared/ok constType/name (dkind-ok/defn constType/type-wf constType/value-typed).
+   = declared/ok constType/name dkind-non-inductive/defn (dkind-ok/defn constType/type-wf constType/value-typed).
 
 %% inductive reduceCtorParamRefl2
 %%% HOLE
@@ -46,8 +46,7 @@ reduceCtorParamRefl2/ends-in-sort : ends-in-sort (eforall (esort (lsucc lzero)) 
 reduceCtorParamRefl2/rec-name : name "reduceCtorParamRefl2.rec" (is-rec-for "reduceCtorParamRefl2").
 
 reduceCtorParamRefl2/clf : count-leading-foralls (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (lis liz)
-   = (count-leading-foralls/succ
-       ([x] (count-leading-foralls/zero not-forall/sort))).
+   = (count-leading-foralls/succ ([x] count-leading-foralls/zero)).
 
 reduceCtorParamRefl2/cnd : cnames-distinct (ccons "reduceCtorParamRefl2.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -76,7 +75,7 @@ reduceCtorParamRefl2_mk/eisl : ends-in-sort-with-level (eforall (esort (lsucc lz
 reduceCtorParamRefl2_mk/cmem : cmem "reduceCtorParamRefl2.mk" (ccons "reduceCtorParamRefl2.mk" cnil)
    = cmem/here.
 
-%%% HOLE: reduceCtorParamRefl2_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: reduceCtorParamRefl2_mk/fuo
 reduceCtorParamRefl2_mk/fuo : field-universes-ok-skip-params (lis liz) (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero))) ([x] (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x))) ([y] (eapp (econst "reduceCtorParamRefl2" lnil) x))))) (lsucc lzero).
 
 reduceCtorParamRefl2_mk/name : name "reduceCtorParamRefl2.mk" (is-decl

@@ -321,10 +321,22 @@ function emitDeclared(
   tDoc: Doc,
   kExpr: string,
   okWitness: string,
+  dknWitness: string,
 ): void {
   // Defer to `emitInductiveFamilyDecl`, the generalized form. The non-
-  // inductive-family path always uses `declared/ok ${mn}/name ${okWitness}`.
-  emitInductiveFamilyDecl(mn, declName, tDoc, kExpr, "declared/ok", `${mn}/name ${okWitness}`);
+  // inductive-family path always uses `declared/ok ${mn}/name <dkn> ${okWitness}`.
+  // The new `dkind-non-inductive K` premise (2026-06-03, see tcb.elf §"dkind
+  // payloads") blocks declared/ok from sealing inductive-family kinds; the
+  // caller supplies the matching witness atom (one of
+  // `dkind-non-inductive/{defn,thm,opq,ax,quot}`).
+  emitInductiveFamilyDecl(
+    mn,
+    declName,
+    tDoc,
+    kExpr,
+    "declared/ok",
+    `${mn}/name ${dknWitness} ${okWitness}`,
+  );
 }
 
 // Generalized inductive-family declared/decl emission.  The non-inductive
@@ -461,7 +473,20 @@ function generateValDecl(prover: Prover, d: Decl & { kind: "def" | "opaque" | "t
     const dkindCtor = d.kind === "def" ? "defn" : d.kind === "opaque" ? "opq" : "thm";
     const okCtor =
       d.kind === "def" ? "dkind-ok/defn" : d.kind === "opaque" ? "dkind-ok/opq" : "dkind-ok/thm";
-    emitDeclared(mn, declName, tDoc, `(${dkindCtor} ${V})`, `(${okCtor} ${tw} ${vt})`);
+    const dknWitness =
+      d.kind === "def"
+        ? "dkind-non-inductive/defn"
+        : d.kind === "opaque"
+          ? "dkind-non-inductive/opq"
+          : "dkind-non-inductive/thm";
+    emitDeclared(
+      mn,
+      declName,
+      tDoc,
+      `(${dkindCtor} ${V})`,
+      `(${okCtor} ${tw} ${vt})`,
+      dknWitness,
+    );
   });
 }
 
@@ -482,7 +507,7 @@ function generateAxiom(prover: Prover, d: Decl & { kind: "axiom" }): void {
       tDoc,
       false,
     );
-    emitDeclared(mn, declName, tDoc, `ax`, `(dkind-ok/ax ${tw})`);
+    emitDeclared(mn, declName, tDoc, `ax`, `(dkind-ok/ax ${tw})`, "dkind-non-inductive/ax");
   });
 }
 
@@ -590,26 +615,18 @@ function buildNotForall(t: Expr): Fmt | null {
   }
 }
 
-// Structural witness for `count-leading-foralls T N`: T is a Π chain with
-// exactly N leading binders.  Walks T like buildEisl: at each `forallE`
-// introduce a fresh LF binder and recurse; at the head non-forall, emit
-// `count-leading-foralls/zero <not-forall>`.  Returns null if the head
-// is something `not-forall` can't witness (bvar, etc.) — caller declines.
-//
-// The result N is *not* an input; it's whatever the recursion produces.
-// Callers that need to assert N matches a known count of Πs in T have
-// already counted them and just emit the correct `(lis ...)` literal —
-// see the inductive emission.
-function buildCountLeadingForalls(t: Expr, used: string[] = []): Fmt | null {
-  if (t.kind === "forallE") {
-    const x = freshVar(used);
-    const body = buildCountLeadingForalls(t.body, [x, ...used]);
-    if (body === null) return null;
-    return app(atom("count-leading-foralls/succ"), lam(x, body));
-  }
-  const nf = buildNotForall(t);
-  if (nf === null) return null;
-  return app(atom("count-leading-foralls/zero"), nf);
+// Structural witness for `count-leading-foralls T N`: T has at least N
+// leading Π binders.  Walks T for N steps; at each `forallE` introduce a
+// fresh LF binder and recurse on the body with N-1.  Terminates with
+// `count-leading-foralls/zero` (any T satisfies "at least 0 leading Πs").
+// Returns null only if N > T's actual leading-Π count.
+function buildCountLeadingForalls(t: Expr, n: number, used: string[] = []): Fmt | null {
+  if (n === 0) return atom("count-leading-foralls/zero");
+  if (t.kind !== "forallE") return null;
+  const x = freshVar(used);
+  const body = buildCountLeadingForalls(t.body, n - 1, [x, ...used]);
+  if (body === null) return null;
+  return app(atom("count-leading-foralls/succ"), lam(x, body));
 }
 
 // Build a `cnames` literal `(ccons "c_0" (ccons "c_1" ... cnil))` from a
@@ -889,19 +906,28 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
       emit(`${mn}/cmem : cmem "${declName}" ${ctorsCnames}`);
       emit(`   = ${ppFmt(cmemFmt, 5)}.`);
       emit(``);
-      // fuo: bare HOLE on a frozen family until the prover can synthesize it.
-      // Freeze rejects bare declarations, so the ctor's whole env declines.
-      //
-      // The skip count is `params + indices` — same payload semantics as
-      // the inductive's NParams (see generateIndType for why).  A ctor's
-      // type has the inductive's leading binders re-bound in front of
-      // its own fields, so the skip-params walk needs to consume all of
-      // them before reaching real fields.
-      const skipCount = indSpec.numParams + indSpec.numIndices;
-      emit(`%%% HOLE: ${mn}/fuo — prover for field-universes-ok-skip-params not yet implemented`);
-      emit(
-        `${mn}/fuo : field-universes-ok-skip-params ${lidxLit(skipCount)} ${T} ${lfLevel(indUInd)}.`,
-      );
+      // fuo: prover walks the ctor type, skipping the first `numParams`
+      // binders (the inductive's params, re-bound on the ctor), then for
+      // each remaining field synthesizes defeq + mleq to discharge
+      // `field-universes-ok/forall`.  Returns null when the synth
+      // heuristic gives up; we then emit a bare HOLE on the frozen
+      // family, which %freeze rejects.  This is a loss of completeness,
+      // never of soundness.
+      const skipCount = c.numParams;
+      const fuoFmt = prover.fieldUniverses({
+        ctorType: c.type,
+        nParams: skipCount,
+        indUInd,
+        levelParams: c.levelParams,
+      });
+      const fuoType = `field-universes-ok-skip-params ${lidxLit(skipCount)} ${T} ${lfLevel(indUInd)}`;
+      if (fuoFmt === null) {
+        emit(`%%% HOLE: ${mn}/fuo`);
+        emit(`${mn}/fuo : ${fuoType}.`);
+      } else {
+        emit(`${mn}/fuo : ${fuoType}`);
+        emit(`   = ${ppFmt(fuoFmt, 5)}.`);
+      }
       emit(``);
       // dkind payload: (ctor "<ind>" <cidx>).  Hand-roll the line rather
       // than going through emitDeclared because the dkind expression has
@@ -1017,17 +1043,17 @@ function generateIndType(prover: Prover, t: IndType, ctorsForT: readonly IndCtor
     // audited (the cnames-distinct leaves record `string-neq` posits that
     // the global `%query 0 * string-neq X X` audit catches if reflexive).
     //
-    // The `indt`'s NParams payload is *total leading-Π count*
-    // (params + indices), not just `numParams`.  Rationale: an inductive
-    // like `Eq.{u} : ∀ (α : Sort u) (a b : α), Prop` has numParams=1 and
-    // numIndices=2; its type's leading Π chain is 3, and that's what a
-    // ctor like `Eq.refl : ∀ α a, Eq α a a` must skip before checking
-    // field universes.  Lean's spec treats params + indices uniformly
-    // for the "ctor's leading binders match the inductive's" check.
+    // The `indt`'s NParams payload is the inductive's `numParams`.  The
+    // `count-leading-foralls` premise on `declared/ok-indt` is now an
+    // "at-least" judgment: the inductive's leading Π chain must have AT
+    // LEAST numParams binders.  Indices (the binders after the params,
+    // for an indexed inductive like Eq) are not part of NParams and the
+    // witness doesn't traverse them.  Pinning at numParams blocks the
+    // §3.2.2 over-claim attack while still allowing indexed inductives.
     const ctorNames = ctorsForT.map((c) => nameToString(c.name));
     const ctorsCnames = ctorsToCnames(ctorNames);
-    const clfFmt = buildCountLeadingForalls(t.type);
-    const nparamsLidx = lidxLit(t.numParams + t.numIndices);
+    const clfFmt = buildCountLeadingForalls(t.type, t.numParams);
+    const nparamsLidx = lidxLit(t.numParams);
     if (clfFmt !== null) {
       emit(
         `${mn}/clf : count-leading-foralls ${flatStr(tDoc)} ${nparamsLidx}`,

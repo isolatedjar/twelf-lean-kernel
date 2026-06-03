@@ -1,5 +1,7 @@
 %%% Expected outcome: reject
 %%% The classic example of an inductive with negative recursive occurrence
+%solve nonneg_0 : 0 >= 0.
+
 %% inductive indNeg
 indNeg/type-wf-sort : lvl
    = (lsucc (lsucc lzero)).
@@ -13,7 +15,7 @@ indNeg/ends-in-sort : ends-in-sort (esort (lsucc lzero))
 indNeg/rec-name : name "indNeg.rec" (is-rec-for "indNeg").
 
 indNeg/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 indNeg/cnd : cnames-distinct (ccons "indNeg.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -53,8 +55,24 @@ indNeg_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 indNeg_mk/cmem : cmem "indNeg.mk" (ccons "indNeg.mk" cnil)
    = cmem/here.
 
-%%% HOLE: indNeg_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
-indNeg_mk/fuo : field-universes-ok-skip-params liz (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (lsucc lzero).
+indNeg_mk/fuo : field-universes-ok-skip-params liz (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (lsucc lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/forall
+         (defeq/forall
+           (defeq/const
+             indNeg/decl
+             (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+           ([x]
+             ([h]
+               (defeq/const
+                 indNeg/decl
+                 (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))))
+         (mleq/imax-lsL
+           (mleq/sR
+             (mleq/maxL
+               (mleq/sL (mleq/self nonneg_0))
+               (mleq/sL (mleq/self nonneg_0)))))
+         ([x] ([h] (field-universes-ok/done not-forall/const))))).
 
 indNeg_mk/name : name "indNeg.mk" (is-decl (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (ctor "indNeg" liz)).
 

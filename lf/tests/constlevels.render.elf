@@ -24,7 +24,7 @@ Nat/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 Nat/rec-name : name "Nat.rec" (is-rec-for "Nat").
 
 Nat/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 Nat/cnd : cnames-distinct (ccons "Nat.zero" (ccons "Nat.succ" cnil))
    = (cnames-distinct/cons
@@ -52,7 +52,7 @@ Nat_zero/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Nat_zero/cmem : cmem "Nat.zero" (ccons "Nat.zero" (ccons "Nat.succ" cnil))
    = cmem/here.
 
-%%% HOLE: Nat_zero/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: Nat_zero/fuo
 Nat_zero/fuo : field-universes-ok-skip-params liz (econst "Nat" lnil) (lsucc lzero).
 
 Nat_zero/name : name "Nat.zero" (is-decl (econst "Nat" lnil) (ctor "Nat" liz)).
@@ -76,7 +76,7 @@ Nat_succ/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Nat_succ/cmem : cmem "Nat.succ" (ccons "Nat.zero" (ccons "Nat.succ" cnil))
    = (cmem/there cmem/here).
 
-%%% HOLE: Nat_succ/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: Nat_succ/fuo
 Nat_succ/fuo : field-universes-ok-skip-params liz (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (lsucc lzero).
 
 Nat_succ/name : name "Nat.succ" (is-decl (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (ctor "Nat" (lis liz))).
@@ -116,20 +116,16 @@ Eq/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall x ([y] 
 
 Eq/rec-name : name "Eq.rec" (is-rec-for "Eq").
 
-Eq/clf : count-leading-foralls (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (lis (lis (lis liz)))
+Eq/clf : count-leading-foralls (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (lis (lis liz))
    = (count-leading-foralls/succ
-       ([x]
-         (count-leading-foralls/succ
-           ([y]
-             (count-leading-foralls/succ
-               ([z] (count-leading-foralls/zero not-forall/sort))))))).
+       ([x] (count-leading-foralls/succ ([y] count-leading-foralls/zero)))).
 
 Eq/cnd : cnames-distinct (ccons "Eq.refl" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
-Eq/name : name "Eq" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis (lis liz))))).
+Eq/name : name "Eq" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis liz)))).
 
-Eq/decl : declared "Eq" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis (lis liz))))
+Eq/decl : declared "Eq" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis liz)))
    = declared/ok-indt Eq/name Eq/rec-name Eq/clf Eq/cnd (dkind-ok/indt Eq/type-wf Eq/ends-in-sort).
 
 %% ctor Eq.refl (of Eq)
@@ -153,8 +149,8 @@ Eq_refl/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall
 Eq_refl/cmem : cmem "Eq.refl" (ccons "Eq.refl" cnil)
    = cmem/here.
 
-%%% HOLE: Eq_refl/fuo — prover for field-universes-ok-skip-params not yet implemented
-Eq_refl/fuo : field-universes-ok-skip-params (lis (lis (lis liz))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) lzero.
+%%% HOLE: Eq_refl/fuo
+Eq_refl/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) lzero.
 
 Eq_refl/name : name "Eq.refl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (ctor "Eq" liz)).
 
@@ -202,7 +198,7 @@ False/ends-in-sort : ends-in-sort (esort lzero).
 False/rec-name : name "False.rec" (is-rec-for "False").
 
 False/clf : count-leading-foralls (esort lzero) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 False/cnd : cnames-distinct cnil
    = cnames-distinct/nil.
@@ -235,7 +231,7 @@ Not/value-typed : of (elam (esort lzero) ([x] (eforall x ([y] (econst "False" ln
 Not/name : name "Not" (is-decl (eforall (esort lzero) ([x] (esort lzero))) (defn (elam (esort lzero) ([x] (eforall x ([y] (econst "False" lnil))))))).
 
 Not/decl : declared "Not" (eforall (esort lzero) ([x] (esort lzero))) (defn (elam (esort lzero) ([x] (eforall x ([y] (econst "False" lnil))))))
-   = declared/ok Not/name (dkind-ok/defn Not/type-wf Not/value-typed).
+   = declared/ok Not/name dkind-non-inductive/defn (dkind-ok/defn Not/type-wf Not/value-typed).
 
 %% def Ne
 %%% HOLE
@@ -256,7 +252,7 @@ Ne/name : name "Ne" (is-decl
 Ne/decl : declared "Ne"
   (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero)))))))
   (defn (elam (esort (lvar liz)) ([x] (elam x ([y] (elam x ([z] (eapp (econst "Not" lnil) (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) z)))))))))
-   = declared/ok Ne/name (dkind-ok/defn Ne/type-wf Ne/value-typed).
+   = declared/ok Ne/name dkind-non-inductive/defn (dkind-ok/defn Ne/type-wf Ne/value-typed).
 
 %% inductive True
 %%% HOLE
@@ -271,7 +267,7 @@ True/ends-in-sort : ends-in-sort (esort lzero).
 True/rec-name : name "True.rec" (is-rec-for "True").
 
 True/clf : count-leading-foralls (esort lzero) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 True/cnd : cnames-distinct (ccons "True.intro" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -297,7 +293,7 @@ True_intro/eisl : ends-in-sort-with-level (esort lzero) lzero
 True_intro/cmem : cmem "True.intro" (ccons "True.intro" cnil)
    = cmem/here.
 
-%%% HOLE: True_intro/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: True_intro/fuo
 True_intro/fuo : field-universes-ok-skip-params liz (econst "True" lnil) lzero.
 
 True_intro/name : name "True.intro" (is-decl (econst "True" lnil) (ctor "True" liz)).
@@ -329,7 +325,7 @@ trivial/value-typed : of (econst "True.intro" lnil) (econst "True" lnil).
 trivial/name : name "trivial" (is-decl (econst "True" lnil) (thm (econst "True.intro" lnil))).
 
 trivial/decl : declared "trivial" (econst "True" lnil) (thm (econst "True.intro" lnil))
-   = declared/ok trivial/name (dkind-ok/thm trivial/type-wf trivial/value-typed).
+   = declared/ok trivial/name dkind-non-inductive/thm (dkind-ok/thm trivial/type-wf trivial/value-typed).
 
 %% def rfl
 %%% HOLE
@@ -350,7 +346,7 @@ rfl/name : name "rfl" (is-decl
 rfl/decl : declared "rfl"
   (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y)))))
   (defn (elam (esort (lvar liz)) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x) y))))))
-   = declared/ok rfl/name (dkind-ok/defn rfl/type-wf rfl/value-typed).
+   = declared/ok rfl/name dkind-non-inductive/defn (dkind-ok/defn rfl/type-wf rfl/value-typed).
 
 %% thm Eq.symm
 %%% HOLE
@@ -386,7 +382,7 @@ Eq_symm/decl : declared "Eq.symm"
   (eforall (esort (lvar liz))
     ([x] (eforall x ([y] (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) z) ([w] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) y)))))))))
   (thm (elam (esort (lvar liz)) ([x] (elam x ([y] (elam x ([z] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) z) ([w] (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons lzero (lcons (lvar liz) lnil))) x) y) (elam x ([x1] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) x1) ([y1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) x1) y)))))) (eapp (eapp (econst "rfl" (lcons (lvar liz) lnil)) x) y)) z) w))))))))))
-   = declared/ok Eq_symm/name (dkind-ok/thm Eq_symm/type-wf Eq_symm/value-typed).
+   = declared/ok Eq_symm/name dkind-non-inductive/thm (dkind-ok/thm Eq_symm/type-wf Eq_symm/value-typed).
 
 %% thm false_ne_true
 %%% HOLE
@@ -410,7 +406,7 @@ false_ne_true/name : name "false_ne_true" (is-decl
 false_ne_true/decl : declared "false_ne_true"
   (eapp (eapp (eapp (econst "Ne" (lcons (lsucc lzero) lnil)) (esort lzero)) (econst "False" lnil)) (econst "True" lnil))
   (thm (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (esort lzero)) (econst "False" lnil)) (econst "True" lnil)) ([x] (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons lzero (lcons (lsucc lzero) lnil))) (esort lzero)) (econst "True" lnil)) (elam (esort lzero) ([y] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (esort lzero)) (econst "True" lnil)) y) ([z] y))))) (econst "trivial" lnil)) (econst "False" lnil)) (eapp (eapp (eapp (eapp (econst "Eq.symm" (lcons (lsucc lzero) lnil)) (esort lzero)) (econst "False" lnil)) (econst "True" lnil)) x)))))
-   = declared/ok false_ne_true/name (dkind-ok/thm false_ne_true/type-wf false_ne_true/value-typed).
+   = declared/ok false_ne_true/name dkind-non-inductive/thm (dkind-ok/thm false_ne_true/type-wf false_ne_true/value-typed).
 
 %% def Eq.casesOn
 %%% HOLE
@@ -480,7 +476,7 @@ Eq_casesOn/decl : declared "Eq.casesOn"
                   (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) w)
                     ([x1] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([y1] (eapp (eapp z w) x1)))))))))))))
   (defn (elam (esort (lvar (lis liz))) ([x] (elam x ([y] (elam (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (elam x ([w] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) w) ([x1] (elam (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([y1] (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) z) y1) w) x1))))))))))))))
-   = declared/ok Eq_casesOn/name (dkind-ok/defn Eq_casesOn/type-wf Eq_casesOn/value-typed).
+   = declared/ok Eq_casesOn/name dkind-non-inductive/defn (dkind-ok/defn Eq_casesOn/type-wf Eq_casesOn/value-typed).
 
 %% thm _test
 %%% HOLE
@@ -556,4 +552,4 @@ _test/decl : declared "_test"
           (eapp (eapp (eapp (elam (eapp x (econst "Nat" lnil)) ([y] y)) (econst "Eq" (lcons (lsucc lzero) lnil))) (econst "Eq" (lcons (lsucc lzero) lnil))) (eapp x (econst "Nat" lnil)))))))
     (econst "Nat" lnil))
   (thm (esort lzero))
-   = declared/ok _test/name (dkind-ok/thm _test/type-wf _test/value-typed).
+   = declared/ok _test/name dkind-non-inductive/thm (dkind-ok/thm _test/type-wf _test/value-typed).

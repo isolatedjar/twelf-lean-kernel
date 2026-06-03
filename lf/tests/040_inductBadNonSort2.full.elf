@@ -10,7 +10,7 @@ aType/type-wf : of (esort (lsucc lzero)) (esort aType/type-wf-sort)
 aType/name : name "aType" (is-decl (esort (lsucc lzero)) ax).
 
 aType/decl : declared "aType" (esort (lsucc lzero)) ax
-   = declared/ok aType/name (dkind-ok/ax aType/type-wf).
+   = declared/ok aType/name dkind-non-inductive/ax (dkind-ok/ax aType/type-wf).
 
 %% inductive inductBadNonSort2
 inductBadNonSort2/type-wf-sort : lvl
@@ -25,7 +25,7 @@ inductBadNonSort2/ends-in-sort : ends-in-sort (econst "aType" lnil).
 inductBadNonSort2/rec-name : name "inductBadNonSort2.rec" (is-rec-for "inductBadNonSort2").
 
 inductBadNonSort2/clf : count-leading-foralls (econst "aType" lnil) liz
-   = (count-leading-foralls/zero not-forall/const).
+   = count-leading-foralls/zero.
 
 inductBadNonSort2/cnd : cnames-distinct cnil
    = cnames-distinct/nil.

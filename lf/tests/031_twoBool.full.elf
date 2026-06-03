@@ -1,5 +1,7 @@
 %%% Expected outcome: accept
 %%% A simple product type
+%solve nonneg_0 : 0 >= 0.
+
 sneq/0 : string-neq "Bool.false" "Bool.true".
 sneq/1 : string-neq "Bool" "TwoBool".
 
@@ -16,7 +18,7 @@ Bool/ends-in-sort : ends-in-sort (esort (lsucc lzero))
 Bool/rec-name : name "Bool.rec" (is-rec-for "Bool").
 
 Bool/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 Bool/cnd : cnames-distinct (ccons "Bool.false" (ccons "Bool.true" cnil))
    = (cnames-distinct/cons
@@ -44,8 +46,9 @@ Bool_false/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Bool_false/cmem : cmem "Bool.false" (ccons "Bool.false" (ccons "Bool.true" cnil))
    = cmem/here.
 
-%%% HOLE: Bool_false/fuo — prover for field-universes-ok-skip-params not yet implemented
-Bool_false/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
+Bool_false/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 Bool_false/name : name "Bool.false" (is-decl (econst "Bool" lnil) (ctor "Bool" liz)).
 
@@ -68,8 +71,9 @@ Bool_true/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Bool_true/cmem : cmem "Bool.true" (ccons "Bool.false" (ccons "Bool.true" cnil))
    = (cmem/there cmem/here).
 
-%%% HOLE: Bool_true/fuo — prover for field-universes-ok-skip-params not yet implemented
-Bool_true/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
+Bool_true/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 Bool_true/name : name "Bool.true" (is-decl (econst "Bool" lnil) (ctor "Bool" (lis liz))).
 
@@ -131,7 +135,7 @@ TwoBool/ends-in-sort : ends-in-sort (esort (lsucc lzero))
 TwoBool/rec-name : name "TwoBool.rec" (is-rec-for "TwoBool").
 
 TwoBool/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 TwoBool/cnd : cnames-distinct (ccons "TwoBool.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -177,8 +181,19 @@ TwoBool_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 TwoBool_mk/cmem : cmem "TwoBool.mk" (ccons "TwoBool.mk" cnil)
    = cmem/here.
 
-%%% HOLE: TwoBool_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
-TwoBool_mk/fuo : field-universes-ok-skip-params liz (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (econst "TwoBool" lnil))))) (lsucc lzero).
+TwoBool_mk/fuo : field-universes-ok-skip-params liz (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (econst "TwoBool" lnil))))) (lsucc lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/forall
+         (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+         (mleq/self nonneg_0)
+         ([x]
+           ([h]
+             (field-universes-ok/forall
+               (defeq/const
+                 Bool/decl
+                 (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+               (mleq/self nonneg_0)
+               ([y] ([h1] (field-universes-ok/done not-forall/const)))))))).
 
 TwoBool_mk/name : name "TwoBool.mk" (is-decl (eforall (econst "Bool" lnil) ([x] (eforall (econst "Bool" lnil) ([y] (econst "TwoBool" lnil))))) (ctor "TwoBool" liz)).
 
@@ -267,4 +282,4 @@ twoBool/value-typed : of (econst "TwoBool" lnil) (esort (lsucc lzero))
 twoBool/name : name "twoBool" (is-decl (esort (lsucc lzero)) (defn (econst "TwoBool" lnil))).
 
 twoBool/decl : declared "twoBool" (esort (lsucc lzero)) (defn (econst "TwoBool" lnil))
-   = declared/ok twoBool/name (dkind-ok/defn twoBool/type-wf twoBool/value-typed).
+   = declared/ok twoBool/name dkind-non-inductive/defn (dkind-ok/defn twoBool/type-wf twoBool/value-typed).

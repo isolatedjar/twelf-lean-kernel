@@ -23,7 +23,7 @@ constType/name : name "constType" (is-decl
   (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))).
 
 constType/decl : declared "constType" (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))
-   = declared/ok constType/name (dkind-ok/defn constType/type-wf constType/value-typed).
+   = declared/ok constType/name dkind-non-inductive/defn (dkind-ok/defn constType/type-wf constType/value-typed).
 
 %% def betaReduction
 betaReduction/type-wf-sort : lvl
@@ -155,4 +155,4 @@ betaReduction/value-typed : of (eforall (esort lzero) ([x] x)) (eapp (eapp (econ
 betaReduction/name : name "betaReduction" (is-decl (eapp (eapp (econst "constType" lnil) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))) (defn (eforall (esort lzero) ([x] x)))).
 
 betaReduction/decl : declared "betaReduction" (eapp (eapp (econst "constType" lnil) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))) (defn (eforall (esort lzero) ([x] x)))
-   = declared/ok betaReduction/name (dkind-ok/defn betaReduction/type-wf betaReduction/value-typed).
+   = declared/ok betaReduction/name dkind-non-inductive/defn (dkind-ok/defn betaReduction/type-wf betaReduction/value-typed).

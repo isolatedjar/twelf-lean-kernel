@@ -52,7 +52,7 @@ False/ends-in-sort : ends-in-sort (esort lzero)
 False/rec-name : name "False.rec" (is-rec-for "False").
 
 False/clf : count-leading-foralls (esort lzero) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 False/cnd : cnames-distinct cnil
    = cnames-distinct/nil.
@@ -103,20 +103,16 @@ Eq/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall x ([y] 
 
 Eq/rec-name : name "Eq.rec" (is-rec-for "Eq").
 
-Eq/clf : count-leading-foralls (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (lis (lis (lis liz)))
+Eq/clf : count-leading-foralls (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (lis (lis liz))
    = (count-leading-foralls/succ
-       ([x]
-         (count-leading-foralls/succ
-           ([y]
-             (count-leading-foralls/succ
-               ([z] (count-leading-foralls/zero not-forall/sort))))))).
+       ([x] (count-leading-foralls/succ ([y] count-leading-foralls/zero)))).
 
 Eq/cnd : cnames-distinct (ccons "Eq.refl" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
-Eq/name : name "Eq" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis (lis liz))))).
+Eq/name : name "Eq" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis liz)))).
 
-Eq/decl : declared "Eq" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis (lis liz))))
+Eq/decl : declared "Eq" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis liz)))
    = declared/ok-indt Eq/name Eq/rec-name Eq/clf Eq/cnd (dkind-ok/indt Eq/type-wf Eq/ends-in-sort).
 
 %% ctor Eq.refl (of Eq)
@@ -180,8 +176,15 @@ Eq_refl/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall
 Eq_refl/cmem : cmem "Eq.refl" (ccons "Eq.refl" cnil)
    = cmem/here.
 
-%%% HOLE: Eq_refl/fuo — prover for field-universes-ok-skip-params not yet implemented
-Eq_refl/fuo : field-universes-ok-skip-params (lis (lis (lis liz))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) lzero.
+Eq_refl/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) lzero
+   = (field-universes-ok-skip-params/skip
+       ([x]
+         ([h]
+           (field-universes-ok-skip-params/skip
+             ([y]
+               ([h1]
+                 (field-universes-ok-skip-params/start
+                   (field-universes-ok/done not-forall/app)))))))).
 
 Eq_refl/name : name "Eq.refl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (ctor "Eq" liz)).
 
@@ -339,7 +342,7 @@ Bool/ends-in-sort : ends-in-sort (esort (lsucc lzero))
 Bool/rec-name : name "Bool.rec" (is-rec-for "Bool").
 
 Bool/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 Bool/cnd : cnames-distinct (ccons "Bool.false" (ccons "Bool.true" cnil))
    = (cnames-distinct/cons
@@ -367,8 +370,9 @@ Bool_false/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Bool_false/cmem : cmem "Bool.false" (ccons "Bool.false" (ccons "Bool.true" cnil))
    = cmem/here.
 
-%%% HOLE: Bool_false/fuo — prover for field-universes-ok-skip-params not yet implemented
-Bool_false/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
+Bool_false/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 Bool_false/name : name "Bool.false" (is-decl (econst "Bool" lnil) (ctor "Bool" liz)).
 
@@ -391,8 +395,9 @@ Bool_true/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Bool_true/cmem : cmem "Bool.true" (ccons "Bool.false" (ccons "Bool.true" cnil))
    = (cmem/there cmem/here).
 
-%%% HOLE: Bool_true/fuo — prover for field-universes-ok-skip-params not yet implemented
-Bool_true/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero).
+Bool_true/fuo : field-universes-ok-skip-params liz (econst "Bool" lnil) (lsucc lzero)
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 Bool_true/name : name "Bool.true" (is-decl (econst "Bool" lnil) (ctor "Bool" (lis liz))).
 
@@ -562,7 +567,7 @@ discriminate/name : name "discriminate" (is-decl
 discriminate/decl : declared "discriminate"
   (eforall (econst "PropTwo" lnil) ([x] (econst "Bool" lnil)))
   (defn (elam (econst "PropTwo" lnil) ([x] (eapp (eapp (eapp (eapp (econst "PropTwo.rec" lnil) (elam (econst "PropTwo" lnil) ([y] (econst "Bool" lnil)))) (econst "Bool.true" lnil)) (econst "Bool.false" lnil)) x))))
-   = declared/ok discriminate/name (dkind-ok/defn discriminate/type-wf discriminate/value-typed).
+   = declared/ok discriminate/name dkind-non-inductive/defn (dkind-ok/defn discriminate/type-wf discriminate/value-typed).
 
 %% inductive True
 True/type-wf-sort : lvl
@@ -577,7 +582,7 @@ True/ends-in-sort : ends-in-sort (esort lzero)
 True/rec-name : name "True.rec" (is-rec-for "True").
 
 True/clf : count-leading-foralls (esort lzero) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 True/cnd : cnames-distinct (ccons "True.intro" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -603,8 +608,9 @@ True_intro/eisl : ends-in-sort-with-level (esort lzero) lzero
 True_intro/cmem : cmem "True.intro" (ccons "True.intro" cnil)
    = cmem/here.
 
-%%% HOLE: True_intro/fuo — prover for field-universes-ok-skip-params not yet implemented
-True_intro/fuo : field-universes-ok-skip-params liz (econst "True" lnil) lzero.
+True_intro/fuo : field-universes-ok-skip-params liz (econst "True" lnil) lzero
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 True_intro/name : name "True.intro" (is-decl (econst "True" lnil) (ctor "True" liz)).
 
@@ -714,7 +720,7 @@ decode/name : name "decode" (is-decl
 decode/decl : declared "decode"
   (eforall (econst "Bool" lnil) ([x] (esort lzero)))
   (defn (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([x] (esort lzero)))) (econst "False" lnil)) (econst "True" lnil)))
-   = declared/ok decode/name (dkind-ok/defn decode/type-wf decode/value-typed).
+   = declared/ok decode/name dkind-non-inductive/defn (dkind-ok/defn decode/type-wf decode/value-typed).
 
 %% def rfl
 rfl/type-wf-sort : lvl
@@ -795,7 +801,7 @@ rfl/name : name "rfl" (is-decl
 rfl/decl : declared "rfl"
   (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y)))))
   (defn (elam (esort (lvar liz)) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x) y))))))
-   = declared/ok rfl/name (dkind-ok/defn rfl/type-wf rfl/value-typed).
+   = declared/ok rfl/name dkind-non-inductive/defn (dkind-ok/defn rfl/type-wf rfl/value-typed).
 
 %% thm congrArg
 congrArg/type-wf : of
@@ -1605,7 +1611,7 @@ congrArg/decl : declared "congrArg"
                       (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) w)
                         ([y1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) y) (eapp x1 z)) (eapp x1 w))))))))))))))
   (thm (elam (esort (lvar liz)) ([x] (elam (esort (lvar (lis liz))) ([y] (elam x ([z] (elam x ([w] (elam (eforall x ([x1] y)) ([x1] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) w) ([y1] (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons lzero (lcons (lvar liz) lnil))) x) z) (elam x ([z1] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) z) z1) ([w1] (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) y) (eapp x1 z)) (eapp x1 z1))))))) (eapp (eapp (econst "rfl" (lcons (lvar (lis liz)) lnil)) y) (eapp x1 z))) w) y1))))))))))))))
-   = declared/ok congrArg/name (dkind-ok/thm congrArg/type-wf congrArg/value-typed).
+   = declared/ok congrArg/name dkind-non-inductive/thm (dkind-ok/thm congrArg/type-wf congrArg/value-typed).
 
 %% def ab_eq
 ab_eq/type-wf-sort : lvl
@@ -1644,7 +1650,7 @@ ab_eq/name : name "ab_eq" (is-decl
 ab_eq/decl : declared "ab_eq"
   (eapp (eapp (eapp (econst "Eq" (lcons lzero lnil)) (econst "PropTwo" lnil)) (econst "PropTwo.a" lnil)) (econst "PropTwo.b" lnil))
   (defn (eapp (eapp (econst "Eq.refl" (lcons lzero lnil)) (econst "PropTwo" lnil)) (econst "PropTwo.a" lnil)))
-   = declared/ok ab_eq/name (dkind-ok/defn ab_eq/type-wf ab_eq/value-typed).
+   = declared/ok ab_eq/name dkind-non-inductive/defn (dkind-ok/defn ab_eq/type-wf ab_eq/value-typed).
 
 %% def discr_eq
 discr_eq/type-wf-sort : lvl
@@ -1785,7 +1791,7 @@ discr_eq/decl : declared "discr_eq"
   (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.a" lnil)))
     (eapp (econst "discriminate" lnil) (econst "PropTwo.b" lnil)))
   (defn (eapp (eapp (eapp (eapp (eapp (eapp (econst "congrArg" (lcons lzero (lcons (lsucc lzero) lnil))) (econst "PropTwo" lnil)) (econst "Bool" lnil)) (econst "PropTwo.a" lnil)) (econst "PropTwo.b" lnil)) (econst "discriminate" lnil)) (econst "ab_eq" lnil)))
-   = declared/ok discr_eq/name (dkind-ok/defn discr_eq/type-wf discr_eq/value-typed).
+   = declared/ok discr_eq/name dkind-non-inductive/defn (dkind-ok/defn discr_eq/type-wf discr_eq/value-typed).
 
 %% def falseViaLargeElim
 falseViaLargeElim/type-wf-sort : lvl
@@ -1813,4 +1819,4 @@ falseViaLargeElim/name : name "falseViaLargeElim" (is-decl
 falseViaLargeElim/decl : declared "falseViaLargeElim"
   (econst "False" lnil)
   (defn (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons lzero (lcons (lsucc lzero) lnil))) (econst "Bool" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.a" lnil))) (elam (econst "Bool" lnil) ([x] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.a" lnil))) x) ([y] (eapp (econst "decode" lnil) x)))))) (econst "True.intro" lnil)) (eapp (econst "discriminate" lnil) (econst "PropTwo.b" lnil))) (econst "discr_eq" lnil)))
-   = declared/ok falseViaLargeElim/name (dkind-ok/defn falseViaLargeElim/type-wf falseViaLargeElim/value-typed).
+   = declared/ok falseViaLargeElim/name dkind-non-inductive/defn (dkind-ok/defn falseViaLargeElim/type-wf falseViaLargeElim/value-typed).

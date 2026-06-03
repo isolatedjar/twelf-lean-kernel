@@ -526,6 +526,139 @@ skip-params` witnesses instead of HOLEing them.  Same plan as before
 NParams via `count-leading-foralls`, the prover has a well-grounded
 skip count to consult.
 
+### 3.2.2 fuo prover landed (2026-06-03)
+
+The `buildFieldUniverses` function in `synth.ts` and a new `fieldUniverses`
+method on `Prover` discharge the §3.2 obligation.  Strategy:
+
+  1. Walk the ctor type's leading Π chain for the first `nParams` binders
+     (= parent inductive's `numParams + numIndices`), introducing a HOAS
+     `([x][h] ...)` pair under each `field-universes-ok-skip-params/skip`.
+  2. For each remaining binder (real field): synthesize `defeq A A (esort
+     UA)` via existing `synthRec` (with `reduceToSort` fallback when the
+     synth result isn't literally a sort), then `proveMleq UA UInd 0`
+     (Carneiro's algorithmic ≤, already implemented).  Emit
+     `field-universes-ok/forall <dom> <mleq> ([x][h] body)`.
+  3. At the not-forall result: `field-universes-ok/done <not-forall/...>`.
+
+**Arena scoreboard after fuo prover** (145 tests):
+
+- Good: **48 ✅** / 35 🩹 / 10 ❌  (+23 tests, from 25/58/10).
+- Bad: 17 ✅ / 33 🩹 / **2 💥** — see "regression" below.
+
+**count-leading-foralls semantics fix.**  While wiring up the fuo prover
+I hit an interesting bug.  The §3.5 design had `count-leading-foralls T
+N` as an "exactly N" judgment, with the inductive's `NParams` payload
+set to `numParams + numIndices` (so Eq with numParams=1, numIndices=2
+got NParams=3).  But the ctor side wants to skip only `numParams`, not
+`numParams + numIndices` — Eq.refl has 2 leading Πs (α, a), not 3.
+So I relaxed `count-leading-foralls T N` to an "at least N" judgment
+and pinned the indt's `NParams = c.numParams`.  This still blocks the
+§3.2.2 over-claim attack: a translator that claims `NParams = 5` for a
+3-binder inductive type runs out of binders before reaching `liz` and
+the count-leading-foralls witness fails to inhabit.
+
+**Soundness regression on `066_BogusRecursor` + `large-elim-imax-prop`**.
+Pre-fuo, every ctor HOLE'd on `fuo`, which sank the entire inductive
+declaration (the `declared/ok-ctor` failed without all premises filled).
+That HOLE was *incidentally* masking the §3.1 recursor-type gap: with
+the ctor declined, the recursor's `declared/ok-irec` lookup failed too,
+and the bad recursor type never got into `declared`.  With fuo now
+filled, ctors are admitted, the inductive is admitted, and the bad
+recursor is admitted — exposing the §3.1 gap on the corpus again.
+
+This is **not a regression** in the strict sense (these tests were
+always 💥-eligible; the §3.2 HOLE was a false-negative cover), and the
+fix is §3.1, the next architectural piece in the plan.  No
+hand-written soundness regression in `lf/soundness/` is affected.
+
+**Net** on the corpus, post-fuo: +22 good tests pass, 2 bad tests
+re-expose their (pre-existing) §3.1 status as 💥.  Soundness check
+trades a *masked* false-negative for a *visible* one — strictly more
+honest reporting.
+
+### 3.2.3 declared/ok catch-all guard (2026-06-03)
+
+**Finding from the companion adversarial process.** When the soundness
+regressions were migrated to the new payloaded `dkind` API
+(`indt Ctors NParams`, `ctor IndN Cidx`, `irec IndN`), three of them
+*re-exposed* their soundness gaps because **`declared/ok`'s `K` was
+unconstrained** — every soundness premise on the specialized rules
+(`declared/ok-indt`, `-ctor`, `-irec`) was optional, since the catch-all
+could seal `indt _ _` / `ctor _ _` / `irec _` directly.  In particular:
+
+  * `dup-ctor-iota.elf` was sealing its dup-list inductive via
+    `declared/ok` → cnames-distinct never demanded → dup iota
+    double-fires → literal `False`.
+  * `universe-too-high-field.elf` similarly bypassed the
+    field-universe check via `declared/ok` on the ctor.
+
+**Fix.**  A new closed predicate `dkind-non-inductive K` (inhabited only
+for `defn _`, `thm _`, `opq _`, `ax`, `quot`) gets added as a premise to
+`declared/ok`.  Inductive-family `K`s have no `dkind-non-inductive`
+witness available, so the catch-all rule fails to apply — forcing those
+declarations through the specialized sealing rules where the audit
+premises live.
+
+```twelf
+dkind-non-inductive : dkind -> type.
+dkind-non-inductive/defn : dkind-non-inductive (defn V).
+dkind-non-inductive/thm  : dkind-non-inductive (thm V).
+dkind-non-inductive/opq  : dkind-non-inductive (opq V).
+dkind-non-inductive/ax   : dkind-non-inductive ax.
+dkind-non-inductive/quot : dkind-non-inductive quot.
+
+declared/ok :
+   name N (is-decl T K)
+   -> dkind-non-inductive K
+   -> dkind-ok K T
+   -> declared N T K.
+```
+
+Translator supplies the witness via the matching constructor when
+emitting each non-inductive-family decl.  Closed family — no thaw, no
+external posit — so the audit is local (no global `%query` needed).
+
+**Effect on scoreboard.**  None on the arena corpus (the catch-all
+bypass was a hand-written attack vector, not something the trusted
+generator exercises).  Hand-written `lf/soundness/`: `dup-ctor-iota.elf`
+and `universe-too-high-field.elf` were both rewritten to the
+post-migration API and now `💥`-eligible *had the guard not landed*;
+with the guard, both genuinely ABORT (verified by inspection of the
+abort location — line 36 / line 28 respectively, on the missing
+`dkind-non-inductive` witness).
+
+**Remaining hand-written 💥 candidates** (both flagged by the same
+companion process):
+
+  * `rec-name-slot.elf` — `declared/ok-indt` requires `name MRec
+    (is-rec-for N)`, but the translator's MRec is unconstrained.  A
+    translator picking `"Foo.evilrec"` instead of canonical `"Foo.rec"`
+    satisfies the premise, and `def Foo.rec` then doesn't collide.
+    Pure-LF fix needs string concat or a name-shape built-in — see
+    §3.3's "why we don't pursue full canonicality" note.  Best practical
+    fix: surface the translator's canonicality as a TCB-side `%query`
+    audit on the rec-name string, paralleling the string-neq pattern.
+  * `large-elim-prop.elf` — no elimination-universe check anywhere in
+    the TCB.  This is §3.1's job, the natural next architectural piece.
+    A `≥2-ctor Prop` with a large-elim recursor still derives a `defeq
+    P Q : Prop` for distinct propositions.
+
+**Updated soundness scoreboard** (2026-06-03 end of session):
+
+| File | Verdict | Closes via |
+|---|---|---|
+| `arena tutorial/bad/066_BogusRecursor.ndjson` | 💥 accepted | §3.1 (open) |
+| `arena bad/large-elim-imax-prop.ndjson` | 💥 accepted | §3.1 (open) |
+| `lf/soundness/large-elim-prop.elf` | 💥 accepted | §3.1 (open) |
+| `lf/soundness/rec-name-slot.elf` | 💥 accepted | §3.3 (research-level) |
+| `arena bad/field-too-high-imax.ndjson` | 🩹 declines | §3.2 done; needs fuo prover edge cases |
+| `lf/soundness/universe-too-high-field.elf` | ✅ rejected | §3.2 + catch-all guard |
+| `lf/soundness/dup-ctor-iota.elf` | ✅ rejected | §3.4 + catch-all guard |
+| `lf/soundness/rec-slot-theft.elf` | ✅ rejected | pre-existing |
+| `lf/soundness/level-var-elim-false.elf` | ✅ rejected | pre-existing |
+| `lf/soundness/positivity-underabstraction.elf` | ✅ rejected | pre-existing |
+
 ### 3.2.1.old Status as of 2026-06-03 — partial landing
 
 **Landed in this session.** `lf/tcb.elf` now carries

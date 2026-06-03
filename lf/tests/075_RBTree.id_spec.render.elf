@@ -19,7 +19,7 @@ Color/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 Color/rec-name : name "Color.rec" (is-rec-for "Color").
 
 Color/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 Color/cnd : cnames-distinct (ccons "Color.r" (ccons "Color.b" cnil))
    = (cnames-distinct/cons
@@ -47,7 +47,7 @@ Color_r/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Color_r/cmem : cmem "Color.r" (ccons "Color.r" (ccons "Color.b" cnil))
    = cmem/here.
 
-%%% HOLE: Color_r/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: Color_r/fuo
 Color_r/fuo : field-universes-ok-skip-params liz (econst "Color" lnil) (lsucc lzero).
 
 Color_r/name : name "Color.r" (is-decl (econst "Color" lnil) (ctor "Color" liz)).
@@ -71,7 +71,7 @@ Color_b/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Color_b/cmem : cmem "Color.b" (ccons "Color.r" (ccons "Color.b" cnil))
    = (cmem/there cmem/here).
 
-%%% HOLE: Color_b/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: Color_b/fuo
 Color_b/fuo : field-universes-ok-skip-params liz (econst "Color" lnil) (lsucc lzero).
 
 Color_b/name : name "Color.b" (is-decl (econst "Color" lnil) (ctor "Color" (lis liz))).
@@ -108,7 +108,7 @@ N/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 N/rec-name : name "N.rec" (is-rec-for "N").
 
 N/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 N/cnd : cnames-distinct (ccons "N.zero" (ccons "N.succ" cnil))
    = (cnames-distinct/cons
@@ -136,7 +136,7 @@ N_zero/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 N_zero/cmem : cmem "N.zero" (ccons "N.zero" (ccons "N.succ" cnil))
    = cmem/here.
 
-%%% HOLE: N_zero/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: N_zero/fuo
 N_zero/fuo : field-universes-ok-skip-params liz (econst "N" lnil) (lsucc lzero).
 
 N_zero/name : name "N.zero" (is-decl (econst "N" lnil) (ctor "N" liz)).
@@ -160,7 +160,7 @@ N_succ/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 N_succ/cmem : cmem "N.succ" (ccons "N.zero" (ccons "N.succ" cnil))
    = (cmem/there cmem/here).
 
-%%% HOLE: N_succ/fuo — prover for field-universes-ok-skip-params not yet implemented
+%%% HOLE: N_succ/fuo
 N_succ/fuo : field-universes-ok-skip-params liz (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (lsucc lzero).
 
 N_succ/name : name "N.succ" (is-decl (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (ctor "N" (lis liz))).
@@ -200,13 +200,8 @@ RBTree/ends-in-sort : ends-in-sort (eforall (esort (lsucc (lvar liz))) ([x] (efo
 
 RBTree/rec-name : name "RBTree.rec" (is-rec-for "RBTree").
 
-RBTree/clf : count-leading-foralls (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "Color" lnil) ([y] (eforall (econst "N" lnil) ([z] (esort (lsucc (lvar liz))))))))) (lis (lis (lis liz)))
-   = (count-leading-foralls/succ
-       ([x]
-         (count-leading-foralls/succ
-           ([y]
-             (count-leading-foralls/succ
-               ([z] (count-leading-foralls/zero not-forall/sort))))))).
+RBTree/clf : count-leading-foralls (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "Color" lnil) ([y] (eforall (econst "N" lnil) ([z] (esort (lsucc (lvar liz))))))))) (lis liz)
+   = (count-leading-foralls/succ ([x] count-leading-foralls/zero)).
 
 RBTree/cnd : cnames-distinct (ccons "RBTree.leaf" (ccons "RBTree.red" (ccons "RBTree.black" cnil)))
    = (cnames-distinct/cons
@@ -219,11 +214,11 @@ RBTree/cnd : cnames-distinct (ccons "RBTree.leaf" (ccons "RBTree.red" (ccons "RB
 
 RBTree/name : name "RBTree" (is-decl
   (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "Color" lnil) ([y] (eforall (econst "N" lnil) ([z] (esort (lsucc (lvar liz)))))))))
-  (indt (ccons "RBTree.leaf" (ccons "RBTree.red" (ccons "RBTree.black" cnil))) (lis (lis (lis liz))))).
+  (indt (ccons "RBTree.leaf" (ccons "RBTree.red" (ccons "RBTree.black" cnil))) (lis liz))).
 
 RBTree/decl : declared "RBTree"
   (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "Color" lnil) ([y] (eforall (econst "N" lnil) ([z] (esort (lsucc (lvar liz)))))))))
-  (indt (ccons "RBTree.leaf" (ccons "RBTree.red" (ccons "RBTree.black" cnil))) (lis (lis (lis liz))))
+  (indt (ccons "RBTree.leaf" (ccons "RBTree.red" (ccons "RBTree.black" cnil))) (lis liz))
    = declared/ok-indt RBTree/name RBTree/rec-name RBTree/clf RBTree/cnd (dkind-ok/indt RBTree/type-wf RBTree/ends-in-sort).
 
 %% ctor RBTree.leaf (of RBTree)
@@ -247,8 +242,8 @@ RBTree_leaf/eisl : ends-in-sort-with-level (eforall (esort (lsucc (lvar liz))) (
 RBTree_leaf/cmem : cmem "RBTree.leaf" (ccons "RBTree.leaf" (ccons "RBTree.red" (ccons "RBTree.black" cnil)))
    = cmem/here.
 
-%%% HOLE: RBTree_leaf/fuo — prover for field-universes-ok-skip-params not yet implemented
-RBTree_leaf/fuo : field-universes-ok-skip-params (lis (lis (lis liz))) (eforall (esort (lsucc (lvar liz))) ([x] (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.b" lnil)) (econst "N.zero" lnil)))) (lsucc (lvar liz)).
+%%% HOLE: RBTree_leaf/fuo
+RBTree_leaf/fuo : field-universes-ok-skip-params (lis liz) (eforall (esort (lsucc (lvar liz))) ([x] (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.b" lnil)) (econst "N.zero" lnil)))) (lsucc (lvar liz)).
 
 RBTree_leaf/name : name "RBTree.leaf" (is-decl
   (eforall (esort (lsucc (lvar liz))) ([x] (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.b" lnil)) (econst "N.zero" lnil))))
@@ -289,8 +284,8 @@ RBTree_red/eisl : ends-in-sort-with-level (eforall (esort (lsucc (lvar liz))) ([
 RBTree_red/cmem : cmem "RBTree.red" (ccons "RBTree.leaf" (ccons "RBTree.red" (ccons "RBTree.black" cnil)))
    = (cmem/there cmem/here).
 
-%%% HOLE: RBTree_red/fuo — prover for field-universes-ok-skip-params not yet implemented
-RBTree_red/fuo : field-universes-ok-skip-params (lis (lis (lis liz))) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "N" lnil) ([y] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.b" lnil)) y) ([z] (eforall x ([w] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.b" lnil)) y) ([x1] (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.r" lnil)) y))))))))))) (lsucc (lvar liz)).
+%%% HOLE: RBTree_red/fuo
+RBTree_red/fuo : field-universes-ok-skip-params (lis liz) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "N" lnil) ([y] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.b" lnil)) y) ([z] (eforall x ([w] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.b" lnil)) y) ([x1] (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.r" lnil)) y))))))))))) (lsucc (lvar liz)).
 
 RBTree_red/name : name "RBTree.red" (is-decl
   (eforall (esort (lsucc (lvar liz)))
@@ -355,8 +350,8 @@ RBTree_black/eisl : ends-in-sort-with-level (eforall (esort (lsucc (lvar liz))) 
 RBTree_black/cmem : cmem "RBTree.black" (ccons "RBTree.leaf" (ccons "RBTree.red" (ccons "RBTree.black" cnil)))
    = (cmem/there (cmem/there cmem/here)).
 
-%%% HOLE: RBTree_black/fuo — prover for field-universes-ok-skip-params not yet implemented
-RBTree_black/fuo : field-universes-ok-skip-params (lis (lis (lis liz))) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "Color" lnil) ([y] (eforall (econst "Color" lnil) ([z] (eforall (econst "N" lnil) ([w] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) y) w) ([x1] (eforall x ([y1] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) z) w) ([z1] (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.b" lnil)) (eapp (econst "N.succ" lnil) w)))))))))))))))) (lsucc (lvar liz)).
+%%% HOLE: RBTree_black/fuo
+RBTree_black/fuo : field-universes-ok-skip-params (lis liz) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (econst "Color" lnil) ([y] (eforall (econst "Color" lnil) ([z] (eforall (econst "N" lnil) ([w] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) y) w) ([x1] (eforall x ([y1] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) z) w) ([z1] (eapp (eapp (eapp (econst "RBTree" (lcons (lvar liz) lnil)) x) (econst "Color.b" lnil)) (eapp (econst "N.succ" lnil) w)))))))))))))))) (lsucc (lvar liz)).
 
 RBTree_black/name : name "RBTree.black" (is-decl
   (eforall (esort (lsucc (lvar liz)))
@@ -501,20 +496,16 @@ Eq/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall x ([y] 
 
 Eq/rec-name : name "Eq.rec" (is-rec-for "Eq").
 
-Eq/clf : count-leading-foralls (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (lis (lis (lis liz)))
+Eq/clf : count-leading-foralls (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (lis (lis liz))
    = (count-leading-foralls/succ
-       ([x]
-         (count-leading-foralls/succ
-           ([y]
-             (count-leading-foralls/succ
-               ([z] (count-leading-foralls/zero not-forall/sort))))))).
+       ([x] (count-leading-foralls/succ ([y] count-leading-foralls/zero)))).
 
 Eq/cnd : cnames-distinct (ccons "Eq.refl" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
-Eq/name : name "Eq" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis (lis liz))))).
+Eq/name : name "Eq" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis liz)))).
 
-Eq/decl : declared "Eq" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis (lis liz))))
+Eq/decl : declared "Eq" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis liz)))
    = declared/ok-indt Eq/name Eq/rec-name Eq/clf Eq/cnd (dkind-ok/indt Eq/type-wf Eq/ends-in-sort).
 
 %% ctor Eq.refl (of Eq)
@@ -538,8 +529,8 @@ Eq_refl/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall
 Eq_refl/cmem : cmem "Eq.refl" (ccons "Eq.refl" cnil)
    = cmem/here.
 
-%%% HOLE: Eq_refl/fuo — prover for field-universes-ok-skip-params not yet implemented
-Eq_refl/fuo : field-universes-ok-skip-params (lis (lis (lis liz))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) lzero.
+%%% HOLE: Eq_refl/fuo
+Eq_refl/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) lzero.
 
 Eq_refl/name : name "Eq.refl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (ctor "Eq" liz)).
 
@@ -651,7 +642,7 @@ RBTree_id/decl : declared "RBTree.id"
       (eforall (econst "Color" lnil)
         ([y] (eforall (econst "N" lnil) ([z] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) y) z) ([w] (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) y) z)))))))))
   (defn (elam (esort (lsucc lzero)) ([x] (elam (econst "Color" lnil) ([y] (elam (econst "N" lnil) ([z] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) y) z) ([w] (eapp (eapp (eapp (eapp (eapp (eapp (eapp (eapp (econst "RBTree.rec" (lcons (lsucc lzero) (lcons lzero lnil))) x) (elam (econst "Color" lnil) ([x1] (elam (econst "N" lnil) ([y1] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) x1) y1) ([z1] (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) x1) y1)))))))) (eapp (econst "RBTree.leaf" (lcons lzero lnil)) x)) (elam (econst "N" lnil) ([x1] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) (econst "Color.b" lnil)) x1) ([y1] (elam x ([z1] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) (econst "Color.b" lnil)) x1) ([w1] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) (econst "Color.b" lnil)) x1) ([x2] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) (econst "Color.b" lnil)) x1) ([y2] (eapp (eapp (eapp (eapp (eapp (econst "RBTree.red" (lcons lzero lnil)) x) x1) x2) z1) y2)))))))))))))) (elam (econst "Color" lnil) ([x1] (elam (econst "Color" lnil) ([y1] (elam (econst "N" lnil) ([z1] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) x1) z1) ([w1] (elam x ([x2] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) y1) z1) ([y2] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) x1) z1) ([z2] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) y1) z1) ([w2] (eapp (eapp (eapp (eapp (eapp (eapp (eapp (econst "RBTree.black" (lcons lzero lnil)) x) x1) y1) z1) z2) x2) w2)))))))))))))))))) y) z) w))))))))))
-   = declared/ok RBTree_id/name (dkind-ok/defn RBTree_id/type-wf RBTree_id/value-typed).
+   = declared/ok RBTree_id/name dkind-non-inductive/defn (dkind-ok/defn RBTree_id/type-wf RBTree_id/value-typed).
 
 %% def id
 %%% HOLE
@@ -666,7 +657,7 @@ id/value-typed : of (elam (esort (lvar liz)) ([x] (elam x ([y] y)))) (eforall (e
 id/name : name "id" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] x)))) (defn (elam (esort (lvar liz)) ([x] (elam x ([y] y)))))).
 
 id/decl : declared "id" (eforall (esort (lvar liz)) ([x] (eforall x ([y] x)))) (defn (elam (esort (lvar liz)) ([x] (elam x ([y] y)))))
-   = declared/ok id/name (dkind-ok/defn id/type-wf id/value-typed).
+   = declared/ok id/name dkind-non-inductive/defn (dkind-ok/defn id/type-wf id/value-typed).
 
 %% thm RBTree.id_spec
 %%% HOLE
@@ -1238,4 +1229,4 @@ RBTree_id_spec/decl : declared "RBTree.id_spec"
                     (eapp (eapp (eapp (eapp (econst "RBTree.id" lnil) x) y) z) w))
                     w)))))))))
   (thm (elam (esort (lsucc lzero)) ([x] (elam (econst "Color" lnil) ([y] (elam (econst "N" lnil) ([z] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) y) z) ([w] (eapp (eapp (eapp (eapp (eapp (eapp (eapp (eapp (econst "RBTree.rec" (lcons lzero (lcons lzero lnil))) x) (elam (econst "Color" lnil) ([x1] (elam (econst "N" lnil) ([y1] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) x1) y1) ([z1] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) x1) y1)) (eapp (eapp (eapp (eapp (econst "RBTree.id" lnil) x) x1) y1) z1)) z1)))))))) (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) (econst "Color.b" lnil)) (econst "N.zero" lnil))) (eapp (eapp (eapp (eapp (econst "RBTree.id" lnil) x) (econst "Color.b" lnil)) (econst "N.zero" lnil)) (eapp (econst "RBTree.leaf" (lcons lzero lnil)) x)))) (elam (econst "N" lnil) ([x1] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) (econst "Color.b" lnil)) x1) ([y1] (elam x ([z1] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) (econst "Color.b" lnil)) x1) ([w1] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) (econst "Color.b" lnil)) x1)) (eapp (eapp (eapp (eapp (econst "RBTree.id" lnil) x) (econst "Color.b" lnil)) x1) y1)) y1) ([x2] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) (econst "Color.b" lnil)) x1)) (eapp (eapp (eapp (eapp (econst "RBTree.id" lnil) x) (econst "Color.b" lnil)) x1) w1)) w1) ([y2] (eapp (eapp (econst "id" (lcons lzero lnil)) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) (econst "Color.r" lnil)) x1)) (eapp (eapp (eapp (eapp (econst "RBTree.id" lnil) x) (econst "Color.r" lnil)) x1) (eapp (eapp (eapp (eapp (eapp (econst "RBTree.red" (lcons lzero lnil)) x) x1) y1) z1) w1))) (eapp (eapp (eapp (eapp (eapp (econst "RBTree.red" (lcons lzero lnil)) x) x1) y1) z1) w1))) (eapp (eapp (eapp (eapp (eapp (eapp (eapp (eapp (eapp (eapp (eapp (elam (esort (lsucc lzero)) ([z2] (elam (econst "N" lnil) ([w2] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) z2) (econst "Color.b" lnil)) w2) ([x3] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) z2) (econst "Color.b" lnil)) w2) ([y3] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) z2) (econst "Color.b" lnil)) w2)) x3) y3) ([z3] (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons lzero (lcons (lsucc lzero) lnil))) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) z2) (econst "Color.b" lnil)) w2)) x3) (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) z2) (econst "Color.b" lnil)) w2) ([w3] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) z2) (econst "Color.b" lnil)) w2)) x3) w3) ([x4] (eforall z2 ([y4] (eforall z2 ([z4] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) z2) y4) z4) ([w4] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) z2) (econst "Color.b" lnil)) w2) ([x5] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) z2) (econst "Color.b" lnil)) w2) ([y5] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) z2) (econst "Color.b" lnil)) w2)) x5) y5) ([z5] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) z2) (econst "Color.r" lnil)) w2)) (eapp (eapp (eapp (eapp (eapp (econst "RBTree.red" (lcons lzero lnil)) z2) w2) x3) y4) x5)) (eapp (eapp (eapp (eapp (eapp (econst "RBTree.red" (lcons lzero lnil)) z2) w2) w3) z4) y5))))))))))))))))))) (elam z2 ([w3] (elam z2 ([x4] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) z2) w3) x4) ([y4] (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons lzero (lcons (lsucc lzero) lnil))) z2) w3) (elam z2 ([z4] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) z2) w3) z4) ([w4] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) z2) (econst "Color.b" lnil)) w2) ([x5] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) z2) (econst "Color.b" lnil)) w2) ([y5] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) z2) (econst "Color.b" lnil)) w2)) x5) y5) ([z5] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) z2) (econst "Color.r" lnil)) w2)) (eapp (eapp (eapp (eapp (eapp (econst "RBTree.red" (lcons lzero lnil)) z2) w2) x3) w3) x5)) (eapp (eapp (eapp (eapp (eapp (econst "RBTree.red" (lcons lzero lnil)) z2) w2) x3) z4) y5))))))))))))) (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) z2) (econst "Color.b" lnil)) w2) ([z4] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) z2) (econst "Color.b" lnil)) w2) ([w4] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) z2) (econst "Color.b" lnil)) w2)) z4) w4) ([x5] (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons lzero (lcons (lsucc lzero) lnil))) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) z2) (econst "Color.b" lnil)) w2)) z4) (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) z2) (econst "Color.b" lnil)) w2) ([y5] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) z2) (econst "Color.b" lnil)) w2)) z4) y5) ([z5] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) z2) (econst "Color.r" lnil)) w2)) (eapp (eapp (eapp (eapp (eapp (econst "RBTree.red" (lcons lzero lnil)) z2) w2) x3) w3) z4)) (eapp (eapp (eapp (eapp (eapp (econst "RBTree.red" (lcons lzero lnil)) z2) w2) x3) w3) y5))))))) (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) z2) (econst "Color.r" lnil)) w2)) (eapp (eapp (eapp (eapp (eapp (econst "RBTree.red" (lcons lzero lnil)) z2) w2) x3) w3) z4))) w4) x5)))))))) x4) y4)))))))) y3) z3))))))))))) x) x1) (eapp (eapp (eapp (eapp (eapp (eapp (eapp (eapp (econst "RBTree.rec" (lcons (lsucc lzero) (lcons lzero lnil))) x) (elam (econst "Color" lnil) ([z2] (elam (econst "N" lnil) ([w2] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) z2) w2) ([x3] (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) z2) w2)))))))) (eapp (econst "RBTree.leaf" (lcons lzero lnil)) x)) (elam (econst "N" lnil) ([z2] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) (econst "Color.b" lnil)) z2) ([w2] (elam x ([x3] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) (econst "Color.b" lnil)) z2) ([y3] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) (econst "Color.b" lnil)) z2) ([z3] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) (econst "Color.b" lnil)) z2) ([w3] (eapp (eapp (eapp (eapp (eapp (econst "RBTree.red" (lcons lzero lnil)) x) z2) z3) x3) w3)))))))))))))) (elam (econst "Color" lnil) ([z2] (elam (econst "Color" lnil) ([w2] (elam (econst "N" lnil) ([x3] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) z2) x3) ([y3] (elam x ([z3] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) w2) x3) ([w3] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) z2) x3) ([x4] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) w2) x3) ([y4] (eapp (eapp (eapp (eapp (eapp (eapp (eapp (econst "RBTree.black" (lcons lzero lnil)) x) z2) w2) x3) x4) z3) y4)))))))))))))))))) (econst "Color.b" lnil)) x1) y1)) y1) x2) z1) z1) (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) x) z1)) (eapp (eapp (eapp (eapp (eapp (eapp (eapp (eapp (econst "RBTree.rec" (lcons (lsucc lzero) (lcons lzero lnil))) x) (elam (econst "Color" lnil) ([z2] (elam (econst "N" lnil) ([w2] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) z2) w2) ([x3] (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) z2) w2)))))))) (eapp (econst "RBTree.leaf" (lcons lzero lnil)) x)) (elam (econst "N" lnil) ([z2] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) (econst "Color.b" lnil)) z2) ([w2] (elam x ([x3] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) (econst "Color.b" lnil)) z2) ([y3] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) (econst "Color.b" lnil)) z2) ([z3] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) (econst "Color.b" lnil)) z2) ([w3] (eapp (eapp (eapp (eapp (eapp (econst "RBTree.red" (lcons lzero lnil)) x) z2) z3) x3) w3)))))))))))))) (elam (econst "Color" lnil) ([z2] (elam (econst "Color" lnil) ([w2] (elam (econst "N" lnil) ([x3] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) z2) x3) ([y3] (elam x ([z3] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) w2) x3) ([w3] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) z2) x3) ([x4] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) w2) x3) ([y4] (eapp (eapp (eapp (eapp (eapp (eapp (eapp (econst "RBTree.black" (lcons lzero lnil)) x) z2) w2) x3) x4) z3) y4)))))))))))))))))) (econst "Color.b" lnil)) x1) w1)) w1) y2))))))))))))))) (elam (econst "Color" lnil) ([x1] (elam (econst "Color" lnil) ([y1] (elam (econst "N" lnil) ([z1] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) x1) z1) ([w1] (elam x ([x2] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) y1) z1) ([y2] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) x1) z1)) (eapp (eapp (eapp (eapp (econst "RBTree.id" lnil) x) x1) z1) w1)) w1) ([z2] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) y1) z1)) (eapp (eapp (eapp (eapp (econst "RBTree.id" lnil) x) y1) z1) y2)) y2) ([w2] (eapp (eapp (econst "id" (lcons lzero lnil)) (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) (econst "Color.b" lnil)) (eapp (econst "N.succ" lnil) z1))) (eapp (eapp (eapp (eapp (econst "RBTree.id" lnil) x) (econst "Color.b" lnil)) (eapp (econst "N.succ" lnil) z1)) (eapp (eapp (eapp (eapp (eapp (eapp (eapp (econst "RBTree.black" (lcons lzero lnil)) x) x1) y1) z1) w1) x2) y2))) (eapp (eapp (eapp (eapp (eapp (eapp (eapp (econst "RBTree.black" (lcons lzero lnil)) x) x1) y1) z1) w1) x2) y2))) (eapp (eapp (eapp (eapp (eapp (eapp (eapp (eapp (eapp (eapp (eapp (eapp (eapp (elam (esort (lsucc lzero)) ([x3] (elam (econst "Color" lnil) ([y3] (elam (econst "Color" lnil) ([z3] (elam (econst "N" lnil) ([w3] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x3) y3) w3) ([x4] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x3) y3) w3) ([y4] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x3) y3) w3)) x4) y4) ([z4] (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons lzero (lcons (lsucc lzero) lnil))) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x3) y3) w3)) x4) (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x3) y3) w3) ([w4] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x3) y3) w3)) x4) w4) ([x5] (eforall x3 ([y5] (eforall x3 ([z5] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) x3) y5) z5) ([w5] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x3) z3) w3) ([x6] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x3) z3) w3) ([y6] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x3) z3) w3)) x6) y6) ([z6] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x3) (econst "Color.b" lnil)) (eapp (econst "N.succ" lnil) w3))) (eapp (eapp (eapp (eapp (eapp (eapp (eapp (econst "RBTree.black" (lcons lzero lnil)) x3) y3) z3) w3) x4) y5) x6)) (eapp (eapp (eapp (eapp (eapp (eapp (eapp (econst "RBTree.black" (lcons lzero lnil)) x3) y3) z3) w3) w4) z5) y6))))))))))))))))))) (elam x3 ([w4] (elam x3 ([x5] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) x3) w4) x5) ([y5] (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons lzero (lcons (lsucc lzero) lnil))) x3) w4) (elam x3 ([z5] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) x3) w4) z5) ([w5] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x3) z3) w3) ([x6] (eforall (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x3) z3) w3) ([y6] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x3) z3) w3)) x6) y6) ([z6] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x3) (econst "Color.b" lnil)) (eapp (econst "N.succ" lnil) w3))) (eapp (eapp (eapp (eapp (eapp (eapp (eapp (econst "RBTree.black" (lcons lzero lnil)) x3) y3) z3) w3) x4) w4) x6)) (eapp (eapp (eapp (eapp (eapp (eapp (eapp (econst "RBTree.black" (lcons lzero lnil)) x3) y3) z3) w3) x4) z5) y6))))))))))))) (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x3) z3) w3) ([z5] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x3) z3) w3) ([w5] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x3) z3) w3)) z5) w5) ([x6] (eapp (eapp (eapp (eapp (eapp (eapp (econst "Eq.rec" (lcons lzero (lcons (lsucc lzero) lnil))) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x3) z3) w3)) z5) (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x3) z3) w3) ([y6] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x3) z3) w3)) z5) y6) ([z6] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x3) (econst "Color.b" lnil)) (eapp (econst "N.succ" lnil) w3))) (eapp (eapp (eapp (eapp (eapp (eapp (eapp (econst "RBTree.black" (lcons lzero lnil)) x3) y3) z3) w3) x4) w4) z5)) (eapp (eapp (eapp (eapp (eapp (eapp (eapp (econst "RBTree.black" (lcons lzero lnil)) x3) y3) z3) w3) x4) w4) y6))))))) (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x3) (econst "Color.b" lnil)) (eapp (econst "N.succ" lnil) w3))) (eapp (eapp (eapp (eapp (eapp (eapp (eapp (econst "RBTree.black" (lcons lzero lnil)) x3) y3) z3) w3) x4) w4) z5))) w5) x6)))))))) x5) y5)))))))) y4) z4))))))))))))))) x) x1) y1) z1) (eapp (eapp (eapp (eapp (eapp (eapp (eapp (eapp (econst "RBTree.rec" (lcons (lsucc lzero) (lcons lzero lnil))) x) (elam (econst "Color" lnil) ([x3] (elam (econst "N" lnil) ([y3] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) x3) y3) ([z3] (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) x3) y3)))))))) (eapp (econst "RBTree.leaf" (lcons lzero lnil)) x)) (elam (econst "N" lnil) ([x3] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) (econst "Color.b" lnil)) x3) ([y3] (elam x ([z3] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) (econst "Color.b" lnil)) x3) ([w3] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) (econst "Color.b" lnil)) x3) ([x4] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) (econst "Color.b" lnil)) x3) ([y4] (eapp (eapp (eapp (eapp (eapp (econst "RBTree.red" (lcons lzero lnil)) x) x3) x4) z3) y4)))))))))))))) (elam (econst "Color" lnil) ([x3] (elam (econst "Color" lnil) ([y3] (elam (econst "N" lnil) ([z3] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) x3) z3) ([w3] (elam x ([x4] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) y3) z3) ([y4] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) x3) z3) ([z4] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) y3) z3) ([w4] (eapp (eapp (eapp (eapp (eapp (eapp (eapp (econst "RBTree.black" (lcons lzero lnil)) x) x3) y3) z3) z4) x4) w4)))))))))))))))))) x1) z1) w1)) w1) z2) x2) x2) (eapp (eapp (econst "Eq.refl" (lcons (lsucc lzero) lnil)) x) x2)) (eapp (eapp (eapp (eapp (eapp (eapp (eapp (eapp (econst "RBTree.rec" (lcons (lsucc lzero) (lcons lzero lnil))) x) (elam (econst "Color" lnil) ([x3] (elam (econst "N" lnil) ([y3] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) x3) y3) ([z3] (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) x3) y3)))))))) (eapp (econst "RBTree.leaf" (lcons lzero lnil)) x)) (elam (econst "N" lnil) ([x3] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) (econst "Color.b" lnil)) x3) ([y3] (elam x ([z3] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) (econst "Color.b" lnil)) x3) ([w3] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) (econst "Color.b" lnil)) x3) ([x4] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) (econst "Color.b" lnil)) x3) ([y4] (eapp (eapp (eapp (eapp (eapp (econst "RBTree.red" (lcons lzero lnil)) x) x3) x4) z3) y4)))))))))))))) (elam (econst "Color" lnil) ([x3] (elam (econst "Color" lnil) ([y3] (elam (econst "N" lnil) ([z3] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) x3) z3) ([w3] (elam x ([x4] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) y3) z3) ([y4] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) x3) z3) ([z4] (elam (eapp (eapp (eapp (econst "RBTree" (lcons lzero lnil)) x) y3) z3) ([w4] (eapp (eapp (eapp (eapp (eapp (eapp (eapp (econst "RBTree.black" (lcons lzero lnil)) x) x3) y3) z3) z4) x4) w4)))))))))))))))))) y1) z1) y2)) y2) w2))))))))))))))))))) y) z) w))))))))))
-   = declared/ok RBTree_id_spec/name (dkind-ok/thm RBTree_id_spec/type-wf RBTree_id_spec/value-typed).
+   = declared/ok RBTree_id_spec/name dkind-non-inductive/thm (dkind-ok/thm RBTree_id_spec/type-wf RBTree_id_spec/value-typed).

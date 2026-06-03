@@ -14,6 +14,8 @@
 %%% because `Wrapper.mk True.intro` still formally inhabits `Wrapper` at
 %%% the structural level, and the `p` projection is then read back out at
 %%% the declared field type `False`.
+%solve nonneg_0 : 0 >= 0.
+
 sneq/0 : string-neq "False" "Wrapper".
 
 %% inductive False
@@ -29,7 +31,7 @@ False/ends-in-sort : ends-in-sort (esort lzero)
 False/rec-name : name "False.rec" (is-rec-for "False").
 
 False/clf : count-leading-foralls (esort lzero) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 False/cnd : cnames-distinct cnil
    = cnames-distinct/nil.
@@ -70,7 +72,7 @@ Wrapper/ends-in-sort : ends-in-sort (esort lzero)
 Wrapper/rec-name : name "Wrapper.rec" (is-rec-for "Wrapper").
 
 Wrapper/clf : count-leading-foralls (esort lzero) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 Wrapper/cnd : cnames-distinct (ccons "Wrapper.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -100,8 +102,12 @@ Wrapper_mk/eisl : ends-in-sort-with-level (esort lzero) lzero
 Wrapper_mk/cmem : cmem "Wrapper.mk" (ccons "Wrapper.mk" cnil)
    = cmem/here.
 
-%%% HOLE: Wrapper_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
-Wrapper_mk/fuo : field-universes-ok-skip-params liz (eforall (econst "False" lnil) ([x] (econst "Wrapper" lnil))) lzero.
+Wrapper_mk/fuo : field-universes-ok-skip-params liz (eforall (econst "False" lnil) ([x] (econst "Wrapper" lnil))) lzero
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/forall
+         (defeq/const False/decl (inst-expr/sort lvl-inst/zero))
+         (mleq/self nonneg_0)
+         ([x] ([h] (field-universes-ok/done not-forall/const))))).
 
 Wrapper_mk/name : name "Wrapper.mk" (is-decl (eforall (econst "False" lnil) ([x] (econst "Wrapper" lnil))) (ctor "Wrapper" liz)).
 
@@ -163,7 +169,7 @@ True/ends-in-sort : ends-in-sort (esort lzero)
 True/rec-name : name "True.rec" (is-rec-for "True").
 
 True/clf : count-leading-foralls (esort lzero) liz
-   = (count-leading-foralls/zero not-forall/sort).
+   = count-leading-foralls/zero.
 
 True/cnd : cnames-distinct (ccons "True.intro" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
@@ -189,8 +195,9 @@ True_intro/eisl : ends-in-sort-with-level (esort lzero) lzero
 True_intro/cmem : cmem "True.intro" (ccons "True.intro" cnil)
    = cmem/here.
 
-%%% HOLE: True_intro/fuo — prover for field-universes-ok-skip-params not yet implemented
-True_intro/fuo : field-universes-ok-skip-params liz (econst "True" lnil) lzero.
+True_intro/fuo : field-universes-ok-skip-params liz (econst "True" lnil) lzero
+   = (field-universes-ok-skip-params/start
+       (field-universes-ok/done not-forall/const)).
 
 True_intro/name : name "True.intro" (is-decl (econst "True" lnil) (ctor "True" liz)).
 
@@ -237,4 +244,4 @@ badFalse/value-typed : of (eproj "Wrapper" 0 (eapp (econst "Wrapper.mk" lnil) (e
 badFalse/name : name "badFalse" (is-decl (econst "False" lnil) (thm (eproj "Wrapper" 0 (eapp (econst "Wrapper.mk" lnil) (econst "True.intro" lnil))))).
 
 badFalse/decl : declared "badFalse" (econst "False" lnil) (thm (eproj "Wrapper" 0 (eapp (econst "Wrapper.mk" lnil) (econst "True.intro" lnil))))
-   = declared/ok badFalse/name (dkind-ok/thm badFalse/type-wf badFalse/value-typed).
+   = declared/ok badFalse/name dkind-non-inductive/thm (dkind-ok/thm badFalse/type-wf badFalse/value-typed).
