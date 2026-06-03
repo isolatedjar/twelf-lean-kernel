@@ -33,7 +33,7 @@ import {
   stringNeqFacts,
 } from "./render.ts";
 import type { Doc } from "./pp.ts";
-import { concat, render, text } from "./pp.ts";
+import { concat, group, line, nest, render, text } from "./pp.ts";
 import type {
   Decl,
   Expr,
@@ -135,18 +135,26 @@ function ppType(typeDoc: Doc, hang: number): string {
 
 // Emit a Twelf constant: a definition (`<const> : <type> = <term>.`) when
 // `term` is non-null, or a declaration with a HOLE warning (`%%% HOLE` then
-// `<const> : <type>.`) when it is null.  `type` is a `Doc` so multi-line LF
-// types (recursors, big foralls) wrap and align under the ` : ` column.
+// `<const> : <type>.`) when it is null.  `type` is a `Doc`.
+//
+// Layout: the type's first line glues to the `${constName} : ` prefix, and
+// continuation lines land at column-0 + nest (no hang under the prefix
+// column).  So a wrapped `of T (esort U)` reads
+//
+//   N_rec/type-wf : of
+//     <T-rendered>
+//     (esort N_rec/type-wf-sort)
+//
+// rather than hanging the second `(esort ...)` argument under column 16.
+// The proof on the `= ` line is still hung at 5 (under the `= ` itself),
+// since proof terms read better that way.
 function emitDefn(constName: string, type: Doc, term: Fmt | null): void {
-  // Length of `${constName} : ` is the column the type starts at.
-  const typeHang = constName.length + 3;
-  const typeStr = ppType(type, typeHang);
+  const typeStr = ppType(type, 0);
   if (term === null) {
     emit(`%%% HOLE`);
     emit(`${constName} : ${typeStr}.`);
   } else {
     emit(`${constName} : ${typeStr}`);
-    // "   = " is 5 chars; hang multi-line proofs under that column.
     emit(`   = ${ppFmt(term, 5)}.`);
   }
   emit(``);
@@ -197,20 +205,28 @@ function emitTypeWf(result: TypeWfResult, mn: string, T: Doc, isThm: boolean): s
   );
 }
 
-// `of <T> (esort <U>)` as a Doc.  No top-level soft break: layout decisions
-// happen entirely inside T.  Short Ts emit `of T (esort U)` on one line
-// (matching the pre-pretty baseline for the common case); a very long T
-// (recursor types) breaks within its own `(eforall …)` groups, and
-// `(esort U)` continues on the line where T's outer `)` lands.  Adding a
-// top-level group here would aggressively break ~95-char lines that the
-// repo previously left intact — a 30% size bloat for no readability win.
+// `of <T> (esort <U>)` as a Doc.  Top-level group with a break-after-`of`:
+// short obligations fit flat as `of T (esort U)`; long ones break to
+//
+//   of
+//     T
+//     (esort U)
+//
+// with T's own subgroups breaking inside as needed.  Pairs with `ppType(.,
+// hang=0)`: the obligation's args land at column 0 + nest (= column 2) on a
+// continuation line rather than hung under the `: ` column of the prefix.
 function ofSort(T: Doc, U: Doc): Doc {
-  return concat(text("of "), T, text(" (esort "), U, text(")"));
+  return group(
+    concat(
+      text("of"),
+      nest(2, concat(line, T, line, text("(esort "), U, text(")"))),
+    ),
+  );
 }
 
-// Same shape for `of <V> <T>` (value-has-type).  Same rationale.
+// Same shape for `of <V> <T>` (value-has-type).
 function ofValueType(V: Doc, T: Doc): Doc {
-  return concat(text("of "), V, text(" "), T);
+  return group(concat(text("of"), nest(2, concat(line, V, line, T))));
 }
 
 // Emit the `ctor-positive` obligation for a constructor and return its name.
@@ -309,17 +325,31 @@ function emitDeclared(
   kExpr: string,
   okWitness: string,
 ): void {
-  // Pretty-print the type at each emit site, hanging multi-line types under
-  // the column where they begin so big recursor types wrap into a readable
-  // nested form instead of one giant flat line.
-  const nameLine = `${mn}/name : name "${declName}" (is-decl `;
-  const nameTypeStr = ppType(tDoc, nameLine.length);
-  emit(`${nameLine}${nameTypeStr} ${kExpr}).`);
+  // Both lines use the same "break-after-head, args at col 2" pattern that
+  // `of T U` uses (see ofSort): short decls stay flat, long ones wrap as
+  //
+  //   N_rec/decl : declared "N.rec"
+  //     (eforall ...)
+  //     irec
+  //      = declared/ok-irec ...
+  //
+  // and the name-line analogously with `(is-decl` ending the head.
+  const nameDoc = group(
+    concat(
+      text(`name "${declName}" (is-decl`),
+      nest(2, concat(line, tDoc, line, text(`${kExpr})`))),
+    ),
+  );
+  emit(`${mn}/name : ${render(TYPE_WIDTH, nameDoc)}.`);
   emit(``);
 
-  const declLine = `${mn}/decl : declared "${declName}" `;
-  const declTypeStr = ppType(tDoc, declLine.length);
-  emit(`${declLine}${declTypeStr} ${kExpr}`);
+  const declDoc = group(
+    concat(
+      text(`declared "${declName}"`),
+      nest(2, concat(line, tDoc, line, text(kExpr))),
+    ),
+  );
+  emit(`${mn}/decl : ${render(TYPE_WIDTH, declDoc)}`);
   emit(`   = declared/ok ${mn}/name ${okWitness}.`);
   emit(``);
 }
@@ -785,18 +815,23 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
       const indType =
         IndN !== null ? ind.types.find((t) => nameToString(t.name) === IndN) : undefined;
       const indMn = indType !== undefined ? mangle(indType.name) : null;
-      // Same pretty-print treatment as emitDeclared: pretty `tDoc` under the
-      // column where it begins so large recursor types wrap readably instead
-      // of emitting one ~340-char flat line.
-      const declLine = `${mn}/decl : declared "${declName}" `;
-      const declTypeStr = ppType(tDoc, declLine.length);
+      // Match emitDeclared's break-after-head layout: short recursor types
+      // stay flat; the killer N_rec / Eq_rec types wrap with `declared "..."`
+      // alone on the prefix line and args at col 2.
+      const declDoc = group(
+        concat(
+          text(`declared "${declName}"`),
+          nest(2, concat(line, tDoc, line, text("irec"))),
+        ),
+      );
+      const declStr = render(TYPE_WIDTH, declDoc);
       if (indMn !== null) {
-        emit(`${declLine}${declTypeStr} irec`);
+        emit(`${mn}/decl : ${declStr}`);
         emit(`   = declared/ok-irec ${indMn}/rec-name (dkind-ok/irec ${tw}).`);
         emit(``);
       } else {
         emit(`%%% HOLE: recursor ${declName} — name does not follow <inductive>.rec convention`);
-        emit(`${declLine}${declTypeStr} irec.`);
+        emit(`${mn}/decl : ${declStr}.`);
         emit(``);
       }
     });

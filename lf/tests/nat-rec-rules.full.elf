@@ -94,8 +94,9 @@ True_rec/type-wf-sort : lvl
        (limax lzero (lsucc (lvar liz)))
        (limax (lvar liz) (limax lzero (lvar liz)))).
 
-True_rec/type-wf : of (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz))))
-                     ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) (esort True_rec/type-wf-sort)
+True_rec/type-wf : of
+  (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z)))))))
+  (esort True_rec/type-wf-sort)
    = (defeq/forall
        (defeq/forall
          (defeq/const True/decl (inst-expr/sort lvl-inst/zero))
@@ -112,8 +113,7 @@ True_rec/type-wf : of (eforall (eforall (econst "True" lnil) ([x] (esort (lvar l
                    (defeq/const True/decl (inst-expr/sort lvl-inst/zero))
                    ([z] ([h2] (defeq/app h h2)))))))))).
 
-True_rec/decl : declared "True.rec" (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz))))
-                                      ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) irec
+True_rec/decl : declared "True.rec" (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) irec
    = declared/ok-irec True/rec-name (dkind-ok/irec True_rec/type-wf).
 
 %% inductive Bool
@@ -181,10 +181,10 @@ Bool_rec/type-wf-sort : lvl
        (limax (lsucc lzero) (lsucc (lvar liz)))
        (limax (lvar liz) (limax (lvar liz) (limax (lsucc lzero) (lvar liz))))).
 
-Bool_rec/type-wf : of (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz))))
-                     ([x]
-                       (eforall (eapp x (econst "Bool.false" lnil))
-                         ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort Bool_rec/type-wf-sort)
+Bool_rec/type-wf : of
+  (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz))))
+    ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w)))))))))
+  (esort Bool_rec/type-wf-sort)
    = (defeq/forall
        (defeq/forall
          (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
@@ -211,8 +211,10 @@ Bool_rec/type-wf : of (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar l
                            (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
                          ([w] ([h3] (defeq/app h h3))))))))))))).
 
-Bool_rec/decl : declared "Bool.rec" (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz))))
-                                      ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) irec
+Bool_rec/decl : declared "Bool.rec"
+  (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz))))
+    ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w)))))))))
+  irec
    = declared/ok-irec Bool/rec-name (dkind-ok/irec Bool_rec/type-wf).
 
 %% inductive Nat
@@ -292,12 +294,12 @@ Nat_rec/type-wf-sort : lvl
            (limax (lsucc lzero) (limax (lvar liz) (lvar liz)))
            (limax (lsucc lzero) (lvar liz))))).
 
-Nat_rec/type-wf : of (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz))))
-                    ([x]
-                      (eforall (eapp x (econst "Nat.zero" lnil))
-                        ([y]
-                          (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z))))))
-                            ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (esort Nat_rec/type-wf-sort)
+Nat_rec/type-wf : of
+  (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz))))
+    ([x]
+      (eforall (eapp x (econst "Nat.zero" lnil))
+        ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w)))))))))
+  (esort Nat_rec/type-wf-sort)
    = (defeq/forall
        (defeq/forall
          (defeq/const Nat/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
@@ -340,12 +342,12 @@ Nat_rec/type-wf : of (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz
                            (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
                          ([w] ([h3] (defeq/app h h3))))))))))))).
 
-Nat_rec/decl : declared "Nat.rec" (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz))))
-                                    ([x]
-                                      (eforall (eapp x (econst "Nat.zero" lnil))
-                                        ([y]
-                                          (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z))))))
-                                            ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) irec
+Nat_rec/decl : declared "Nat.rec"
+  (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz))))
+    ([x]
+      (eforall (eapp x (econst "Nat.zero" lnil))
+        ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w)))))))))
+  irec
    = declared/ok-irec Nat/rec-name (dkind-ok/irec Nat_rec/type-wf).
 
 %% def Nat.beq
@@ -367,13 +369,15 @@ Nat_beq/type-wf : of (eforall (econst "Nat" lnil) ([x] (eforall (econst "Nat" ln
                    Bool/decl
                    (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))))))).
 
-Nat_beq/value-typed : of (elam (econst "Nat" lnil)
-                        ([x]
-                          (elam (econst "Nat" lnil)
-                            ([y]
-                              (eapp (eapp (eapp (eapp (econst "Nat.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Nat" lnil) ([z] (econst "Bool" lnil)))) (econst "Bool.true" lnil))
-                                (elam (econst "Nat" lnil) ([z] (elam (econst "Bool" lnil) ([w] (econst "Bool.false" lnil))))))
-                                x))))) (eforall (econst "Nat" lnil) ([x] (eforall (econst "Nat" lnil) ([y] (econst "Bool" lnil)))))
+Nat_beq/value-typed : of
+  (elam (econst "Nat" lnil)
+    ([x]
+      (elam (econst "Nat" lnil)
+        ([y]
+          (eapp (eapp (eapp (eapp (econst "Nat.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Nat" lnil) ([z] (econst "Bool" lnil)))) (econst "Bool.true" lnil))
+            (elam (econst "Nat" lnil) ([z] (elam (econst "Bool" lnil) ([w] (econst "Bool.false" lnil))))))
+            x)))))
+  (eforall (econst "Nat" lnil) ([x] (eforall (econst "Nat" lnil) ([y] (econst "Bool" lnil)))))
    = (defeq/conv
        (defeq/forall
          (defeq/const Nat/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
@@ -546,9 +550,13 @@ Nat_beq/value-typed : of (elam (econst "Nat" lnil)
                                        (inst-expr/const lvls-inst/nil))))))))))
                      h)))))))).
 
-Nat_beq/name : name "Nat.beq" (is-decl (eforall (econst "Nat" lnil) ([x] (eforall (econst "Nat" lnil) ([y] (econst "Bool" lnil))))) (defn (elam (econst "Nat" lnil) ([x] (elam (econst "Nat" lnil) ([y] (eapp (eapp (eapp (eapp (econst "Nat.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Nat" lnil) ([z] (econst "Bool" lnil)))) (econst "Bool.true" lnil)) (elam (econst "Nat" lnil) ([z] (elam (econst "Bool" lnil) ([w] (econst "Bool.false" lnil)))))) x))))))).
+Nat_beq/name : name "Nat.beq" (is-decl
+  (eforall (econst "Nat" lnil) ([x] (eforall (econst "Nat" lnil) ([y] (econst "Bool" lnil)))))
+  (defn (elam (econst "Nat" lnil) ([x] (elam (econst "Nat" lnil) ([y] (eapp (eapp (eapp (eapp (econst "Nat.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Nat" lnil) ([z] (econst "Bool" lnil)))) (econst "Bool.true" lnil)) (elam (econst "Nat" lnil) ([z] (elam (econst "Bool" lnil) ([w] (econst "Bool.false" lnil)))))) x))))))).
 
-Nat_beq/decl : declared "Nat.beq" (eforall (econst "Nat" lnil) ([x] (eforall (econst "Nat" lnil) ([y] (econst "Bool" lnil))))) (defn (elam (econst "Nat" lnil) ([x] (elam (econst "Nat" lnil) ([y] (eapp (eapp (eapp (eapp (econst "Nat.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Nat" lnil) ([z] (econst "Bool" lnil)))) (econst "Bool.true" lnil)) (elam (econst "Nat" lnil) ([z] (elam (econst "Bool" lnil) ([w] (econst "Bool.false" lnil)))))) x))))))
+Nat_beq/decl : declared "Nat.beq"
+  (eforall (econst "Nat" lnil) ([x] (eforall (econst "Nat" lnil) ([y] (econst "Bool" lnil)))))
+  (defn (elam (econst "Nat" lnil) ([x] (elam (econst "Nat" lnil) ([y] (eapp (eapp (eapp (eapp (econst "Nat.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Nat" lnil) ([z] (econst "Bool" lnil)))) (econst "Bool.true" lnil)) (elam (econst "Nat" lnil) ([z] (elam (econst "Bool" lnil) ([w] (econst "Bool.false" lnil)))))) x))))))
    = declared/ok Nat_beq/name (dkind-ok/defn Nat_beq/type-wf Nat_beq/value-typed).
 
 %% def proof_of_false
@@ -559,24 +567,29 @@ proof_of_false/type-wf : of (econst "False" lnil) (esort proof_of_false/type-wf-
    = (defeq/const False/decl (inst-expr/sort lvl-inst/zero)).
 
 %%% HOLE
-proof_of_false/value-typed : of (eapp (eapp (eapp (eapp (econst "Nat.rec" (lcons lzero lnil))
-                               (elam (econst "Nat" lnil)
-                                 ([x]
-                                   (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([y] (esort lzero)))) (econst "False" lnil)) (econst "True" lnil))
-                                     (eapp (eapp (econst "Nat.beq" lnil) x) (enatlit 0 nonneg_0))))))
-                               (econst "True.intro" lnil))
-                               (elam (econst "Nat" lnil)
-                                 ([x]
-                                   (elam (eapp (elam (econst "Nat" lnil)
-                                     ([y]
-                                       (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([z] (esort lzero)))) (econst "False" lnil))
-                                         (econst "True" lnil))
-                                         (eapp (eapp (econst "Nat.beq" lnil) y) (enatlit 0 nonneg_0)))))
-                                     x)
-                                     ([y] (econst "True.intro" lnil))))))
-                               (enatlit 1 nonneg_1)) (econst "False" lnil).
+proof_of_false/value-typed : of
+  (eapp (eapp (eapp (eapp (econst "Nat.rec" (lcons lzero lnil))
+    (elam (econst "Nat" lnil)
+      ([x]
+        (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([y] (esort lzero)))) (econst "False" lnil)) (econst "True" lnil))
+          (eapp (eapp (econst "Nat.beq" lnil) x) (enatlit 0 nonneg_0))))))
+    (econst "True.intro" lnil))
+    (elam (econst "Nat" lnil)
+      ([x]
+        (elam (eapp (elam (econst "Nat" lnil)
+          ([y]
+            (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([z] (esort lzero)))) (econst "False" lnil)) (econst "True" lnil))
+              (eapp (eapp (econst "Nat.beq" lnil) y) (enatlit 0 nonneg_0)))))
+          x)
+          ([y] (econst "True.intro" lnil))))))
+    (enatlit 1 nonneg_1))
+  (econst "False" lnil).
 
-proof_of_false/name : name "proof_of_false" (is-decl (econst "False" lnil) (defn (eapp (eapp (eapp (eapp (econst "Nat.rec" (lcons lzero lnil)) (elam (econst "Nat" lnil) ([x] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([y] (esort lzero)))) (econst "False" lnil)) (econst "True" lnil)) (eapp (eapp (econst "Nat.beq" lnil) x) (enatlit 0 nonneg_0)))))) (econst "True.intro" lnil)) (elam (econst "Nat" lnil) ([x] (elam (eapp (elam (econst "Nat" lnil) ([y] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([z] (esort lzero)))) (econst "False" lnil)) (econst "True" lnil)) (eapp (eapp (econst "Nat.beq" lnil) y) (enatlit 0 nonneg_0))))) x) ([y] (econst "True.intro" lnil)))))) (enatlit 1 nonneg_1)))).
+proof_of_false/name : name "proof_of_false" (is-decl
+  (econst "False" lnil)
+  (defn (eapp (eapp (eapp (eapp (econst "Nat.rec" (lcons lzero lnil)) (elam (econst "Nat" lnil) ([x] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([y] (esort lzero)))) (econst "False" lnil)) (econst "True" lnil)) (eapp (eapp (econst "Nat.beq" lnil) x) (enatlit 0 nonneg_0)))))) (econst "True.intro" lnil)) (elam (econst "Nat" lnil) ([x] (elam (eapp (elam (econst "Nat" lnil) ([y] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([z] (esort lzero)))) (econst "False" lnil)) (econst "True" lnil)) (eapp (eapp (econst "Nat.beq" lnil) y) (enatlit 0 nonneg_0))))) x) ([y] (econst "True.intro" lnil)))))) (enatlit 1 nonneg_1)))).
 
-proof_of_false/decl : declared "proof_of_false" (econst "False" lnil) (defn (eapp (eapp (eapp (eapp (econst "Nat.rec" (lcons lzero lnil)) (elam (econst "Nat" lnil) ([x] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([y] (esort lzero)))) (econst "False" lnil)) (econst "True" lnil)) (eapp (eapp (econst "Nat.beq" lnil) x) (enatlit 0 nonneg_0)))))) (econst "True.intro" lnil)) (elam (econst "Nat" lnil) ([x] (elam (eapp (elam (econst "Nat" lnil) ([y] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([z] (esort lzero)))) (econst "False" lnil)) (econst "True" lnil)) (eapp (eapp (econst "Nat.beq" lnil) y) (enatlit 0 nonneg_0))))) x) ([y] (econst "True.intro" lnil)))))) (enatlit 1 nonneg_1)))
+proof_of_false/decl : declared "proof_of_false"
+  (econst "False" lnil)
+  (defn (eapp (eapp (eapp (eapp (econst "Nat.rec" (lcons lzero lnil)) (elam (econst "Nat" lnil) ([x] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([y] (esort lzero)))) (econst "False" lnil)) (econst "True" lnil)) (eapp (eapp (econst "Nat.beq" lnil) x) (enatlit 0 nonneg_0)))))) (econst "True.intro" lnil)) (elam (econst "Nat" lnil) ([x] (elam (eapp (elam (econst "Nat" lnil) ([y] (eapp (eapp (eapp (eapp (econst "Bool.rec" (lcons (lsucc lzero) lnil)) (elam (econst "Bool" lnil) ([z] (esort lzero)))) (econst "False" lnil)) (econst "True" lnil)) (eapp (eapp (econst "Nat.beq" lnil) y) (enatlit 0 nonneg_0))))) x) ([y] (econst "True.intro" lnil)))))) (enatlit 1 nonneg_1)))
    = declared/ok proof_of_false/name (dkind-ok/defn proof_of_false/type-wf proof_of_false/value-typed).

@@ -84,13 +84,15 @@ Wrapper_mk/decl : declared "Wrapper.mk" (eforall (econst "False" lnil) ([x] (eco
 Wrapper_rec/type-wf-sort : lvl.
 
 %%% HOLE
-Wrapper_rec/type-wf : of (eforall (eforall (econst "Wrapper" lnil) ([x] (esort (lvar liz))))
-                        ([x]
-                          (eforall (eforall (econst "False" lnil) ([y] (eapp x (eapp (econst "Wrapper.mk" lnil) y))))
-                            ([y] (eforall (econst "Wrapper" lnil) ([z] (eapp x z))))))) (esort Wrapper_rec/type-wf-sort).
+Wrapper_rec/type-wf : of
+  (eforall (eforall (econst "Wrapper" lnil) ([x] (esort (lvar liz))))
+    ([x] (eforall (eforall (econst "False" lnil) ([y] (eapp x (eapp (econst "Wrapper.mk" lnil) y)))) ([y] (eforall (econst "Wrapper" lnil) ([z] (eapp x z)))))))
+  (esort Wrapper_rec/type-wf-sort).
 
-Wrapper_rec/decl : declared "Wrapper.rec" (eforall (eforall (econst "Wrapper" lnil) ([x] (esort (lvar liz))))
-                                            ([x] (eforall (eforall (econst "False" lnil) ([y] (eapp x (eapp (econst "Wrapper.mk" lnil) y)))) ([y] (eforall (econst "Wrapper" lnil) ([z] (eapp x z))))))) irec
+Wrapper_rec/decl : declared "Wrapper.rec"
+  (eforall (eforall (econst "Wrapper" lnil) ([x] (esort (lvar liz))))
+    ([x] (eforall (eforall (econst "False" lnil) ([y] (eapp x (eapp (econst "Wrapper.mk" lnil) y)))) ([y] (eforall (econst "Wrapper" lnil) ([z] (eapp x z)))))))
+  irec
    = declared/ok-irec Wrapper/rec-name (dkind-ok/irec Wrapper_rec/type-wf).
 
 %% inductive True
@@ -136,11 +138,11 @@ True_intro/decl : declared "True.intro" (econst "True" lnil) ctor
 True_rec/type-wf-sort : lvl.
 
 %%% HOLE
-True_rec/type-wf : of (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz))))
-                     ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) (esort True_rec/type-wf-sort).
+True_rec/type-wf : of
+  (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z)))))))
+  (esort True_rec/type-wf-sort).
 
-True_rec/decl : declared "True.rec" (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz))))
-                                      ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) irec
+True_rec/decl : declared "True.rec" (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) irec
    = declared/ok-irec True/rec-name (dkind-ok/irec True_rec/type-wf).
 
 %% thm badFalse

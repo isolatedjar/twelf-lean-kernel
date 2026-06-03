@@ -23,16 +23,17 @@ PN_succ/type-wf-sort : lvl.
 PN_succ/type-wf : of (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (econst "PN" (lcons (lvar liz) lnil)))) (esort PN_succ/type-wf-sort).
 
 %%% HOLE
-PN_succ/value-typed : of (elam (econst "PN" (lcons (lvar liz) lnil))
-                        ([x]
-                          (elam (esort (lvar liz))
-                            ([y]
-                              (elam (eforall y ([z] y))
-                                ([z] (elam y ([w] (eapp z (eapp (eapp (eapp x y) z) w)))))))))) (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (econst "PN" (lcons (lvar liz) lnil)))).
+PN_succ/value-typed : of
+  (elam (econst "PN" (lcons (lvar liz) lnil)) ([x] (elam (esort (lvar liz)) ([y] (elam (eforall y ([z] y)) ([z] (elam y ([w] (eapp z (eapp (eapp (eapp x y) z) w))))))))))
+  (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (econst "PN" (lcons (lvar liz) lnil)))).
 
-PN_succ/name : name "PN.succ" (is-decl (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (econst "PN" (lcons (lvar liz) lnil)))) (defn (elam (econst "PN" (lcons (lvar liz) lnil)) ([x] (elam (esort (lvar liz)) ([y] (elam (eforall y ([z] y)) ([z] (elam y ([w] (eapp z (eapp (eapp (eapp x y) z) w)))))))))))).
+PN_succ/name : name "PN.succ" (is-decl
+  (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (econst "PN" (lcons (lvar liz) lnil))))
+  (defn (elam (econst "PN" (lcons (lvar liz) lnil)) ([x] (elam (esort (lvar liz)) ([y] (elam (eforall y ([z] y)) ([z] (elam y ([w] (eapp z (eapp (eapp (eapp x y) z) w)))))))))))).
 
-PN_succ/decl : declared "PN.succ" (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (econst "PN" (lcons (lvar liz) lnil)))) (defn (elam (econst "PN" (lcons (lvar liz) lnil)) ([x] (elam (esort (lvar liz)) ([y] (elam (eforall y ([z] y)) ([z] (elam y ([w] (eapp z (eapp (eapp (eapp x y) z) w)))))))))))
+PN_succ/decl : declared "PN.succ"
+  (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (econst "PN" (lcons (lvar liz) lnil))))
+  (defn (elam (econst "PN" (lcons (lvar liz) lnil)) ([x] (elam (esort (lvar liz)) ([y] (elam (eforall y ([z] y)) ([z] (elam y ([w] (eapp z (eapp (eapp (eapp x y) z) w)))))))))))
    = declared/ok PN_succ/name (dkind-ok/defn PN_succ/type-wf PN_succ/value-typed).
 
 %% def PN.zero
@@ -97,21 +98,25 @@ PN_lit2/decl : declared "PN.lit2" (econst "PN" (lcons (lvar liz) lnil)) (defn (e
 
 %% thm peano1
 %%% HOLE
-peano1/type-wf : of (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero)))
-                   ([x] (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp x (econst "PN.lit2" (lcons (lvar liz) lnil))))))) (esort lzero).
+peano1/type-wf : of
+  (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero)))
+    ([x] (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp x (econst "PN.lit2" (lcons (lvar liz) lnil)))))))
+  (esort lzero).
 
 %%% HOLE
-peano1/value-typed : of (elam (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero)))
-                       ([x]
-                         (elam (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y)))
-                           ([y]
-                             (eapp y
-                               (econst "PN.lit2" (lcons (lvar liz) lnil))))))) (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero)))
-                       ([x] (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp x (econst "PN.lit2" (lcons (lvar liz) lnil))))))).
+peano1/value-typed : of
+  (elam (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero)))
+    ([x] (elam (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp y (econst "PN.lit2" (lcons (lvar liz) lnil)))))))
+  (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero)))
+    ([x] (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp x (econst "PN.lit2" (lcons (lvar liz) lnil))))))).
 
-peano1/name : name "peano1" (is-decl (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero)))
-                                       ([x] (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp x (econst "PN.lit2" (lcons (lvar liz) lnil))))))) (thm (elam (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero))) ([x] (elam (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp y (econst "PN.lit2" (lcons (lvar liz) lnil))))))))).
+peano1/name : name "peano1" (is-decl
+  (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero)))
+    ([x] (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp x (econst "PN.lit2" (lcons (lvar liz) lnil)))))))
+  (thm (elam (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero))) ([x] (elam (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp y (econst "PN.lit2" (lcons (lvar liz) lnil))))))))).
 
-peano1/decl : declared "peano1" (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero)))
-                                  ([x] (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp x (econst "PN.lit2" (lcons (lvar liz) lnil))))))) (thm (elam (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero))) ([x] (elam (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp y (econst "PN.lit2" (lcons (lvar liz) lnil))))))))
+peano1/decl : declared "peano1"
+  (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero)))
+    ([x] (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp x (econst "PN.lit2" (lcons (lvar liz) lnil)))))))
+  (thm (elam (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero))) ([x] (elam (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp y (econst "PN.lit2" (lcons (lvar liz) lnil))))))))
    = declared/ok peano1/name (dkind-ok/thm peano1/type-wf peano1/value-typed).

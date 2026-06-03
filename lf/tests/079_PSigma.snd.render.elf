@@ -5,8 +5,7 @@
 PSigma/type-wf-sort : lvl.
 
 %%% HOLE
-PSigma/type-wf : of (eforall (esort (lvar liz))
-                   ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (esort (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))))) (esort PSigma/type-wf-sort).
+PSigma/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (esort (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))))) (esort PSigma/type-wf-sort).
 
 %%% HOLE
 PSigma/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (esort (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))))).
@@ -23,10 +22,10 @@ PSigma/decl : declared "PSigma" (eforall (esort (lvar liz)) ([x] (eforall (efora
 PSigma_mk/type-wf-sort : lvl.
 
 %%% HOLE
-PSigma_mk/type-wf : of (eforall (esort (lvar liz))
-                      ([x]
-                        (eforall (eforall x ([y] (esort (lvar (lis liz)))))
-                          ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) (esort PSigma_mk/type-wf-sort).
+PSigma_mk/type-wf : of
+  (eforall (esort (lvar liz))
+    ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y)))))))))
+  (esort PSigma_mk/type-wf-sort).
 
 %%% HOLE
 PSigma_mk/positivity : ctor-positive "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil)) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))).
@@ -39,15 +38,15 @@ PSigma_mk/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (efora
 %%% HOLE: PSigma_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
 PSigma_mk/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz))).
 
-PSigma_mk/name : name "PSigma.mk" (is-decl (eforall (esort (lvar liz))
-                                             ([x]
-                                               (eforall (eforall x ([y] (esort (lvar (lis liz)))))
-                                                 ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) ctor).
+PSigma_mk/name : name "PSigma.mk" (is-decl
+  (eforall (esort (lvar liz))
+    ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y)))))))))
+  ctor).
 
-PSigma_mk/decl : declared "PSigma.mk" (eforall (esort (lvar liz))
-                                        ([x]
-                                          (eforall (eforall x ([y] (esort (lvar (lis liz)))))
-                                            ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))) ctor
+PSigma_mk/decl : declared "PSigma.mk"
+  (eforall (esort (lvar liz))
+    ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y)))))))))
+  ctor
    = declared/ok PSigma_mk/name (dkind-ok/ctor PSigma_mk/type-wf PSigma_mk/positivity PSigma/decl PSigma_mk/eisl PSigma_mk/fuo).
 
 %% recursor PSigma.rec
@@ -55,29 +54,27 @@ PSigma_mk/decl : declared "PSigma.mk" (eforall (esort (lvar liz))
 PSigma_rec/type-wf-sort : lvl.
 
 %%% HOLE
-PSigma_rec/type-wf : of (eforall (esort (lvar (lis liz)))
-                       ([x]
-                         (eforall (eforall x ([y] (esort (lvar (lis (lis liz))))))
-                           ([y]
-                             (eforall (eforall (eapp (eapp (econst "PSigma" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([z] (esort (lvar liz))))
-                               ([z]
-                                 (eforall (eforall x
-                                   ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PSigma.mk" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) w) x1))))))
-                                   ([w]
-                                     (eforall (eapp (eapp (econst "PSigma" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y)
-                                       ([x1] (eapp z x1))))))))))) (esort PSigma_rec/type-wf-sort).
+PSigma_rec/type-wf : of
+  (eforall (esort (lvar (lis liz)))
+    ([x]
+      (eforall (eforall x ([y] (esort (lvar (lis (lis liz))))))
+        ([y]
+          (eforall (eforall (eapp (eapp (econst "PSigma" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([z] (esort (lvar liz))))
+            ([z]
+              (eforall (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PSigma.mk" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) w) x1))))))
+                ([w] (eforall (eapp (eapp (econst "PSigma" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([x1] (eapp z x1)))))))))))
+  (esort PSigma_rec/type-wf-sort).
 
-PSigma_rec/decl : declared "PSigma.rec" (eforall (esort (lvar (lis liz)))
-                                          ([x]
-                                            (eforall (eforall x ([y] (esort (lvar (lis (lis liz))))))
-                                              ([y]
-                                                (eforall (eforall (eapp (eapp (econst "PSigma" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([z] (esort (lvar liz))))
-                                                  ([z]
-                                                    (eforall (eforall x
-                                                      ([w]
-                                                        (eforall (eapp y w)
-                                                          ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PSigma.mk" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) w) x1))))))
-                                                      ([w] (eforall (eapp (eapp (econst "PSigma" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([x1] (eapp z x1))))))))))) irec
+PSigma_rec/decl : declared "PSigma.rec"
+  (eforall (esort (lvar (lis liz)))
+    ([x]
+      (eforall (eforall x ([y] (esort (lvar (lis (lis liz))))))
+        ([y]
+          (eforall (eforall (eapp (eapp (econst "PSigma" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([z] (esort (lvar liz))))
+            ([z]
+              (eforall (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PSigma.mk" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) w) x1))))))
+                ([w] (eforall (eapp (eapp (econst "PSigma" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([x1] (eapp z x1)))))))))))
+  irec
    = declared/ok-irec PSigma/rec-name (dkind-ok/irec PSigma_rec/type-wf).
 
 %% def PSigma.fst
@@ -85,31 +82,23 @@ PSigma_rec/decl : declared "PSigma.rec" (eforall (esort (lvar (lis liz)))
 PSigma_fst/type-wf-sort : lvl.
 
 %%% HOLE
-PSigma_fst/type-wf : of (eforall (esort (lvar liz))
-                       ([x]
-                         (eforall (eforall x ([y] (esort (lvar (lis liz)))))
-                           ([y] (eforall (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] x)))))) (esort PSigma_fst/type-wf-sort).
+PSigma_fst/type-wf : of
+  (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (eforall (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] x))))))
+  (esort PSigma_fst/type-wf-sort).
 
 %%% HOLE
-PSigma_fst/value-typed : of (elam (esort (lvar liz))
-                           ([x]
-                             (elam (eforall x ([y] (esort (lvar (lis liz)))))
-                               ([y]
-                                 (elam (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y)
-                                   ([z]
-                                     (eproj "PSigma" 0
-                                       z))))))) (eforall (esort (lvar liz))
-                           ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (eforall (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] x)))))).
+PSigma_fst/value-typed : of
+  (elam (esort (lvar liz))
+    ([x] (elam (eforall x ([y] (esort (lvar (lis liz))))) ([y] (elam (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (eproj "PSigma" 0 z)))))))
+  (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (eforall (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] x)))))).
 
-PSigma_fst/name : name "PSigma.fst" (is-decl (eforall (esort (lvar liz))
-                                               ([x]
-                                                 (eforall (eforall x ([y] (esort (lvar (lis liz)))))
-                                                   ([y] (eforall (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] x)))))) (defn (elam (esort (lvar liz)) ([x] (elam (eforall x ([y] (esort (lvar (lis liz))))) ([y] (elam (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (eproj "PSigma" 0 z))))))))).
+PSigma_fst/name : name "PSigma.fst" (is-decl
+  (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (eforall (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] x))))))
+  (defn (elam (esort (lvar liz)) ([x] (elam (eforall x ([y] (esort (lvar (lis liz))))) ([y] (elam (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (eproj "PSigma" 0 z))))))))).
 
-PSigma_fst/decl : declared "PSigma.fst" (eforall (esort (lvar liz))
-                                          ([x]
-                                            (eforall (eforall x ([y] (esort (lvar (lis liz)))))
-                                              ([y] (eforall (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] x)))))) (defn (elam (esort (lvar liz)) ([x] (elam (eforall x ([y] (esort (lvar (lis liz))))) ([y] (elam (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (eproj "PSigma" 0 z))))))))
+PSigma_fst/decl : declared "PSigma.fst"
+  (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (eforall (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] x))))))
+  (defn (elam (esort (lvar liz)) ([x] (elam (eforall x ([y] (esort (lvar (lis liz))))) ([y] (elam (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (eproj "PSigma" 0 z))))))))
    = declared/ok PSigma_fst/name (dkind-ok/defn PSigma_fst/type-wf PSigma_fst/value-typed).
 
 %% def PSigma.snd
@@ -117,39 +106,41 @@ PSigma_fst/decl : declared "PSigma.fst" (eforall (esort (lvar liz))
 PSigma_snd/type-wf-sort : lvl.
 
 %%% HOLE
-PSigma_snd/type-wf : of (eforall (esort (lvar liz))
-                       ([x]
-                         (eforall (eforall x ([y] (esort (lvar (lis liz)))))
-                           ([y]
-                             (eforall (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y)
-                               ([z] (eapp y (eapp (eapp (eapp (econst "PSigma.fst" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) z)))))))) (esort PSigma_snd/type-wf-sort).
+PSigma_snd/type-wf : of
+  (eforall (esort (lvar liz))
+    ([x]
+      (eforall (eforall x ([y] (esort (lvar (lis liz)))))
+        ([y]
+          (eforall (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y)
+            ([z] (eapp y (eapp (eapp (eapp (econst "PSigma.fst" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) z))))))))
+  (esort PSigma_snd/type-wf-sort).
 
 %%% HOLE
-PSigma_snd/value-typed : of (elam (esort (lvar liz))
-                           ([x]
-                             (elam (eforall x ([y] (esort (lvar (lis liz)))))
-                               ([y]
-                                 (elam (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y)
-                                   ([z]
-                                     (eproj "PSigma" 1
-                                       z))))))) (eforall (esort (lvar liz))
-                           ([x]
-                             (eforall (eforall x ([y] (esort (lvar (lis liz)))))
-                               ([y]
-                                 (eforall (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y)
-                                   ([z] (eapp y (eapp (eapp (eapp (econst "PSigma.fst" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) z)))))))).
+PSigma_snd/value-typed : of
+  (elam (esort (lvar liz))
+    ([x] (elam (eforall x ([y] (esort (lvar (lis liz))))) ([y] (elam (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (eproj "PSigma" 1 z)))))))
+  (eforall (esort (lvar liz))
+    ([x]
+      (eforall (eforall x ([y] (esort (lvar (lis liz)))))
+        ([y]
+          (eforall (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y)
+            ([z] (eapp y (eapp (eapp (eapp (econst "PSigma.fst" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) z)))))))).
 
-PSigma_snd/name : name "PSigma.snd" (is-decl (eforall (esort (lvar liz))
-                                               ([x]
-                                                 (eforall (eforall x ([y] (esort (lvar (lis liz)))))
-                                                   ([y]
-                                                     (eforall (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y)
-                                                       ([z] (eapp y (eapp (eapp (eapp (econst "PSigma.fst" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) z)))))))) (defn (elam (esort (lvar liz)) ([x] (elam (eforall x ([y] (esort (lvar (lis liz))))) ([y] (elam (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (eproj "PSigma" 1 z))))))))).
+PSigma_snd/name : name "PSigma.snd" (is-decl
+  (eforall (esort (lvar liz))
+    ([x]
+      (eforall (eforall x ([y] (esort (lvar (lis liz)))))
+        ([y]
+          (eforall (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y)
+            ([z] (eapp y (eapp (eapp (eapp (econst "PSigma.fst" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) z))))))))
+  (defn (elam (esort (lvar liz)) ([x] (elam (eforall x ([y] (esort (lvar (lis liz))))) ([y] (elam (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (eproj "PSigma" 1 z))))))))).
 
-PSigma_snd/decl : declared "PSigma.snd" (eforall (esort (lvar liz))
-                                          ([x]
-                                            (eforall (eforall x ([y] (esort (lvar (lis liz)))))
-                                              ([y]
-                                                (eforall (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y)
-                                                  ([z] (eapp y (eapp (eapp (eapp (econst "PSigma.fst" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) z)))))))) (defn (elam (esort (lvar liz)) ([x] (elam (eforall x ([y] (esort (lvar (lis liz))))) ([y] (elam (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (eproj "PSigma" 1 z))))))))
+PSigma_snd/decl : declared "PSigma.snd"
+  (eforall (esort (lvar liz))
+    ([x]
+      (eforall (eforall x ([y] (esort (lvar (lis liz)))))
+        ([y]
+          (eforall (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y)
+            ([z] (eapp y (eapp (eapp (eapp (econst "PSigma.fst" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) z))))))))
+  (defn (elam (esort (lvar liz)) ([x] (elam (eforall x ([y] (esort (lvar (lis liz))))) ([y] (elam (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y) ([z] (eproj "PSigma" 1 z))))))))
    = declared/ok PSigma_snd/name (dkind-ok/defn PSigma_snd/type-wf PSigma_snd/value-typed).

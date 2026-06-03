@@ -80,13 +80,13 @@ ImaxProp_b/decl : declared "ImaxProp.b" (econst "ImaxProp" lnil) ctor
 ImaxProp_rec/type-wf-sort : lvl.
 
 %%% HOLE
-ImaxProp_rec/type-wf : of (eforall (eforall (econst "ImaxProp" lnil) ([x] (esort (lsucc lzero))))
-                         ([x]
-                           (eforall (eapp x (econst "ImaxProp.a" lnil))
-                             ([y] (eforall (eapp x (econst "ImaxProp.b" lnil)) ([z] (eforall (econst "ImaxProp" lnil) ([w] (eapp x w))))))))) (esort ImaxProp_rec/type-wf-sort).
+ImaxProp_rec/type-wf : of
+  (eforall (eforall (econst "ImaxProp" lnil) ([x] (esort (lsucc lzero))))
+    ([x] (eforall (eapp x (econst "ImaxProp.a" lnil)) ([y] (eforall (eapp x (econst "ImaxProp.b" lnil)) ([z] (eforall (econst "ImaxProp" lnil) ([w] (eapp x w)))))))))
+  (esort ImaxProp_rec/type-wf-sort).
 
-ImaxProp_rec/decl : declared "ImaxProp.rec" (eforall (eforall (econst "ImaxProp" lnil) ([x] (esort (lsucc lzero))))
-                                              ([x]
-                                                (eforall (eapp x (econst "ImaxProp.a" lnil))
-                                                  ([y] (eforall (eapp x (econst "ImaxProp.b" lnil)) ([z] (eforall (econst "ImaxProp" lnil) ([w] (eapp x w))))))))) irec
+ImaxProp_rec/decl : declared "ImaxProp.rec"
+  (eforall (eforall (econst "ImaxProp" lnil) ([x] (esort (lsucc lzero))))
+    ([x] (eforall (eapp x (econst "ImaxProp.a" lnil)) ([y] (eforall (eapp x (econst "ImaxProp.b" lnil)) ([z] (eforall (econst "ImaxProp" lnil) ([w] (eapp x w)))))))))
+  irec
    = declared/ok-irec ImaxProp/rec-name (dkind-ok/irec ImaxProp_rec/type-wf).

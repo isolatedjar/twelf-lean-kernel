@@ -43,15 +43,15 @@ PredWithTypeField_mk/decl : declared "PredWithTypeField.mk" (eforall (esort (lsu
 PredWithTypeField_rec/type-wf-sort : lvl.
 
 %%% HOLE
-PredWithTypeField_rec/type-wf : of (eforall (eforall (econst "PredWithTypeField" lnil) ([x] (esort lzero)))
-                                  ([x]
-                                    (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "PredWithTypeField.mk" lnil) y))))
-                                      ([y] (eforall (econst "PredWithTypeField" lnil) ([z] (eapp x z))))))) (esort PredWithTypeField_rec/type-wf-sort).
+PredWithTypeField_rec/type-wf : of
+  (eforall (eforall (econst "PredWithTypeField" lnil) ([x] (esort lzero)))
+    ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "PredWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "PredWithTypeField" lnil) ([z] (eapp x z)))))))
+  (esort PredWithTypeField_rec/type-wf-sort).
 
-PredWithTypeField_rec/decl : declared "PredWithTypeField.rec" (eforall (eforall (econst "PredWithTypeField" lnil) ([x] (esort lzero)))
-                                                                ([x]
-                                                                  (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "PredWithTypeField.mk" lnil) y))))
-                                                                    ([y] (eforall (econst "PredWithTypeField" lnil) ([z] (eapp x z))))))) irec
+PredWithTypeField_rec/decl : declared "PredWithTypeField.rec"
+  (eforall (eforall (econst "PredWithTypeField" lnil) ([x] (esort lzero)))
+    ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "PredWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "PredWithTypeField" lnil) ([z] (eapp x z)))))))
+  irec
    = declared/ok-irec PredWithTypeField/rec-name (dkind-ok/irec PredWithTypeField_rec/type-wf).
 
 %% def predWithTypeField

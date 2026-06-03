@@ -26,7 +26,9 @@ constType/type-wf : of (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsuc
 %%% HOLE
 constType/value-typed : of (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))).
 
-constType/name : name "constType" (is-decl (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))).
+constType/name : name "constType" (is-decl
+  (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero))))))
+  (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))).
 
 constType/decl : declared "constType" (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))
    = declared/ok constType/name (dkind-ok/defn constType/type-wf constType/value-typed).
@@ -53,10 +55,10 @@ reduceCtorParamRefl2/decl : declared "reduceCtorParamRefl2" (eforall (esort (lsu
 reduceCtorParamRefl2_mk/type-wf-sort : lvl.
 
 %%% HOLE
-reduceCtorParamRefl2_mk/type-wf : of (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero)))
-                                    ([x]
-                                      (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x)))
-                                        ([y] (eapp (econst "reduceCtorParamRefl2" lnil) x))))) (esort reduceCtorParamRefl2_mk/type-wf-sort).
+reduceCtorParamRefl2_mk/type-wf : of
+  (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero)))
+    ([x] (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x))) ([y] (eapp (econst "reduceCtorParamRefl2" lnil) x)))))
+  (esort reduceCtorParamRefl2_mk/type-wf-sort).
 
 %%% HOLE
 reduceCtorParamRefl2_mk/positivity : ctor-positive "reduceCtorParamRefl2" lnil (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero))) ([x] (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x))) ([y] (eapp (econst "reduceCtorParamRefl2" lnil) x))))).
@@ -67,16 +69,15 @@ reduceCtorParamRefl2_mk/eisl : ends-in-sort-with-level (eforall (esort (lsucc lz
 %%% HOLE: reduceCtorParamRefl2_mk/fuo — prover for field-universes-ok-skip-params not yet implemented
 reduceCtorParamRefl2_mk/fuo : field-universes-ok-skip-params (lis liz) (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero))) ([x] (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x))) ([y] (eapp (econst "reduceCtorParamRefl2" lnil) x))))) (lsucc lzero).
 
-reduceCtorParamRefl2_mk/name : name "reduceCtorParamRefl2.mk" (is-decl (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero))))
-                                                                         (esort (lsucc lzero)))
-                                                                         ([x]
-                                                                           (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x)))
-                                                                             ([y] (eapp (econst "reduceCtorParamRefl2" lnil) x))))) ctor).
+reduceCtorParamRefl2_mk/name : name "reduceCtorParamRefl2.mk" (is-decl
+  (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero)))
+    ([x] (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x))) ([y] (eapp (econst "reduceCtorParamRefl2" lnil) x)))))
+  ctor).
 
-reduceCtorParamRefl2_mk/decl : declared "reduceCtorParamRefl2.mk" (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero)))
-                                                                    ([x]
-                                                                      (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x)))
-                                                                        ([y] (eapp (econst "reduceCtorParamRefl2" lnil) x))))) ctor
+reduceCtorParamRefl2_mk/decl : declared "reduceCtorParamRefl2.mk"
+  (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero)))
+    ([x] (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x))) ([y] (eapp (econst "reduceCtorParamRefl2" lnil) x)))))
+  ctor
    = declared/ok reduceCtorParamRefl2_mk/name (dkind-ok/ctor reduceCtorParamRefl2_mk/type-wf reduceCtorParamRefl2_mk/positivity reduceCtorParamRefl2/decl reduceCtorParamRefl2_mk/eisl reduceCtorParamRefl2_mk/fuo).
 
 %% recursor reduceCtorParamRefl2.rec
@@ -84,21 +85,23 @@ reduceCtorParamRefl2_mk/decl : declared "reduceCtorParamRefl2.mk" (eforall (eapp
 reduceCtorParamRefl2_rec/type-wf-sort : lvl.
 
 %%% HOLE
-reduceCtorParamRefl2_rec/type-wf : of (eforall (esort (lsucc lzero))
-                                     ([x]
-                                       (eforall (eforall (eapp (econst "reduceCtorParamRefl2" lnil) x) ([y] (esort (lvar liz))))
-                                         ([y]
-                                           (eforall (eforall (eforall x ([z] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x)))
-                                             ([z] (eforall (eforall x ([w] (eapp y (eapp z w)))) ([w] (eapp y (eapp (eapp (econst "reduceCtorParamRefl2.mk" lnil) x) z))))))
-                                             ([z] (eforall (eapp (econst "reduceCtorParamRefl2" lnil) x) ([w] (eapp y w))))))))) (esort reduceCtorParamRefl2_rec/type-wf-sort).
+reduceCtorParamRefl2_rec/type-wf : of
+  (eforall (esort (lsucc lzero))
+    ([x]
+      (eforall (eforall (eapp (econst "reduceCtorParamRefl2" lnil) x) ([y] (esort (lvar liz))))
+        ([y]
+          (eforall (eforall (eforall x ([z] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x)))
+            ([z] (eforall (eforall x ([w] (eapp y (eapp z w)))) ([w] (eapp y (eapp (eapp (econst "reduceCtorParamRefl2.mk" lnil) x) z))))))
+            ([z] (eforall (eapp (econst "reduceCtorParamRefl2" lnil) x) ([w] (eapp y w)))))))))
+  (esort reduceCtorParamRefl2_rec/type-wf-sort).
 
-reduceCtorParamRefl2_rec/decl : declared "reduceCtorParamRefl2.rec" (eforall (esort (lsucc lzero))
-                                                                      ([x]
-                                                                        (eforall (eforall (eapp (econst "reduceCtorParamRefl2" lnil) x) ([y] (esort (lvar liz))))
-                                                                          ([y]
-                                                                            (eforall (eforall (eforall x ([z] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x)))
-                                                                              ([z]
-                                                                                (eforall (eforall x ([w] (eapp y (eapp z w))))
-                                                                                  ([w] (eapp y (eapp (eapp (econst "reduceCtorParamRefl2.mk" lnil) x) z))))))
-                                                                              ([z] (eforall (eapp (econst "reduceCtorParamRefl2" lnil) x) ([w] (eapp y w))))))))) irec
+reduceCtorParamRefl2_rec/decl : declared "reduceCtorParamRefl2.rec"
+  (eforall (esort (lsucc lzero))
+    ([x]
+      (eforall (eforall (eapp (econst "reduceCtorParamRefl2" lnil) x) ([y] (esort (lvar liz))))
+        ([y]
+          (eforall (eforall (eforall x ([z] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x)))
+            ([z] (eforall (eforall x ([w] (eapp y (eapp z w)))) ([w] (eapp y (eapp (eapp (econst "reduceCtorParamRefl2.mk" lnil) x) z))))))
+            ([z] (eforall (eapp (econst "reduceCtorParamRefl2" lnil) x) ([w] (eapp y w)))))))))
+  irec
    = declared/ok-irec reduceCtorParamRefl2/rec-name (dkind-ok/irec reduceCtorParamRefl2_rec/type-wf).

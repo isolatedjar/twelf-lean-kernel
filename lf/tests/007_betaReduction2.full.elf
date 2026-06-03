@@ -18,7 +18,9 @@ constType/value-typed : of (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc 
        defeq/sort-refl
        ([x] ([h] (defeq/lam defeq/sort-refl ([y] ([h1] h)))))).
 
-constType/name : name "constType" (is-decl (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))).
+constType/name : name "constType" (is-decl
+  (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero))))))
+  (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))).
 
 constType/decl : declared "constType" (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (defn (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))))
    = declared/ok constType/name (dkind-ok/defn constType/type-wf constType/value-typed).

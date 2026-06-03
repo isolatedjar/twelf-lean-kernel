@@ -64,13 +64,13 @@ dup_ind_con_con_mk/decl : declared "dup_ind_con_con.mk" (econst "DupConCon" lnil
 DupConCon_rec/type-wf-sort : lvl.
 
 %%% HOLE
-DupConCon_rec/type-wf : of (eforall (eforall (econst "DupConCon" lnil) ([x] (esort (lvar liz))))
-                          ([x]
-                            (eforall (eapp x (econst "dup_ind_con_con.mk" lnil))
-                              ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] (eforall (econst "DupConCon" lnil) ([w] (eapp x w))))))))) (esort DupConCon_rec/type-wf-sort).
+DupConCon_rec/type-wf : of
+  (eforall (eforall (econst "DupConCon" lnil) ([x] (esort (lvar liz))))
+    ([x] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] (eforall (econst "DupConCon" lnil) ([w] (eapp x w)))))))))
+  (esort DupConCon_rec/type-wf-sort).
 
-DupConCon_rec/decl : declared "DupConCon.rec" (eforall (eforall (econst "DupConCon" lnil) ([x] (esort (lvar liz))))
-                                                ([x]
-                                                  (eforall (eapp x (econst "dup_ind_con_con.mk" lnil))
-                                                    ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] (eforall (econst "DupConCon" lnil) ([w] (eapp x w))))))))) irec
+DupConCon_rec/decl : declared "DupConCon.rec"
+  (eforall (eforall (econst "DupConCon" lnil) ([x] (esort (lvar liz))))
+    ([x] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] (eforall (econst "DupConCon" lnil) ([w] (eapp x w)))))))))
+  irec
    = declared/ok-irec DupConCon/rec-name (dkind-ok/irec DupConCon_rec/type-wf).

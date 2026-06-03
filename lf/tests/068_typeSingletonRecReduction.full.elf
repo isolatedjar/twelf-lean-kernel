@@ -47,8 +47,9 @@ NewSingleton_rec/type-wf-sort : lvl
        (limax (lsucc lzero) (lsucc (lvar liz)))
        (limax (lvar liz) (limax (lsucc lzero) (lvar liz)))).
 
-NewSingleton_rec/type-wf : of (eforall (eforall (econst "NewSingleton" lnil) ([x] (esort (lvar liz))))
-                             ([x] (eforall (eapp x (econst "NewSingleton.mk" lnil)) ([y] (eforall (econst "NewSingleton" lnil) ([z] (eapp x z))))))) (esort NewSingleton_rec/type-wf-sort)
+NewSingleton_rec/type-wf : of
+  (eforall (eforall (econst "NewSingleton" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "NewSingleton.mk" lnil)) ([y] (eforall (econst "NewSingleton" lnil) ([z] (eapp x z)))))))
+  (esort NewSingleton_rec/type-wf-sort)
    = (defeq/forall
        (defeq/forall
          (defeq/const
@@ -71,8 +72,9 @@ NewSingleton_rec/type-wf : of (eforall (eforall (econst "NewSingleton" lnil) ([x
                      (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
                    ([z] ([h2] (defeq/app h h2)))))))))).
 
-NewSingleton_rec/decl : declared "NewSingleton.rec" (eforall (eforall (econst "NewSingleton" lnil) ([x] (esort (lvar liz))))
-                                                      ([x] (eforall (eapp x (econst "NewSingleton.mk" lnil)) ([y] (eforall (econst "NewSingleton" lnil) ([z] (eapp x z))))))) irec
+NewSingleton_rec/decl : declared "NewSingleton.rec"
+  (eforall (eforall (econst "NewSingleton" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "NewSingleton.mk" lnil)) ([y] (eforall (econst "NewSingleton" lnil) ([z] (eapp x z)))))))
+  irec
    = declared/ok-irec NewSingleton/rec-name (dkind-ok/irec NewSingleton_rec/type-wf).
 
 %% inductive Eq
@@ -181,15 +183,16 @@ Eq_rec/type-wf-sort : lvl
              (lvar liz)
              (limax (lvar (lis liz)) (limax lzero (lvar liz))))))).
 
-Eq_rec/type-wf : of (eforall (esort (lvar (lis liz)))
-                   ([x]
-                     (eforall x
-                       ([y]
-                         (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz))))))
-                           ([z]
-                             (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y))
-                               ([w]
-                                 (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) (esort Eq_rec/type-wf-sort)
+Eq_rec/type-wf : of
+  (eforall (esort (lvar (lis liz)))
+    ([x]
+      (eforall x
+        ([y]
+          (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz))))))
+            ([z]
+              (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y))
+                ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1)))))))))))))
+  (esort Eq_rec/type-wf-sort)
    = (defeq/forall
        defeq/sort-refl
        ([x]
@@ -294,14 +297,16 @@ Eq_rec/type-wf : of (eforall (esort (lvar (lis liz)))
                                            (defeq/app h2 h4)
                                            h5))))))))))))))))))).
 
-Eq_rec/decl : declared "Eq.rec" (eforall (esort (lvar (lis liz)))
-                                  ([x]
-                                    (eforall x
-                                      ([y]
-                                        (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz))))))
-                                          ([z]
-                                            (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y))
-                                              ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1))))))))))))) irec
+Eq_rec/decl : declared "Eq.rec"
+  (eforall (esort (lvar (lis liz)))
+    ([x]
+      (eforall x
+        ([y]
+          (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz))))))
+            ([z]
+              (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y))
+                ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1)))))))))))))
+  irec
    = declared/ok-irec Eq/rec-name (dkind-ok/irec Eq_rec/type-wf).
 
 %% inductive Bool
@@ -369,10 +374,10 @@ Bool_rec/type-wf-sort : lvl
        (limax (lsucc lzero) (lsucc (lvar liz)))
        (limax (lvar liz) (limax (lvar liz) (limax (lsucc lzero) (lvar liz))))).
 
-Bool_rec/type-wf : of (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz))))
-                     ([x]
-                       (eforall (eapp x (econst "Bool.false" lnil))
-                         ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) (esort Bool_rec/type-wf-sort)
+Bool_rec/type-wf : of
+  (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz))))
+    ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w)))))))))
+  (esort Bool_rec/type-wf-sort)
    = (defeq/forall
        (defeq/forall
          (defeq/const Bool/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
@@ -399,8 +404,10 @@ Bool_rec/type-wf : of (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar l
                            (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
                          ([w] ([h3] (defeq/app h h3))))))))))))).
 
-Bool_rec/decl : declared "Bool.rec" (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz))))
-                                      ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w))))))))) irec
+Bool_rec/decl : declared "Bool.rec"
+  (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz))))
+    ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w)))))))))
+  irec
    = declared/ok-irec Bool/rec-name (dkind-ok/irec Bool_rec/type-wf).
 
 %% def rfl
@@ -439,12 +446,9 @@ rfl/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (e
                      h1)
                    h1))))))).
 
-rfl/value-typed : of (elam (esort (lvar liz))
-                    ([x]
-                      (elam x
-                        ([y]
-                          (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x)
-                            y))))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y)))))
+rfl/value-typed : of
+  (elam (esort (lvar liz)) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x) y)))))
+  (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y)))))
    = (defeq/lam
        defeq/sort-refl
        ([x]
@@ -478,22 +482,26 @@ rfl/value-typed : of (elam (esort (lvar liz))
                      h)
                    h1))))))).
 
-rfl/name : name "rfl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (defn (elam (esort (lvar liz)) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x) y))))))).
+rfl/name : name "rfl" (is-decl
+  (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y)))))
+  (defn (elam (esort (lvar liz)) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x) y))))))).
 
-rfl/decl : declared "rfl" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (defn (elam (esort (lvar liz)) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x) y))))))
+rfl/decl : declared "rfl"
+  (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y)))))
+  (defn (elam (esort (lvar liz)) ([x] (elam x ([y] (eapp (eapp (econst "Eq.refl" (lcons (lvar liz) lnil)) x) y))))))
    = declared/ok rfl/name (dkind-ok/defn rfl/type-wf rfl/value-typed).
 
 %% def typeSingletonRecReduction
 typeSingletonRecReduction/type-wf-sort : lvl
    = (limax (lsucc lzero) lzero).
 
-typeSingletonRecReduction/type-wf : of (eforall (econst "NewSingleton" lnil)
-                                      ([x]
-                                        (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil))
-                                          (eapp (eapp (eapp (econst "NewSingleton.rec" (lcons (lsucc lzero) lnil)) (elam (econst "NewSingleton" lnil) ([y] (econst "Bool" lnil))))
-                                            (econst "Bool.true" lnil))
-                                            x))
-                                          (econst "Bool.true" lnil)))) (esort typeSingletonRecReduction/type-wf-sort)
+typeSingletonRecReduction/type-wf : of
+  (eforall (econst "NewSingleton" lnil)
+    ([x]
+      (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil))
+        (eapp (eapp (eapp (econst "NewSingleton.rec" (lcons (lsucc lzero) lnil)) (elam (econst "NewSingleton" lnil) ([y] (econst "Bool" lnil)))) (econst "Bool.true" lnil)) x))
+        (econst "Bool.true" lnil))))
+  (esort typeSingletonRecReduction/type-wf-sort)
    = (defeq/forall
        (defeq/const
          NewSingleton/decl
@@ -588,34 +596,30 @@ typeSingletonRecReduction/type-wf : of (eforall (econst "NewSingleton" lnil)
              (defeq/const Bool_true/decl (inst-expr/const lvls-inst/nil)))))).
 
 %%% HOLE
-typeSingletonRecReduction/value-typed : of (elam (econst "NewSingleton" lnil)
-                                          ([x]
-                                            (eapp (eapp (econst "rfl" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil))
-                                              (eapp (eapp (eapp (econst "NewSingleton.rec" (lcons (lsucc lzero) lnil)) (elam (econst "NewSingleton" lnil) ([y] (econst "Bool" lnil))))
-                                                (econst "Bool.true" lnil))
-                                                x)))) (eforall (econst "NewSingleton" lnil)
-                                          ([x]
-                                            (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil))
-                                              (eapp (eapp (eapp (econst "NewSingleton.rec" (lcons (lsucc lzero) lnil)) (elam (econst "NewSingleton" lnil) ([y] (econst "Bool" lnil))))
-                                                (econst "Bool.true" lnil))
-                                                x))
-                                              (econst "Bool.true" lnil)))).
+typeSingletonRecReduction/value-typed : of
+  (elam (econst "NewSingleton" lnil)
+    ([x]
+      (eapp (eapp (econst "rfl" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil))
+        (eapp (eapp (eapp (econst "NewSingleton.rec" (lcons (lsucc lzero) lnil)) (elam (econst "NewSingleton" lnil) ([y] (econst "Bool" lnil)))) (econst "Bool.true" lnil)) x))))
+  (eforall (econst "NewSingleton" lnil)
+    ([x]
+      (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil))
+        (eapp (eapp (eapp (econst "NewSingleton.rec" (lcons (lsucc lzero) lnil)) (elam (econst "NewSingleton" lnil) ([y] (econst "Bool" lnil)))) (econst "Bool.true" lnil)) x))
+        (econst "Bool.true" lnil)))).
 
-typeSingletonRecReduction/name : name "typeSingletonRecReduction" (is-decl (eforall (econst "NewSingleton" lnil)
-                                                                             ([x]
-                                                                               (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil))
-                                                                                 (eapp (eapp (eapp (econst "NewSingleton.rec" (lcons (lsucc lzero) lnil))
-                                                                                   (elam (econst "NewSingleton" lnil) ([y] (econst "Bool" lnil))))
-                                                                                   (econst "Bool.true" lnil))
-                                                                                   x))
-                                                                                 (econst "Bool.true" lnil)))) (defn (elam (econst "NewSingleton" lnil) ([x] (eapp (eapp (econst "rfl" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (econst "NewSingleton.rec" (lcons (lsucc lzero) lnil)) (elam (econst "NewSingleton" lnil) ([y] (econst "Bool" lnil)))) (econst "Bool.true" lnil)) x)))))).
+typeSingletonRecReduction/name : name "typeSingletonRecReduction" (is-decl
+  (eforall (econst "NewSingleton" lnil)
+    ([x]
+      (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil))
+        (eapp (eapp (eapp (econst "NewSingleton.rec" (lcons (lsucc lzero) lnil)) (elam (econst "NewSingleton" lnil) ([y] (econst "Bool" lnil)))) (econst "Bool.true" lnil)) x))
+        (econst "Bool.true" lnil))))
+  (defn (elam (econst "NewSingleton" lnil) ([x] (eapp (eapp (econst "rfl" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (econst "NewSingleton.rec" (lcons (lsucc lzero) lnil)) (elam (econst "NewSingleton" lnil) ([y] (econst "Bool" lnil)))) (econst "Bool.true" lnil)) x)))))).
 
-typeSingletonRecReduction/decl : declared "typeSingletonRecReduction" (eforall (econst "NewSingleton" lnil)
-                                                                        ([x]
-                                                                          (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil))
-                                                                            (eapp (eapp (eapp (econst "NewSingleton.rec" (lcons (lsucc lzero) lnil))
-                                                                              (elam (econst "NewSingleton" lnil) ([y] (econst "Bool" lnil))))
-                                                                              (econst "Bool.true" lnil))
-                                                                              x))
-                                                                            (econst "Bool.true" lnil)))) (defn (elam (econst "NewSingleton" lnil) ([x] (eapp (eapp (econst "rfl" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (econst "NewSingleton.rec" (lcons (lsucc lzero) lnil)) (elam (econst "NewSingleton" lnil) ([y] (econst "Bool" lnil)))) (econst "Bool.true" lnil)) x)))))
+typeSingletonRecReduction/decl : declared "typeSingletonRecReduction"
+  (eforall (econst "NewSingleton" lnil)
+    ([x]
+      (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil))
+        (eapp (eapp (eapp (econst "NewSingleton.rec" (lcons (lsucc lzero) lnil)) (elam (econst "NewSingleton" lnil) ([y] (econst "Bool" lnil)))) (econst "Bool.true" lnil)) x))
+        (econst "Bool.true" lnil))))
+  (defn (elam (econst "NewSingleton" lnil) ([x] (eapp (eapp (econst "rfl" (lcons (lsucc lzero) lnil)) (econst "Bool" lnil)) (eapp (eapp (eapp (econst "NewSingleton.rec" (lcons (lsucc lzero) lnil)) (elam (econst "NewSingleton" lnil) ([y] (econst "Bool" lnil)))) (econst "Bool.true" lnil)) x)))))
    = declared/ok typeSingletonRecReduction/name (dkind-ok/defn typeSingletonRecReduction/type-wf typeSingletonRecReduction/value-typed).

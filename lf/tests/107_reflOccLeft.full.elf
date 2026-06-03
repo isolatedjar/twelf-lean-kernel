@@ -82,12 +82,12 @@ Nat_rec/type-wf-sort : lvl
            (limax (lsucc lzero) (limax (lvar liz) (lvar liz)))
            (limax (lsucc lzero) (lvar liz))))).
 
-Nat_rec/type-wf : of (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz))))
-                    ([x]
-                      (eforall (eapp x (econst "Nat.zero" lnil))
-                        ([y]
-                          (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z))))))
-                            ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) (esort Nat_rec/type-wf-sort)
+Nat_rec/type-wf : of
+  (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz))))
+    ([x]
+      (eforall (eapp x (econst "Nat.zero" lnil))
+        ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w)))))))))
+  (esort Nat_rec/type-wf-sort)
    = (defeq/forall
        (defeq/forall
          (defeq/const Nat/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
@@ -130,12 +130,12 @@ Nat_rec/type-wf : of (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz
                            (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
                          ([w] ([h3] (defeq/app h h3))))))))))))).
 
-Nat_rec/decl : declared "Nat.rec" (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz))))
-                                    ([x]
-                                      (eforall (eapp x (econst "Nat.zero" lnil))
-                                        ([y]
-                                          (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z))))))
-                                            ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w))))))))) irec
+Nat_rec/decl : declared "Nat.rec"
+  (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz))))
+    ([x]
+      (eforall (eapp x (econst "Nat.zero" lnil))
+        ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w)))))))))
+  irec
    = declared/ok-irec Nat/rec-name (dkind-ok/irec Nat_rec/type-wf).
 
 %% inductive reflOccLeft
@@ -161,8 +161,7 @@ reflOccLeft_mk/type-wf-sort : lvl
        (limax (lsucc lzero) (limax (lsucc lzero) (lsucc lzero)))
        (lsucc lzero)).
 
-reflOccLeft_mk/type-wf : of (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil)))))
-                           ([x] (econst "reflOccLeft" lnil))) (esort reflOccLeft_mk/type-wf-sort)
+reflOccLeft_mk/type-wf : of (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil))) (esort reflOccLeft_mk/type-wf-sort)
    = (defeq/forall
        (defeq/forall
          (defeq/const Nat/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
