@@ -1,38 +1,47 @@
-%%% Spec-compliance probe (NOT a False-route): the TCB does not enforce that an
-%%% inductive's recursor occupies the canonical name `<ind>.rec`.
+%%% Spec-compliance probe (NOT a False-route): the TCB still does not pin an
+%%% inductive's recursor to the canonical name `<ind>.rec`.
 %%%
-%%% In Lean, declaring `inductive Foo` reserves `Foo.rec` for the kernel-derived
-%%% recursor, so a separate `def Foo.rec` is rejected (cf. arena tutorial 127
-%%% dup_rec_def2 / 125 dup_rec_def).  In the TCB, the `Foo.rec` reservation
-%%% (`name "Foo.rec" (is-rec-for "Foo")`) is emitted only by the *trusted
-%%% generator* (see tcb.elf:369–374), NOT by the inductive's own declaration.
-%%% `declared/ok-irec` merely requires *some* `is-rec-for IndN` slot; nothing
-%%% ties the recursor's name to `<ind>.rec`.
+%%% The 2026-06-02 inductive rewrite added `declared/ok-indt`, which requires
+%%% `name MRec (is-rec-for N)` — the inductive must reserve *some* recursor-name
+%%% slot.  But MRec is UNCONSTRAINED: nothing forces it to equal `<ind>.rec`.
+%%% A translator that reserves a non-canonical recursor name (here
+%%% "Foo.evilrec") satisfies the premise while leaving "Foo.rec" free, so a junk
+%%% `def Foo.rec` can still squat on the canonical slot — an environment Lean
+%%% rejects (cf. arena tutorial 125/127 dup_rec_def).  `rec-slot-theft.elf`
+%%% (which DOES reserve "Foo.rec" canonically) is correctly rejected by
+%%% %unique name; this file dodges that by reserving the slot under a different
+%%% name.
 %%%
-%%% So a translator that names the recursor non-canonically (or omits it) leaves
-%%% `Foo.rec` free, and the TCB happily accepts a junk `def Foo.rec` below — an
-%%% environment Lean rejects.  Arena-level is protected because the generator
-%%% always reserves the canonical `<ind>.rec`; this hand-written file bypasses it.
+%%% Why the fix is hard: the TCB has no string concatenation, so it cannot
+%%% express "MRec = N ++ \".rec\"".  Closing this needs either a built-in
+%%% name-shape check or a translator-side guarantee surfaced into the TCB
+%%% (see completeness-plan.md §3.3).
 %%%
-%%% STATUS (2026-06-02): EXPECTED-FAIL — loads CLEAN, so check-soundness.sh shows
-%%% 💥.  Not a soundness bug (no proof of False); a missing spec-compliance check.
-%%% A TCB fix would make the inductive's declaration itself reserve `<ind>.rec`
-%%% as `is-rec-for`, so %unique catches any `def <ind>.rec`.
+%%% STATUS (2026-06-03): EXPECTED-FAIL — loads CLEAN, so check-soundness.sh
+%%% reports 💥.  Not a proof of False; a missing spec-compliance check.
 
+%% Foo : Type 0, no ctors, no params.
 Foo/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = defeq/sort-refl.
-Foo/ends-in-sort : ends-in-sort (esort (lsucc lzero))
-   = ends-in-sort/sort.
-Foo/name : name "Foo" (is-decl (esort (lsucc lzero)) indt).
-Foo/decl : declared "Foo" (esort (lsucc lzero)) indt
-   = declared/ok Foo/name (dkind-ok/indt Foo/type-wf Foo/ends-in-sort).
+Foo/ends-in-sort : ends-in-sort (esort (lsucc lzero)) = ends-in-sort/sort.
+Foo/name : name "Foo" (is-decl (esort (lsucc lzero)) (indt cnil liz)).
+%% Reserve a NON-canonical recursor name to satisfy declared/ok-indt's MRec premise.
+%% Nothing in the TCB requires this to be "Foo.rec".
+Foo/evilrec-name : name "Foo.evilrec" (is-rec-for "Foo").
+Foo/clf : count-leading-foralls (esort (lsucc lzero)) liz
+   = count-leading-foralls/zero not-forall/sort.
+Foo/cnd : cnames-distinct cnil = cnames-distinct/nil.
+Foo/decl : declared "Foo" (esort (lsucc lzero)) (indt cnil liz)
+   = declared/ok-indt Foo/name Foo/evilrec-name Foo/clf Foo/cnd
+       (dkind-ok/indt Foo/type-wf Foo/ends-in-sort).
 
-%% `def Foo.rec : Type 0 := Foo` — a non-recursor squatting on the recursor slot.
-%% Lean forbids this; the TCB accepts it because nothing reserved "Foo.rec".
+%% def Foo.rec : Type 0 := Foo  — a non-recursor squatting on the canonical
+%% recursor slot.  Lean rejects this (name collision with the reserved rec);
+%% the TCB accepts it because nothing claimed "Foo.rec".
 FooRec/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = defeq/sort-refl.
 FooRec/value-typed : defeq (econst "Foo" lnil) (econst "Foo" lnil) (esort (lsucc lzero))
-   = (defeq/const Foo/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
+   = defeq/const Foo/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)).
 FooRec/name : name "Foo.rec" (is-decl (esort (lsucc lzero)) (defn (econst "Foo" lnil))).
 FooRec/decl : declared "Foo.rec" (esort (lsucc lzero)) (defn (econst "Foo" lnil))
    = declared/ok FooRec/name (dkind-ok/defn FooRec/type-wf FooRec/value-typed).

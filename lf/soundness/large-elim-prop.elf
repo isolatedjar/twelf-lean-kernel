@@ -3,24 +3,28 @@
 %%%
 %%% Models a translator that emits, for `inductive PropTwo : Prop | a | b`, the
 %%% Bool-style large-elim recursor `PropTwo.rec.{u} : (PropTwo → Sort u) → …`.
-%%% Lean forbids large elimination of a ≥2-ctor Prop; the TCB does not:
-%%%   * dkind-ok/irec checks only that the recursor type is well-formed;
+%%% Lean forbids large elimination of a ≥2-ctor Prop; the TCB does NOT:
+%%%   * dkind-ok/irec checks only that the recursor type is well-formed
+%%%     (tcb.elf comment at dkind-ok/irec is explicit: the elim-universe
+%%%     restriction is gated translator-side, never in the TCB);
 %%%   * defeq/iota-enum-2-* place no constraint on the motive's universe U.
 %%% With proof irrelevance (a ≡ b : PropTwo : Prop), the two iota reductions
 %%%   PropTwo.rec (λ_.Prop) P Q a ≡ P   and   …b ≡ Q
 %%% collapse to P ≡ Q for two DISTINCT declared propositions — soundness fail.
 %%%
-%%% STATUS (2026-06-02): EXPECTED-FAIL regression — this file currently loads
-%%% CLEAN (no ABORT), i.e. the TCB *accepts* the false `boom : defeq P Q Prop`.
-%%% That IS the bug, so `check-soundness.sh` reports this as 💥 ACCEPTED (red)
-%%% until the TCB is fixed.  The fix is an elimination-universe check: an
-%%% `le-ok`-style premise on `dkind-ok/irec` and/or a sort constraint on
-%%% `defeq/iota-enum-*` relating the motive universe U to the inductive's sort
-%%% and subsingleton-eligibility.  Once added, this file will ABORT and becomes
-%%% an ordinary passing regression.
+%%% This was NOT closed by the 2026-06-02 inductive rewrite: that work added
+%%% ctor-distinctness, ctor-membership, field-universe and NParams checks, none
+%%% of which constrain elimination.  This file is migrated to the new
+%%% indt/ctor/irec-payload API and still loads clean.
 %%%
-%%% Masked at the arena level: the generator preflight SKIPs large-elim Props, so
-%%% only a malicious/buggy translator (or this hand-written file) reaches it.
+%%% STATUS (2026-06-03): EXPECTED-FAIL — loads CLEAN (the TCB *accepts* the
+%%% false `boom : defeq P Q Prop`), so check-soundness.sh reports 💥.  Fix: an
+%%% elimination-universe (`le-ok`-style) premise on dkind-ok/irec and/or a sort
+%%% constraint on defeq/iota-enum-* relating motive universe U to the
+%%% inductive's sort and subsingleton-eligibility (completeness-plan.md §3.1).
+%%%
+%%% Masked at the arena level: the generator preflight SKIPs large-elim Props,
+%%% so only a malicious/buggy translator (or this hand-written file) reaches it.
 
 pt    : expr = econst "PropTwo" lnil.
 ca    : expr = econst "PropTwo.a" lnil.
@@ -36,35 +40,54 @@ recType1 : expr =
    eforall (eforall pt ([x] (esort (lsucc lzero)))) ([x] (eforall (eapp x ca) ([y] (eforall (eapp x cb) ([z] (eforall pt ([w] (eapp x w)))))))).
 motType : expr = eforall pt ([_] esort (lsucc lzero)).
 
+ctorsPT : cnames = ccons "PropTwo.a" (ccons "PropTwo.b" cnil).
+
 PropTwo/type-wf : defeq (esort lzero) (esort lzero) (esort (lsucc lzero)) = defeq/sort-refl.
 PropTwo/ends-in-sort : ends-in-sort (esort lzero) = ends-in-sort/sort.
+PropTwo/eisl : ends-in-sort-with-level (esort lzero) lzero = ends-in-sort-with-level/sort.
 PropTwo/rec-name : name "PropTwo.rec" (is-rec-for "PropTwo").
-PropTwo/name : name "PropTwo" (is-decl (esort lzero) indt).
-PropTwo/decl : declared "PropTwo" (esort lzero) indt
-   = declared/ok PropTwo/name (dkind-ok/indt PropTwo/type-wf PropTwo/ends-in-sort).
+PropTwo/name : name "PropTwo" (is-decl (esort lzero) (indt ctorsPT liz)).
+PropTwo/clf : count-leading-foralls (esort lzero) liz = count-leading-foralls/zero not-forall/sort.
+%% honest disequality of the two distinct ctor names
+ab-neq : string-neq "PropTwo.a" "PropTwo.b".
+PropTwo/cnd : cnames-distinct ctorsPT
+   = cnames-distinct/cons (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil)
+       (all-string-neq/cons ab-neq all-string-neq/nil).
+PropTwo/decl : declared "PropTwo" (esort lzero) (indt ctorsPT liz)
+   = declared/ok-indt PropTwo/name PropTwo/rec-name PropTwo/clf PropTwo/cnd
+       (dkind-ok/indt PropTwo/type-wf PropTwo/ends-in-sort).
 
+%% ctors: type is `pt` (no fields) → field-universes-ok trivially.
 PropTwo_a/type-wf : defeq pt pt (esort lzero) = (defeq/const PropTwo/decl (inst-expr/sort lvl-inst/zero)).
 PropTwo_a/positivity : ctor-positive "PropTwo" lnil pt = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
-PropTwo_a/name : name "PropTwo.a" (is-decl pt ctor).
-PropTwo_a/decl : declared "PropTwo.a" pt ctor = declared/ok PropTwo_a/name (dkind-ok/ctor PropTwo_a/type-wf PropTwo_a/positivity).
+PropTwo_a/fuo : field-universes-ok-skip-params liz pt lzero
+   = field-universes-ok-skip-params/start (field-universes-ok/done not-forall/const).
+PropTwo_a/name : name "PropTwo.a" (is-decl pt (ctor "PropTwo" liz)).
+PropTwo_a/decl : declared "PropTwo.a" pt (ctor "PropTwo" liz)
+   = declared/ok-ctor PropTwo_a/name PropTwo/name cmem/here PropTwo/eisl PropTwo_a/fuo
+       (dkind-ok/ctor PropTwo_a/type-wf PropTwo_a/positivity).
 
 PropTwo_b/type-wf : defeq pt pt (esort lzero) = (defeq/const PropTwo/decl (inst-expr/sort lvl-inst/zero)).
 PropTwo_b/positivity : ctor-positive "PropTwo" lnil pt = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
-PropTwo_b/name : name "PropTwo.b" (is-decl pt ctor).
-PropTwo_b/decl : declared "PropTwo.b" pt ctor = declared/ok PropTwo_b/name (dkind-ok/ctor PropTwo_b/type-wf PropTwo_b/positivity).
+PropTwo_b/fuo : field-universes-ok-skip-params liz pt lzero
+   = field-universes-ok-skip-params/start (field-universes-ok/done not-forall/const).
+PropTwo_b/name : name "PropTwo.b" (is-decl pt (ctor "PropTwo" (lis liz))).
+PropTwo_b/decl : declared "PropTwo.b" pt (ctor "PropTwo" (lis liz))
+   = declared/ok-ctor PropTwo_b/name PropTwo/name (cmem/there cmem/here) PropTwo/eisl PropTwo_b/fuo
+       (dkind-ok/ctor PropTwo_b/type-wf PropTwo_b/positivity).
 
 PropTwo_rec/type-wf : defeq recSchema recSchema (esort (limax (limax lzero (lsucc (lvar liz))) (limax (lvar liz) (limax (lvar liz) (limax lzero (lvar liz))))))
    = (defeq/forall (defeq/forall (defeq/const PropTwo/decl (inst-expr/sort lvl-inst/zero)) ([x] ([h] defeq/sort-refl))) ([x] ([h] (defeq/forall (defeq/app h (defeq/const PropTwo_a/decl (inst-expr/const lvls-inst/nil))) ([y] ([h1] (defeq/forall (defeq/app h (defeq/const PropTwo_b/decl (inst-expr/const lvls-inst/nil))) ([z] ([h2] (defeq/forall (defeq/const PropTwo/decl (inst-expr/sort lvl-inst/zero)) ([w] ([h3] (defeq/app h h3))))))))))))).
-PropTwo_rec/decl : declared "PropTwo.rec" recSchema irec = declared/ok-irec PropTwo/rec-name (dkind-ok/irec PropTwo_rec/type-wf).
+PropTwo_rec/decl : declared "PropTwo.rec" recSchema (irec "PropTwo")
+   = declared/ok-irec PropTwo/rec-name (dkind-ok/irec PropTwo_rec/type-wf).
 
 P/name : name "P" (is-decl (esort lzero) ax).
 P/decl : declared "P" (esort lzero) ax = declared/ok P/name (dkind-ok/ax defeq/sort-refl).
 Q/name : name "Q" (is-decl (esort lzero) ax).
 Q/decl : declared "Q" (esort lzero) ax = declared/ok Q/name (dkind-ok/ax defeq/sort-refl).
 
-%% Only the two STRUCTURAL premises need search (no defeq sub-goals → bounded):
 %solve ie0   : inst-expr recSchema (lcons (lsucc lzero) lnil) recType1.
-%solve enumT : enum-rec-type recType1 "PropTwo" lnil (ccons "PropTwo.a" (ccons "PropTwo.b" cnil)) (lsucc lzero).
+%solve enumT : enum-rec-type recType1 "PropTwo" lnil ctorsPT (lsucc lzero).
 
 beta_a : defeq (eapp mot ca) (esort lzero) (esort (lsucc lzero))
    = defeq/beta ([x] [h] defeq/sort-refl) (defeq/const PropTwo_a/decl (inst-expr/const lvls-inst/nil)).
@@ -93,11 +116,10 @@ s3 : defeq recPQ recPQ (eforall pt ([w] eapp mot w))
 cong : defeq (eapp recPQ ca) (eapp recPQ cb) (eapp mot ca)
    = defeq/app s3 ab.
 
-%% iota facts, fully hand-built (all premises supplied; no search):
 iota_a : defeq-extra (eapp recPQ ca) eP (eapp mot ca)
-   = defeq/iota-enum-2-first PropTwo_rec/decl ie0 PropTwo_a/decl PropTwo_b/decl enumT pMot pP pQ.
+   = defeq/iota-enum-2-first PropTwo_rec/decl PropTwo/name ie0 PropTwo_a/decl PropTwo_b/decl enumT pMot pP pQ.
 iota_b : defeq-extra (eapp recPQ cb) eQ (eapp mot cb)
-   = defeq/iota-enum-2-second PropTwo_rec/decl ie0 PropTwo_a/decl PropTwo_b/decl enumT pMot pP pQ.
+   = defeq/iota-enum-2-second PropTwo_rec/decl PropTwo/name ie0 PropTwo_a/decl PropTwo_b/decl enumT pMot pP pQ.
 
 r_a : defeq (eapp recPQ ca) eP (eapp mot ca) = defeq/extra iota_a.
 r_b : defeq (eapp recPQ cb) eQ (eapp mot cb) = defeq/extra iota_b.
