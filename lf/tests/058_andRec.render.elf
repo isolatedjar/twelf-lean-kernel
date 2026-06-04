@@ -12,6 +12,11 @@ And/ends-in-sort : ends-in-sort (eforall (esort lzero) ([x] (eforall (esort lzer
 
 And/rec-name : name "And.rec" (is-rec-for "And").
 
+And/eisl : ends-in-sort-with-level (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) lzero
+   = (ends-in-sort-with-level/forall
+       ([x]
+         (ends-in-sort-with-level/forall ([y] ends-in-sort-with-level/sort)))).
+
 And/clf : count-leading-foralls (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (lis (lis liz))
    = (count-leading-foralls/succ
        ([x] (count-leading-foralls/succ ([y] count-leading-foralls/zero)))).
@@ -34,11 +39,6 @@ And_intro/type-wf : of (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (
 %%% HOLE
 And_intro/positivity : ctor-positive "And" lnil (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))).
 
-And_intro/eisl : ends-in-sort-with-level (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) lzero
-   = (ends-in-sort-with-level/forall
-       ([x]
-         (ends-in-sort-with-level/forall ([y] ends-in-sort-with-level/sort)))).
-
 And_intro/cmem : cmem "And.intro" (ccons "And.intro" cnil)
    = cmem/here.
 
@@ -48,7 +48,7 @@ And_intro/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort l
 And_intro/name : name "And.intro" (is-decl (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) (ctor "And" liz)).
 
 And_intro/decl : declared "And.intro" (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) (ctor "And" liz)
-   = declared/ok-ctor And_intro/name And/name And_intro/cmem And_intro/eisl And_intro/fuo (dkind-ok/ctor And_intro/type-wf And_intro/positivity).
+   = declared/ok-ctor And_intro/name And/name And_intro/cmem And/eisl And_intro/fuo (dkind-ok/ctor And_intro/type-wf And_intro/positivity).
 
 %% recursor And.rec
 %%% HOLE
@@ -66,6 +66,7 @@ And_rec/type-wf : of
                 ([w] (eforall (eapp (eapp (econst "And" lnil) x) y) ([x1] (eapp z x1)))))))))))
   (esort And_rec/type-wf-sort).
 
+%%% HOLE: recursor And.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
 And_rec/decl : declared "And.rec"
   (eforall (esort lzero)
     ([x]
@@ -75,8 +76,7 @@ And_rec/decl : declared "And.rec"
             ([z]
               (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "And.intro" lnil) x) y) w) x1))))))
                 ([w] (eforall (eapp (eapp (econst "And" lnil) x) y) ([x1] (eapp z x1)))))))))))
-  (irec "And")
-   = declared/ok-irec And/rec-name (dkind-ok/irec And_rec/type-wf).
+  (irec "And").
 
 %% def andRec
 %%% HOLE

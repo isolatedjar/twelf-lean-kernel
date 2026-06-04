@@ -1,5 +1,7 @@
 %%% Expected outcome: reject
 %%% An inductive with two constructors with the same name
+%solve nonneg_0 : 0 >= 0.
+
 sneq/0 : string-neq "dup_ind_con_con.mk" "dup_ind_con_con.mk".
 
 %% inductive DupConCon
@@ -13,6 +15,9 @@ DupConCon/ends-in-sort : ends-in-sort (esort (lsucc lzero))
    = ends-in-sort/sort.
 
 DupConCon/rec-name : name "DupConCon.rec" (is-rec-for "DupConCon").
+
+DupConCon/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
 
 DupConCon/clf : count-leading-foralls (esort (lsucc lzero)) liz
    = count-leading-foralls/zero.
@@ -37,9 +42,6 @@ dup_ind_con_con_mk/type-wf : of (econst "DupConCon" lnil) (esort dup_ind_con_con
 dup_ind_con_con_mk/positivity : ctor-positive "DupConCon" lnil (econst "DupConCon" lnil)
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
-dup_ind_con_con_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
-   = ends-in-sort-with-level/sort.
-
 dup_ind_con_con_mk/cmem : cmem "dup_ind_con_con.mk" (ccons "dup_ind_con_con.mk" (ccons "dup_ind_con_con.mk" cnil))
    = cmem/here.
 
@@ -50,7 +52,7 @@ dup_ind_con_con_mk/fuo : field-universes-ok-skip-params liz (econst "DupConCon" 
 dup_ind_con_con_mk/name : name "dup_ind_con_con.mk" (is-decl (econst "DupConCon" lnil) (ctor "DupConCon" liz)).
 
 dup_ind_con_con_mk/decl : declared "dup_ind_con_con.mk" (econst "DupConCon" lnil) (ctor "DupConCon" liz)
-   = declared/ok-ctor dup_ind_con_con_mk/name DupConCon/name dup_ind_con_con_mk/cmem dup_ind_con_con_mk/eisl dup_ind_con_con_mk/fuo (dkind-ok/ctor dup_ind_con_con_mk/type-wf dup_ind_con_con_mk/positivity).
+   = declared/ok-ctor dup_ind_con_con_mk/name DupConCon/name dup_ind_con_con_mk/cmem DupConCon/eisl dup_ind_con_con_mk/fuo (dkind-ok/ctor dup_ind_con_con_mk/type-wf dup_ind_con_con_mk/positivity).
 
 %% ctor dup_ind_con_con.mk (of DupConCon)
 dup_ind_con_con_mk/type-wf-sort : lvl
@@ -62,9 +64,6 @@ dup_ind_con_con_mk/type-wf : of (econst "DupConCon" lnil) (esort dup_ind_con_con
 dup_ind_con_con_mk/positivity : ctor-positive "DupConCon" lnil (econst "DupConCon" lnil)
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
-dup_ind_con_con_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
-   = ends-in-sort-with-level/sort.
-
 dup_ind_con_con_mk/cmem : cmem "dup_ind_con_con.mk" (ccons "dup_ind_con_con.mk" (ccons "dup_ind_con_con.mk" cnil))
    = cmem/here.
 
@@ -75,7 +74,7 @@ dup_ind_con_con_mk/fuo : field-universes-ok-skip-params liz (econst "DupConCon" 
 dup_ind_con_con_mk/name : name "dup_ind_con_con.mk" (is-decl (econst "DupConCon" lnil) (ctor "DupConCon" liz)).
 
 dup_ind_con_con_mk/decl : declared "dup_ind_con_con.mk" (econst "DupConCon" lnil) (ctor "DupConCon" liz)
-   = declared/ok-ctor dup_ind_con_con_mk/name DupConCon/name dup_ind_con_con_mk/cmem dup_ind_con_con_mk/eisl dup_ind_con_con_mk/fuo (dkind-ok/ctor dup_ind_con_con_mk/type-wf dup_ind_con_con_mk/positivity).
+   = declared/ok-ctor dup_ind_con_con_mk/name DupConCon/name dup_ind_con_con_mk/cmem DupConCon/eisl dup_ind_con_con_mk/fuo (dkind-ok/ctor dup_ind_con_con_mk/type-wf dup_ind_con_con_mk/positivity).
 
 %% recursor DupConCon.rec
 DupConCon_rec/type-wf-sort : lvl
@@ -117,8 +116,19 @@ DupConCon_rec/type-wf : of
                            (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
                          ([w] ([h3] (defeq/app h h3))))))))))))).
 
+DupConCon_rec/ert : enum-rec-type (eforall (eforall (econst "DupConCon" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] (eforall (econst "DupConCon" lnil) ([w] (eapp x w))))))))) "DupConCon" lnil (ccons "dup_ind_con_con.mk" (ccons "dup_ind_con_con.mk" cnil)) (lvar liz)
+   = (enum-rec-type/intro
+       ([x]
+         ([h]
+           (enum-rec-body/minor
+             ([y]
+               ([h1] (enum-rec-body/minor ([z] ([h2] enum-rec-body/done))))))))).
+
+DupConCon_rec/lee : le-eligible (lsucc lzero) (ccons "dup_ind_con_con.mk" (ccons "dup_ind_con_con.mk" cnil)) (lvar liz)
+   = (le-eligible/non-prop (mleq/self nonneg_0)).
+
 DupConCon_rec/decl : declared "DupConCon.rec"
   (eforall (eforall (econst "DupConCon" lnil) ([x] (esort (lvar liz))))
     ([x] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] (eforall (econst "DupConCon" lnil) ([w] (eapp x w)))))))))
   (irec "DupConCon")
-   = declared/ok-irec DupConCon/rec-name (dkind-ok/irec DupConCon_rec/type-wf).
+   = declared/ok-irec DupConCon/rec-name (dkind-ok/irec DupConCon_rec/type-wf DupConCon/name DupConCon/eisl DupConCon_rec/ert DupConCon_rec/lee).

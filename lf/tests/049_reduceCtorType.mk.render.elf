@@ -28,6 +28,9 @@ reduceCtorType/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
 reduceCtorType/rec-name : name "reduceCtorType.rec" (is-rec-for "reduceCtorType").
 
+reduceCtorType/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
+
 reduceCtorType/clf : count-leading-foralls (esort (lsucc lzero)) liz
    = count-leading-foralls/zero.
 
@@ -49,9 +52,6 @@ reduceCtorType_mk/type-wf : of (eapp (eapp (econst "id" (lcons (lsucc (lsucc lze
 %%% HOLE
 reduceCtorType_mk/positivity : ctor-positive "reduceCtorType" lnil (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil)).
 
-reduceCtorType_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
-   = ends-in-sort-with-level/sort.
-
 reduceCtorType_mk/cmem : cmem "reduceCtorType.mk" (ccons "reduceCtorType.mk" cnil)
    = cmem/here.
 
@@ -61,7 +61,7 @@ reduceCtorType_mk/fuo : field-universes-ok-skip-params liz (eapp (eapp (econst "
 reduceCtorType_mk/name : name "reduceCtorType.mk" (is-decl (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil)) (ctor "reduceCtorType" liz)).
 
 reduceCtorType_mk/decl : declared "reduceCtorType.mk" (eapp (eapp (econst "id" (lcons (lsucc (lsucc lzero)) lnil)) (esort (lsucc lzero))) (econst "reduceCtorType" lnil)) (ctor "reduceCtorType" liz)
-   = declared/ok-ctor reduceCtorType_mk/name reduceCtorType/name reduceCtorType_mk/cmem reduceCtorType_mk/eisl reduceCtorType_mk/fuo (dkind-ok/ctor reduceCtorType_mk/type-wf reduceCtorType_mk/positivity).
+   = declared/ok-ctor reduceCtorType_mk/name reduceCtorType/name reduceCtorType_mk/cmem reduceCtorType/eisl reduceCtorType_mk/fuo (dkind-ok/ctor reduceCtorType_mk/type-wf reduceCtorType_mk/positivity).
 
 %% recursor reduceCtorType.rec
 %%% HOLE
@@ -70,5 +70,5 @@ reduceCtorType_rec/type-wf-sort : lvl.
 %%% HOLE
 reduceCtorType_rec/type-wf : of (esort lzero) (esort reduceCtorType_rec/type-wf-sort).
 
-reduceCtorType_rec/decl : declared "reduceCtorType.rec" (esort lzero) (irec "reduceCtorType")
-   = declared/ok-irec reduceCtorType/rec-name (dkind-ok/irec reduceCtorType_rec/type-wf).
+%%% HOLE: recursor reduceCtorType.rec — motive sort not extractable from recursor type
+reduceCtorType_rec/decl : declared "reduceCtorType.rec" (esort lzero) (irec "reduceCtorType").

@@ -497,6 +497,49 @@ cnames-distinct/cons : cnames-distinct Rest
                     -> all-string-neq C Rest
                     -> cnames-distinct (ccons C Rest).
 
+%%% --- Large-elimination eligibility (§3.1 / `large-elim-prop.elf`) ----
+%%%
+%%% Lean's rule (simplified for non-recursive enum inductives, which are
+%%% the only shape `enum-rec-type` covers — see §3.1's notes on the
+%%% canonical-schema family for future generalization).  For an inductive
+%%% `IndN : Sort UInd` with constructors `Ctors`, a recursor whose motive
+%%% targets `Sort U` is sound iff:
+%%%
+%%%   * `Ctors` has ≤1 element (subsingleton — any U), OR
+%%%   * `UInd` is ≥ Sort 1 (not Prop — any U), OR
+%%%   * Both `UInd` and `U` are Prop (= lzero).
+%%%
+%%% The ≥2-ctor Prop case with non-Prop U is the Girard route: combined
+%%% with proof-irrelevance, it derives `defeq P Q` for distinct
+%%% propositions (see `lf/soundness/large-elim-prop.elf`).
+%%%
+%%% Level-equality checks use `mleq` (Carneiro's algorithmic ≤) so
+%%% imax-disguised cases like `Sort (imax 1 0)` correctly normalize to
+%%% Prop and trip the prop-prop rule — covers `arena bad/large-elim-
+%%% imax-prop.ndjson`.
+
+le-eligible : lvl -> cnames -> lvl -> type.   %name le-eligible LEE.
+
+%%% Subsingletons: any motive target U.
+le-eligible/cnil    : le-eligible UInd cnil U.
+le-eligible/csingle : le-eligible UInd (ccons C cnil) U.
+
+%%% ≥2 ctors AND UInd ≥ Sort 1: no restriction.  `mleq (lsucc lzero) UInd 0`
+%%% holds iff every valuation puts UInd ≥ 1.
+le-eligible/non-prop :
+   mleq (lsucc lzero) UInd 0
+   -> le-eligible UInd (ccons C1 (ccons C2 Rest)) U.
+
+%%% ≥2 ctors AND UInd ≡ Prop: motive U must also be ≡ Prop.  Both `≡`
+%%% checks via mleq's two-sided bridge — necessary so imax-disguised
+%%% UInd (e.g. `limax 1 0`) and U normalize through.
+le-eligible/prop-prop :
+   mleq UInd lzero 0
+   -> mleq lzero UInd 0
+   -> mleq U    lzero 0
+   -> mleq lzero U    0
+   -> le-eligible UInd (ccons C1 (ccons C2 Rest)) U.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Declaration Well-Formedness
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -924,19 +967,8 @@ dkind-ok/ctor :
    -> ctor-positive IndN LS0 T
    -> dkind-ok (ctor IndN Cidx) T.
 
-%%% A recursor is admitted on the strength of its type being well-formed.
-%%% This does NOT encode Lean's elimination-universe restriction: a Prop
-%%% (Sort 0) inductive may only large-eliminate (motive into a higher Sort)
-%%% if it is a subsingleton (≤1 ctor, with that ctor's fields all proofs or
-%%% indices).  A ≥2-ctor Prop whose recursor motive targets a non-Prop sort
-%%% is unsound, but its recursor type is still a well-formed LF `expr`, so
-%%% `defeq T T (esort U)` holds and this rule would accept it.  The generator
-%%% gates this translator-side (generate-twelf.ts `preflightInductiveReject`
-%%% check (f) → SKIP).  A pure TCB fix would add an `le-ok` premise that
-%%% inspects the motive's target sort against the inductive's universe and
-%%% subsingleton-eligibility; tracked in completeness-plan.md.
-dkind-ok/irec :
-   defeq T T (esort U) -> dkind-ok (irec IndN) T.
+%%% `dkind-ok/irec` is defined further down, after `enum-rec-type`, because
+%%% its body references that family (§3.1 canonical-schema check).
 
 dkind-ok/quot :
    defeq T T (esort U) -> dkind-ok quot T.
@@ -1117,6 +1149,38 @@ enum-rec-type/intro :
    -> enum-rec-type
         (eforall (eforall (econst FooName FooLvls) ([_] esort U)) ([M] Body M))
         FooName FooLvls Ctors U.
+
+%%% --- dkind-ok/irec (§3.1 canonical-schema check) --------------------
+%%%
+%%% A recursor's stored type T must (a) be well-formed at some sort, (b)
+%%% match the canonical schema for the parent inductive (via
+%%% `enum-rec-type`), and (c) satisfy Lean's large-elimination restriction
+%%% (via `le-eligible`).  All three premises are independent — (b) catches
+%%% structurally-bogus recursor types like `Sort 0` for an inductive that
+%%% should yield `∀ M m_i ... t, M t` (the `066_BogusRecursor` attack),
+%%% and (c) catches the ≥2-ctor Prop large-elim Girard route (the
+%%% `large-elim-prop.elf` and `large-elim-imax-prop.ndjson` attacks).
+%%%
+%%% Scope (Phase 1): only non-parametric inductives — `enum-rec-type
+%%% T IndN lnil Ctors U` requires the inductive's level instantiation to
+%%% be `lnil`.  Parametric inductives (List, Eq, …) have no
+%%% `enum-rec-type` witness for their recursors and so decline at this
+%%% rule.  Future generalization: replace `enum-rec-type` with a broader
+%%% `rec-canonical-schema` family covering params, indices, recursive
+%%% args, etc.  See completeness-plan §3.1.
+%%%
+%%% The premise list mirrors `declared/ok-ctor` (§3.5 architecture):
+%%% inductive lookup → sort extraction → recursor-type checks.  `U` here
+%%% is the recursor's motive target sort, fixed by `enum-rec-type`'s
+%%% structural unification of T's outermost binder.
+
+dkind-ok/irec :
+   defeq T T (esort URecType)
+   -> name IndN (is-decl IndType (indt Ctors NParams))
+   -> ends-in-sort-with-level IndType UInd
+   -> enum-rec-type T IndN lnil Ctors U
+   -> le-eligible UInd Ctors U
+   -> dkind-ok (irec IndN) T.
 
 %%% --- `defeq-extra E1 E2 A` : a kernel-derived equality E1 ≡ E2 : A
 %%% that comes from Mario's t-extra (iota, eta-for-structures, Quot).

@@ -628,8 +628,7 @@ with the guard, both genuinely ABORT (verified by inspection of the
 abort location — line 36 / line 28 respectively, on the missing
 `dkind-non-inductive` witness).
 
-**Remaining hand-written 💥 candidates** (both flagged by the same
-companion process):
+**Remaining hand-written 💥 candidate**:
 
   * `rec-name-slot.elf` — `declared/ok-indt` requires `name MRec
     (is-rec-for N)`, but the translator's MRec is unconstrained.  A
@@ -639,20 +638,75 @@ companion process):
     §3.3's "why we don't pursue full canonicality" note.  Best practical
     fix: surface the translator's canonicality as a TCB-side `%query`
     audit on the rec-name string, paralleling the string-neq pattern.
-  * `large-elim-prop.elf` — no elimination-universe check anywhere in
-    the TCB.  This is §3.1's job, the natural next architectural piece.
-    A `≥2-ctor Prop` with a large-elim recursor still derives a `defeq
-    P Q : Prop` for distinct propositions.
 
-**Updated soundness scoreboard** (2026-06-03 end of session):
+### 3.1.1 §3.1 landing (2026-06-03)
+
+§3.1 lands as a *minimum-soundness, partial-completeness* fix.  The
+`dkind-ok/irec` rule now takes 5 premises:
+
+```twelf
+dkind-ok/irec :
+   defeq T T (esort URecType)                          %% well-formed
+   -> name IndN (is-decl IndType (indt Ctors NParams))  %% parent lookup
+   -> ends-in-sort-with-level IndType UInd              %% extract UInd
+   -> enum-rec-type T IndN lnil Ctors U                 %% canonical schema
+   -> le-eligible UInd Ctors U                          %% large-elim restriction
+   -> dkind-ok (irec IndN) T.
+```
+
+Plus a new closed family `le-eligible UInd Ctors U` (encoding the
+subsingleton / non-prop / prop-prop case split via `mleq` on the level
+sides, so imax-disguised UInd and U both normalize through).
+
+**Closes**:
+
+  * `lf/soundness/large-elim-prop.elf` — ≥2-ctor Prop with motive
+    targeting `Sort u`: `le-eligible` has no rule matching this case
+    (non-prop fails because `mleq 1 lzero 0` is false; prop-prop fails
+    because the motive sort `lvar liz` doesn't ≡ lzero).  ✅ rejected.
+  * `arena bad/066_BogusRecursor.ndjson` — recursor's claimed type is
+    `Sort 0`, not the canonical `∀ M m t, M t`: `enum-rec-type` fails
+    structurally.  No witness → recursor declines (`🩹`).  From the
+    arena's perspective, decline on a bad-test is a pass.
+  * `arena bad/large-elim-imax-prop.ndjson` — same as `large-elim-prop`
+    via imax-disguised UInd (`limax 1 0`), which `mleq` correctly
+    normalizes to `lzero`.  Declines (`🩹`).
+
+**Scope (Phase 1)**: `enum-rec-type` only covers ctors with zero fields
+on non-parametric, non-level-polymorphic, non-indexed inductives.  Every
+inductive outside that shape (Eq, Nat, List, Acc, TwoBool's recursor,
+And, Prod, …) has no `enum-rec-type` witness and its recursor declines.
+The translator pre-checks shape via `enumShaped =
+indType.numParams === 0 && indType.numIndices === 0 &&
+indType.levelParams.length === 0 &&
+ctorsForInd.every((c) => c.numFields === 0)`; if false, emit a HOLE on
+the frozen `declared` family rather than a wrong-shape `enum-rec-type/intro`
+witness (which would 🔴-reject at the render step).
+
+**Arena scoreboard after §3.1** (145 tests):
+
+- Good: **28 ✅** / 55 🩹 / 10 ❌  (down from 48/35/10 in §3.2.2).  The
+  20 lost goods are recursors of shapes outside the phase-1 scope.
+- Bad: 17 ✅ / 35 🩹 / **0 💥** — soundness gap closed.
+- All 7 hand-written `lf/soundness/` regressions still ✅.
+
+**Phase 2 path** (to recover the lost good ✅): generalize
+`enum-rec-type` to a `rec-canonical-schema` family covering more
+inductive shapes — non-recursive ctors with fields (TwoBool, And),
+recursive ctors (Nat, List), parametric inductives, level-polymorphic
+inductives, and finally indexed inductives (Eq).  Each shape is a
+distinct LF rule in the family.  Bounded incremental work.  Not in
+scope for this session.
+
+**Updated soundness scoreboard** (2026-06-03 end of session, **post-§3.1**):
 
 | File | Verdict | Closes via |
 |---|---|---|
-| `arena tutorial/bad/066_BogusRecursor.ndjson` | 💥 accepted | §3.1 (open) |
-| `arena bad/large-elim-imax-prop.ndjson` | 💥 accepted | §3.1 (open) |
-| `lf/soundness/large-elim-prop.elf` | 💥 accepted | §3.1 (open) |
-| `lf/soundness/rec-name-slot.elf` | 💥 accepted | §3.3 (research-level) |
-| `arena bad/field-too-high-imax.ndjson` | 🩹 declines | §3.2 done; needs fuo prover edge cases |
+| `arena tutorial/bad/066_BogusRecursor.ndjson` | 🩹 declines | §3.1 done (enum-rec-type fails structurally) |
+| `arena bad/large-elim-imax-prop.ndjson` | 🩹 declines | §3.1 done (le-eligible fails via mleq) |
+| `lf/soundness/large-elim-prop.elf` | ✅ rejected | §3.1 done |
+| `lf/soundness/rec-name-slot.elf` | 💥 accepted | §3.3 (research-level, see below) |
+| `arena bad/field-too-high-imax.ndjson` | 🩹 declines | §3.2 done + catch-all guard |
 | `lf/soundness/universe-too-high-field.elf` | ✅ rejected | §3.2 + catch-all guard |
 | `lf/soundness/dup-ctor-iota.elf` | ✅ rejected | §3.4 + catch-all guard |
 | `lf/soundness/rec-slot-theft.elf` | ✅ rejected | pre-existing |

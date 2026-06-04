@@ -1511,6 +1511,84 @@ function buildFieldUniversesOk(
   );
 }
 
+// ---------------------------------------------------------------------------
+// `dkind-ok/irec` premises (§3.1): enum-rec-type + le-eligible
+// ---------------------------------------------------------------------------
+//
+// `dkind-ok/irec` (post-§3.1) requires the recursor's stored type T to (a)
+// match the canonical schema for its inductive (via `enum-rec-type`) and
+// (b) satisfy Lean's large-elimination restriction (via `le-eligible`).
+// Phase 1 supports only non-parametric inductives: `enum-rec-type T IndN
+// lnil Ctors U` requires FooLvls = lnil, so parametric inductives (Eq,
+// List, …) have no witness and their recursors decline.  This is a
+// completeness regression on the corpus but closes the recursor-type
+// soundness gaps.
+
+// Structural witness for `enum-rec-body M Body FooName lnil Ctors`,
+// where `Body` is the body of an enum recursor's type under the bound
+// motive M.  Walks the chain of `∀ m_i : M c_i, ...` minor premises and
+// terminates at `∀ t : Foo, M t`.  The translator emits Body's expr by
+// substitution; here we just emit the structural witness.
+//
+// `ctors` is the cnames list (as a string array) corresponding to the
+// remaining Π-chain — each `ccons C Rest` peels off one minor and
+// recurses on Rest.
+function buildEnumRecBody(ctors: string[], used: string[]): Fmt {
+  if (ctors.length === 0) {
+    return atom("enum-rec-body/done");
+  }
+  const m = freshVar(used);
+  const usedM = [m, ...used];
+  const h = freshHyp(usedM);
+  const usedH = [h, ...usedM];
+  const rest = buildEnumRecBody(ctors.slice(1), usedH);
+  return app(atom("enum-rec-body/minor"), lam(m, lam(h, rest)));
+}
+
+// Structural witness for `enum-rec-type T IndN lnil Ctors U`.  The rule's
+// single constructor `enum-rec-type/intro` takes an enum-rec-body
+// derivation under the motive binder + its typing hypothesis.
+export function buildEnumRecType(ctors: string[]): Fmt {
+  const M = freshVar([]);
+  const usedM = [M];
+  const hM = freshHyp(usedM);
+  const usedH = [hM, ...usedM];
+  const body = buildEnumRecBody(ctors, usedH);
+  return app(atom("enum-rec-type/intro"), lam(M, lam(hM, body)));
+}
+
+// Structural witness for `le-eligible UInd Ctors U`.  Pattern-matches on
+// Ctors first (subsingleton cases need no mleq), then if ≥2 ctors decides
+// between `non-prop` (UInd ≥ 1) and `prop-prop` (UInd ≡ 0 ∧ U ≡ 0) via
+// `proveMleq` (each call's offset is concrete = 0).
+//
+// Returns null when neither rule's premises can be proved — e.g.
+// non-Prop UInd that's not statically ≥ 1 (parametric), or ≥2-ctor Prop
+// where U is statically non-Prop (the large-elim attack).  Null → HOLE →
+// freeze rejects → the recursor declines.  That's exactly the desired
+// soundness behavior.
+export function buildLeEligible(uInd: Level, numCtors: number, u: Level): Fmt | null {
+  if (numCtors <= 1) {
+    return atom(numCtors === 0 ? "le-eligible/cnil" : "le-eligible/csingle");
+  }
+  // ≥2 ctors.  Try non-prop first: mleq 1 UInd 0.
+  const one: Level = { kind: "succ", arg: { kind: "zero" } };
+  const zero: Level = { kind: "zero" };
+  const nonPropProof = proveMleq(one, uInd, 0);
+  if (nonPropProof !== null) {
+    return app(atom("le-eligible/non-prop"), nonPropProof);
+  }
+  // Fall back to prop-prop: UInd ≡ 0 ∧ U ≡ 0 (both via two-sided mleq).
+  const uIndLeZ = proveMleq(uInd, zero, 0);
+  const zLeUInd = proveMleq(zero, uInd, 0);
+  const uLeZ = proveMleq(u, zero, 0);
+  const zLeU = proveMleq(zero, u, 0);
+  if (uIndLeZ === null || zLeUInd === null || uLeZ === null || zLeU === null) {
+    return null;
+  }
+  return app(atom("le-eligible/prop-prop"), uIndLeZ, zLeUInd, uLeZ, zLeU);
+}
+
 export function buildFieldUniverses(
   t: Expr,
   nParams: number,

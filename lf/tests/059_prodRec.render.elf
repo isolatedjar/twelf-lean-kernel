@@ -12,6 +12,11 @@ Prod/ends-in-sort : ends-in-sort (eforall (esort (lsucc (lvar liz))) ([x] (efora
 
 Prod/rec-name : name "Prod.rec" (is-rec-for "Prod").
 
+Prod/eisl : ends-in-sort-with-level (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (esort (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz))))))))) (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz))))
+   = (ends-in-sort-with-level/forall
+       ([x]
+         (ends-in-sort-with-level/forall ([y] ends-in-sort-with-level/sort)))).
+
 Prod/clf : count-leading-foralls (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (esort (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz))))))))) (lis (lis liz))
    = (count-leading-foralls/succ
        ([x] (count-leading-foralls/succ ([y] count-leading-foralls/zero)))).
@@ -41,11 +46,6 @@ Prod_mk/type-wf : of
 %%% HOLE
 Prod_mk/positivity : ctor-positive "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil)) (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))).
 
-Prod_mk/eisl : ends-in-sort-with-level (eforall (esort (lsucc (lvar liz))) ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (esort (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz))))))))) (lmax (lsucc (lvar liz)) (lsucc (lvar (lis liz))))
-   = (ends-in-sort-with-level/forall
-       ([x]
-         (ends-in-sort-with-level/forall ([y] ends-in-sort-with-level/sort)))).
-
 Prod_mk/cmem : cmem "Prod.mk" (ccons "Prod.mk" cnil)
    = cmem/here.
 
@@ -61,7 +61,7 @@ Prod_mk/decl : declared "Prod.mk"
   (eforall (esort (lsucc (lvar liz)))
     ([x] (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "Prod" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y)))))))))
   (ctor "Prod" liz)
-   = declared/ok-ctor Prod_mk/name Prod/name Prod_mk/cmem Prod_mk/eisl Prod_mk/fuo (dkind-ok/ctor Prod_mk/type-wf Prod_mk/positivity).
+   = declared/ok-ctor Prod_mk/name Prod/name Prod_mk/cmem Prod/eisl Prod_mk/fuo (dkind-ok/ctor Prod_mk/type-wf Prod_mk/positivity).
 
 %% recursor Prod.rec
 %%% HOLE
@@ -79,6 +79,7 @@ Prod_rec/type-wf : of
                 ([w] (eforall (eapp (eapp (econst "Prod" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([x1] (eapp z x1)))))))))))
   (esort Prod_rec/type-wf-sort).
 
+%%% HOLE: recursor Prod.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
 Prod_rec/decl : declared "Prod.rec"
   (eforall (esort (lsucc (lvar (lis liz))))
     ([x]
@@ -88,8 +89,7 @@ Prod_rec/decl : declared "Prod.rec"
             ([z]
               (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Prod.mk" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) w) x1))))))
                 ([w] (eforall (eapp (eapp (econst "Prod" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([x1] (eapp z x1)))))))))))
-  (irec "Prod")
-   = declared/ok-irec Prod/rec-name (dkind-ok/irec Prod_rec/type-wf).
+  (irec "Prod").
 
 %% def prodRec
 %%% HOLE

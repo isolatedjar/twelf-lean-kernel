@@ -26,6 +26,9 @@ False/ends-in-sort : ends-in-sort (esort lzero)
 
 False/rec-name : name "False.rec" (is-rec-for "False").
 
+False/eisl : ends-in-sort-with-level (esort lzero) lzero
+   = ends-in-sort-with-level/sort.
+
 False/clf : count-leading-foralls (esort lzero) liz
    = count-leading-foralls/zero.
 
@@ -49,6 +52,9 @@ True/ends-in-sort : ends-in-sort (esort lzero)
 
 True/rec-name : name "True.rec" (is-rec-for "True").
 
+True/eisl : ends-in-sort-with-level (esort lzero) lzero
+   = ends-in-sort-with-level/sort.
+
 True/clf : count-leading-foralls (esort lzero) liz
    = count-leading-foralls/zero.
 
@@ -70,9 +76,6 @@ True_intro/type-wf : of (econst "True" lnil) (esort True_intro/type-wf-sort)
 True_intro/positivity : ctor-positive "True" lnil (econst "True" lnil)
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
-True_intro/eisl : ends-in-sort-with-level (esort lzero) lzero
-   = ends-in-sort-with-level/sort.
-
 True_intro/cmem : cmem "True.intro" (ccons "True.intro" cnil)
    = cmem/here.
 
@@ -83,7 +86,7 @@ True_intro/fuo : field-universes-ok-skip-params liz (econst "True" lnil) lzero
 True_intro/name : name "True.intro" (is-decl (econst "True" lnil) (ctor "True" liz)).
 
 True_intro/decl : declared "True.intro" (econst "True" lnil) (ctor "True" liz)
-   = declared/ok-ctor True_intro/name True/name True_intro/cmem True_intro/eisl True_intro/fuo (dkind-ok/ctor True_intro/type-wf True_intro/positivity).
+   = declared/ok-ctor True_intro/name True/name True_intro/cmem True/eisl True_intro/fuo (dkind-ok/ctor True_intro/type-wf True_intro/positivity).
 
 %% inductive MyBool
 MyBool/type-wf-sort : lvl
@@ -96,6 +99,9 @@ MyBool/ends-in-sort : ends-in-sort (esort (lvar liz))
    = ends-in-sort/sort.
 
 MyBool/rec-name : name "MyBool.rec" (is-rec-for "MyBool").
+
+MyBool/eisl : ends-in-sort-with-level (esort (lvar liz)) (lvar liz)
+   = ends-in-sort-with-level/sort.
 
 MyBool/clf : count-leading-foralls (esort (lvar liz)) liz
    = count-leading-foralls/zero.
@@ -120,9 +126,6 @@ MyBool_tt/type-wf : of (econst "MyBool" (lcons (lvar liz) lnil)) (esort MyBool_t
 MyBool_tt/positivity : ctor-positive "MyBool" (lcons (lvar liz) lnil) (econst "MyBool" (lcons (lvar liz) lnil))
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
-MyBool_tt/eisl : ends-in-sort-with-level (esort (lvar liz)) (lvar liz)
-   = ends-in-sort-with-level/sort.
-
 MyBool_tt/cmem : cmem "MyBool.tt" (ccons "MyBool.tt" (ccons "MyBool.ff" cnil))
    = cmem/here.
 
@@ -133,7 +136,7 @@ MyBool_tt/fuo : field-universes-ok-skip-params liz (econst "MyBool" (lcons (lvar
 MyBool_tt/name : name "MyBool.tt" (is-decl (econst "MyBool" (lcons (lvar liz) lnil)) (ctor "MyBool" liz)).
 
 MyBool_tt/decl : declared "MyBool.tt" (econst "MyBool" (lcons (lvar liz) lnil)) (ctor "MyBool" liz)
-   = declared/ok-ctor MyBool_tt/name MyBool/name MyBool_tt/cmem MyBool_tt/eisl MyBool_tt/fuo (dkind-ok/ctor MyBool_tt/type-wf MyBool_tt/positivity).
+   = declared/ok-ctor MyBool_tt/name MyBool/name MyBool_tt/cmem MyBool/eisl MyBool_tt/fuo (dkind-ok/ctor MyBool_tt/type-wf MyBool_tt/positivity).
 
 %% ctor MyBool.ff (of MyBool)
 MyBool_ff/type-wf-sort : lvl
@@ -145,9 +148,6 @@ MyBool_ff/type-wf : of (econst "MyBool" (lcons (lvar liz) lnil)) (esort MyBool_f
 MyBool_ff/positivity : ctor-positive "MyBool" (lcons (lvar liz) lnil) (econst "MyBool" (lcons (lvar liz) lnil))
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
-MyBool_ff/eisl : ends-in-sort-with-level (esort (lvar liz)) (lvar liz)
-   = ends-in-sort-with-level/sort.
-
 MyBool_ff/cmem : cmem "MyBool.ff" (ccons "MyBool.tt" (ccons "MyBool.ff" cnil))
    = (cmem/there cmem/here).
 
@@ -158,7 +158,7 @@ MyBool_ff/fuo : field-universes-ok-skip-params liz (econst "MyBool" (lcons (lvar
 MyBool_ff/name : name "MyBool.ff" (is-decl (econst "MyBool" (lcons (lvar liz) lnil)) (ctor "MyBool" (lis liz))).
 
 MyBool_ff/decl : declared "MyBool.ff" (econst "MyBool" (lcons (lvar liz) lnil)) (ctor "MyBool" (lis liz))
-   = declared/ok-ctor MyBool_ff/name MyBool/name MyBool_ff/cmem MyBool_ff/eisl MyBool_ff/fuo (dkind-ok/ctor MyBool_ff/type-wf MyBool_ff/positivity).
+   = declared/ok-ctor MyBool_ff/name MyBool/name MyBool_ff/cmem MyBool/eisl MyBool_ff/fuo (dkind-ok/ctor MyBool_ff/type-wf MyBool_ff/positivity).
 
 %% def cast
 cast/type-wf-sort : lvl

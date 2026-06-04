@@ -49,6 +49,7 @@ import type {
 } from "./shared.ts";
 import { app, atom, lam, nameToString, transformNamesFromJSON } from "./shared.ts";
 import { freshVar } from "./render.ts";
+import { buildEnumRecType, buildLeEligible } from "./synth.ts";
 
 // =====================================================================
 // Output + Fmt pretty-printer (trusted, anti-injection)
@@ -892,13 +893,8 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
         skip(`ctor ${declName} — couldn't locate own cidx in parent ${indName}`);
         return;
       }
-      // eisl: structural walk of the inductive's Π chain.
-      const eislFmt = buildEisl(indSpec.type);
-      emit(
-        `${mn}/eisl : ends-in-sort-with-level ${flatStr(lfExprDoc(indSpec.type, []))} ${lfLevel(indUInd)}`,
-      );
-      emit(`   = ${ppFmt(eislFmt, 5)}.`);
-      emit(``);
+      // eisl: emitted once on the inductive (see generateIndType), shared
+      // here as `${indMn}/eisl` rather than re-emitting per ctor.
       // cmem: this ctor's position in the inductive's reserved Ctors list.
       const ctorNames = ctorsForInd.map((cc) => nameToString(cc.name));
       const ctorsCnames = ctorsToCnames(ctorNames);
@@ -943,7 +939,7 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
         `declared/ok-ctor`,
         // The ok-ctor witness consumes (in order): name reservation, the
         // parent's name reservation, cmem, eisl, fuo, dkind-ok/ctor.
-        `${mn}/name ${indMn}/name ${mn}/cmem ${mn}/eisl ${mn}/fuo ${okWitness}`,
+        `${mn}/name ${indMn}/name ${mn}/cmem ${indMn}/eisl ${mn}/fuo ${okWitness}`,
       );
     });
   }
@@ -975,17 +971,26 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
       const indType =
         IndN !== null ? ind.types.find((t) => nameToString(t.name) === IndN) : undefined;
       const indMn = indType !== undefined ? mangle(indType.name) : null;
-      if (indMn !== null) {
+      if (indMn !== null && indType !== undefined) {
         // dkind payload: (irec "<ind>") records the parent inductive so
-        // iota rules can look up its reservation.  Unlike emitInductive-
-        // FamilyDecl which emits a `<mn>/name` is-decl reservation, the
-        // recursor does NOT emit its own name reservation — the
-        // inductive's `<indMn>/rec-name : name "<ind>.rec" (is-rec-for
-        // "<ind>")` already claims this string and serves as the
-        // `declared/ok-irec` premise.  Emitting a parallel `<mn>/name
-        // (is-decl T (irec ...))` reservation would collide under
-        // `%unique name` (different nkinds for one string), so we just
-        // emit the `decl` line directly.
+        // iota rules can look up its reservation.  The recursor does NOT
+        // emit its own name reservation — the inductive's `<indMn>/rec-
+        // name : name "<ind>.rec" (is-rec-for "<ind>")` already claims
+        // this string and serves as the `declared/ok-irec` premise.
+        //
+        // §3.1: `dkind-ok/irec` now requires three more witnesses beyond
+        // the legacy type-wf:
+        //   * the inductive's `name <ind> (is-decl _ (indt Ctors _))`
+        //     reservation — already emitted as `<indMn>/name`
+        //   * `ends-in-sort-with-level IndType UInd` — already emitted as
+        //     `<indMn>/eisl` (the structural sort-extraction witness from
+        //     §3.5)
+        //   * `enum-rec-type T <ind> lnil Ctors U` — new, synthesized
+        //     here via `buildEnumRecType`.  Fails (→ HOLE on
+        //     `dkind-ok/irec`) for non-enum recursors (parametric or
+        //     indexed inductives, recursive ctors with field args, etc.)
+        //   * `le-eligible UInd Ctors U` — new, synthesized via
+        //     `buildLeEligible`.  Fails for the §3.1 large-elim attacks.
         const dkindExpr = `(irec "${IndN}")`;
         const declDoc = group(
           concat(
@@ -993,9 +998,74 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
             nest(2, concat(line, tDoc, line, text(dkindExpr))),
           ),
         );
-        emit(`${mn}/decl : ${render(TYPE_WIDTH, declDoc)}`);
-        emit(`   = declared/ok-irec ${indMn}/rec-name (dkind-ok/irec ${tw}).`);
-        emit(``);
+        // Extract U (motive target sort) from the recursor's IR — the
+        // outer binder is the motive, whose type is `Foo → Sort U`.
+        let motiveU: Level | null = null;
+        if (r.type.kind === "forallE" && r.type.type.kind === "forallE") {
+          const motiveResultType = r.type.type.body;
+          if (motiveResultType.kind === "sort") {
+            motiveU = motiveResultType.level;
+          }
+        }
+        // The ctor list ordered by cidx, same as the inductive's reservation.
+        const ctorsForInd = ind.ctors.filter(
+          (c) => nameToString(c.induct) === IndN,
+        );
+        const ctorNames = ctorsForInd.map((c) => nameToString(c.name));
+        const ctorsCnames = ctorsToCnames(ctorNames);
+        const indUInd = inductiveResultUniverse(indType.type);
+        // `enum-rec-type` only covers ctors with zero fields (every minor
+        // is `M c_i` for c_i : Foo), AND only non-parametric, non-
+        // level-polymorphic inductives — its `FooLvls` premise is fixed
+        // at `lnil` and matches the inductive's level instantiation in
+        // the recursor's type.  Anything else and the structural witness
+        // won't fit Twelf's expected shape, so don't even try — null
+        // forces the recursor to HOLE → decline.
+        const enumShaped =
+          indType.numParams === 0 &&
+          indType.numIndices === 0 &&
+          indType.levelParams.length === 0 &&
+          ctorsForInd.every((c) => c.numFields === 0);
+        const ertFmt = enumShaped ? buildEnumRecType(ctorNames) : null;
+        const leeFmt =
+          enumShaped && motiveU !== null && indUInd !== null
+            ? buildLeEligible(indUInd, ctorNames.length, motiveU)
+            : null;
+        // Emit the witnesses as named constants so the dkind-ok/irec
+        // application stays readable.  If either is null, HOLE the
+        // recursor (freeze rejects → decline).
+        if (
+          motiveU !== null &&
+          indUInd !== null &&
+          ertFmt !== null &&
+          leeFmt !== null
+        ) {
+          emit(`${mn}/ert : enum-rec-type ${T} "${IndN}" lnil ${ctorsCnames} ${lfLevel(motiveU)}`);
+          emit(`   = ${ppFmt(ertFmt, 5)}.`);
+          emit(``);
+          emit(`${mn}/lee : le-eligible ${lfLevel(indUInd)} ${ctorsCnames} ${lfLevel(motiveU)}`);
+          emit(`   = ${ppFmt(leeFmt, 5)}.`);
+          emit(``);
+          emit(`${mn}/decl : ${render(TYPE_WIDTH, declDoc)}`);
+          emit(
+            `   = declared/ok-irec ${indMn}/rec-name (dkind-ok/irec ${tw} ${indMn}/name ${indMn}/eisl ${mn}/ert ${mn}/lee).`,
+          );
+          emit(``);
+        } else {
+          // Recursor's shape isn't enum-canonical, or LE-eligibility
+          // can't be proved → bare decl on frozen family → freeze
+          // rejects.  Decline, not soundness failure.
+          const reason = !enumShaped
+            ? "non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1"
+            : motiveU === null
+              ? "motive sort not extractable from recursor type"
+              : indUInd === null
+                ? "inductive doesn't end in a concrete sort"
+                : "le-eligible can't be proved (parametric UInd, or non-Prop motive on a ≥2-ctor Prop)";
+          emit(`%%% HOLE: recursor ${declName} — ${reason}`);
+          emit(`${mn}/decl : ${render(TYPE_WIDTH, declDoc)}.`);
+          emit(``);
+        }
       } else {
         // No parent inductive — emit a bare decl on the frozen family,
         // which %freeze rejects.  Fall back to the old `irec` dkind shape
@@ -1038,6 +1108,20 @@ function generateIndType(prover: Prover, t: IndType, ctorsForT: readonly IndCtor
     // declaration can claim this string (e.g., a def with the recursor name).
     emit(`${mn}/rec-name : name "${declName}.rec" (is-rec-for "${declName}").`);
     emit(``);
+    // §3.1 / §3.5: emit the inductive's `ends-in-sort-with-level` witness
+    // *once* on the inductive (it's a property of the inductive's type
+    // alone), and reference it from both ctors (`declared/ok-ctor`) and
+    // recursors (`dkind-ok/irec`).  Pre-§3.1 this was emitted per-ctor,
+    // duplicating the same fact across every ctor; reciprocally,
+    // recursors had no way to reach it.  Centralizing here serves both
+    // call sites and avoids redundancy.
+    const indUInd = inductiveResultUniverse(t.type);
+    if (indUInd !== null) {
+      const eislFmt = buildEisl(t.type);
+      emit(`${mn}/eisl : ends-in-sort-with-level ${flatStr(tDoc)} ${lfLevel(indUInd)}`);
+      emit(`   = ${ppFmt(eislFmt, 5)}.`);
+      emit(``);
+    }
     // §3.5: emit the count-leading-foralls and cnames-distinct witnesses
     // that `declared/ok-indt` requires.  Both are structural / posit-and-
     // audited (the cnames-distinct leaves record `string-neq` posits that

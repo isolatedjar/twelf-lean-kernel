@@ -1,5 +1,7 @@
 %%% Render-only view of: 065_boolPropRec
 %%% Inductive predicates eliminate into Prop if they have more than one constructor.
+%solve nonneg_0 : 0 >= 0.
+
 sneq/0 : string-neq "BoolProp.a" "BoolProp.b".
 
 %% inductive BoolProp
@@ -13,6 +15,9 @@ BoolProp/type-wf : of (esort lzero) (esort BoolProp/type-wf-sort).
 BoolProp/ends-in-sort : ends-in-sort (esort lzero).
 
 BoolProp/rec-name : name "BoolProp.rec" (is-rec-for "BoolProp").
+
+BoolProp/eisl : ends-in-sort-with-level (esort lzero) lzero
+   = ends-in-sort-with-level/sort.
 
 BoolProp/clf : count-leading-foralls (esort lzero) liz
    = count-leading-foralls/zero.
@@ -37,9 +42,6 @@ BoolProp_a/type-wf : of (econst "BoolProp" lnil) (esort BoolProp_a/type-wf-sort)
 %%% HOLE
 BoolProp_a/positivity : ctor-positive "BoolProp" lnil (econst "BoolProp" lnil).
 
-BoolProp_a/eisl : ends-in-sort-with-level (esort lzero) lzero
-   = ends-in-sort-with-level/sort.
-
 BoolProp_a/cmem : cmem "BoolProp.a" (ccons "BoolProp.a" (ccons "BoolProp.b" cnil))
    = cmem/here.
 
@@ -49,7 +51,7 @@ BoolProp_a/fuo : field-universes-ok-skip-params liz (econst "BoolProp" lnil) lze
 BoolProp_a/name : name "BoolProp.a" (is-decl (econst "BoolProp" lnil) (ctor "BoolProp" liz)).
 
 BoolProp_a/decl : declared "BoolProp.a" (econst "BoolProp" lnil) (ctor "BoolProp" liz)
-   = declared/ok-ctor BoolProp_a/name BoolProp/name BoolProp_a/cmem BoolProp_a/eisl BoolProp_a/fuo (dkind-ok/ctor BoolProp_a/type-wf BoolProp_a/positivity).
+   = declared/ok-ctor BoolProp_a/name BoolProp/name BoolProp_a/cmem BoolProp/eisl BoolProp_a/fuo (dkind-ok/ctor BoolProp_a/type-wf BoolProp_a/positivity).
 
 %% ctor BoolProp.b (of BoolProp)
 %%% HOLE
@@ -61,9 +63,6 @@ BoolProp_b/type-wf : of (econst "BoolProp" lnil) (esort BoolProp_b/type-wf-sort)
 %%% HOLE
 BoolProp_b/positivity : ctor-positive "BoolProp" lnil (econst "BoolProp" lnil).
 
-BoolProp_b/eisl : ends-in-sort-with-level (esort lzero) lzero
-   = ends-in-sort-with-level/sort.
-
 BoolProp_b/cmem : cmem "BoolProp.b" (ccons "BoolProp.a" (ccons "BoolProp.b" cnil))
    = (cmem/there cmem/here).
 
@@ -73,7 +72,7 @@ BoolProp_b/fuo : field-universes-ok-skip-params liz (econst "BoolProp" lnil) lze
 BoolProp_b/name : name "BoolProp.b" (is-decl (econst "BoolProp" lnil) (ctor "BoolProp" (lis liz))).
 
 BoolProp_b/decl : declared "BoolProp.b" (econst "BoolProp" lnil) (ctor "BoolProp" (lis liz))
-   = declared/ok-ctor BoolProp_b/name BoolProp/name BoolProp_b/cmem BoolProp_b/eisl BoolProp_b/fuo (dkind-ok/ctor BoolProp_b/type-wf BoolProp_b/positivity).
+   = declared/ok-ctor BoolProp_b/name BoolProp/name BoolProp_b/cmem BoolProp/eisl BoolProp_b/fuo (dkind-ok/ctor BoolProp_b/type-wf BoolProp_b/positivity).
 
 %% recursor BoolProp.rec
 %%% HOLE
@@ -85,11 +84,26 @@ BoolProp_rec/type-wf : of
     ([x] (eforall (eapp x (econst "BoolProp.a" lnil)) ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w)))))))))
   (esort BoolProp_rec/type-wf-sort).
 
+BoolProp_rec/ert : enum-rec-type (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "BoolProp.a" lnil)) ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w))))))))) "BoolProp" lnil (ccons "BoolProp.a" (ccons "BoolProp.b" cnil)) lzero
+   = (enum-rec-type/intro
+       ([x]
+         ([h]
+           (enum-rec-body/minor
+             ([y]
+               ([h1] (enum-rec-body/minor ([z] ([h2] enum-rec-body/done))))))))).
+
+BoolProp_rec/lee : le-eligible lzero (ccons "BoolProp.a" (ccons "BoolProp.b" cnil)) lzero
+   = (le-eligible/prop-prop
+       (mleq/self nonneg_0)
+       (mleq/self nonneg_0)
+       (mleq/self nonneg_0)
+       (mleq/self nonneg_0)).
+
 BoolProp_rec/decl : declared "BoolProp.rec"
   (eforall (eforall (econst "BoolProp" lnil) ([x] (esort lzero)))
     ([x] (eforall (eapp x (econst "BoolProp.a" lnil)) ([y] (eforall (eapp x (econst "BoolProp.b" lnil)) ([z] (eforall (econst "BoolProp" lnil) ([w] (eapp x w)))))))))
   (irec "BoolProp")
-   = declared/ok-irec BoolProp/rec-name (dkind-ok/irec BoolProp_rec/type-wf).
+   = declared/ok-irec BoolProp/rec-name (dkind-ok/irec BoolProp_rec/type-wf BoolProp/name BoolProp/eisl BoolProp_rec/ert BoolProp_rec/lee).
 
 %% def boolPropRec
 %%% HOLE

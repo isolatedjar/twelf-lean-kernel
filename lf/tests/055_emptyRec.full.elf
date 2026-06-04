@@ -12,6 +12,9 @@ Empty/ends-in-sort : ends-in-sort (esort (lsucc lzero))
 
 Empty/rec-name : name "Empty.rec" (is-rec-for "Empty").
 
+Empty/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
+
 Empty/clf : count-leading-foralls (esort (lsucc lzero)) liz
    = count-leading-foralls/zero.
 
@@ -42,8 +45,14 @@ Empty_rec/type-wf : of (eforall (eforall (econst "Empty" lnil) ([x] (esort (lvar
                (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
              ([y] ([h1] (defeq/app h h1))))))).
 
+Empty_rec/ert : enum-rec-type (eforall (eforall (econst "Empty" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) "Empty" lnil cnil (lvar liz)
+   = (enum-rec-type/intro ([x] ([h] enum-rec-body/done))).
+
+Empty_rec/lee : le-eligible (lsucc lzero) cnil (lvar liz)
+   = le-eligible/cnil.
+
 Empty_rec/decl : declared "Empty.rec" (eforall (eforall (econst "Empty" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (irec "Empty")
-   = declared/ok-irec Empty/rec-name (dkind-ok/irec Empty_rec/type-wf).
+   = declared/ok-irec Empty/rec-name (dkind-ok/irec Empty_rec/type-wf Empty/name Empty/eisl Empty_rec/ert Empty_rec/lee).
 
 %% def emptyRec
 emptyRec/type-wf-sort : lvl

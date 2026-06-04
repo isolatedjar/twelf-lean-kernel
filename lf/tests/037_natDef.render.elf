@@ -14,6 +14,9 @@ N/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
 N/rec-name : name "N.rec" (is-rec-for "N").
 
+N/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
+
 N/clf : count-leading-foralls (esort (lsucc lzero)) liz
    = count-leading-foralls/zero.
 
@@ -37,9 +40,6 @@ N_zero/type-wf : of (econst "N" lnil) (esort N_zero/type-wf-sort).
 %%% HOLE
 N_zero/positivity : ctor-positive "N" lnil (econst "N" lnil).
 
-N_zero/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
-   = ends-in-sort-with-level/sort.
-
 N_zero/cmem : cmem "N.zero" (ccons "N.zero" (ccons "N.succ" cnil))
    = cmem/here.
 
@@ -49,7 +49,7 @@ N_zero/fuo : field-universes-ok-skip-params liz (econst "N" lnil) (lsucc lzero).
 N_zero/name : name "N.zero" (is-decl (econst "N" lnil) (ctor "N" liz)).
 
 N_zero/decl : declared "N.zero" (econst "N" lnil) (ctor "N" liz)
-   = declared/ok-ctor N_zero/name N/name N_zero/cmem N_zero/eisl N_zero/fuo (dkind-ok/ctor N_zero/type-wf N_zero/positivity).
+   = declared/ok-ctor N_zero/name N/name N_zero/cmem N/eisl N_zero/fuo (dkind-ok/ctor N_zero/type-wf N_zero/positivity).
 
 %% ctor N.succ (of N)
 %%% HOLE
@@ -61,9 +61,6 @@ N_succ/type-wf : of (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (esort N
 %%% HOLE
 N_succ/positivity : ctor-positive "N" lnil (eforall (econst "N" lnil) ([x] (econst "N" lnil))).
 
-N_succ/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
-   = ends-in-sort-with-level/sort.
-
 N_succ/cmem : cmem "N.succ" (ccons "N.zero" (ccons "N.succ" cnil))
    = (cmem/there cmem/here).
 
@@ -73,7 +70,7 @@ N_succ/fuo : field-universes-ok-skip-params liz (eforall (econst "N" lnil) ([x] 
 N_succ/name : name "N.succ" (is-decl (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (ctor "N" (lis liz))).
 
 N_succ/decl : declared "N.succ" (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (ctor "N" (lis liz))
-   = declared/ok-ctor N_succ/name N/name N_succ/cmem N_succ/eisl N_succ/fuo (dkind-ok/ctor N_succ/type-wf N_succ/positivity).
+   = declared/ok-ctor N_succ/name N/name N_succ/cmem N/eisl N_succ/fuo (dkind-ok/ctor N_succ/type-wf N_succ/positivity).
 
 %% recursor N.rec
 %%% HOLE
@@ -87,13 +84,13 @@ N_rec/type-wf : of
         ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w)))))))))
   (esort N_rec/type-wf-sort).
 
+%%% HOLE: recursor N.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
 N_rec/decl : declared "N.rec"
   (eforall (eforall (econst "N" lnil) ([x] (esort (lvar liz))))
     ([x]
       (eforall (eapp x (econst "N.zero" lnil))
         ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w)))))))))
-  (irec "N")
-   = declared/ok-irec N/rec-name (dkind-ok/irec N_rec/type-wf).
+  (irec "N").
 
 %% def natDef
 %%% HOLE

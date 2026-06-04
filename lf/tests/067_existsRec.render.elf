@@ -12,6 +12,11 @@ Exists/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall (ef
 
 Exists/rec-name : name "Exists.rec" (is-rec-for "Exists").
 
+Exists/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (esort lzero))))) lzero
+   = (ends-in-sort-with-level/forall
+       ([x]
+         (ends-in-sort-with-level/forall ([y] ends-in-sort-with-level/sort)))).
+
 Exists/clf : count-leading-foralls (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (esort lzero))))) (lis (lis liz))
    = (count-leading-foralls/succ
        ([x] (count-leading-foralls/succ ([y] count-leading-foralls/zero)))).
@@ -36,11 +41,6 @@ Exists_intro/type-wf : of
 %%% HOLE
 Exists_intro/positivity : ctor-positive "Exists" (lcons (lvar liz) lnil) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "Exists" (lcons (lvar liz) lnil)) x) y))))))))).
 
-Exists_intro/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (esort lzero))))) lzero
-   = (ends-in-sort-with-level/forall
-       ([x]
-         (ends-in-sort-with-level/forall ([y] ends-in-sort-with-level/sort)))).
-
 Exists_intro/cmem : cmem "Exists.intro" (ccons "Exists.intro" cnil)
    = cmem/here.
 
@@ -54,7 +54,7 @@ Exists_intro/name : name "Exists.intro" (is-decl
 Exists_intro/decl : declared "Exists.intro"
   (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "Exists" (lcons (lvar liz) lnil)) x) y)))))))))
   (ctor "Exists" liz)
-   = declared/ok-ctor Exists_intro/name Exists/name Exists_intro/cmem Exists_intro/eisl Exists_intro/fuo (dkind-ok/ctor Exists_intro/type-wf Exists_intro/positivity).
+   = declared/ok-ctor Exists_intro/name Exists/name Exists_intro/cmem Exists/eisl Exists_intro/fuo (dkind-ok/ctor Exists_intro/type-wf Exists_intro/positivity).
 
 %% recursor Exists.rec
 %%% HOLE
@@ -72,6 +72,7 @@ Exists_rec/type-wf : of
                 ([w] (eforall (eapp (eapp (econst "Exists" (lcons (lvar liz) lnil)) x) y) ([x1] (eapp z x1)))))))))))
   (esort Exists_rec/type-wf-sort).
 
+%%% HOLE: recursor Exists.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
 Exists_rec/decl : declared "Exists.rec"
   (eforall (esort (lvar liz))
     ([x]
@@ -81,8 +82,7 @@ Exists_rec/decl : declared "Exists.rec"
             ([z]
               (eforall (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Exists.intro" (lcons (lvar liz) lnil)) x) y) w) x1))))))
                 ([w] (eforall (eapp (eapp (econst "Exists" (lcons (lvar liz) lnil)) x) y) ([x1] (eapp z x1)))))))))))
-  (irec "Exists")
-   = declared/ok-irec Exists/rec-name (dkind-ok/irec Exists_rec/type-wf).
+  (irec "Exists").
 
 %% def existsRec
 %%% HOLE

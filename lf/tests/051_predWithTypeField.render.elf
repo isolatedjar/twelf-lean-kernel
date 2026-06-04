@@ -12,6 +12,9 @@ PredWithTypeField/ends-in-sort : ends-in-sort (esort lzero).
 
 PredWithTypeField/rec-name : name "PredWithTypeField.rec" (is-rec-for "PredWithTypeField").
 
+PredWithTypeField/eisl : ends-in-sort-with-level (esort lzero) lzero
+   = ends-in-sort-with-level/sort.
+
 PredWithTypeField/clf : count-leading-foralls (esort lzero) liz
    = count-leading-foralls/zero.
 
@@ -33,9 +36,6 @@ PredWithTypeField_mk/type-wf : of (eforall (esort (lsucc lzero)) ([x] (econst "P
 %%% HOLE
 PredWithTypeField_mk/positivity : ctor-positive "PredWithTypeField" lnil (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil))).
 
-PredWithTypeField_mk/eisl : ends-in-sort-with-level (esort lzero) lzero
-   = ends-in-sort-with-level/sort.
-
 PredWithTypeField_mk/cmem : cmem "PredWithTypeField.mk" (ccons "PredWithTypeField.mk" cnil)
    = cmem/here.
 
@@ -45,7 +45,7 @@ PredWithTypeField_mk/fuo : field-universes-ok-skip-params liz (eforall (esort (l
 PredWithTypeField_mk/name : name "PredWithTypeField.mk" (is-decl (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil))) (ctor "PredWithTypeField" liz)).
 
 PredWithTypeField_mk/decl : declared "PredWithTypeField.mk" (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil))) (ctor "PredWithTypeField" liz)
-   = declared/ok-ctor PredWithTypeField_mk/name PredWithTypeField/name PredWithTypeField_mk/cmem PredWithTypeField_mk/eisl PredWithTypeField_mk/fuo (dkind-ok/ctor PredWithTypeField_mk/type-wf PredWithTypeField_mk/positivity).
+   = declared/ok-ctor PredWithTypeField_mk/name PredWithTypeField/name PredWithTypeField_mk/cmem PredWithTypeField/eisl PredWithTypeField_mk/fuo (dkind-ok/ctor PredWithTypeField_mk/type-wf PredWithTypeField_mk/positivity).
 
 %% recursor PredWithTypeField.rec
 %%% HOLE
@@ -57,11 +57,11 @@ PredWithTypeField_rec/type-wf : of
     ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "PredWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "PredWithTypeField" lnil) ([z] (eapp x z)))))))
   (esort PredWithTypeField_rec/type-wf-sort).
 
+%%% HOLE: recursor PredWithTypeField.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
 PredWithTypeField_rec/decl : declared "PredWithTypeField.rec"
   (eforall (eforall (econst "PredWithTypeField" lnil) ([x] (esort lzero)))
     ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "PredWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "PredWithTypeField" lnil) ([z] (eapp x z)))))))
-  (irec "PredWithTypeField")
-   = declared/ok-irec PredWithTypeField/rec-name (dkind-ok/irec PredWithTypeField_rec/type-wf).
+  (irec "PredWithTypeField").
 
 %% def predWithTypeField
 %%% HOLE

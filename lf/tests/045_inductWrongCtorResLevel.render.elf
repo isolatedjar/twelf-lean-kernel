@@ -12,6 +12,11 @@ inductWrongCtorResLevel/ends-in-sort : ends-in-sort (eforall (esort lzero) ([x] 
 
 inductWrongCtorResLevel/rec-name : name "inductWrongCtorResLevel.rec" (is-rec-for "inductWrongCtorResLevel").
 
+inductWrongCtorResLevel/eisl : ends-in-sort-with-level (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) (lsucc lzero)
+   = (ends-in-sort-with-level/forall
+       ([x]
+         (ends-in-sort-with-level/forall ([y] ends-in-sort-with-level/sort)))).
+
 inductWrongCtorResLevel/clf : count-leading-foralls (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) (lis (lis liz))
    = (count-leading-foralls/succ
        ([x] (count-leading-foralls/succ ([y] count-leading-foralls/zero)))).
@@ -36,11 +41,6 @@ inductWrongCtorResLevel_mk/type-wf : of
 %%% HOLE
 inductWrongCtorResLevel_mk/positivity : ctor-positive "inductWrongCtorResLevel" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil)) (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResLevel" (lcons (lvar (lis liz)) (lcons (lvar liz) lnil))) x) y))))).
 
-inductWrongCtorResLevel_mk/eisl : ends-in-sort-with-level (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort (lsucc lzero)))))) (lsucc lzero)
-   = (ends-in-sort-with-level/forall
-       ([x]
-         (ends-in-sort-with-level/forall ([y] ends-in-sort-with-level/sort)))).
-
 inductWrongCtorResLevel_mk/cmem : cmem "inductWrongCtorResLevel.mk" (ccons "inductWrongCtorResLevel.mk" cnil)
    = cmem/here.
 
@@ -54,7 +54,7 @@ inductWrongCtorResLevel_mk/name : name "inductWrongCtorResLevel.mk" (is-decl
 inductWrongCtorResLevel_mk/decl : declared "inductWrongCtorResLevel.mk"
   (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eapp (eapp (econst "inductWrongCtorResLevel" (lcons (lvar (lis liz)) (lcons (lvar liz) lnil))) x) y)))))
   (ctor "inductWrongCtorResLevel" liz)
-   = declared/ok-ctor inductWrongCtorResLevel_mk/name inductWrongCtorResLevel/name inductWrongCtorResLevel_mk/cmem inductWrongCtorResLevel_mk/eisl inductWrongCtorResLevel_mk/fuo (dkind-ok/ctor inductWrongCtorResLevel_mk/type-wf inductWrongCtorResLevel_mk/positivity).
+   = declared/ok-ctor inductWrongCtorResLevel_mk/name inductWrongCtorResLevel/name inductWrongCtorResLevel_mk/cmem inductWrongCtorResLevel/eisl inductWrongCtorResLevel_mk/fuo (dkind-ok/ctor inductWrongCtorResLevel_mk/type-wf inductWrongCtorResLevel_mk/positivity).
 
 %% recursor inductWrongCtorResLevel.rec
 %%% HOLE
@@ -63,5 +63,5 @@ inductWrongCtorResLevel_rec/type-wf-sort : lvl.
 %%% HOLE
 inductWrongCtorResLevel_rec/type-wf : of (esort lzero) (esort inductWrongCtorResLevel_rec/type-wf-sort).
 
-inductWrongCtorResLevel_rec/decl : declared "inductWrongCtorResLevel.rec" (esort lzero) (irec "inductWrongCtorResLevel")
-   = declared/ok-irec inductWrongCtorResLevel/rec-name (dkind-ok/irec inductWrongCtorResLevel_rec/type-wf).
+%%% HOLE: recursor inductWrongCtorResLevel.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
+inductWrongCtorResLevel_rec/decl : declared "inductWrongCtorResLevel.rec" (esort lzero) (irec "inductWrongCtorResLevel").

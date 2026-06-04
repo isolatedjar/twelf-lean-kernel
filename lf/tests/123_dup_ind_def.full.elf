@@ -27,6 +27,9 @@ dup_ind_def/ends-in-sort : ends-in-sort (esort (lsucc lzero))
 
 dup_ind_def/rec-name : name "dup_ind_def.rec" (is-rec-for "dup_ind_def").
 
+dup_ind_def/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
+
 dup_ind_def/clf : count-leading-foralls (esort (lsucc lzero)) liz
    = count-leading-foralls/zero.
 
@@ -50,9 +53,6 @@ dup_ind_def_mk/type-wf : of (econst "dup_ind_def" lnil) (esort dup_ind_def_mk/ty
 dup_ind_def_mk/positivity : ctor-positive "dup_ind_def" lnil (econst "dup_ind_def" lnil)
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
-dup_ind_def_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
-   = ends-in-sort-with-level/sort.
-
 dup_ind_def_mk/cmem : cmem "dup_ind_def.mk" (ccons "dup_ind_def.mk" cnil)
    = cmem/here.
 
@@ -63,7 +63,7 @@ dup_ind_def_mk/fuo : field-universes-ok-skip-params liz (econst "dup_ind_def" ln
 dup_ind_def_mk/name : name "dup_ind_def.mk" (is-decl (econst "dup_ind_def" lnil) (ctor "dup_ind_def" liz)).
 
 dup_ind_def_mk/decl : declared "dup_ind_def.mk" (econst "dup_ind_def" lnil) (ctor "dup_ind_def" liz)
-   = declared/ok-ctor dup_ind_def_mk/name dup_ind_def/name dup_ind_def_mk/cmem dup_ind_def_mk/eisl dup_ind_def_mk/fuo (dkind-ok/ctor dup_ind_def_mk/type-wf dup_ind_def_mk/positivity).
+   = declared/ok-ctor dup_ind_def_mk/name dup_ind_def/name dup_ind_def_mk/cmem dup_ind_def/eisl dup_ind_def_mk/fuo (dkind-ok/ctor dup_ind_def_mk/type-wf dup_ind_def_mk/positivity).
 
 %% recursor dup_ind_def.rec
 dup_ind_def_rec/type-wf-sort : lvl
@@ -96,7 +96,14 @@ dup_ind_def_rec/type-wf : of
                      (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
                    ([z] ([h2] (defeq/app h h2)))))))))).
 
+dup_ind_def_rec/ert : enum-rec-type (eforall (eforall (econst "dup_ind_def" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ind_def.mk" lnil)) ([y] (eforall (econst "dup_ind_def" lnil) ([z] (eapp x z))))))) "dup_ind_def" lnil (ccons "dup_ind_def.mk" cnil) (lvar liz)
+   = (enum-rec-type/intro
+       ([x] ([h] (enum-rec-body/minor ([y] ([h1] enum-rec-body/done)))))).
+
+dup_ind_def_rec/lee : le-eligible (lsucc lzero) (ccons "dup_ind_def.mk" cnil) (lvar liz)
+   = le-eligible/csingle.
+
 dup_ind_def_rec/decl : declared "dup_ind_def.rec"
   (eforall (eforall (econst "dup_ind_def" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ind_def.mk" lnil)) ([y] (eforall (econst "dup_ind_def" lnil) ([z] (eapp x z)))))))
   (irec "dup_ind_def")
-   = declared/ok-irec dup_ind_def/rec-name (dkind-ok/irec dup_ind_def_rec/type-wf).
+   = declared/ok-irec dup_ind_def/rec-name (dkind-ok/irec dup_ind_def_rec/type-wf dup_ind_def/name dup_ind_def/eisl dup_ind_def_rec/ert dup_ind_def_rec/lee).

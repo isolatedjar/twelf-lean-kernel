@@ -43,6 +43,9 @@ indNegReducible/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
 indNegReducible/rec-name : name "indNegReducible.rec" (is-rec-for "indNegReducible").
 
+indNegReducible/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
+
 indNegReducible/clf : count-leading-foralls (esort (lsucc lzero)) liz
    = count-leading-foralls/zero.
 
@@ -66,9 +69,6 @@ indNegReducible_mk/type-wf : of
 %%% HOLE
 indNegReducible_mk/positivity : ctor-positive "indNegReducible" lnil (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil))).
 
-indNegReducible_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
-   = ends-in-sort-with-level/sort.
-
 indNegReducible_mk/cmem : cmem "indNegReducible.mk" (ccons "indNegReducible.mk" cnil)
    = cmem/here.
 
@@ -82,7 +82,7 @@ indNegReducible_mk/name : name "indNegReducible.mk" (is-decl
 indNegReducible_mk/decl : declared "indNegReducible.mk"
   (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil)))
   (ctor "indNegReducible" liz)
-   = declared/ok-ctor indNegReducible_mk/name indNegReducible/name indNegReducible_mk/cmem indNegReducible_mk/eisl indNegReducible_mk/fuo (dkind-ok/ctor indNegReducible_mk/type-wf indNegReducible_mk/positivity).
+   = declared/ok-ctor indNegReducible_mk/name indNegReducible/name indNegReducible_mk/cmem indNegReducible/eisl indNegReducible_mk/fuo (dkind-ok/ctor indNegReducible_mk/type-wf indNegReducible_mk/positivity).
 
 %% recursor indNegReducible.rec
 %%% HOLE
@@ -91,5 +91,5 @@ indNegReducible_rec/type-wf-sort : lvl.
 %%% HOLE
 indNegReducible_rec/type-wf : of (esort lzero) (esort indNegReducible_rec/type-wf-sort).
 
-indNegReducible_rec/decl : declared "indNegReducible.rec" (esort lzero) (irec "indNegReducible")
-   = declared/ok-irec indNegReducible/rec-name (dkind-ok/irec indNegReducible_rec/type-wf).
+%%% HOLE: recursor indNegReducible.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
+indNegReducible_rec/decl : declared "indNegReducible.rec" (esort lzero) (irec "indNegReducible").

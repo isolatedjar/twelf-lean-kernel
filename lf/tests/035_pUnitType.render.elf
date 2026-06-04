@@ -12,6 +12,9 @@ PUnit/ends-in-sort : ends-in-sort (esort (lvar liz)).
 
 PUnit/rec-name : name "PUnit.rec" (is-rec-for "PUnit").
 
+PUnit/eisl : ends-in-sort-with-level (esort (lvar liz)) (lvar liz)
+   = ends-in-sort-with-level/sort.
+
 PUnit/clf : count-leading-foralls (esort (lvar liz)) liz
    = count-leading-foralls/zero.
 
@@ -33,9 +36,6 @@ PUnit_unit/type-wf : of (econst "PUnit" (lcons (lvar liz) lnil)) (esort PUnit_un
 %%% HOLE
 PUnit_unit/positivity : ctor-positive "PUnit" (lcons (lvar liz) lnil) (econst "PUnit" (lcons (lvar liz) lnil)).
 
-PUnit_unit/eisl : ends-in-sort-with-level (esort (lvar liz)) (lvar liz)
-   = ends-in-sort-with-level/sort.
-
 PUnit_unit/cmem : cmem "PUnit.unit" (ccons "PUnit.unit" cnil)
    = cmem/here.
 
@@ -45,7 +45,7 @@ PUnit_unit/fuo : field-universes-ok-skip-params liz (econst "PUnit" (lcons (lvar
 PUnit_unit/name : name "PUnit.unit" (is-decl (econst "PUnit" (lcons (lvar liz) lnil)) (ctor "PUnit" liz)).
 
 PUnit_unit/decl : declared "PUnit.unit" (econst "PUnit" (lcons (lvar liz) lnil)) (ctor "PUnit" liz)
-   = declared/ok-ctor PUnit_unit/name PUnit/name PUnit_unit/cmem PUnit_unit/eisl PUnit_unit/fuo (dkind-ok/ctor PUnit_unit/type-wf PUnit_unit/positivity).
+   = declared/ok-ctor PUnit_unit/name PUnit/name PUnit_unit/cmem PUnit/eisl PUnit_unit/fuo (dkind-ok/ctor PUnit_unit/type-wf PUnit_unit/positivity).
 
 %% recursor PUnit.rec
 %%% HOLE
@@ -57,11 +57,11 @@ PUnit_rec/type-wf : of
     ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z)))))))
   (esort PUnit_rec/type-wf-sort).
 
+%%% HOLE: recursor PUnit.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
 PUnit_rec/decl : declared "PUnit.rec"
   (eforall (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz))))
     ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z)))))))
-  (irec "PUnit")
-   = declared/ok-irec PUnit/rec-name (dkind-ok/irec PUnit_rec/type-wf).
+  (irec "PUnit").
 
 %% def pUnitType
 %%% HOLE

@@ -13,6 +13,9 @@ misnamed_rec/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
 
 misnamed_rec/rec-name : name "misnamed_rec.rec" (is-rec-for "misnamed_rec").
 
+misnamed_rec/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
+   = ends-in-sort-with-level/sort.
+
 misnamed_rec/clf : count-leading-foralls (esort (lsucc lzero)) liz
    = count-leading-foralls/zero.
 
@@ -34,9 +37,6 @@ misnamed_rec_mk/type-wf : of (econst "misnamed_rec" lnil) (esort misnamed_rec_mk
 %%% HOLE
 misnamed_rec_mk/positivity : ctor-positive "misnamed_rec" lnil (econst "misnamed_rec" lnil).
 
-misnamed_rec_mk/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
-   = ends-in-sort-with-level/sort.
-
 misnamed_rec_mk/cmem : cmem "misnamed_rec.mk" (ccons "misnamed_rec.mk" cnil)
    = cmem/here.
 
@@ -46,7 +46,7 @@ misnamed_rec_mk/fuo : field-universes-ok-skip-params liz (econst "misnamed_rec" 
 misnamed_rec_mk/name : name "misnamed_rec.mk" (is-decl (econst "misnamed_rec" lnil) (ctor "misnamed_rec" liz)).
 
 misnamed_rec_mk/decl : declared "misnamed_rec.mk" (econst "misnamed_rec" lnil) (ctor "misnamed_rec" liz)
-   = declared/ok-ctor misnamed_rec_mk/name misnamed_rec/name misnamed_rec_mk/cmem misnamed_rec_mk/eisl misnamed_rec_mk/fuo (dkind-ok/ctor misnamed_rec_mk/type-wf misnamed_rec_mk/positivity).
+   = declared/ok-ctor misnamed_rec_mk/name misnamed_rec/name misnamed_rec_mk/cmem misnamed_rec/eisl misnamed_rec_mk/fuo (dkind-ok/ctor misnamed_rec_mk/type-wf misnamed_rec_mk/positivity).
 
 %% recursor misnamed_rec.not_rec
 %%% HOLE

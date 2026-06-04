@@ -12,6 +12,11 @@ PSigma/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall (ef
 
 PSigma/rec-name : name "PSigma.rec" (is-rec-for "PSigma").
 
+PSigma/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (esort (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))))) (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))
+   = (ends-in-sort-with-level/forall
+       ([x]
+         (ends-in-sort-with-level/forall ([y] ends-in-sort-with-level/sort)))).
+
 PSigma/clf : count-leading-foralls (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (esort (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))))) (lis (lis liz))
    = (count-leading-foralls/succ
        ([x] (count-leading-foralls/succ ([y] count-leading-foralls/zero)))).
@@ -41,11 +46,6 @@ PSigma_mk/type-wf : of
 %%% HOLE
 PSigma_mk/positivity : ctor-positive "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil)) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y))))))))).
 
-PSigma_mk/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (esort (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))))) (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))
-   = (ends-in-sort-with-level/forall
-       ([x]
-         (ends-in-sort-with-level/forall ([y] ends-in-sort-with-level/sort)))).
-
 PSigma_mk/cmem : cmem "PSigma.mk" (ccons "PSigma.mk" cnil)
    = cmem/here.
 
@@ -61,7 +61,7 @@ PSigma_mk/decl : declared "PSigma.mk"
   (eforall (esort (lvar liz))
     ([x] (eforall (eforall x ([y] (esort (lvar (lis liz))))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "PSigma" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y)))))))))
   (ctor "PSigma" liz)
-   = declared/ok-ctor PSigma_mk/name PSigma/name PSigma_mk/cmem PSigma_mk/eisl PSigma_mk/fuo (dkind-ok/ctor PSigma_mk/type-wf PSigma_mk/positivity).
+   = declared/ok-ctor PSigma_mk/name PSigma/name PSigma_mk/cmem PSigma/eisl PSigma_mk/fuo (dkind-ok/ctor PSigma_mk/type-wf PSigma_mk/positivity).
 
 %% recursor PSigma.rec
 %%% HOLE
@@ -79,6 +79,7 @@ PSigma_rec/type-wf : of
                 ([w] (eforall (eapp (eapp (econst "PSigma" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([x1] (eapp z x1)))))))))))
   (esort PSigma_rec/type-wf-sort).
 
+%%% HOLE: recursor PSigma.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
 PSigma_rec/decl : declared "PSigma.rec"
   (eforall (esort (lvar (lis liz)))
     ([x]
@@ -88,8 +89,7 @@ PSigma_rec/decl : declared "PSigma.rec"
             ([z]
               (eforall (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PSigma.mk" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) w) x1))))))
                 ([w] (eforall (eapp (eapp (econst "PSigma" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([x1] (eapp z x1)))))))))))
-  (irec "PSigma")
-   = declared/ok-irec PSigma/rec-name (dkind-ok/irec PSigma_rec/type-wf).
+  (irec "PSigma").
 
 %% def PSigma.fst
 %%% HOLE

@@ -45,6 +45,9 @@ reduceCtorParamRefl2/ends-in-sort : ends-in-sort (eforall (esort (lsucc lzero)) 
 
 reduceCtorParamRefl2/rec-name : name "reduceCtorParamRefl2.rec" (is-rec-for "reduceCtorParamRefl2").
 
+reduceCtorParamRefl2/eisl : ends-in-sort-with-level (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (lsucc lzero)
+   = (ends-in-sort-with-level/forall ([x] ends-in-sort-with-level/sort)).
+
 reduceCtorParamRefl2/clf : count-leading-foralls (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (lis liz)
    = (count-leading-foralls/succ ([x] count-leading-foralls/zero)).
 
@@ -69,9 +72,6 @@ reduceCtorParamRefl2_mk/type-wf : of
 %%% HOLE
 reduceCtorParamRefl2_mk/positivity : ctor-positive "reduceCtorParamRefl2" lnil (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero))) ([x] (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x))) ([y] (eapp (econst "reduceCtorParamRefl2" lnil) x))))).
 
-reduceCtorParamRefl2_mk/eisl : ends-in-sort-with-level (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (lsucc lzero)
-   = (ends-in-sort-with-level/forall ([x] ends-in-sort-with-level/sort)).
-
 reduceCtorParamRefl2_mk/cmem : cmem "reduceCtorParamRefl2.mk" (ccons "reduceCtorParamRefl2.mk" cnil)
    = cmem/here.
 
@@ -87,7 +87,7 @@ reduceCtorParamRefl2_mk/decl : declared "reduceCtorParamRefl2.mk"
   (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero)))
     ([x] (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x))) ([y] (eapp (econst "reduceCtorParamRefl2" lnil) x)))))
   (ctor "reduceCtorParamRefl2" liz)
-   = declared/ok-ctor reduceCtorParamRefl2_mk/name reduceCtorParamRefl2/name reduceCtorParamRefl2_mk/cmem reduceCtorParamRefl2_mk/eisl reduceCtorParamRefl2_mk/fuo (dkind-ok/ctor reduceCtorParamRefl2_mk/type-wf reduceCtorParamRefl2_mk/positivity).
+   = declared/ok-ctor reduceCtorParamRefl2_mk/name reduceCtorParamRefl2/name reduceCtorParamRefl2_mk/cmem reduceCtorParamRefl2/eisl reduceCtorParamRefl2_mk/fuo (dkind-ok/ctor reduceCtorParamRefl2_mk/type-wf reduceCtorParamRefl2_mk/positivity).
 
 %% recursor reduceCtorParamRefl2.rec
 %%% HOLE
@@ -104,6 +104,7 @@ reduceCtorParamRefl2_rec/type-wf : of
             ([z] (eforall (eapp (econst "reduceCtorParamRefl2" lnil) x) ([w] (eapp y w)))))))))
   (esort reduceCtorParamRefl2_rec/type-wf-sort).
 
+%%% HOLE: recursor reduceCtorParamRefl2.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
 reduceCtorParamRefl2_rec/decl : declared "reduceCtorParamRefl2.rec"
   (eforall (esort (lsucc lzero))
     ([x]
@@ -112,5 +113,4 @@ reduceCtorParamRefl2_rec/decl : declared "reduceCtorParamRefl2.rec"
           (eforall (eforall (eforall x ([z] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x)))
             ([z] (eforall (eforall x ([w] (eapp y (eapp z w)))) ([w] (eapp y (eapp (eapp (econst "reduceCtorParamRefl2.mk" lnil) x) z))))))
             ([z] (eforall (eapp (econst "reduceCtorParamRefl2" lnil) x) ([w] (eapp y w)))))))))
-  (irec "reduceCtorParamRefl2")
-   = declared/ok-irec reduceCtorParamRefl2/rec-name (dkind-ok/irec reduceCtorParamRefl2_rec/type-wf).
+  (irec "reduceCtorParamRefl2").

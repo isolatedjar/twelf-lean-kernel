@@ -16,6 +16,9 @@ List/ends-in-sort : ends-in-sort (eforall (esort (lsucc (lvar liz))) ([x] (esort
 
 List/rec-name : name "List.rec" (is-rec-for "List").
 
+List/eisl : ends-in-sort-with-level (eforall (esort (lsucc (lvar liz))) ([x] (esort (lsucc (lvar liz))))) (lsucc (lvar liz))
+   = (ends-in-sort-with-level/forall ([x] ends-in-sort-with-level/sort)).
+
 List/clf : count-leading-foralls (eforall (esort (lsucc (lvar liz))) ([x] (esort (lsucc (lvar liz))))) (lis liz)
    = (count-leading-foralls/succ ([x] count-leading-foralls/zero)).
 
@@ -54,9 +57,6 @@ List_nil/positivity : ctor-positive "List" (lcons (lvar liz) lnil) (eforall (eso
        (strict-pos/no-occur (esort (lsucc (lvar liz))) no-self-ref/sort)
        ([x] ([y] (ctor-spine/result (applies-self/app applies-self/refl)))))).
 
-List_nil/eisl : ends-in-sort-with-level (eforall (esort (lsucc (lvar liz))) ([x] (esort (lsucc (lvar liz))))) (lsucc (lvar liz))
-   = (ends-in-sort-with-level/forall ([x] ends-in-sort-with-level/sort)).
-
 List_nil/cmem : cmem "List.nil" (ccons "List.nil" (ccons "List.cons" cnil))
    = cmem/here.
 
@@ -70,7 +70,7 @@ List_nil/fuo : field-universes-ok-skip-params (lis liz) (eforall (esort (lsucc (
 List_nil/name : name "List.nil" (is-decl (eforall (esort (lsucc (lvar liz))) ([x] (eapp (econst "List" (lcons (lvar liz) lnil)) x))) (ctor "List" liz)).
 
 List_nil/decl : declared "List.nil" (eforall (esort (lsucc (lvar liz))) ([x] (eapp (econst "List" (lcons (lvar liz) lnil)) x))) (ctor "List" liz)
-   = declared/ok-ctor List_nil/name List/name List_nil/cmem List_nil/eisl List_nil/fuo (dkind-ok/ctor List_nil/type-wf List_nil/positivity).
+   = declared/ok-ctor List_nil/name List/name List_nil/cmem List/eisl List_nil/fuo (dkind-ok/ctor List_nil/type-wf List_nil/positivity).
 
 %% ctor List.cons (of List)
 List_cons/type-wf-sort : lvl
@@ -132,9 +132,6 @@ List_cons/positivity : ctor-positive "List" (lcons (lvar liz) lnil) (eforall (es
                        (ctor-spine/result
                          (applies-self/app applies-self/refl)))))))))))).
 
-List_cons/eisl : ends-in-sort-with-level (eforall (esort (lsucc (lvar liz))) ([x] (esort (lsucc (lvar liz))))) (lsucc (lvar liz))
-   = (ends-in-sort-with-level/forall ([x] ends-in-sort-with-level/sort)).
-
 List_cons/cmem : cmem "List.cons" (ccons "List.nil" (ccons "List.cons" cnil))
    = (cmem/there cmem/here).
 
@@ -172,7 +169,7 @@ List_cons/name : name "List.cons" (is-decl
 List_cons/decl : declared "List.cons"
   (eforall (esort (lsucc (lvar liz))) ([x] (eforall x ([y] (eforall (eapp (econst "List" (lcons (lvar liz) lnil)) x) ([z] (eapp (econst "List" (lcons (lvar liz) lnil)) x)))))))
   (ctor "List" (lis liz))
-   = declared/ok-ctor List_cons/name List/name List_cons/cmem List_cons/eisl List_cons/fuo (dkind-ok/ctor List_cons/type-wf List_cons/positivity).
+   = declared/ok-ctor List_cons/name List/name List_cons/cmem List/eisl List_cons/fuo (dkind-ok/ctor List_cons/type-wf List_cons/positivity).
 
 %% recursor List.rec
 List_rec/type-wf-sort : lvl
@@ -322,6 +319,7 @@ List_rec/type-wf : of
                                  h)
                                ([x1] ([h4] (defeq/app h1 h4)))))))))))))))).
 
+%%% HOLE: recursor List.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
 List_rec/decl : declared "List.rec"
   (eforall (esort (lsucc (lvar (lis liz))))
     ([x]
@@ -334,8 +332,7 @@ List_rec/decl : declared "List.rec"
                   (eforall (eapp (econst "List" (lcons (lvar (lis liz)) lnil)) x)
                     ([x1] (eforall (eapp y x1) ([y1] (eapp y (eapp (eapp (eapp (econst "List.cons" (lcons (lvar (lis liz)) lnil)) x) w) x1))))))))
                 ([w] (eforall (eapp (econst "List" (lcons (lvar (lis liz)) lnil)) x) ([x1] (eapp y x1)))))))))))
-  (irec "List")
-   = declared/ok-irec List/rec-name (dkind-ok/irec List_rec/type-wf).
+  (irec "List").
 
 %% inductive And
 And/type-wf-sort : lvl
@@ -350,6 +347,11 @@ And/ends-in-sort : ends-in-sort (eforall (esort lzero) ([x] (eforall (esort lzer
    = (ends-in-sort/forall ([x] (ends-in-sort/forall ([y] ends-in-sort/sort)))).
 
 And/rec-name : name "And.rec" (is-rec-for "And").
+
+And/eisl : ends-in-sort-with-level (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) lzero
+   = (ends-in-sort-with-level/forall
+       ([x]
+         (ends-in-sort-with-level/forall ([y] ends-in-sort-with-level/sort)))).
 
 And/clf : count-leading-foralls (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) (lis (lis liz))
    = (count-leading-foralls/succ
@@ -425,11 +427,6 @@ And_intro/positivity : ctor-positive "And" lnil (eforall (esort lzero) ([x] (efo
                                  (applies-self/app
                                    applies-self/refl)))))))))))))))).
 
-And_intro/eisl : ends-in-sort-with-level (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (esort lzero))))) lzero
-   = (ends-in-sort-with-level/forall
-       ([x]
-         (ends-in-sort-with-level/forall ([y] ends-in-sort-with-level/sort)))).
-
 And_intro/cmem : cmem "And.intro" (ccons "And.intro" cnil)
    = cmem/here.
 
@@ -457,7 +454,7 @@ And_intro/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort l
 And_intro/name : name "And.intro" (is-decl (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) (ctor "And" liz)).
 
 And_intro/decl : declared "And.intro" (eforall (esort lzero) ([x] (eforall (esort lzero) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "And" lnil) x) y))))))))) (ctor "And" liz)
-   = declared/ok-ctor And_intro/name And/name And_intro/cmem And_intro/eisl And_intro/fuo (dkind-ok/ctor And_intro/type-wf And_intro/positivity).
+   = declared/ok-ctor And_intro/name And/name And_intro/cmem And/eisl And_intro/fuo (dkind-ok/ctor And_intro/type-wf And_intro/positivity).
 
 %% recursor And.rec
 And_rec/type-wf-sort : lvl
@@ -574,6 +571,7 @@ And_rec/type-wf : of
                                  h1)
                                ([x1] ([h4] (defeq/app h2 h4)))))))))))))))).
 
+%%% HOLE: recursor And.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
 And_rec/decl : declared "And.rec"
   (eforall (esort lzero)
     ([x]
@@ -583,8 +581,7 @@ And_rec/decl : declared "And.rec"
             ([z]
               (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "And.intro" lnil) x) y) w) x1))))))
                 ([w] (eforall (eapp (eapp (econst "And" lnil) x) y) ([x1] (eapp z x1)))))))))))
-  (irec "And")
-   = declared/ok-irec And/rec-name (dkind-ok/irec And_rec/type-wf).
+  (irec "And").
 
 %% inductive Eq
 Eq/type-wf-sort : lvl
@@ -608,6 +605,14 @@ Eq/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall x ([y] 
            ([y] (ends-in-sort/forall ([z] ends-in-sort/sort)))))).
 
 Eq/rec-name : name "Eq.rec" (is-rec-for "Eq").
+
+Eq/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) lzero
+   = (ends-in-sort-with-level/forall
+       ([x]
+         (ends-in-sort-with-level/forall
+           ([y]
+             (ends-in-sort-with-level/forall
+               ([z] ends-in-sort-with-level/sort)))))).
 
 Eq/clf : count-leading-foralls (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (lis (lis liz))
    = (count-leading-foralls/succ
@@ -671,14 +676,6 @@ Eq_refl/positivity : ctor-positive "Eq" (lcons (lvar liz) lnil) (eforall (esort 
                      (applies-self/app
                        (applies-self/app applies-self/refl))))))))))).
 
-Eq_refl/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) lzero
-   = (ends-in-sort-with-level/forall
-       ([x]
-         (ends-in-sort-with-level/forall
-           ([y]
-             (ends-in-sort-with-level/forall
-               ([z] ends-in-sort-with-level/sort)))))).
-
 Eq_refl/cmem : cmem "Eq.refl" (ccons "Eq.refl" cnil)
    = cmem/here.
 
@@ -695,7 +692,7 @@ Eq_refl/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lv
 Eq_refl/name : name "Eq.refl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (ctor "Eq" liz)).
 
 Eq_refl/decl : declared "Eq.refl" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (ctor "Eq" liz)
-   = declared/ok-ctor Eq_refl/name Eq/name Eq_refl/cmem Eq_refl/eisl Eq_refl/fuo (dkind-ok/ctor Eq_refl/type-wf Eq_refl/positivity).
+   = declared/ok-ctor Eq_refl/name Eq/name Eq_refl/cmem Eq/eisl Eq_refl/fuo (dkind-ok/ctor Eq_refl/type-wf Eq_refl/positivity).
 
 %% recursor Eq.rec
 Eq_rec/type-wf-sort : lvl
@@ -823,6 +820,7 @@ Eq_rec/type-wf : of
                                            (defeq/app h2 h4)
                                            h5))))))))))))))))))).
 
+%%% HOLE: recursor Eq.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
 Eq_rec/decl : declared "Eq.rec"
   (eforall (esort (lvar (lis liz)))
     ([x]
@@ -832,8 +830,7 @@ Eq_rec/decl : declared "Eq.rec"
             ([z]
               (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y))
                 ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1)))))))))))))
-  (irec "Eq")
-   = declared/ok-irec Eq/rec-name (dkind-ok/irec Eq_rec/type-wf).
+  (irec "Eq").
 
 %% def List.recOn
 List_recOn/type-wf-sort : lvl

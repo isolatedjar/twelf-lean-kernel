@@ -20,6 +20,11 @@ PProd/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall (eso
 
 PProd/rec-name : name "PProd.rec" (is-rec-for "PProd").
 
+PProd/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (esort (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))))) (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))
+   = (ends-in-sort-with-level/forall
+       ([x]
+         (ends-in-sort-with-level/forall ([y] ends-in-sort-with-level/sort)))).
+
 PProd/clf : count-leading-foralls (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (esort (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))))) (lis (lis liz))
    = (count-leading-foralls/succ
        ([x] (count-leading-foralls/succ ([y] count-leading-foralls/zero)))).
@@ -117,11 +122,6 @@ PProd_mk/positivity : ctor-positive "PProd" (lcons (lvar liz) (lcons (lvar (lis 
                                  (applies-self/app
                                    applies-self/refl)))))))))))))))).
 
-PProd_mk/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (esort (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))))))) (lmax (lmax (lsucc lzero) (lvar liz)) (lvar (lis liz)))
-   = (ends-in-sort-with-level/forall
-       ([x]
-         (ends-in-sort-with-level/forall ([y] ends-in-sort-with-level/sort)))).
-
 PProd_mk/cmem : cmem "PProd.mk" (ccons "PProd.mk" cnil)
    = cmem/here.
 
@@ -153,7 +153,7 @@ PProd_mk/name : name "PProd.mk" (is-decl
 PProd_mk/decl : declared "PProd.mk"
   (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar (lis liz))) ([y] (eforall x ([z] (eforall y ([w] (eapp (eapp (econst "PProd" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) x) y)))))))))
   (ctor "PProd" liz)
-   = declared/ok-ctor PProd_mk/name PProd/name PProd_mk/cmem PProd_mk/eisl PProd_mk/fuo (dkind-ok/ctor PProd_mk/type-wf PProd_mk/positivity).
+   = declared/ok-ctor PProd_mk/name PProd/name PProd_mk/cmem PProd/eisl PProd_mk/fuo (dkind-ok/ctor PProd_mk/type-wf PProd_mk/positivity).
 
 %% recursor PProd.rec
 PProd_rec/type-wf-sort : lvl
@@ -306,6 +306,7 @@ PProd_rec/type-wf : of
                                  h1)
                                ([x1] ([h4] (defeq/app h2 h4)))))))))))))))).
 
+%%% HOLE: recursor PProd.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
 PProd_rec/decl : declared "PProd.rec"
   (eforall (esort (lvar (lis liz)))
     ([x]
@@ -315,8 +316,7 @@ PProd_rec/decl : declared "PProd.rec"
             ([z]
               (eforall (eforall x ([w] (eforall y ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "PProd.mk" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) w) x1))))))
                 ([w] (eforall (eapp (eapp (econst "PProd" (lcons (lvar (lis liz)) (lcons (lvar (lis (lis liz))) lnil))) x) y) ([x1] (eapp z x1)))))))))))
-  (irec "PProd")
-   = declared/ok-irec PProd/rec-name (dkind-ok/irec PProd_rec/type-wf).
+  (irec "PProd").
 
 %% def PProd.fst
 PProd_fst/type-wf-sort : lvl
