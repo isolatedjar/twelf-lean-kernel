@@ -54,16 +54,13 @@ indNegReducible/rec-name : name "indNegReducible.rec" (is-rec-for "indNegReducib
 indNegReducible/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
-indNegReducible/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = count-leading-foralls/zero.
-
 indNegReducible/cnd : cnames-distinct (ccons "indNegReducible.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
 indNegReducible/name : name "indNegReducible" (is-decl (esort (lsucc lzero)) (indt (ccons "indNegReducible.mk" cnil) liz)).
 
 indNegReducible/decl : declared "indNegReducible" (esort (lsucc lzero)) (indt (ccons "indNegReducible.mk" cnil) liz)
-   = declared/ok-indt indNegReducible/name indNegReducible/rec-name indNegReducible/clf indNegReducible/cnd (dkind-ok/indt indNegReducible/type-wf indNegReducible/ends-in-sort).
+   = declared/ok-indt indNegReducible/name indNegReducible/rec-name indNegReducible/cnd (dkind-ok/indt indNegReducible/type-wf indNegReducible/ends-in-sort).
 
 %% ctor indNegReducible.mk (of indNegReducible)
 indNegReducible_mk/type-wf-sort : lvl
@@ -110,41 +107,42 @@ indNegReducible_mk/positivity : ctor-positive "indNegReducible" lnil (eforall (e
 indNegReducible_mk/cmem : cmem "indNegReducible.mk" (ccons "indNegReducible.mk" cnil)
    = cmem/here.
 
-indNegReducible_mk/fuo : field-universes-ok-skip-params liz (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil))) (lsucc lzero)
-   = (field-universes-ok-skip-params/start
-       (field-universes-ok/forall
-         (defeq/forall
+indNegReducible_mk/fuo : field-universes-ok (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil))) (lsucc lzero)
+   = (field-universes-ok/forall
+       (defeq/forall
+         (defeq/app
            (defeq/app
-             (defeq/app
-               (defeq/const
-                 constType/decl
-                 (inst-expr/forall
-                   (inst-expr/sort (lvl-inst/succ lvl-inst/zero))
-                   ([x]
-                     ([h]
-                       (inst-expr/forall
-                         (inst-expr/sort (lvl-inst/succ lvl-inst/zero))
-                         ([y]
-                           ([h1]
-                             (inst-expr/sort
-                               (lvl-inst/succ lvl-inst/zero)))))))))
-               (defeq/const
-                 aType/decl
-                 (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))
+             (defeq/const
+               constType/decl
+               (inst-expr/forall
+                 (inst-expr/sort (lvl-inst/succ lvl-inst/zero))
+                 ([x]
+                   ([h]
+                     (inst-expr/forall
+                       (inst-expr/sort (lvl-inst/succ lvl-inst/zero))
+                       ([y]
+                         ([h1]
+                           (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))))))
+             (defeq/const
+               aType/decl
+               (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))
+           (defeq/const
+             indNegReducible/decl
+             (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))
+         ([x]
+           ([h]
              (defeq/const
                indNegReducible/decl
-               (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))
-           ([x]
-             ([h]
-               (defeq/const
-                 indNegReducible/decl
-                 (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))))
-         (mleq/imax-lsL
-           (mleq/sR
-             (mleq/maxL
-               (mleq/sL (mleq/self nonneg_0))
-               (mleq/sL (mleq/self nonneg_0)))))
-         ([x] ([h] (field-universes-ok/done not-forall/const))))).
+               (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))))
+       (mleq/imax-lsL
+         (mleq/sR
+           (mleq/maxL
+             (mleq/imax-lsL
+               (mleq/maxL
+                 (mleq/sL (mleq/self nonneg_0))
+                 (mleq/sL (mleq/self nonneg_0))))
+             (mleq/sL (mleq/self nonneg_0)))))
+       ([x] ([h] (field-universes-ok/done not-forall/const)))).
 
 indNegReducible_mk/name : name "indNegReducible.mk" (is-decl
   (eforall (eforall (eapp (eapp (econst "constType" lnil) (econst "aType" lnil)) (econst "indNegReducible" lnil)) ([x] (econst "indNegReducible" lnil))) ([x] (econst "indNegReducible" lnil)))
@@ -155,12 +153,5 @@ indNegReducible_mk/decl : declared "indNegReducible.mk"
   (ctor "indNegReducible" liz)
    = declared/ok-ctor indNegReducible_mk/name indNegReducible/name indNegReducible_mk/cmem indNegReducible/eisl indNegReducible_mk/fuo (dkind-ok/ctor indNegReducible_mk/type-wf indNegReducible_mk/positivity).
 
-%% recursor indNegReducible.rec
-indNegReducible_rec/type-wf-sort : lvl
-   = (lsucc lzero).
-
-indNegReducible_rec/type-wf : of (esort lzero) (esort indNegReducible_rec/type-wf-sort)
-   = defeq/sort-refl.
-
-%%% HOLE: recursor indNegReducible.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
-indNegReducible_rec/decl : declared "indNegReducible.rec" (esort lzero) (irec "indNegReducible").
+%% recursor indNegReducible.rec (TCB-derived; informational only)
+%%   type:   (esort lzero)

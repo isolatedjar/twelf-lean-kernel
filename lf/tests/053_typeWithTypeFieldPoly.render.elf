@@ -15,16 +15,13 @@ TypeWithTypeFieldPoly/rec-name : name "TypeWithTypeFieldPoly.rec" (is-rec-for "T
 TypeWithTypeFieldPoly/eisl : ends-in-sort-with-level (esort (lsucc (lsucc (lvar liz)))) (lsucc (lsucc (lvar liz)))
    = ends-in-sort-with-level/sort.
 
-TypeWithTypeFieldPoly/clf : count-leading-foralls (esort (lsucc (lsucc (lvar liz)))) liz
-   = count-leading-foralls/zero.
-
 TypeWithTypeFieldPoly/cnd : cnames-distinct (ccons "TypeWithTypeFieldPoly.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
 TypeWithTypeFieldPoly/name : name "TypeWithTypeFieldPoly" (is-decl (esort (lsucc (lsucc (lvar liz)))) (indt (ccons "TypeWithTypeFieldPoly.mk" cnil) liz)).
 
 TypeWithTypeFieldPoly/decl : declared "TypeWithTypeFieldPoly" (esort (lsucc (lsucc (lvar liz)))) (indt (ccons "TypeWithTypeFieldPoly.mk" cnil) liz)
-   = declared/ok-indt TypeWithTypeFieldPoly/name TypeWithTypeFieldPoly/rec-name TypeWithTypeFieldPoly/clf TypeWithTypeFieldPoly/cnd (dkind-ok/indt TypeWithTypeFieldPoly/type-wf TypeWithTypeFieldPoly/ends-in-sort).
+   = declared/ok-indt TypeWithTypeFieldPoly/name TypeWithTypeFieldPoly/rec-name TypeWithTypeFieldPoly/cnd (dkind-ok/indt TypeWithTypeFieldPoly/type-wf TypeWithTypeFieldPoly/ends-in-sort).
 
 %% ctor TypeWithTypeFieldPoly.mk (of TypeWithTypeFieldPoly)
 %%% HOLE
@@ -40,32 +37,18 @@ TypeWithTypeFieldPoly_mk/cmem : cmem "TypeWithTypeFieldPoly.mk" (ccons "TypeWith
    = cmem/here.
 
 %%% HOLE: TypeWithTypeFieldPoly_mk/fuo
-TypeWithTypeFieldPoly_mk/fuo : field-universes-ok-skip-params liz (eforall (esort (lsucc (lvar liz))) ([x] (econst "TypeWithTypeFieldPoly" (lcons (lvar liz) lnil)))) (lsucc (lsucc (lvar liz))).
+TypeWithTypeFieldPoly_mk/fuo : field-universes-ok (eforall (esort (lsucc (lvar liz))) ([x] (econst "TypeWithTypeFieldPoly" (lcons (lvar liz) lnil)))) (lsucc (lsucc (lvar liz))).
 
 TypeWithTypeFieldPoly_mk/name : name "TypeWithTypeFieldPoly.mk" (is-decl (eforall (esort (lsucc (lvar liz))) ([x] (econst "TypeWithTypeFieldPoly" (lcons (lvar liz) lnil)))) (ctor "TypeWithTypeFieldPoly" liz)).
 
 TypeWithTypeFieldPoly_mk/decl : declared "TypeWithTypeFieldPoly.mk" (eforall (esort (lsucc (lvar liz))) ([x] (econst "TypeWithTypeFieldPoly" (lcons (lvar liz) lnil)))) (ctor "TypeWithTypeFieldPoly" liz)
    = declared/ok-ctor TypeWithTypeFieldPoly_mk/name TypeWithTypeFieldPoly/name TypeWithTypeFieldPoly_mk/cmem TypeWithTypeFieldPoly/eisl TypeWithTypeFieldPoly_mk/fuo (dkind-ok/ctor TypeWithTypeFieldPoly_mk/type-wf TypeWithTypeFieldPoly_mk/positivity).
 
-%% recursor TypeWithTypeFieldPoly.rec
-%%% HOLE
-TypeWithTypeFieldPoly_rec/type-wf-sort : lvl.
-
-%%% HOLE
-TypeWithTypeFieldPoly_rec/type-wf : of
-  (eforall (eforall (econst "TypeWithTypeFieldPoly" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz))))
-    ([x]
-      (eforall (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eapp x (eapp (econst "TypeWithTypeFieldPoly.mk" (lcons (lvar (lis liz)) lnil)) y))))
-        ([y] (eforall (econst "TypeWithTypeFieldPoly" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z)))))))
-  (esort TypeWithTypeFieldPoly_rec/type-wf-sort).
-
-%%% HOLE: recursor TypeWithTypeFieldPoly.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
-TypeWithTypeFieldPoly_rec/decl : declared "TypeWithTypeFieldPoly.rec"
-  (eforall (eforall (econst "TypeWithTypeFieldPoly" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz))))
-    ([x]
-      (eforall (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eapp x (eapp (econst "TypeWithTypeFieldPoly.mk" (lcons (lvar (lis liz)) lnil)) y))))
-        ([y] (eforall (econst "TypeWithTypeFieldPoly" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z)))))))
-  (irec "TypeWithTypeFieldPoly").
+%% recursor TypeWithTypeFieldPoly.rec (TCB-derived; informational only)
+%%   level params: u_1 u
+%%   type:   (eforall (eforall (econst "TypeWithTypeFieldPoly" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (eforall (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eapp x (eapp (econst "TypeWithTypeFieldPoly.mk" (lcons (lvar (lis liz)) lnil)) y)))) ([y] (eforall (econst "TypeWithTypeFieldPoly" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z)))))))
+%%   rules:
+%%     TypeWithTypeFieldPoly.rec … TypeWithTypeFieldPoly.mk … = (elam (eforall (econst "TypeWithTypeFieldPoly" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (elam (eforall (esort (lsucc (lvar (lis liz)))) ([y] (eapp x (eapp (econst "TypeWithTypeFieldPoly.mk" (lcons (lvar (lis liz)) lnil)) y)))) ([y] (elam (esort (lsucc (lvar (lis liz)))) ([z] (eapp y z)))))))   (1 fields)
 
 %% def typeWithTypeFieldPoly
 %%% HOLE

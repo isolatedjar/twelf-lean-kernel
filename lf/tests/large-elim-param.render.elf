@@ -29,16 +29,13 @@ False/rec-name : name "False.rec" (is-rec-for "False").
 False/eisl : ends-in-sort-with-level (esort lzero) lzero
    = ends-in-sort-with-level/sort.
 
-False/clf : count-leading-foralls (esort lzero) liz
-   = count-leading-foralls/zero.
-
 False/cnd : cnames-distinct cnil
    = cnames-distinct/nil.
 
 False/name : name "False" (is-decl (esort lzero) (indt cnil liz)).
 
 False/decl : declared "False" (esort lzero) (indt cnil liz)
-   = declared/ok-indt False/name False/rec-name False/clf False/cnd (dkind-ok/indt False/type-wf False/ends-in-sort).
+   = declared/ok-indt False/name False/rec-name False/cnd (dkind-ok/indt False/type-wf False/ends-in-sort).
 
 %% inductive True
 %%% HOLE
@@ -55,16 +52,13 @@ True/rec-name : name "True.rec" (is-rec-for "True").
 True/eisl : ends-in-sort-with-level (esort lzero) lzero
    = ends-in-sort-with-level/sort.
 
-True/clf : count-leading-foralls (esort lzero) liz
-   = count-leading-foralls/zero.
-
 True/cnd : cnames-distinct (ccons "True.intro" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
 True/name : name "True" (is-decl (esort lzero) (indt (ccons "True.intro" cnil) liz)).
 
 True/decl : declared "True" (esort lzero) (indt (ccons "True.intro" cnil) liz)
-   = declared/ok-indt True/name True/rec-name True/clf True/cnd (dkind-ok/indt True/type-wf True/ends-in-sort).
+   = declared/ok-indt True/name True/rec-name True/cnd (dkind-ok/indt True/type-wf True/ends-in-sort).
 
 %% ctor True.intro (of True)
 %%% HOLE
@@ -80,7 +74,7 @@ True_intro/cmem : cmem "True.intro" (ccons "True.intro" cnil)
    = cmem/here.
 
 %%% HOLE: True_intro/fuo
-True_intro/fuo : field-universes-ok-skip-params liz (econst "True" lnil) lzero.
+True_intro/fuo : field-universes-ok (econst "True" lnil) lzero.
 
 True_intro/name : name "True.intro" (is-decl (econst "True" lnil) (ctor "True" liz)).
 
@@ -102,9 +96,6 @@ MyBool/rec-name : name "MyBool.rec" (is-rec-for "MyBool").
 MyBool/eisl : ends-in-sort-with-level (esort (lvar liz)) (lvar liz)
    = ends-in-sort-with-level/sort.
 
-MyBool/clf : count-leading-foralls (esort (lvar liz)) liz
-   = count-leading-foralls/zero.
-
 MyBool/cnd : cnames-distinct (ccons "MyBool.tt" (ccons "MyBool.ff" cnil))
    = (cnames-distinct/cons
        (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil)
@@ -113,7 +104,7 @@ MyBool/cnd : cnames-distinct (ccons "MyBool.tt" (ccons "MyBool.ff" cnil))
 MyBool/name : name "MyBool" (is-decl (esort (lvar liz)) (indt (ccons "MyBool.tt" (ccons "MyBool.ff" cnil)) liz)).
 
 MyBool/decl : declared "MyBool" (esort (lvar liz)) (indt (ccons "MyBool.tt" (ccons "MyBool.ff" cnil)) liz)
-   = declared/ok-indt MyBool/name MyBool/rec-name MyBool/clf MyBool/cnd (dkind-ok/indt MyBool/type-wf MyBool/ends-in-sort).
+   = declared/ok-indt MyBool/name MyBool/rec-name MyBool/cnd (dkind-ok/indt MyBool/type-wf MyBool/ends-in-sort).
 
 %% ctor MyBool.tt (of MyBool)
 %%% HOLE
@@ -129,7 +120,7 @@ MyBool_tt/cmem : cmem "MyBool.tt" (ccons "MyBool.tt" (ccons "MyBool.ff" cnil))
    = cmem/here.
 
 %%% HOLE: MyBool_tt/fuo
-MyBool_tt/fuo : field-universes-ok-skip-params liz (econst "MyBool" (lcons (lvar liz) lnil)) (lvar liz).
+MyBool_tt/fuo : field-universes-ok (econst "MyBool" (lcons (lvar liz) lnil)) (lvar liz).
 
 MyBool_tt/name : name "MyBool.tt" (is-decl (econst "MyBool" (lcons (lvar liz) lnil)) (ctor "MyBool" liz)).
 
@@ -150,7 +141,7 @@ MyBool_ff/cmem : cmem "MyBool.ff" (ccons "MyBool.tt" (ccons "MyBool.ff" cnil))
    = (cmem/there cmem/here).
 
 %%% HOLE: MyBool_ff/fuo
-MyBool_ff/fuo : field-universes-ok-skip-params liz (econst "MyBool" (lcons (lvar liz) lnil)) (lvar liz).
+MyBool_ff/fuo : field-universes-ok (econst "MyBool" (lcons (lvar liz) lnil)) (lvar liz).
 
 MyBool_ff/name : name "MyBool.ff" (is-decl (econst "MyBool" (lcons (lvar liz) lnil)) (ctor "MyBool" (lis liz))).
 

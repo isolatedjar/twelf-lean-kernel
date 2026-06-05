@@ -1,5 +1,7 @@
 %%% Expected outcome: accept
 %%% Inductive predicates eliminate into Prop if they have one constructors and it carries data.
+%solve nonneg_0 : 0 >= 0.
+
 %% inductive Exists
 Exists/type-wf-sort : lvl
    = (limax
@@ -25,17 +27,13 @@ Exists/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall 
        ([x]
          (ends-in-sort-with-level/forall ([y] ends-in-sort-with-level/sort)))).
 
-Exists/clf : count-leading-foralls (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (esort lzero))))) (lis (lis liz))
-   = (count-leading-foralls/succ
-       ([x] (count-leading-foralls/succ ([y] count-leading-foralls/zero)))).
-
 Exists/cnd : cnames-distinct (ccons "Exists.intro" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
 Exists/name : name "Exists" (is-decl (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (esort lzero))))) (indt (ccons "Exists.intro" cnil) (lis (lis liz)))).
 
 Exists/decl : declared "Exists" (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (esort lzero))))) (indt (ccons "Exists.intro" cnil) (lis (lis liz)))
-   = declared/ok-indt Exists/name Exists/rec-name Exists/clf Exists/cnd (dkind-ok/indt Exists/type-wf Exists/ends-in-sort).
+   = declared/ok-indt Exists/name Exists/rec-name Exists/cnd (dkind-ok/indt Exists/type-wf Exists/ends-in-sort).
 
 %% ctor Exists.intro (of Exists)
 Exists_intro/type-wf-sort : lvl
@@ -116,8 +114,29 @@ Exists_intro/positivity : ctor-positive "Exists" (lcons (lvar liz) lnil) (eforal
 Exists_intro/cmem : cmem "Exists.intro" (ccons "Exists.intro" cnil)
    = cmem/here.
 
-%%% HOLE: Exists_intro/fuo
-Exists_intro/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "Exists" (lcons (lvar liz) lnil)) x) y))))))))) lzero.
+Exists_intro/fuo : field-universes-ok (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "Exists" (lcons (lvar liz) lnil)) x) y))))))))) lzero
+   = (field-universes-ok/forall
+       defeq/sort-refl
+       (mleq/imax-lzL (mleq/self nonneg_0))
+       ([x]
+         ([h]
+           (field-universes-ok/forall
+             (defeq/forall h ([y] ([h1] defeq/sort-refl)))
+             (mleq/imax-lzL (mleq/self nonneg_0))
+             ([y]
+               ([h1]
+                 (field-universes-ok/forall
+                   h
+                   (mleq/imax-lzL (mleq/self nonneg_0))
+                   ([z]
+                     ([h2]
+                       (field-universes-ok/forall
+                         (defeq/app h1 h2)
+                         (mleq/imax-lzL (mleq/self nonneg_0))
+                         ([w]
+                           ([h3]
+                             (field-universes-ok/done
+                               not-forall/app))))))))))))).
 
 Exists_intro/name : name "Exists.intro" (is-decl
   (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall x ([z] (eforall (eapp y z) ([w] (eapp (eapp (econst "Exists" (lcons (lvar liz) lnil)) x) y)))))))))
@@ -128,149 +147,11 @@ Exists_intro/decl : declared "Exists.intro"
   (ctor "Exists" liz)
    = declared/ok-ctor Exists_intro/name Exists/name Exists_intro/cmem Exists/eisl Exists_intro/fuo (dkind-ok/ctor Exists_intro/type-wf Exists_intro/positivity).
 
-%% recursor Exists.rec
-Exists_rec/type-wf-sort : lvl
-   = (limax
-       (lsucc (lvar liz))
-       (limax
-         (limax (lvar liz) (lsucc lzero))
-         (limax
-           (limax lzero (lsucc lzero))
-           (limax (limax (lvar liz) (limax lzero lzero)) (limax lzero lzero))))).
-
-Exists_rec/type-wf : of
-  (eforall (esort (lvar liz))
-    ([x]
-      (eforall (eforall x ([y] (esort lzero)))
-        ([y]
-          (eforall (eforall (eapp (eapp (econst "Exists" (lcons (lvar liz) lnil)) x) y) ([z] (esort lzero)))
-            ([z]
-              (eforall (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Exists.intro" (lcons (lvar liz) lnil)) x) y) w) x1))))))
-                ([w] (eforall (eapp (eapp (econst "Exists" (lcons (lvar liz) lnil)) x) y) ([x1] (eapp z x1)))))))))))
-  (esort Exists_rec/type-wf-sort)
-   = (defeq/forall
-       defeq/sort-refl
-       ([x]
-         ([h]
-           (defeq/forall
-             (defeq/forall h ([y] ([h1] defeq/sort-refl)))
-             ([y]
-               ([h1]
-                 (defeq/forall
-                   (defeq/forall
-                     (defeq/app
-                       (defeq/app
-                         (defeq/const
-                           Exists/decl
-                           (inst-expr/forall
-                             (inst-expr/sort (lvl-inst/var lvl-nth/zero))
-                             ([x]
-                               ([h]
-                                 (inst-expr/forall
-                                   (inst-expr/forall
-                                     h
-                                     ([y]
-                                       ([h1] (inst-expr/sort lvl-inst/zero))))
-                                   ([y]
-                                     ([h1] (inst-expr/sort lvl-inst/zero))))))))
-                         h)
-                       h1)
-                     ([z] ([h2] defeq/sort-refl)))
-                   ([z]
-                     ([h2]
-                       (defeq/forall
-                         (defeq/forall
-                           h
-                           ([w]
-                             ([h3]
-                               (defeq/forall
-                                 (defeq/app h1 h3)
-                                 ([x1]
-                                   ([h4]
-                                     (defeq/app
-                                       h2
-                                       (defeq/app
-                                         (defeq/app
-                                           (defeq/app
-                                             (defeq/app
-                                               (defeq/const
-                                                 Exists_intro/decl
-                                                 (inst-expr/forall
-                                                   (inst-expr/sort
-                                                     (lvl-inst/var
-                                                       lvl-nth/zero))
-                                                   ([x]
-                                                     ([h]
-                                                       (inst-expr/forall
-                                                         (inst-expr/forall
-                                                           h
-                                                           ([y]
-                                                             ([h1]
-                                                               (inst-expr/sort
-                                                                 lvl-inst/zero))))
-                                                         ([y]
-                                                           ([h1]
-                                                             (inst-expr/forall
-                                                               h
-                                                               ([z]
-                                                                 ([h2]
-                                                                   (inst-expr/forall
-                                                                     (inst-expr/app
-                                                                       h1
-                                                                       h2)
-                                                                     ([w]
-                                                                       ([h3]
-                                                                         (inst-expr/app
-                                                                           (inst-expr/app
-                                                                             (inst-expr/const
-                                                                               (lvls-inst/cons
-                                                                                 (lvl-inst/var
-                                                                                   lvl-nth/zero)
-                                                                                 lvls-inst/nil))
-                                                                             h)
-                                                                           h1))))))))))))))
-                                               h)
-                                             h1)
-                                           h3)
-                                         h4))))))))
-                         ([w]
-                           ([h3]
-                             (defeq/forall
-                               (defeq/app
-                                 (defeq/app
-                                   (defeq/const
-                                     Exists/decl
-                                     (inst-expr/forall
-                                       (inst-expr/sort
-                                         (lvl-inst/var lvl-nth/zero))
-                                       ([x]
-                                         ([h]
-                                           (inst-expr/forall
-                                             (inst-expr/forall
-                                               h
-                                               ([y]
-                                                 ([h1]
-                                                   (inst-expr/sort
-                                                     lvl-inst/zero))))
-                                             ([y]
-                                               ([h1]
-                                                 (inst-expr/sort
-                                                   lvl-inst/zero))))))))
-                                   h)
-                                 h1)
-                               ([x1] ([h4] (defeq/app h2 h4)))))))))))))))).
-
-%%% HOLE: recursor Exists.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
-Exists_rec/decl : declared "Exists.rec"
-  (eforall (esort (lvar liz))
-    ([x]
-      (eforall (eforall x ([y] (esort lzero)))
-        ([y]
-          (eforall (eforall (eapp (eapp (econst "Exists" (lcons (lvar liz) lnil)) x) y) ([z] (esort lzero)))
-            ([z]
-              (eforall (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Exists.intro" (lcons (lvar liz) lnil)) x) y) w) x1))))))
-                ([w] (eforall (eapp (eapp (econst "Exists" (lcons (lvar liz) lnil)) x) y) ([x1] (eapp z x1)))))))))))
-  (irec "Exists").
+%% recursor Exists.rec (TCB-derived; informational only)
+%%   level params: u
+%%   type:   (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] (esort lzero))) ([y] (eforall (eforall (eapp (eapp (econst "Exists" (lcons (lvar liz) lnil)) x) y) ([z] (esort lzero))) ([z] (eforall (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Exists.intro" (lcons (lvar liz) lnil)) x) y) w) x1)))))) ([w] (eforall (eapp (eapp (econst "Exists" (lcons (lvar liz) lnil)) x) y) ([x1] (eapp z x1)))))))))))
+%%   rules:
+%%     Exists.rec … Exists.intro … = (elam (esort (lvar liz)) ([x] (elam (eforall x ([y] (esort lzero))) ([y] (elam (eforall (eapp (eapp (econst "Exists" (lcons (lvar liz) lnil)) x) y) ([z] (esort lzero))) ([z] (elam (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Exists.intro" (lcons (lvar liz) lnil)) x) y) w) x1)))))) ([w] (elam x ([x1] (elam (eapp y x1) ([y1] (eapp (eapp w x1) y1)))))))))))))   (2 fields)
 
 %% def existsRec
 existsRec/type-wf-sort : lvl
@@ -404,6 +285,7 @@ existsRec/type-wf : of
                                  h1)
                                ([x1] ([h4] (defeq/app h2 h4)))))))))))))))).
 
+%%% HOLE
 existsRec/value-typed : of
   (econst "Exists.rec" (lcons (lvar liz) lnil))
   (eforall (esort (lvar liz))
@@ -413,66 +295,7 @@ existsRec/value-typed : of
           (eforall (eforall (eapp (eapp (econst "Exists" (lcons (lvar liz) lnil)) x) y) ([z] (esort lzero)))
             ([z]
               (eforall (eforall x ([w] (eforall (eapp y w) ([x1] (eapp z (eapp (eapp (eapp (eapp (econst "Exists.intro" (lcons (lvar liz) lnil)) x) y) w) x1))))))
-                ([w] (eforall (eapp (eapp (econst "Exists" (lcons (lvar liz) lnil)) x) y) ([x1] (eapp z x1)))))))))))
-   = (defeq/const
-       Exists_rec/decl
-       (inst-expr/forall
-         (inst-expr/sort (lvl-inst/var lvl-nth/zero))
-         ([x]
-           ([h]
-             (inst-expr/forall
-               (inst-expr/forall h ([y] ([h1] (inst-expr/sort lvl-inst/zero))))
-               ([y]
-                 ([h1]
-                   (inst-expr/forall
-                     (inst-expr/forall
-                       (inst-expr/app
-                         (inst-expr/app
-                           (inst-expr/const
-                             (lvls-inst/cons
-                               (lvl-inst/var lvl-nth/zero)
-                               lvls-inst/nil))
-                           h)
-                         h1)
-                       ([z] ([h2] (inst-expr/sort lvl-inst/zero))))
-                     ([z]
-                       ([h2]
-                         (inst-expr/forall
-                           (inst-expr/forall
-                             h
-                             ([w]
-                               ([h3]
-                                 (inst-expr/forall
-                                   (inst-expr/app h1 h3)
-                                   ([x1]
-                                     ([h4]
-                                       (inst-expr/app
-                                         h2
-                                         (inst-expr/app
-                                           (inst-expr/app
-                                             (inst-expr/app
-                                               (inst-expr/app
-                                                 (inst-expr/const
-                                                   (lvls-inst/cons
-                                                     (lvl-inst/var lvl-nth/zero)
-                                                     lvls-inst/nil))
-                                                 h)
-                                               h1)
-                                             h3)
-                                           h4))))))))
-                           ([w]
-                             ([h3]
-                               (inst-expr/forall
-                                 (inst-expr/app
-                                   (inst-expr/app
-                                     (inst-expr/const
-                                       (lvls-inst/cons
-                                         (lvl-inst/var lvl-nth/zero)
-                                         lvls-inst/nil))
-                                     h)
-                                   h1)
-                                 ([x1]
-                                   ([h4] (inst-expr/app h2 h4))))))))))))))))).
+                ([w] (eforall (eapp (eapp (econst "Exists" (lcons (lvar liz) lnil)) x) y) ([x1] (eapp z x1))))))))))).
 
 existsRec/name : name "existsRec" (is-decl
   (eforall (esort (lvar liz))

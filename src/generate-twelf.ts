@@ -40,6 +40,7 @@ import type {
   Expr,
   Fmt,
   IndCtor,
+  IndRecursor,
   IndType,
   Level,
   Name,
@@ -49,7 +50,6 @@ import type {
 } from "./shared.ts";
 import { app, atom, lam, nameToString, transformNamesFromJSON } from "./shared.ts";
 import { freshVar } from "./render.ts";
-import { buildEnumRecType, buildLeEligible } from "./synth.ts";
 
 // =====================================================================
 // Output + Fmt pretty-printer (trusted, anti-injection)
@@ -432,12 +432,25 @@ function generateDecl(prover: Prover, d: Decl): void {
     case "inductive":
       generateInductive(prover, d);
       break;
-    case "quot":
-      // Deferred: quot members carry a type on this
-      // branch, but representing the Quot family + its kernel reductions is
-      // its own task.  Declining keeps these tests 🤷 for now.
-      skip(`quot ${nameToString(d.name)} (${d.quotKind}) — not yet represented`);
+    case "quot": {
+      // Quot's four constants are TCB-derived (see CLAUDE.md "Derive,
+      // don't check" and tcb.elf §Quot).  The translator emits a
+      // comment block documenting lean4export's claimed type, but
+      // no Twelf declaration — `tcb.elf`'s `quot-name-Quot{,-mk,-lift,
+      // -ind}` already reserve the names, and the `quot-known` family
+      // provides what iota rules need.
+      const tStr = (() => {
+        try {
+          return flatStr(lfExprDoc(d.type, []));
+        } catch {
+          return "(type not representable in LF)";
+        }
+      })();
+      emit(`%% quot ${nameToString(d.name)} (${d.quotKind}) (TCB-derived; informational only)`);
+      emit(`%%   type: ${tStr}`);
+      emit(``);
       break;
+    }
   }
 }
 
@@ -902,21 +915,20 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
       emit(`${mn}/cmem : cmem "${declName}" ${ctorsCnames}`);
       emit(`   = ${ppFmt(cmemFmt, 5)}.`);
       emit(``);
-      // fuo: prover walks the ctor type, skipping the first `numParams`
-      // binders (the inductive's params, re-bound on the ctor), then for
-      // each remaining field synthesizes defeq + mleq to discharge
-      // `field-universes-ok/forall`.  Returns null when the synth
-      // heuristic gives up; we then emit a bare HOLE on the frozen
-      // family, which %freeze rejects.  This is a loss of completeness,
+      // fuo: prover walks the WHOLE ctor type with field-universes-ok
+      // (no skip-params; see tcb.elf §field-universes-ok).  For each
+      // leading Π synthesizes `defeq A A (esort UA)` plus the
+      // impredicative `mleq (limax UA UInd) UInd 0`.  Returns null when
+      // the synth heuristic gives up; we then emit a bare HOLE on the
+      // frozen family, which %freeze rejects.  Loss of completeness,
       // never of soundness.
-      const skipCount = c.numParams;
       const fuoFmt = prover.fieldUniverses({
         ctorType: c.type,
-        nParams: skipCount,
+        nParams: 0,                // skip nothing — walk everything
         indUInd,
         levelParams: c.levelParams,
       });
-      const fuoType = `field-universes-ok-skip-params ${lidxLit(skipCount)} ${T} ${lfLevel(indUInd)}`;
+      const fuoType = `field-universes-ok ${T} ${lfLevel(indUInd)}`;
       if (fuoFmt === null) {
         emit(`%%% HOLE: ${mn}/fuo`);
         emit(`${mn}/fuo : ${fuoType}.`);
@@ -943,144 +955,52 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
       );
     });
   }
-  // Recursors.
+  // Recursors are TCB-derived (see CLAUDE.md "Derive, don't check").  The
+  // translator emits a comment block per recursor documenting the lean4-
+  // export-supplied type and reduction rules — purely informational, no
+  // Twelf declarations.  The TCB's `rec-derived` family constructs the
+  // canonical recursor from the inductive's declaration; iota proofs in
+  // `.full.elf` consume `rec-derived` via the untrusted prover.
   for (const r of ind.recursors) {
-    const declName = nameToString(r.name);
-    const mn = mangle(r.name);
-    withLevelParams(r.levelParams, () => {
-      const tDoc = tryLfDoc(r.type);
-      if (tDoc === null) {
-        skip(`recursor ${declName} — type not representable in LF`);
-        return;
-      }
-      const T = flatStr(tDoc);
-      emit(`%% recursor ${declName}`);
-      const tw = emitTypeWf(
-        prover.typeWellFormed({ type: r.type, levelParams: r.levelParams }),
-        mn,
-        tDoc,
-        false,
-      );
-      // A recursor is declared via `declared/ok-irec`, which requires the
-      // `name N (is-rec-for IndN)` reservation that generateIndType emits for
-      // its inductive.  Recover IndN by stripping the trailing ".rec" and find
-      // the inductive that reserved it.  If there's no such inductive (the name
-      // doesn't follow the <inductive>.rec convention), emit a HOLE — a bare
-      // decl with no reservation witness, which %freeze rejects.
-      const IndN = declName.endsWith(".rec") ? declName.slice(0, -4) : null;
-      const indType =
-        IndN !== null ? ind.types.find((t) => nameToString(t.name) === IndN) : undefined;
-      const indMn = indType !== undefined ? mangle(indType.name) : null;
-      if (indMn !== null && indType !== undefined) {
-        // dkind payload: (irec "<ind>") records the parent inductive so
-        // iota rules can look up its reservation.  The recursor does NOT
-        // emit its own name reservation — the inductive's `<indMn>/rec-
-        // name : name "<ind>.rec" (is-rec-for "<ind>")` already claims
-        // this string and serves as the `declared/ok-irec` premise.
-        //
-        // §3.1: `dkind-ok/irec` now requires three more witnesses beyond
-        // the legacy type-wf:
-        //   * the inductive's `name <ind> (is-decl _ (indt Ctors _))`
-        //     reservation — already emitted as `<indMn>/name`
-        //   * `ends-in-sort-with-level IndType UInd` — already emitted as
-        //     `<indMn>/eisl` (the structural sort-extraction witness from
-        //     §3.5)
-        //   * `enum-rec-type T <ind> lnil Ctors U` — new, synthesized
-        //     here via `buildEnumRecType`.  Fails (→ HOLE on
-        //     `dkind-ok/irec`) for non-enum recursors (parametric or
-        //     indexed inductives, recursive ctors with field args, etc.)
-        //   * `le-eligible UInd Ctors U` — new, synthesized via
-        //     `buildLeEligible`.  Fails for the §3.1 large-elim attacks.
-        const dkindExpr = `(irec "${IndN}")`;
-        const declDoc = group(
-          concat(
-            text(`declared "${declName}"`),
-            nest(2, concat(line, tDoc, line, text(dkindExpr))),
-          ),
-        );
-        // Extract U (motive target sort) from the recursor's IR — the
-        // outer binder is the motive, whose type is `Foo → Sort U`.
-        let motiveU: Level | null = null;
-        if (r.type.kind === "forallE" && r.type.type.kind === "forallE") {
-          const motiveResultType = r.type.type.body;
-          if (motiveResultType.kind === "sort") {
-            motiveU = motiveResultType.level;
-          }
-        }
-        // The ctor list ordered by cidx, same as the inductive's reservation.
-        const ctorsForInd = ind.ctors.filter(
-          (c) => nameToString(c.induct) === IndN,
-        );
-        const ctorNames = ctorsForInd.map((c) => nameToString(c.name));
-        const ctorsCnames = ctorsToCnames(ctorNames);
-        const indUInd = inductiveResultUniverse(indType.type);
-        // `enum-rec-type` only covers ctors with zero fields (every minor
-        // is `M c_i` for c_i : Foo), AND only non-parametric, non-
-        // level-polymorphic inductives — its `FooLvls` premise is fixed
-        // at `lnil` and matches the inductive's level instantiation in
-        // the recursor's type.  Anything else and the structural witness
-        // won't fit Twelf's expected shape, so don't even try — null
-        // forces the recursor to HOLE → decline.
-        const enumShaped =
-          indType.numParams === 0 &&
-          indType.numIndices === 0 &&
-          indType.levelParams.length === 0 &&
-          ctorsForInd.every((c) => c.numFields === 0);
-        const ertFmt = enumShaped ? buildEnumRecType(ctorNames) : null;
-        const leeFmt =
-          enumShaped && motiveU !== null && indUInd !== null
-            ? buildLeEligible(indUInd, ctorNames.length, motiveU)
-            : null;
-        // Emit the witnesses as named constants so the dkind-ok/irec
-        // application stays readable.  If either is null, HOLE the
-        // recursor (freeze rejects → decline).
-        if (
-          motiveU !== null &&
-          indUInd !== null &&
-          ertFmt !== null &&
-          leeFmt !== null
-        ) {
-          emit(`${mn}/ert : enum-rec-type ${T} "${IndN}" lnil ${ctorsCnames} ${lfLevel(motiveU)}`);
-          emit(`   = ${ppFmt(ertFmt, 5)}.`);
-          emit(``);
-          emit(`${mn}/lee : le-eligible ${lfLevel(indUInd)} ${ctorsCnames} ${lfLevel(motiveU)}`);
-          emit(`   = ${ppFmt(leeFmt, 5)}.`);
-          emit(``);
-          emit(`${mn}/decl : ${render(TYPE_WIDTH, declDoc)}`);
-          emit(
-            `   = declared/ok-irec ${indMn}/rec-name (dkind-ok/irec ${tw} ${indMn}/name ${indMn}/eisl ${mn}/ert ${mn}/lee).`,
-          );
-          emit(``);
-        } else {
-          // Recursor's shape isn't enum-canonical, or LE-eligibility
-          // can't be proved → bare decl on frozen family → freeze
-          // rejects.  Decline, not soundness failure.
-          const reason = !enumShaped
-            ? "non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1"
-            : motiveU === null
-              ? "motive sort not extractable from recursor type"
-              : indUInd === null
-                ? "inductive doesn't end in a concrete sort"
-                : "le-eligible can't be proved (parametric UInd, or non-Prop motive on a ≥2-ctor Prop)";
-          emit(`%%% HOLE: recursor ${declName} — ${reason}`);
-          emit(`${mn}/decl : ${render(TYPE_WIDTH, declDoc)}.`);
-          emit(``);
-        }
-      } else {
-        // No parent inductive — emit a bare decl on the frozen family,
-        // which %freeze rejects.  Fall back to the old `irec` dkind shape
-        // (without payload) just for the error message; this branch is
-        // already on the path to rejection.
-        const declDoc = group(
-          concat(text(`declared "${declName}"`), nest(2, concat(line, tDoc, line, text("(irec \"<unknown>\")")))),
-        );
-        const declStr = render(TYPE_WIDTH, declDoc);
-        emit(`%%% HOLE: recursor ${declName} — name does not follow <inductive>.rec convention`);
-        emit(`${mn}/decl : ${declStr}.`);
-        emit(``);
-      }
-    });
+    emitRecursorComment(r);
   }
+}
+
+// Emit a Twelf-comment-block documenting a recursor's lean4export-supplied
+// type and reduction rules.  Format is a mangled Twelf/Lean hybrid: each
+// rule's RHS is shown in LF syntax; the LHS is sugared for readability.
+// Not parsed by Twelf — purely for human readers.
+function emitRecursorComment(r: IndRecursor): void {
+  const declName = nameToString(r.name);
+  withLevelParams(r.levelParams, () => {
+    const tStr = (() => {
+      try {
+        return flatStr(lfExprDoc(r.type, []));
+      } catch {
+        return "(type not representable in LF)";
+      }
+    })();
+    emit(`%% recursor ${declName} (TCB-derived; informational only)`);
+    const lps = r.levelParams.map((p) => nameToString(p)).join(" ");
+    if (lps.length > 0) emit(`%%   level params: ${lps}`);
+    emit(`%%   type:   ${tStr}`);
+    if (r.rules.length > 0) {
+      emit(`%%   rules:`);
+      for (const rule of r.rules) {
+        const ctorName = nameToString(rule.ctor);
+        const rhsStr = (() => {
+          try {
+            return flatStr(lfExprDoc(rule.rhs, []));
+          } catch {
+            return "(rhs not representable in LF)";
+          }
+        })();
+        emit(`%%     ${declName} … ${ctorName} … = ${rhsStr}   (${rule.nfields} fields)`);
+      }
+    }
+    if (r.k) emit(`%%   K-like reduction: yes`);
+    emit(``);
+  });
 }
 
 function generateIndType(prover: Prover, t: IndType, ctorsForT: readonly IndCtor[]): void {
@@ -1136,34 +1056,26 @@ function generateIndType(prover: Prover, t: IndType, ctorsForT: readonly IndCtor
     // §3.2.2 over-claim attack while still allowing indexed inductives.
     const ctorNames = ctorsForT.map((c) => nameToString(c.name));
     const ctorsCnames = ctorsToCnames(ctorNames);
-    const clfFmt = buildCountLeadingForalls(t.type, t.numParams);
     const nparamsLidx = lidxLit(t.numParams);
-    if (clfFmt !== null) {
-      emit(
-        `${mn}/clf : count-leading-foralls ${flatStr(tDoc)} ${nparamsLidx}`,
-      );
-      emit(`   = ${ppFmt(clfFmt, 5)}.`);
-      emit(``);
-    } else {
-      emit(`%%% HOLE: ${mn}/clf — couldn't build count-leading-foralls (bvar head?)`);
-      emit(`${mn}/clf : count-leading-foralls ${flatStr(tDoc)} ${nparamsLidx}.`);
-      emit(``);
-    }
+    // cnames-distinct: pairwise-distinct ctor name list (closes the
+    // duplicate-ctor iota gap via the string-neq posit + global %query
+    // audit pattern).
     const cndFmt = buildCnamesDistinct(ctorNames);
     emit(`${mn}/cnd : cnames-distinct ${ctorsCnames}`);
     emit(`   = ${ppFmt(cndFmt, 5)}.`);
     emit(``);
-    // dkind payload: (indt <Ctors> <NParams>).
+    // dkind payload: (indt <Ctors> <NParams>).  NParams is the inductive's
+    // numParams as supplied by the env — kept in the payload for
+    // informational use (e.g. by tooling); not load-bearing in any TCB
+    // soundness check after the no-skip-params refactor.
     const dkindExpr = `(indt ${ctorsCnames} ${nparamsLidx})`;
-    // declared/ok-indt witness list: name reservation, rec-name reservation,
-    // count-leading-foralls, cnames-distinct, dkind-ok/indt.
     emitInductiveFamilyDecl(
       mn,
       declName,
       tDoc,
       dkindExpr,
       `declared/ok-indt`,
-      `${mn}/name ${mn}/rec-name ${mn}/clf ${mn}/cnd (dkind-ok/indt ${tw} ${eis})`,
+      `${mn}/name ${mn}/rec-name ${mn}/cnd (dkind-ok/indt ${tw} ${eis})`,
     );
   });
 }

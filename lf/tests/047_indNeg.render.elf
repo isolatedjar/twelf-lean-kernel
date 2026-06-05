@@ -15,16 +15,13 @@ indNeg/rec-name : name "indNeg.rec" (is-rec-for "indNeg").
 indNeg/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
-indNeg/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = count-leading-foralls/zero.
-
 indNeg/cnd : cnames-distinct (ccons "indNeg.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
 indNeg/name : name "indNeg" (is-decl (esort (lsucc lzero)) (indt (ccons "indNeg.mk" cnil) liz)).
 
 indNeg/decl : declared "indNeg" (esort (lsucc lzero)) (indt (ccons "indNeg.mk" cnil) liz)
-   = declared/ok-indt indNeg/name indNeg/rec-name indNeg/clf indNeg/cnd (dkind-ok/indt indNeg/type-wf indNeg/ends-in-sort).
+   = declared/ok-indt indNeg/name indNeg/rec-name indNeg/cnd (dkind-ok/indt indNeg/type-wf indNeg/ends-in-sort).
 
 %% ctor indNeg.mk (of indNeg)
 %%% HOLE
@@ -40,19 +37,12 @@ indNeg_mk/cmem : cmem "indNeg.mk" (ccons "indNeg.mk" cnil)
    = cmem/here.
 
 %%% HOLE: indNeg_mk/fuo
-indNeg_mk/fuo : field-universes-ok-skip-params liz (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (lsucc lzero).
+indNeg_mk/fuo : field-universes-ok (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (lsucc lzero).
 
 indNeg_mk/name : name "indNeg.mk" (is-decl (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (ctor "indNeg" liz)).
 
 indNeg_mk/decl : declared "indNeg.mk" (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (ctor "indNeg" liz)
    = declared/ok-ctor indNeg_mk/name indNeg/name indNeg_mk/cmem indNeg/eisl indNeg_mk/fuo (dkind-ok/ctor indNeg_mk/type-wf indNeg_mk/positivity).
 
-%% recursor indNeg.rec
-%%% HOLE
-indNeg_rec/type-wf-sort : lvl.
-
-%%% HOLE
-indNeg_rec/type-wf : of (esort lzero) (esort indNeg_rec/type-wf-sort).
-
-%%% HOLE: recursor indNeg.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
-indNeg_rec/decl : declared "indNeg.rec" (esort lzero) (irec "indNeg").
+%% recursor indNeg.rec (TCB-derived; informational only)
+%%   type:   (esort lzero)

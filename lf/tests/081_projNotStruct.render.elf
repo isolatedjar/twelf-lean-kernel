@@ -17,9 +17,6 @@ N/rec-name : name "N.rec" (is-rec-for "N").
 N/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
-N/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = count-leading-foralls/zero.
-
 N/cnd : cnames-distinct (ccons "N.zero" (ccons "N.succ" cnil))
    = (cnames-distinct/cons
        (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil)
@@ -28,7 +25,7 @@ N/cnd : cnames-distinct (ccons "N.zero" (ccons "N.succ" cnil))
 N/name : name "N" (is-decl (esort (lsucc lzero)) (indt (ccons "N.zero" (ccons "N.succ" cnil)) liz)).
 
 N/decl : declared "N" (esort (lsucc lzero)) (indt (ccons "N.zero" (ccons "N.succ" cnil)) liz)
-   = declared/ok-indt N/name N/rec-name N/clf N/cnd (dkind-ok/indt N/type-wf N/ends-in-sort).
+   = declared/ok-indt N/name N/rec-name N/cnd (dkind-ok/indt N/type-wf N/ends-in-sort).
 
 %% ctor N.zero (of N)
 %%% HOLE
@@ -44,7 +41,7 @@ N_zero/cmem : cmem "N.zero" (ccons "N.zero" (ccons "N.succ" cnil))
    = cmem/here.
 
 %%% HOLE: N_zero/fuo
-N_zero/fuo : field-universes-ok-skip-params liz (econst "N" lnil) (lsucc lzero).
+N_zero/fuo : field-universes-ok (econst "N" lnil) (lsucc lzero).
 
 N_zero/name : name "N.zero" (is-decl (econst "N" lnil) (ctor "N" liz)).
 
@@ -65,32 +62,19 @@ N_succ/cmem : cmem "N.succ" (ccons "N.zero" (ccons "N.succ" cnil))
    = (cmem/there cmem/here).
 
 %%% HOLE: N_succ/fuo
-N_succ/fuo : field-universes-ok-skip-params liz (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (lsucc lzero).
+N_succ/fuo : field-universes-ok (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (lsucc lzero).
 
 N_succ/name : name "N.succ" (is-decl (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (ctor "N" (lis liz))).
 
 N_succ/decl : declared "N.succ" (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (ctor "N" (lis liz))
    = declared/ok-ctor N_succ/name N/name N_succ/cmem N/eisl N_succ/fuo (dkind-ok/ctor N_succ/type-wf N_succ/positivity).
 
-%% recursor N.rec
-%%% HOLE
-N_rec/type-wf-sort : lvl.
-
-%%% HOLE
-N_rec/type-wf : of
-  (eforall (eforall (econst "N" lnil) ([x] (esort (lvar liz))))
-    ([x]
-      (eforall (eapp x (econst "N.zero" lnil))
-        ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w)))))))))
-  (esort N_rec/type-wf-sort).
-
-%%% HOLE: recursor N.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
-N_rec/decl : declared "N.rec"
-  (eforall (eforall (econst "N" lnil) ([x] (esort (lvar liz))))
-    ([x]
-      (eforall (eapp x (econst "N.zero" lnil))
-        ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w)))))))))
-  (irec "N").
+%% recursor N.rec (TCB-derived; informational only)
+%%   level params: u
+%%   type:   (eforall (eforall (econst "N" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w)))))))))
+%%   rules:
+%%     N.rec … N.zero … = (elam (eforall (econst "N" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "N.zero" lnil)) ([y] (elam (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] y))))))   (0 fields)
+%%     N.rec … N.succ … = (elam (eforall (econst "N" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "N.zero" lnil)) ([y] (elam (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (elam (econst "N" lnil) ([w] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "N.rec" (lcons (lvar liz) lnil)) x) y) z) w))))))))))   (1 fields)
 
 %% def projNotStruct
 %%% HOLE

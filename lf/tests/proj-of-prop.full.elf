@@ -33,40 +33,17 @@ False/rec-name : name "False.rec" (is-rec-for "False").
 False/eisl : ends-in-sort-with-level (esort lzero) lzero
    = ends-in-sort-with-level/sort.
 
-False/clf : count-leading-foralls (esort lzero) liz
-   = count-leading-foralls/zero.
-
 False/cnd : cnames-distinct cnil
    = cnames-distinct/nil.
 
 False/name : name "False" (is-decl (esort lzero) (indt cnil liz)).
 
 False/decl : declared "False" (esort lzero) (indt cnil liz)
-   = declared/ok-indt False/name False/rec-name False/clf False/cnd (dkind-ok/indt False/type-wf False/ends-in-sort).
+   = declared/ok-indt False/name False/rec-name False/cnd (dkind-ok/indt False/type-wf False/ends-in-sort).
 
-%% recursor False.rec
-False_rec/type-wf-sort : lvl
-   = (limax (limax lzero (lsucc (lvar liz))) (limax lzero (lvar liz))).
-
-False_rec/type-wf : of (eforall (eforall (econst "False" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "False" lnil) ([y] (eapp x y))))) (esort False_rec/type-wf-sort)
-   = (defeq/forall
-       (defeq/forall
-         (defeq/const False/decl (inst-expr/sort lvl-inst/zero))
-         ([x] ([h] defeq/sort-refl)))
-       ([x]
-         ([h]
-           (defeq/forall
-             (defeq/const False/decl (inst-expr/sort lvl-inst/zero))
-             ([y] ([h1] (defeq/app h h1))))))).
-
-False_rec/ert : enum-rec-type (eforall (eforall (econst "False" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "False" lnil) ([y] (eapp x y))))) "False" lnil cnil (lvar liz)
-   = (enum-rec-type/intro ([x] ([h] enum-rec-body/done))).
-
-False_rec/lee : le-eligible lzero cnil (lvar liz)
-   = le-eligible/cnil.
-
-False_rec/decl : declared "False.rec" (eforall (eforall (econst "False" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "False" lnil) ([y] (eapp x y))))) (irec "False")
-   = declared/ok-irec False/rec-name (dkind-ok/irec False_rec/type-wf False/name False/eisl False_rec/ert False_rec/lee).
+%% recursor False.rec (TCB-derived; informational only)
+%%   level params: u
+%%   type:   (eforall (eforall (econst "False" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "False" lnil) ([y] (eapp x y)))))
 
 %% inductive Wrapper
 Wrapper/type-wf-sort : lvl
@@ -83,16 +60,13 @@ Wrapper/rec-name : name "Wrapper.rec" (is-rec-for "Wrapper").
 Wrapper/eisl : ends-in-sort-with-level (esort lzero) lzero
    = ends-in-sort-with-level/sort.
 
-Wrapper/clf : count-leading-foralls (esort lzero) liz
-   = count-leading-foralls/zero.
-
 Wrapper/cnd : cnames-distinct (ccons "Wrapper.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
 Wrapper/name : name "Wrapper" (is-decl (esort lzero) (indt (ccons "Wrapper.mk" cnil) liz)).
 
 Wrapper/decl : declared "Wrapper" (esort lzero) (indt (ccons "Wrapper.mk" cnil) liz)
-   = declared/ok-indt Wrapper/name Wrapper/rec-name Wrapper/clf Wrapper/cnd (dkind-ok/indt Wrapper/type-wf Wrapper/ends-in-sort).
+   = declared/ok-indt Wrapper/name Wrapper/rec-name Wrapper/cnd (dkind-ok/indt Wrapper/type-wf Wrapper/ends-in-sort).
 
 %% ctor Wrapper.mk (of Wrapper)
 Wrapper_mk/type-wf-sort : lvl
@@ -111,59 +85,22 @@ Wrapper_mk/positivity : ctor-positive "Wrapper" lnil (eforall (econst "False" ln
 Wrapper_mk/cmem : cmem "Wrapper.mk" (ccons "Wrapper.mk" cnil)
    = cmem/here.
 
-Wrapper_mk/fuo : field-universes-ok-skip-params liz (eforall (econst "False" lnil) ([x] (econst "Wrapper" lnil))) lzero
-   = (field-universes-ok-skip-params/start
-       (field-universes-ok/forall
-         (defeq/const False/decl (inst-expr/sort lvl-inst/zero))
-         (mleq/self nonneg_0)
-         ([x] ([h] (field-universes-ok/done not-forall/const))))).
+Wrapper_mk/fuo : field-universes-ok (eforall (econst "False" lnil) ([x] (econst "Wrapper" lnil))) lzero
+   = (field-universes-ok/forall
+       (defeq/const False/decl (inst-expr/sort lvl-inst/zero))
+       (mleq/imax-lzL (mleq/self nonneg_0))
+       ([x] ([h] (field-universes-ok/done not-forall/const)))).
 
 Wrapper_mk/name : name "Wrapper.mk" (is-decl (eforall (econst "False" lnil) ([x] (econst "Wrapper" lnil))) (ctor "Wrapper" liz)).
 
 Wrapper_mk/decl : declared "Wrapper.mk" (eforall (econst "False" lnil) ([x] (econst "Wrapper" lnil))) (ctor "Wrapper" liz)
    = declared/ok-ctor Wrapper_mk/name Wrapper/name Wrapper_mk/cmem Wrapper/eisl Wrapper_mk/fuo (dkind-ok/ctor Wrapper_mk/type-wf Wrapper_mk/positivity).
 
-%% recursor Wrapper.rec
-Wrapper_rec/type-wf-sort : lvl
-   = (limax
-       (limax lzero (lsucc (lvar liz)))
-       (limax (limax lzero (lvar liz)) (limax lzero (lvar liz)))).
-
-Wrapper_rec/type-wf : of
-  (eforall (eforall (econst "Wrapper" lnil) ([x] (esort (lvar liz))))
-    ([x] (eforall (eforall (econst "False" lnil) ([y] (eapp x (eapp (econst "Wrapper.mk" lnil) y)))) ([y] (eforall (econst "Wrapper" lnil) ([z] (eapp x z)))))))
-  (esort Wrapper_rec/type-wf-sort)
-   = (defeq/forall
-       (defeq/forall
-         (defeq/const Wrapper/decl (inst-expr/sort lvl-inst/zero))
-         ([x] ([h] defeq/sort-refl)))
-       ([x]
-         ([h]
-           (defeq/forall
-             (defeq/forall
-               (defeq/const False/decl (inst-expr/sort lvl-inst/zero))
-               ([y]
-                 ([h1]
-                   (defeq/app
-                     h
-                     (defeq/app
-                       (defeq/const
-                         Wrapper_mk/decl
-                         (inst-expr/forall
-                           (inst-expr/const lvls-inst/nil)
-                           ([x] ([h] (inst-expr/const lvls-inst/nil)))))
-                       h1)))))
-             ([y]
-               ([h1]
-                 (defeq/forall
-                   (defeq/const Wrapper/decl (inst-expr/sort lvl-inst/zero))
-                   ([z] ([h2] (defeq/app h h2)))))))))).
-
-%%% HOLE: recursor Wrapper.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
-Wrapper_rec/decl : declared "Wrapper.rec"
-  (eforall (eforall (econst "Wrapper" lnil) ([x] (esort (lvar liz))))
-    ([x] (eforall (eforall (econst "False" lnil) ([y] (eapp x (eapp (econst "Wrapper.mk" lnil) y)))) ([y] (eforall (econst "Wrapper" lnil) ([z] (eapp x z)))))))
-  (irec "Wrapper").
+%% recursor Wrapper.rec (TCB-derived; informational only)
+%%   level params: u
+%%   type:   (eforall (eforall (econst "Wrapper" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eforall (econst "False" lnil) ([y] (eapp x (eapp (econst "Wrapper.mk" lnil) y)))) ([y] (eforall (econst "Wrapper" lnil) ([z] (eapp x z)))))))
+%%   rules:
+%%     Wrapper.rec … Wrapper.mk … = (elam (eforall (econst "Wrapper" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eforall (econst "False" lnil) ([y] (eapp x (eapp (econst "Wrapper.mk" lnil) y)))) ([y] (elam (econst "False" lnil) ([z] (eapp y z)))))))   (1 fields)
 
 %% inductive True
 True/type-wf-sort : lvl
@@ -180,16 +117,13 @@ True/rec-name : name "True.rec" (is-rec-for "True").
 True/eisl : ends-in-sort-with-level (esort lzero) lzero
    = ends-in-sort-with-level/sort.
 
-True/clf : count-leading-foralls (esort lzero) liz
-   = count-leading-foralls/zero.
-
 True/cnd : cnames-distinct (ccons "True.intro" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
 True/name : name "True" (is-decl (esort lzero) (indt (ccons "True.intro" cnil) liz)).
 
 True/decl : declared "True" (esort lzero) (indt (ccons "True.intro" cnil) liz)
-   = declared/ok-indt True/name True/rec-name True/clf True/cnd (dkind-ok/indt True/type-wf True/ends-in-sort).
+   = declared/ok-indt True/name True/rec-name True/cnd (dkind-ok/indt True/type-wf True/ends-in-sort).
 
 %% ctor True.intro (of True)
 True_intro/type-wf-sort : lvl
@@ -204,51 +138,20 @@ True_intro/positivity : ctor-positive "True" lnil (econst "True" lnil)
 True_intro/cmem : cmem "True.intro" (ccons "True.intro" cnil)
    = cmem/here.
 
-True_intro/fuo : field-universes-ok-skip-params liz (econst "True" lnil) lzero
-   = (field-universes-ok-skip-params/start
-       (field-universes-ok/done not-forall/const)).
+True_intro/fuo : field-universes-ok (econst "True" lnil) lzero
+   = (field-universes-ok/done not-forall/const).
 
 True_intro/name : name "True.intro" (is-decl (econst "True" lnil) (ctor "True" liz)).
 
 True_intro/decl : declared "True.intro" (econst "True" lnil) (ctor "True" liz)
    = declared/ok-ctor True_intro/name True/name True_intro/cmem True/eisl True_intro/fuo (dkind-ok/ctor True_intro/type-wf True_intro/positivity).
 
-%% recursor True.rec
-True_rec/type-wf-sort : lvl
-   = (limax
-       (limax lzero (lsucc (lvar liz)))
-       (limax (lvar liz) (limax lzero (lvar liz)))).
-
-True_rec/type-wf : of
-  (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z)))))))
-  (esort True_rec/type-wf-sort)
-   = (defeq/forall
-       (defeq/forall
-         (defeq/const True/decl (inst-expr/sort lvl-inst/zero))
-         ([x] ([h] defeq/sort-refl)))
-       ([x]
-         ([h]
-           (defeq/forall
-             (defeq/app
-               h
-               (defeq/const True_intro/decl (inst-expr/const lvls-inst/nil)))
-             ([y]
-               ([h1]
-                 (defeq/forall
-                   (defeq/const True/decl (inst-expr/sort lvl-inst/zero))
-                   ([z] ([h2] (defeq/app h h2)))))))))).
-
-True_rec/ert : enum-rec-type (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z))))))) "True" lnil (ccons "True.intro" cnil) (lvar liz)
-   = (enum-rec-type/intro
-       ([x] ([h] (enum-rec-body/minor ([y] ([h1] enum-rec-body/done)))))).
-
-True_rec/lee : le-eligible lzero (ccons "True.intro" cnil) (lvar liz)
-   = le-eligible/csingle.
-
-True_rec/decl : declared "True.rec"
-  (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z)))))))
-  (irec "True")
-   = declared/ok-irec True/rec-name (dkind-ok/irec True_rec/type-wf True/name True/eisl True_rec/ert True_rec/lee).
+%% recursor True.rec (TCB-derived; informational only)
+%%   level params: u
+%%   type:   (eforall (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "True.intro" lnil)) ([y] (eforall (econst "True" lnil) ([z] (eapp x z)))))))
+%%   rules:
+%%     True.rec … True.intro … = (elam (eforall (econst "True" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "True.intro" lnil)) ([y] y))))   (0 fields)
+%%   K-like reduction: yes
 
 %% thm badFalse
 badFalse/type-wf : of (econst "False" lnil) (esort lzero)

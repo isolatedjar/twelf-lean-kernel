@@ -21,9 +21,32 @@ export interface EnvEntry {
   value: Expr | null; // null for axiom/opaque/thm/inductive — no δ-reduction
   levelParams: Name[];
   mangleName: string; // LF constant name prefix, e.g. "constType" or "PN_succ"
+  // True iff this entry is a recursor.  Recursors are TCB-derived
+  // (not env-declared), so when synthRec encounters `(econst "<rec>" Lvls)`
+  // it must NOT fall through to `<rec>/decl` (no such constant); instead
+  // it must inline-construct a `rec-derived-declared`-shaped witness.
+  // If `recursorOf` is also set, the witness builder has the info it
+  // needs; otherwise (non-enum shape) the lookup must fail outright so
+  // the obligation HOLEs rather than emitting a dangling reference.
+  isRecursor?: boolean;
+  recursorOf?: {
+    indMangleName: string;     // parent inductive's mangled name (for /decl, /rec-name, /eisl)
+    ctors: { name: string; type: Expr; numFields: number }[];
+    indUInd: Level;            // parent inductive's sort
+    motiveU: Level;            // recursor's motive target sort (from T's structure)
+  };
 }
 
 export type EnvMap = Map<string, EnvEntry>;
+
+// Walk a type to find its result-sort universe level — used for recursor
+// recognition (recursorOf.indUInd).  Same shape as generate-twelf.ts's
+// `inductiveResultUniverse` but kept here to avoid a cycle.
+function inductiveResultUniverse(t: Expr): Level | null {
+  let cur = t;
+  while (cur.kind === "forallE") cur = cur.body;
+  return cur.kind === "sort" ? cur.level : null;
+}
 
 export function buildEnvMap(env: ParsedEnv): EnvMap {
   const m: EnvMap = new Map();
@@ -51,11 +74,72 @@ export function buildEnvMap(env: ParsedEnv): EnvMap {
         });
       }
       for (const r of d.recursors) {
-        m.set(nameToString(r.name), {
+        // Recursors are TCB-derived: the env-supplied type/rules are
+        // ignored, but we record the recursor in the EnvMap so the
+        // prover can synthesize a rec-derived-declared witness inline
+        // when discharging `econst "<rec>" Lvls` references.
+        //
+        // Restrict to enum-shaped recursors (no params, no indices, no
+        // level params on the inductive, no ctor fields) — the only
+        // shape rec-derived/enum currently covers.  Other shapes leave
+        // recursorOf undefined → recursor decl synth fails → env
+        // declines.  (Phase 2 in completeness-plan §3.6.)
+        const recName = nameToString(r.name);
+        const parentIndN = recName.endsWith(".rec") ? recName.slice(0, -4) : null;
+        const parentInd = parentIndN
+          ? d.types.find((t) => nameToString(t.name) === parentIndN)
+          : undefined;
+        const ctorsForInd = parentIndN
+          ? d.ctors.filter((c) => nameToString(c.induct) === parentIndN)
+          : [];
+        // Stage 2 (Phase 2): non-parametric, non-indexed, no level params,
+        // ctors with ≤ 2 non-recursive non-dependent fields.  The
+        // per-field-count `enum-rec-body/minor-Nf` rules in tcb.elf
+        // cover this shape; recursive ctors (Nat.succ : Nat → Nat,
+        // RTree → RTree, ...) need an extra IH binder per recursive
+        // field, which is Stage 4 — exclude them here.
+        const enumShaped =
+          parentInd !== undefined &&
+          parentInd.numParams === 0 &&
+          parentInd.numIndices === 0 &&
+          parentInd.levelParams.length === 0 &&
+          ctorsForInd.every(
+            (c) =>
+              c.numFields <= 2 && !ctorHasRecursiveField(c.type, c.numFields, parentIndN!),
+          );
+        // Extract motive U from r.type's outer-binder structure.
+        let motiveU: Level | null = null;
+        if (r.type.kind === "forallE" && r.type.type.kind === "forallE") {
+          const motiveResultType = r.type.type.body;
+          if (motiveResultType.kind === "sort") motiveU = motiveResultType.level;
+        }
+        const indUInd =
+          parentInd !== undefined ? inductiveResultUniverse(parentInd.type) : null;
+        let recursorOf: EnvEntry["recursorOf"] = undefined;
+        if (
+          enumShaped &&
+          parentInd !== undefined &&
+          motiveU !== null &&
+          indUInd !== null
+        ) {
+          recursorOf = {
+            indMangleName: mangle(parentInd.name),
+            ctors: ctorsForInd.map((c) => ({
+              name: nameToString(c.name),
+              type: c.type,
+              numFields: c.numFields,
+            })),
+            indUInd,
+            motiveU,
+          };
+        }
+        m.set(recName, {
           type: r.type,
           value: null,
           levelParams: r.levelParams,
           mangleName: mangle(r.name),
+          isRecursor: true,
+          recursorOf,
         });
       }
       continue;
@@ -684,9 +768,30 @@ function synthRec(e: Expr, scope: Hyp[], used: string[], envMap?: EnvMap): Synth
       const instType = instantiateLevels(entry.type, entry.levelParams, e.us);
       const ie = buildInstExpr(entry.type, entry.levelParams, [], []);
       if (!ie) return null;
+      // For recursors, inline-construct the `declared` witness from the
+      // TCB's rec-derived family — see EnvEntry.recursorOf and CLAUDE.md
+      // "Derive, don't check."  For non-recursors, the env-emitted
+      // `<mn>/decl` constant is the witness as before.
+      //
+      // If the entry IS a recursor but `recursorOf` isn't set, the
+      // recursor's shape is outside what `buildRecursorDeclared` covers
+      // (Phase 1 = enum-only).  We MUST return null rather than fall
+      // back to `<mn>/decl` — the translator doesn't emit a `<rec>/decl`
+      // constant under the derive-canonical pivot, so falling back
+      // would emit a dangling reference that Twelf rejects with a
+      // confusing "typing ambiguous" error.
+      let declProof: Fmt;
+      if (entry.isRecursor) {
+        if (!entry.recursorOf) return null;
+        const built = buildRecursorDeclared(entry.recursorOf, envMap);
+        if (built === null) return null;
+        declProof = built;
+      } else {
+        declProof = atom(entry.mangleName + "/decl");
+      }
       return {
         ty: instType,
-        proof: app(atom("defeq/const"), atom(entry.mangleName + "/decl"), ie),
+        proof: app(atom("defeq/const"), declProof, ie),
       };
     }
 
@@ -1488,7 +1593,13 @@ function buildFieldUniversesOk(
     uA = r.level;
   }
   // Step 2: mleq UA UInd 0.
-  const mleqProof = proveMleq(uA, uInd, 0);
+  // The TCB rule is `mleq (limax UA UInd) UInd 0` — Lean's actual
+  // `imax`-form of the field-universe constraint, which gives Prop
+  // impredicativity for free (Eq.refl's polymorphic field is fine since
+  // imax u 0 = 0 ≤ 0).  See tcb.elf §field-universes-ok for the
+  // rationale.
+  const imaxLevel: Level = { kind: "imax", l: uA, r: uInd };
+  const mleqProof = proveMleq(imaxLevel, uInd, 0);
   if (mleqProof === null) return null;
   // Step 3: introduce HOAS binders for the field, recurse on body.
   const x = freshVar(used);
@@ -1526,34 +1637,135 @@ function buildFieldUniversesOk(
 
 // Structural witness for `enum-rec-body M Body FooName lnil Ctors`,
 // where `Body` is the body of an enum recursor's type under the bound
-// motive M.  Walks the chain of `∀ m_i : M c_i, ...` minor premises and
-// terminates at `∀ t : Foo, M t`.  The translator emits Body's expr by
+// motive M.  Walks the chain of minor premises (one per ctor in cidx
+// order) and terminates at `∀ t : Foo, M t`.  For each ctor we emit
+// `enum-rec-body/minor-Nf` where N is the ctor's field count; for
+// N ≥ 1 we synthesize `defeq A_i A_i (esort UA_i)` for each field
+// type using the env map.  The translator emits Body's expr by
 // substitution; here we just emit the structural witness.
 //
-// `ctors` is the cnames list (as a string array) corresponding to the
-// remaining Π-chain — each `ccons C Rest` peels off one minor and
-// recurses on Rest.
-function buildEnumRecBody(ctors: string[], used: string[]): Fmt {
+// Returns null if a field's domain type can't be synthesized to a
+// sort (e.g. dependent fields whose type mentions earlier args — not
+// yet supported by the Stage-2 LF rules).
+function buildEnumRecBody(
+  ctors: NonNullable<EnvEntry["recursorOf"]>["ctors"],
+  used: string[],
+  envMap: EnvMap,
+): Fmt | null {
   if (ctors.length === 0) {
     return atom("enum-rec-body/done");
   }
+  const c = ctors[0]!;
+  const fieldTypes = ctorFieldTypes(c.type, c.numFields);
+  if (fieldTypes === null) return null;
+  // For non-dependent fields, each A_i is a closed expression: we
+  // synthesize `defeq A_i A_i (esort UA_i)` against the empty scope.
+  // For dependent fields this would need a per-field accumulating
+  // scope, which Stage 2 doesn't support.
+  const domProofs: Fmt[] = [];
+  for (const a of fieldTypes) {
+    const rA = synthRec(a, [], used, envMap);
+    if (rA === null) return null;
+    let dom = rA.proof;
+    let uA = sortLevel(rA.ty);
+    if (uA === null) {
+      const r = reduceToSort(rA.ty, rA.proof, envMap, [], used);
+      if (r === null) return null;
+      dom = r.proof;
+      uA = r.level;
+    }
+    domProofs.push(dom);
+  }
+  // Each minor (regardless of field count) binds ONE motive m, whose
+  // type is `∀ a_1...a_n, M (c a_1...a_n)`.  The field binders live
+  // inside that type, not as separate minor binders.
   const m = freshVar(used);
   const usedM = [m, ...used];
-  const h = freshHyp(usedM);
-  const usedH = [h, ...usedM];
-  const rest = buildEnumRecBody(ctors.slice(1), usedH);
-  return app(atom("enum-rec-body/minor"), lam(m, lam(h, rest)));
+  const hm = freshHyp(usedM);
+  const usedH = [hm, ...usedM];
+  const rest = buildEnumRecBody(ctors.slice(1), usedH, envMap);
+  if (rest === null) return null;
+  const inner: Fmt = lam(m, lam(hm, rest));
+  const ruleName =
+    c.numFields === 0
+      ? "enum-rec-body/minor"
+      : `enum-rec-body/minor-${c.numFields}f`;
+  return app(atom(ruleName), ...domProofs, inner);
+}
+
+// Peel `numFields` leading binders off a ctor's type; return each
+// binder's domain.  Returns null if the type has fewer than
+// `numFields` leading Π's.  For non-dependent fields the domains are
+// closed expressions; for dependent fields the i-th domain may
+// contain bvars referring to earlier args, which this helper does
+// NOT close over — Stage 2 only handles closed (non-dependent)
+// fields, and the downstream synthRec call will fail cleanly if a
+// field actually depends on its predecessors.
+function ctorFieldTypes(t: Expr, numFields: number): Expr[] | null {
+  const out: Expr[] = [];
+  let cur = t;
+  for (let i = 0; i < numFields; i++) {
+    if (cur.kind !== "forallE") return null;
+    out.push(cur.type);
+    cur = cur.body;
+  }
+  return out;
+}
+
+// True if any field type in the ctor's leading Π chain (up to
+// numFields binders) mentions the inductive `indName` as a `const`
+// reference.  Used to gate Stage-2 enum recognition: recursive
+// ctors (Nat.succ : Nat → Nat, ...) need an IH binder per recursive
+// field, which Stage 2's `enum-rec-body/minor-Nf` rules don't
+// emit — exclude them so they decline cleanly (🩹) rather than
+// emitting a witness that fails to typecheck (❌).
+function ctorHasRecursiveField(t: Expr, numFields: number, indName: string): boolean {
+  const fields = ctorFieldTypes(t, numFields);
+  if (fields === null) return true; // shape-broken → conservatively recursive
+  for (const f of fields) {
+    if (exprMentionsConst(f, indName)) return true;
+  }
+  return false;
+}
+
+function exprMentionsConst(e: Expr, name: string): boolean {
+  switch (e.kind) {
+    case "const":
+      return nameToString(e.name) === name;
+    case "app":
+      return exprMentionsConst(e.fn, name) || exprMentionsConst(e.arg, name);
+    case "lam":
+    case "forallE":
+      return exprMentionsConst(e.type, name) || exprMentionsConst(e.body, name);
+    case "letE":
+      return (
+        exprMentionsConst(e.type, name) ||
+        exprMentionsConst(e.value, name) ||
+        exprMentionsConst(e.body, name)
+      );
+    case "proj":
+      return exprMentionsConst(e.struct, name);
+    case "sort":
+    case "bvar":
+    case "natLit":
+    case "strLit":
+      return false;
+  }
 }
 
 // Structural witness for `enum-rec-type T IndN lnil Ctors U`.  The rule's
 // single constructor `enum-rec-type/intro` takes an enum-rec-body
 // derivation under the motive binder + its typing hypothesis.
-export function buildEnumRecType(ctors: string[]): Fmt {
+export function buildEnumRecType(
+  ctors: NonNullable<EnvEntry["recursorOf"]>["ctors"],
+  envMap: EnvMap,
+): Fmt | null {
   const M = freshVar([]);
   const usedM = [M];
   const hM = freshHyp(usedM);
   const usedH = [hM, ...usedM];
-  const body = buildEnumRecBody(ctors, usedH);
+  const body = buildEnumRecBody(ctors, usedH, envMap);
+  if (body === null) return null;
   return app(atom("enum-rec-type/intro"), lam(M, lam(hM, body)));
 }
 
@@ -1589,39 +1801,43 @@ export function buildLeEligible(uInd: Level, numCtors: number, u: Level): Fmt | 
   return app(atom("le-eligible/prop-prop"), uIndLeZ, zLeUInd, uLeZ, zLeU);
 }
 
+// Build the `declared <rec> _ (irec <ind>)` witness inline, by way of the
+// TCB's `rec-derived-declared (rec-derived/enum ...)` chain.  Called from
+// synthRec's const case when the name is a recursor.  Returns null if the
+// le-eligible witness can't be constructed (the recursor's claimed motive
+// universe doesn't satisfy Lean's elimination-universe restriction).
+function buildRecursorDeclared(
+  rec: NonNullable<EnvEntry["recursorOf"]>,
+  envMap: EnvMap,
+): Fmt | null {
+  const ert = buildEnumRecType(rec.ctors, envMap);
+  if (ert === null) return null;
+  const lee = buildLeEligible(rec.indUInd, rec.ctors.length, rec.motiveU);
+  if (lee === null) return null;
+  const recDerived = app(
+    atom("rec-derived/enum"),
+    atom(rec.indMangleName + "/decl"),
+    atom(rec.indMangleName + "/rec-name"),
+    ert,
+    atom(rec.indMangleName + "/eisl"),
+    lee,
+  );
+  return app(
+    atom("rec-derived-declared"),
+    recDerived,
+    atom(rec.indMangleName + "/rec-name"),
+  );
+}
+
 export function buildFieldUniverses(
   t: Expr,
-  nParams: number,
+  // nParams unused under the no-skip-params design — kept in the
+  // signature for backward compatibility with `Prover.fieldUniverses`
+  // callers.  See tcb.elf §field-universes-ok for why we walk every
+  // leading binder rather than skipping NParams of them.
+  _nParams: number,
   uInd: Level,
   envMap: EnvMap,
 ): Fmt | null {
-  // Walk the first nParams Π binders, accumulating skip frames.  Each skip
-  // introduces a `(x : expr) (h : defeq x x A)` HOAS pair; the body recurses
-  // with one fewer skip to do.
-  function go(t: Expr, n: number, scope: Hyp[], used: string[]): Fmt | null {
-    if (n === 0) {
-      const inner = buildFieldUniversesOk(t, uInd, scope, used, envMap);
-      if (inner === null) return null;
-      return app(atom("field-universes-ok-skip-params/start"), inner);
-    }
-    if (t.kind !== "forallE") {
-      // We've been told to skip more params than the ctor has leading Πs.
-      // Shouldn't happen if NParams is pinned via count-leading-foralls
-      // (every well-typed ctor's type has ≥ NParams leading binders).
-      return null;
-    }
-    const x = freshVar(used);
-    const usedX = [x, ...used];
-    const h = freshHyp(usedX);
-    const usedH = [h, ...usedX];
-    const body = go(
-      t.body,
-      n - 1,
-      [{ hyp: h, ty: t.type }, ...scope],
-      usedH,
-    );
-    if (body === null) return null;
-    return app(atom("field-universes-ok-skip-params/skip"), lam(x, lam(h, body)));
-  }
-  return go(t, nParams, [], []);
+  return buildFieldUniversesOk(t, uInd, [], [], envMap);
 }

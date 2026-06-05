@@ -23,9 +23,6 @@ Nat/rec-name : name "Nat.rec" (is-rec-for "Nat").
 Nat/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
-Nat/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = count-leading-foralls/zero.
-
 Nat/cnd : cnames-distinct (ccons "Nat.zero" (ccons "Nat.succ" cnil))
    = (cnames-distinct/cons
        (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil)
@@ -34,7 +31,7 @@ Nat/cnd : cnames-distinct (ccons "Nat.zero" (ccons "Nat.succ" cnil))
 Nat/name : name "Nat" (is-decl (esort (lsucc lzero)) (indt (ccons "Nat.zero" (ccons "Nat.succ" cnil)) liz)).
 
 Nat/decl : declared "Nat" (esort (lsucc lzero)) (indt (ccons "Nat.zero" (ccons "Nat.succ" cnil)) liz)
-   = declared/ok-indt Nat/name Nat/rec-name Nat/clf Nat/cnd (dkind-ok/indt Nat/type-wf Nat/ends-in-sort).
+   = declared/ok-indt Nat/name Nat/rec-name Nat/cnd (dkind-ok/indt Nat/type-wf Nat/ends-in-sort).
 
 %% ctor Nat.zero (of Nat)
 Nat_zero/type-wf-sort : lvl
@@ -49,9 +46,8 @@ Nat_zero/positivity : ctor-positive "Nat" lnil (econst "Nat" lnil)
 Nat_zero/cmem : cmem "Nat.zero" (ccons "Nat.zero" (ccons "Nat.succ" cnil))
    = cmem/here.
 
-Nat_zero/fuo : field-universes-ok-skip-params liz (econst "Nat" lnil) (lsucc lzero)
-   = (field-universes-ok-skip-params/start
-       (field-universes-ok/done not-forall/const)).
+Nat_zero/fuo : field-universes-ok (econst "Nat" lnil) (lsucc lzero)
+   = (field-universes-ok/done not-forall/const).
 
 Nat_zero/name : name "Nat.zero" (is-decl (econst "Nat" lnil) (ctor "Nat" liz)).
 
@@ -79,83 +75,27 @@ Nat_succ/positivity : ctor-positive "Nat" lnil (eforall (econst "Nat" lnil) ([x]
 Nat_succ/cmem : cmem "Nat.succ" (ccons "Nat.zero" (ccons "Nat.succ" cnil))
    = (cmem/there cmem/here).
 
-Nat_succ/fuo : field-universes-ok-skip-params liz (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (lsucc lzero)
-   = (field-universes-ok-skip-params/start
-       (field-universes-ok/forall
-         (defeq/const Nat/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
-         (mleq/self nonneg_0)
-         ([x] ([h] (field-universes-ok/done not-forall/const))))).
+Nat_succ/fuo : field-universes-ok (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (lsucc lzero)
+   = (field-universes-ok/forall
+       (defeq/const Nat/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+       (mleq/imax-lsL
+         (mleq/sR
+           (mleq/maxL
+             (mleq/sL (mleq/self nonneg_0))
+             (mleq/sL (mleq/self nonneg_0)))))
+       ([x] ([h] (field-universes-ok/done not-forall/const)))).
 
 Nat_succ/name : name "Nat.succ" (is-decl (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (ctor "Nat" (lis liz))).
 
 Nat_succ/decl : declared "Nat.succ" (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (ctor "Nat" (lis liz))
    = declared/ok-ctor Nat_succ/name Nat/name Nat_succ/cmem Nat/eisl Nat_succ/fuo (dkind-ok/ctor Nat_succ/type-wf Nat_succ/positivity).
 
-%% recursor Nat.rec
-Nat_rec/type-wf-sort : lvl
-   = (limax
-       (limax (lsucc lzero) (lsucc (lvar liz)))
-       (limax
-         (lvar liz)
-         (limax
-           (limax (lsucc lzero) (limax (lvar liz) (lvar liz)))
-           (limax (lsucc lzero) (lvar liz))))).
-
-Nat_rec/type-wf : of
-  (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz))))
-    ([x]
-      (eforall (eapp x (econst "Nat.zero" lnil))
-        ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w)))))))))
-  (esort Nat_rec/type-wf-sort)
-   = (defeq/forall
-       (defeq/forall
-         (defeq/const Nat/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
-         ([x] ([h] defeq/sort-refl)))
-       ([x]
-         ([h]
-           (defeq/forall
-             (defeq/app
-               h
-               (defeq/const Nat_zero/decl (inst-expr/const lvls-inst/nil)))
-             ([y]
-               ([h1]
-                 (defeq/forall
-                   (defeq/forall
-                     (defeq/const
-                       Nat/decl
-                       (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
-                     ([z]
-                       ([h2]
-                         (defeq/forall
-                           (defeq/app h h2)
-                           ([w]
-                             ([h3]
-                               (defeq/app
-                                 h
-                                 (defeq/app
-                                   (defeq/const
-                                     Nat_succ/decl
-                                     (inst-expr/forall
-                                       (inst-expr/const lvls-inst/nil)
-                                       ([x]
-                                         ([h]
-                                           (inst-expr/const lvls-inst/nil)))))
-                                   h2))))))))
-                   ([z]
-                     ([h2]
-                       (defeq/forall
-                         (defeq/const
-                           Nat/decl
-                           (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
-                         ([w] ([h3] (defeq/app h h3))))))))))))).
-
-%%% HOLE: recursor Nat.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
-Nat_rec/decl : declared "Nat.rec"
-  (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz))))
-    ([x]
-      (eforall (eapp x (econst "Nat.zero" lnil))
-        ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w)))))))))
-  (irec "Nat").
+%% recursor Nat.rec (TCB-derived; informational only)
+%%   level params: u
+%%   type:   (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w)))))))))
+%%   rules:
+%%     Nat.rec … Nat.zero … = (elam (eforall (econst "Nat" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "Nat.zero" lnil)) ([y] (elam (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] y))))))   (0 fields)
+%%     Nat.rec … Nat.succ … = (elam (eforall (econst "Nat" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "Nat.zero" lnil)) ([y] (elam (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (elam (econst "Nat" lnil) ([w] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "Nat.rec" (lcons (lvar liz) lnil)) x) y) z) w))))))))))   (1 fields)
 
 %% inductive reflOccLeft
 reflOccLeft/type-wf-sort : lvl
@@ -172,16 +112,13 @@ reflOccLeft/rec-name : name "reflOccLeft.rec" (is-rec-for "reflOccLeft").
 reflOccLeft/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
-reflOccLeft/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = count-leading-foralls/zero.
-
 reflOccLeft/cnd : cnames-distinct (ccons "reflOccLeft.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
 reflOccLeft/name : name "reflOccLeft" (is-decl (esort (lsucc lzero)) (indt (ccons "reflOccLeft.mk" cnil) liz)).
 
 reflOccLeft/decl : declared "reflOccLeft" (esort (lsucc lzero)) (indt (ccons "reflOccLeft.mk" cnil) liz)
-   = declared/ok-indt reflOccLeft/name reflOccLeft/rec-name reflOccLeft/clf reflOccLeft/cnd (dkind-ok/indt reflOccLeft/type-wf reflOccLeft/ends-in-sort).
+   = declared/ok-indt reflOccLeft/name reflOccLeft/rec-name reflOccLeft/cnd (dkind-ok/indt reflOccLeft/type-wf reflOccLeft/ends-in-sort).
 
 %% ctor reflOccLeft.mk (of reflOccLeft)
 reflOccLeft_mk/type-wf-sort : lvl
@@ -216,46 +153,41 @@ reflOccLeft_mk/positivity : ctor-positive "reflOccLeft" lnil (eforall (eforall (
 reflOccLeft_mk/cmem : cmem "reflOccLeft.mk" (ccons "reflOccLeft.mk" cnil)
    = cmem/here.
 
-reflOccLeft_mk/fuo : field-universes-ok-skip-params liz (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil))) (lsucc lzero)
-   = (field-universes-ok-skip-params/start
-       (field-universes-ok/forall
-         (defeq/forall
-           (defeq/const Nat/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
-           ([x]
-             ([h]
-               (defeq/forall
-                 (defeq/const
-                   reflOccLeft/decl
-                   (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
-                 ([y]
-                   ([h1]
-                     (defeq/const
-                       Nat/decl
-                       (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))))))
-         (mleq/imax-imL
-           (mleq/sR
-             (mleq/maxL
-               (mleq/imax-lsL
-                 (mleq/maxL
-                   (mleq/sL (mleq/self nonneg_0))
-                   (mleq/sL (mleq/self nonneg_0))))
-               (mleq/imax-lsL
-                 (mleq/maxL
-                   (mleq/sL (mleq/self nonneg_0))
-                   (mleq/sL (mleq/self nonneg_0)))))))
-         ([x] ([h] (field-universes-ok/done not-forall/const))))).
+reflOccLeft_mk/fuo : field-universes-ok (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil))) (lsucc lzero)
+   = (field-universes-ok/forall
+       (defeq/forall
+         (defeq/const Nat/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+         ([x]
+           ([h]
+             (defeq/forall
+               (defeq/const
+                 reflOccLeft/decl
+                 (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+               ([y]
+                 ([h1]
+                   (defeq/const
+                     Nat/decl
+                     (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))))))
+       (mleq/imax-lsL
+         (mleq/sR
+           (mleq/maxL
+             (mleq/imax-imL
+               (mleq/maxL
+                 (mleq/imax-lsL
+                   (mleq/maxL
+                     (mleq/sL (mleq/self nonneg_0))
+                     (mleq/sL (mleq/self nonneg_0))))
+                 (mleq/imax-lsL
+                   (mleq/maxL
+                     (mleq/sL (mleq/self nonneg_0))
+                     (mleq/sL (mleq/self nonneg_0))))))
+             (mleq/sL (mleq/self nonneg_0)))))
+       ([x] ([h] (field-universes-ok/done not-forall/const)))).
 
 reflOccLeft_mk/name : name "reflOccLeft.mk" (is-decl (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil))) (ctor "reflOccLeft" liz)).
 
 reflOccLeft_mk/decl : declared "reflOccLeft.mk" (eforall (eforall (econst "Nat" lnil) ([x] (eforall (econst "reflOccLeft" lnil) ([y] (econst "Nat" lnil))))) ([x] (econst "reflOccLeft" lnil))) (ctor "reflOccLeft" liz)
    = declared/ok-ctor reflOccLeft_mk/name reflOccLeft/name reflOccLeft_mk/cmem reflOccLeft/eisl reflOccLeft_mk/fuo (dkind-ok/ctor reflOccLeft_mk/type-wf reflOccLeft_mk/positivity).
 
-%% recursor reflOccLeft.rec
-reflOccLeft_rec/type-wf-sort : lvl
-   = (lsucc lzero).
-
-reflOccLeft_rec/type-wf : of (esort lzero) (esort reflOccLeft_rec/type-wf-sort)
-   = defeq/sort-refl.
-
-%%% HOLE: recursor reflOccLeft.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
-reflOccLeft_rec/decl : declared "reflOccLeft.rec" (esort lzero) (irec "reflOccLeft").
+%% recursor reflOccLeft.rec (TCB-derived; informational only)
+%%   type:   (esort lzero)

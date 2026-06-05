@@ -26,16 +26,13 @@ BogusRecursor/rec-name : name "BogusRecursor.rec" (is-rec-for "BogusRecursor").
 BogusRecursor/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
-BogusRecursor/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = count-leading-foralls/zero.
-
 BogusRecursor/cnd : cnames-distinct (ccons "BogusRecursor.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
 BogusRecursor/name : name "BogusRecursor" (is-decl (esort (lsucc lzero)) (indt (ccons "BogusRecursor.mk" cnil) liz)).
 
 BogusRecursor/decl : declared "BogusRecursor" (esort (lsucc lzero)) (indt (ccons "BogusRecursor.mk" cnil) liz)
-   = declared/ok-indt BogusRecursor/name BogusRecursor/rec-name BogusRecursor/clf BogusRecursor/cnd (dkind-ok/indt BogusRecursor/type-wf BogusRecursor/ends-in-sort).
+   = declared/ok-indt BogusRecursor/name BogusRecursor/rec-name BogusRecursor/cnd (dkind-ok/indt BogusRecursor/type-wf BogusRecursor/ends-in-sort).
 
 %% ctor BogusRecursor.mk (of BogusRecursor)
 BogusRecursor_mk/type-wf-sort : lvl
@@ -52,21 +49,13 @@ BogusRecursor_mk/positivity : ctor-positive "BogusRecursor" lnil (econst "BogusR
 BogusRecursor_mk/cmem : cmem "BogusRecursor.mk" (ccons "BogusRecursor.mk" cnil)
    = cmem/here.
 
-BogusRecursor_mk/fuo : field-universes-ok-skip-params liz (econst "BogusRecursor" lnil) (lsucc lzero)
-   = (field-universes-ok-skip-params/start
-       (field-universes-ok/done not-forall/const)).
+BogusRecursor_mk/fuo : field-universes-ok (econst "BogusRecursor" lnil) (lsucc lzero)
+   = (field-universes-ok/done not-forall/const).
 
 BogusRecursor_mk/name : name "BogusRecursor.mk" (is-decl (econst "BogusRecursor" lnil) (ctor "BogusRecursor" liz)).
 
 BogusRecursor_mk/decl : declared "BogusRecursor.mk" (econst "BogusRecursor" lnil) (ctor "BogusRecursor" liz)
    = declared/ok-ctor BogusRecursor_mk/name BogusRecursor/name BogusRecursor_mk/cmem BogusRecursor/eisl BogusRecursor_mk/fuo (dkind-ok/ctor BogusRecursor_mk/type-wf BogusRecursor_mk/positivity).
 
-%% recursor BogusRecursor.rec
-BogusRecursor_rec/type-wf-sort : lvl
-   = (lsucc lzero).
-
-BogusRecursor_rec/type-wf : of (esort lzero) (esort BogusRecursor_rec/type-wf-sort)
-   = defeq/sort-refl.
-
-%%% HOLE: recursor BogusRecursor.rec — motive sort not extractable from recursor type
-BogusRecursor_rec/decl : declared "BogusRecursor.rec" (esort lzero) (irec "BogusRecursor").
+%% recursor BogusRecursor.rec (TCB-derived; informational only)
+%%   type:   (esort lzero)

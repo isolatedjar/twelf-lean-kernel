@@ -15,44 +15,17 @@ Empty/rec-name : name "Empty.rec" (is-rec-for "Empty").
 Empty/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
-Empty/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = count-leading-foralls/zero.
-
 Empty/cnd : cnames-distinct cnil
    = cnames-distinct/nil.
 
 Empty/name : name "Empty" (is-decl (esort (lsucc lzero)) (indt cnil liz)).
 
 Empty/decl : declared "Empty" (esort (lsucc lzero)) (indt cnil liz)
-   = declared/ok-indt Empty/name Empty/rec-name Empty/clf Empty/cnd (dkind-ok/indt Empty/type-wf Empty/ends-in-sort).
+   = declared/ok-indt Empty/name Empty/rec-name Empty/cnd (dkind-ok/indt Empty/type-wf Empty/ends-in-sort).
 
-%% recursor Empty.rec
-Empty_rec/type-wf-sort : lvl
-   = (limax
-       (limax (lsucc lzero) (lsucc (lvar liz)))
-       (limax (lsucc lzero) (lvar liz))).
-
-Empty_rec/type-wf : of (eforall (eforall (econst "Empty" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (esort Empty_rec/type-wf-sort)
-   = (defeq/forall
-       (defeq/forall
-         (defeq/const Empty/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
-         ([x] ([h] defeq/sort-refl)))
-       ([x]
-         ([h]
-           (defeq/forall
-             (defeq/const
-               Empty/decl
-               (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
-             ([y] ([h1] (defeq/app h h1))))))).
-
-Empty_rec/ert : enum-rec-type (eforall (eforall (econst "Empty" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) "Empty" lnil cnil (lvar liz)
-   = (enum-rec-type/intro ([x] ([h] enum-rec-body/done))).
-
-Empty_rec/lee : le-eligible (lsucc lzero) cnil (lvar liz)
-   = le-eligible/cnil.
-
-Empty_rec/decl : declared "Empty.rec" (eforall (eforall (econst "Empty" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y))))) (irec "Empty")
-   = declared/ok-irec Empty/rec-name (dkind-ok/irec Empty_rec/type-wf Empty/name Empty/eisl Empty_rec/ert Empty_rec/lee).
+%% recursor Empty.rec (TCB-derived; informational only)
+%%   level params: u
+%%   type:   (eforall (eforall (econst "Empty" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y)))))
 
 %% def emptyRec
 emptyRec/type-wf-sort : lvl
@@ -75,7 +48,14 @@ emptyRec/type-wf : of (eforall (eforall (econst "Empty" lnil) ([x] (esort (lvar 
 
 emptyRec/value-typed : of (econst "Empty.rec" (lcons (lvar liz) lnil)) (eforall (eforall (econst "Empty" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y)))))
    = (defeq/const
-       Empty_rec/decl
+       (rec-derived-declared
+         (rec-derived/enum
+           Empty/decl
+           Empty/rec-name
+           (enum-rec-type/intro ([x] ([h] enum-rec-body/done)))
+           Empty/eisl
+           le-eligible/cnil)
+         Empty/rec-name)
        (inst-expr/forall
          (inst-expr/forall
            (inst-expr/const lvls-inst/nil)

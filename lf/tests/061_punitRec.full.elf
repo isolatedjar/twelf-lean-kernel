@@ -15,16 +15,13 @@ PUnit/rec-name : name "PUnit.rec" (is-rec-for "PUnit").
 PUnit/eisl : ends-in-sort-with-level (esort (lvar liz)) (lvar liz)
    = ends-in-sort-with-level/sort.
 
-PUnit/clf : count-leading-foralls (esort (lvar liz)) liz
-   = count-leading-foralls/zero.
-
 PUnit/cnd : cnames-distinct (ccons "PUnit.unit" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
 PUnit/name : name "PUnit" (is-decl (esort (lvar liz)) (indt (ccons "PUnit.unit" cnil) liz)).
 
 PUnit/decl : declared "PUnit" (esort (lvar liz)) (indt (ccons "PUnit.unit" cnil) liz)
-   = declared/ok-indt PUnit/name PUnit/rec-name PUnit/clf PUnit/cnd (dkind-ok/indt PUnit/type-wf PUnit/ends-in-sort).
+   = declared/ok-indt PUnit/name PUnit/rec-name PUnit/cnd (dkind-ok/indt PUnit/type-wf PUnit/ends-in-sort).
 
 %% ctor PUnit.unit (of PUnit)
 PUnit_unit/type-wf-sort : lvl
@@ -39,51 +36,19 @@ PUnit_unit/positivity : ctor-positive "PUnit" (lcons (lvar liz) lnil) (econst "P
 PUnit_unit/cmem : cmem "PUnit.unit" (ccons "PUnit.unit" cnil)
    = cmem/here.
 
-PUnit_unit/fuo : field-universes-ok-skip-params liz (econst "PUnit" (lcons (lvar liz) lnil)) (lvar liz)
-   = (field-universes-ok-skip-params/start
-       (field-universes-ok/done not-forall/const)).
+PUnit_unit/fuo : field-universes-ok (econst "PUnit" (lcons (lvar liz) lnil)) (lvar liz)
+   = (field-universes-ok/done not-forall/const).
 
 PUnit_unit/name : name "PUnit.unit" (is-decl (econst "PUnit" (lcons (lvar liz) lnil)) (ctor "PUnit" liz)).
 
 PUnit_unit/decl : declared "PUnit.unit" (econst "PUnit" (lcons (lvar liz) lnil)) (ctor "PUnit" liz)
    = declared/ok-ctor PUnit_unit/name PUnit/name PUnit_unit/cmem PUnit/eisl PUnit_unit/fuo (dkind-ok/ctor PUnit_unit/type-wf PUnit_unit/positivity).
 
-%% recursor PUnit.rec
-PUnit_rec/type-wf-sort : lvl
-   = (limax
-       (limax (lvar (lis liz)) (lsucc (lvar liz)))
-       (limax (lvar liz) (limax (lvar (lis liz)) (lvar liz)))).
-
-PUnit_rec/type-wf : of
-  (eforall (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz))))
-    ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z)))))))
-  (esort PUnit_rec/type-wf-sort)
-   = (defeq/forall
-       (defeq/forall
-         (defeq/const PUnit/decl (inst-expr/sort (lvl-inst/var lvl-nth/zero)))
-         ([x] ([h] defeq/sort-refl)))
-       ([x]
-         ([h]
-           (defeq/forall
-             (defeq/app
-               h
-               (defeq/const
-                 PUnit_unit/decl
-                 (inst-expr/const
-                   (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil))))
-             ([y]
-               ([h1]
-                 (defeq/forall
-                   (defeq/const
-                     PUnit/decl
-                     (inst-expr/sort (lvl-inst/var lvl-nth/zero)))
-                   ([z] ([h2] (defeq/app h h2)))))))))).
-
-%%% HOLE: recursor PUnit.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
-PUnit_rec/decl : declared "PUnit.rec"
-  (eforall (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz))))
-    ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z)))))))
-  (irec "PUnit").
+%% recursor PUnit.rec (TCB-derived; informational only)
+%%   level params: u_1 u
+%%   type:   (eforall (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z)))))))
+%%   rules:
+%%     PUnit.rec … PUnit.unit … = (elam (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] y))))   (0 fields)
 
 %% def punitRec
 punitRec/type-wf-sort : lvl
@@ -116,36 +81,11 @@ punitRec/type-wf : of
                      (inst-expr/sort (lvl-inst/var lvl-nth/zero)))
                    ([z] ([h2] (defeq/app h h2)))))))))).
 
+%%% HOLE
 punitRec/value-typed : of
   (econst "PUnit.rec" (lcons (lvar (lis liz)) (lcons (lvar liz) lnil)))
   (eforall (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([x] (esort (lvar (lis liz)))))
-    ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar liz) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([z] (eapp x z)))))))
-   = (defeq/const
-       PUnit_rec/decl
-       (inst-expr/forall
-         (inst-expr/forall
-           (inst-expr/const
-             (lvls-inst/cons
-               (lvl-inst/var (lvl-nth/succ lvl-nth/zero))
-               lvls-inst/nil))
-           ([x] ([h] (inst-expr/sort (lvl-inst/var lvl-nth/zero)))))
-         ([x]
-           ([h]
-             (inst-expr/forall
-               (inst-expr/app
-                 h
-                 (inst-expr/const
-                   (lvls-inst/cons
-                     (lvl-inst/var (lvl-nth/succ lvl-nth/zero))
-                     lvls-inst/nil)))
-               ([y]
-                 ([h1]
-                   (inst-expr/forall
-                     (inst-expr/const
-                       (lvls-inst/cons
-                         (lvl-inst/var (lvl-nth/succ lvl-nth/zero))
-                         lvls-inst/nil))
-                     ([z] ([h2] (inst-expr/app h h2))))))))))).
+    ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar liz) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([z] (eapp x z))))))).
 
 punitRec/name : name "punitRec" (is-decl
   (eforall (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([x] (esort (lvar (lis liz)))))

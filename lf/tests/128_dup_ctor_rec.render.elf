@@ -15,16 +15,13 @@ dup_ctor_rec/rec-name : name "dup_ctor_rec.rec" (is-rec-for "dup_ctor_rec").
 dup_ctor_rec/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
-dup_ctor_rec/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = count-leading-foralls/zero.
-
 dup_ctor_rec/cnd : cnames-distinct (ccons "dup_ctor_rec.rec" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
 dup_ctor_rec/name : name "dup_ctor_rec" (is-decl (esort (lsucc lzero)) (indt (ccons "dup_ctor_rec.rec" cnil) liz)).
 
 dup_ctor_rec/decl : declared "dup_ctor_rec" (esort (lsucc lzero)) (indt (ccons "dup_ctor_rec.rec" cnil) liz)
-   = declared/ok-indt dup_ctor_rec/name dup_ctor_rec/rec-name dup_ctor_rec/clf dup_ctor_rec/cnd (dkind-ok/indt dup_ctor_rec/type-wf dup_ctor_rec/ends-in-sort).
+   = declared/ok-indt dup_ctor_rec/name dup_ctor_rec/rec-name dup_ctor_rec/cnd (dkind-ok/indt dup_ctor_rec/type-wf dup_ctor_rec/ends-in-sort).
 
 %% ctor dup_ctor_rec.rec (of dup_ctor_rec)
 %%% HOLE
@@ -40,30 +37,15 @@ dup_ctor_rec_rec/cmem : cmem "dup_ctor_rec.rec" (ccons "dup_ctor_rec.rec" cnil)
    = cmem/here.
 
 %%% HOLE: dup_ctor_rec_rec/fuo
-dup_ctor_rec_rec/fuo : field-universes-ok-skip-params liz (econst "dup_ctor_rec" lnil) (lsucc lzero).
+dup_ctor_rec_rec/fuo : field-universes-ok (econst "dup_ctor_rec" lnil) (lsucc lzero).
 
 dup_ctor_rec_rec/name : name "dup_ctor_rec.rec" (is-decl (econst "dup_ctor_rec" lnil) (ctor "dup_ctor_rec" liz)).
 
 dup_ctor_rec_rec/decl : declared "dup_ctor_rec.rec" (econst "dup_ctor_rec" lnil) (ctor "dup_ctor_rec" liz)
    = declared/ok-ctor dup_ctor_rec_rec/name dup_ctor_rec/name dup_ctor_rec_rec/cmem dup_ctor_rec/eisl dup_ctor_rec_rec/fuo (dkind-ok/ctor dup_ctor_rec_rec/type-wf dup_ctor_rec_rec/positivity).
 
-%% recursor dup_ctor_rec.rec
-%%% HOLE
-dup_ctor_rec_rec/type-wf-sort : lvl.
-
-%%% HOLE
-dup_ctor_rec_rec/type-wf : of
-  (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z)))))))
-  (esort dup_ctor_rec_rec/type-wf-sort).
-
-dup_ctor_rec_rec/ert : enum-rec-type (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z))))))) "dup_ctor_rec" lnil (ccons "dup_ctor_rec.rec" cnil) (lvar liz)
-   = (enum-rec-type/intro
-       ([x] ([h] (enum-rec-body/minor ([y] ([h1] enum-rec-body/done)))))).
-
-dup_ctor_rec_rec/lee : le-eligible (lsucc lzero) (ccons "dup_ctor_rec.rec" cnil) (lvar liz)
-   = le-eligible/csingle.
-
-dup_ctor_rec_rec/decl : declared "dup_ctor_rec.rec"
-  (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z)))))))
-  (irec "dup_ctor_rec")
-   = declared/ok-irec dup_ctor_rec/rec-name (dkind-ok/irec dup_ctor_rec_rec/type-wf dup_ctor_rec/name dup_ctor_rec/eisl dup_ctor_rec_rec/ert dup_ctor_rec_rec/lee).
+%% recursor dup_ctor_rec.rec (TCB-derived; informational only)
+%%   level params: u
+%%   type:   (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z)))))))
+%%   rules:
+%%     dup_ctor_rec.rec … dup_ctor_rec.rec … = (elam (eforall (econst "dup_ctor_rec" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] y))))   (0 fields)

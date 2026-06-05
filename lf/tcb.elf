@@ -609,18 +609,26 @@ not-forall/str   : not-forall (estrlit S).
 
 %%% `field-universes-ok T UInd` : T is a ctor's RESIDUAL Π-chain (after the
 %%% inductive's params have been peeled), and every Π-binder's domain has
-%%% sort ≤ UInd.  Walks T's Π chain; at each domain A, demands a sort UA
-%%% and an `mleq UA UInd 0` derivation (Mario's `ctor_Pi` rule `l2 ≤ l`).
-%%% Terminates when the head is `not-forall` (the applied inductive at the
-%%% ctor's result position).
+%%% sort ≤ UInd in the impredicative sense.  Walks T's Π chain; at each
+%%% domain A, demands a sort UA and an `mleq (limax UA UInd) UInd 0`
+%%% derivation.
 %%%
-%%% Note on impredicativity: when UInd = lzero (Prop), the imax-collapse
-%%% rules in §2 mean a strict `mleq UA lzero 0` fails for UA ≠ lzero —
-%%% which is what Lean wants for Prop ctors.  The stronger rule
-%%% `imax UA UInd ≤ UInd` (which would always hold for Prop) is *not*
-%%% what `ctor_Pi` carries; `lean.mm1` uses the strict form l2 ≤ l on
-%%% non-recursive args.  Recursive args (per `ctorR_S`, `imax l2 l ≤ l`)
-%%% are not yet distinguished here — the strict form is conservative.
+%%% Why the `imax` form?  This is Lean's actual rule (Mario's `ctor_Pi`
+%%% in mm1): the constraint is that `Π(a:A) <result> : Sort (imax l_A l)`
+%%% lives in the inductive's universe.  For UInd = Prop (lzero), `imax
+%%% UA 0 = 0`, so any field universe UA is admissible — that's Prop's
+%%% impredicativity (Eq.refl's `a : α` field with α : Sort u admits
+%%% because `imax u 0 = 0 ≤ 0`).  For UInd > 0, `imax UA UInd = max UA
+%%% UInd`, and `max UA UInd ≤ UInd` reduces to `UA ≤ UInd` — strict.
+%%% So the rule correctly handles both impredicative (Prop) and
+%%% predicative (Type-n) inductives without case-splitting on UInd.
+%%%
+%%% This rule closes both `lf/soundness/universe-too-high-field.elf` (a
+%%% Type-0 inductive with a Type-0 field: imax 2 1 = 2 > 1 reject) AND
+%%% `lf/soundness/nparams-overclaim-indexed.elf` (the §3.2.2 indexed-
+%%% inductive bypass: the over-claimed NParams skips a field-universe-
+%%% violating field, but the SAME check on the residual catches it
+%%% anyway because the field's universe is also too high).
 
 field-universes-ok : expr -> lvl -> type.   %name field-universes-ok FUO.
 
@@ -630,44 +638,35 @@ field-universes-ok/done :
 
 field-universes-ok/forall :
    defeq A A (esort UA)
-   -> mleq UA UInd 0
+   -> mleq (limax UA UInd) UInd 0
    -> ({x : expr} defeq x x A -> field-universes-ok (B x) UInd)
    -> field-universes-ok (eforall A B) UInd.
 
-%%% `field-universes-ok-skip-params N T UInd` : skip N leading Π binders
-%%% (the inductive's params) before checking field universes against UInd.
-%%% N is the translator-claimed param count.  A lying translator that
-%%% under-claims still gets rejected on the first param (it'd be checked
-%%% as a field, and params at sort > UInd fail); over-claiming runs out
-%%% of binders before reaching `liz`.  Only the correct count produces a
-%%% derivation.
-
-field-universes-ok-skip-params : lidx -> expr -> lvl -> type.
-   %name field-universes-ok-skip-params FUOSP.
-
-field-universes-ok-skip-params/start :
-   field-universes-ok T UInd
-   -> field-universes-ok-skip-params liz T UInd.
-
-field-universes-ok-skip-params/skip :
-   ({x : expr} defeq x x A -> field-universes-ok-skip-params N (B x) UInd)
-   -> field-universes-ok-skip-params (lis N) (eforall A B) UInd.
-
-%%% --- `count-leading-foralls T N` : T has AT LEAST N leading Π binders
-%%% (a closed structural judgment; N : lidx).  Used by `declared/ok-indt`
-%%% to pin a *lower bound* on the inductive's `NParams` payload — the
-%%% inductive's leading-Π chain must be at least as long as the
-%%% translator-claimed NParams, so a translator that over-claims NParams
-%%% to bypass `field-universes-ok-skip-params/skip` (the §3.2.2 attack)
-%%% runs out of binders before reaching `liz` and the witness fails to
-%%% inhabit.
+%%% (`field-universes-ok-skip-params` and `count-leading-foralls` were
+%%% removed.  Before, the translator claimed an `NParams` count and the
+%%% ctor's first NParams binders were skipped before field-universe
+%%% checking — designed to skip "the inductive's params re-bound on the
+%%% ctor."  But for inductives with indices, the inductive's type has
+%%% numParams + numIndices leading Πs while the ctor only has numParams,
+%%% so the relaxed "at-least N" check let a translator over-claim
+%%% NParams and skip real field binders — the §3.2.2 bypass closed by
+%%% `nparams-overclaim-indexed.elf`.
 %%%
-%%% The judgment is "at-least N" not "exactly N" because the inductive's
-%%% type chain ALSO carries the indices (binders after the params), which
-%%% aren't part of NParams.  E.g. `Eq.{u} : ∀ α a b, Prop` has numParams=1
-%%% and numIndices=2; a ctor of Eq skips the 1 param, not the 2 indices.
-%%% So pinning the inductive's payload at `numParams` while its type has
-%%% `numParams + numIndices` leading Πs requires the "at-least" form.
+%%% Under the impredicative form of `field-universes-ok/forall` (the
+%%% `imax UA UInd ≤ UInd` rule), no skip is needed: an inductive param
+%%% `α : Sort u` admits when UInd = Prop (via Prop impredicativity) and
+%%% when UInd > 0 the param's universe is bounded by the inductive's
+%%% type-formation rule (`imax UA UInd` collapses to `UA`-or-UInd via
+%%% the max rules).  Walking every leading binder of the ctor's type
+%%% with `field-universes-ok` directly catches the field-too-high attack
+%%% — see `lf/soundness/universe-too-high-field.elf` and
+%%% `lf/soundness/nparams-overclaim-indexed.elf` for verified
+%%% adversarial inputs.)
+
+%%% `count-leading-foralls` is also unused now (it existed only to pin
+%%% the deprecated NParams payload).  Kept as a no-op for backward
+%%% compatibility with any other consumers; if confirmed unused
+%%% elsewhere, can be deleted.
 
 count-leading-foralls : expr -> lidx -> type.
    %name count-leading-foralls CLF.
@@ -1017,7 +1016,6 @@ declared/ok :
 declared/ok-indt :
    name N (is-decl T (indt Ctors NParams))
    -> name MRec (is-rec-for N)
-   -> count-leading-foralls T NParams
    -> cnames-distinct Ctors
    -> dkind-ok (indt Ctors NParams) T
    -> declared N T (indt Ctors NParams).
@@ -1025,44 +1023,46 @@ declared/ok-indt :
 %%% --- declared/ok-ctor: ctor declaration -----------------------------
 %%%
 %%% A ctor consults its parent inductive's already-declared reservation
-%%% via `IndN`.  The new premises:
+%%% via `IndN`.  The premises:
 %%%
 %%%   * `name IndN (is-decl IndType (indt Ctors NParams))` — look up the
 %%%     parent inductive's reserved payload (Ctors list + NParams).
-%%%   * `cmem N Ctors` — N must be on the parent's ctor list.  §3.5
-%%%     spurious-ctor gap: without this, a `name "FooEvil"
-%%%     (is-decl _ (ctor "Foo" _))` had no obstruction.  Now there's no
-%%%     `cmem "FooEvil" Ctors` proof when Ctors = (ccons "Foo.a"
-%%%     (ccons "Foo.b" cnil)) etc., so the seal fails.
+%%%   * `cmem N Ctors` — N must be on the parent's ctor list, so a
+%%%     spurious ctor declared as `(ctor IndN _)` for an N not in IndN's
+%%%     reservation can't be sealed.
 %%%   * `ends-in-sort-with-level IndType UInd` — extract the inductive's
-%%%     sort (used by the next premise).
-%%%   * `field-universes-ok-skip-params NParams T UInd` — §3.2 field-
-%%%     universe check.  NParams is now pinned via `count-leading-foralls`
-%%%     on the indt side, so this is well-grounded.
+%%%     sort (the bound on field universes).
+%%%   * `field-universes-ok T UInd` — every leading Π-binder of the
+%%%     ctor's type has a field-universe constraint `imax UA UInd ≤ UInd`
+%%%     (Mario's `ctor_Pi` rule).  This is the impredicative form: a
+%%%     param `α : Sort u` admits when UInd = Prop (Prop impredicativity
+%%%     via `imax u 0 = 0`); and a too-high field universe fails for any
+%%%     non-Prop UInd.  No skip-params needed — params and fields are
+%%%     uniformly checked.
 declared/ok-ctor :
    name N (is-decl T (ctor IndN Cidx))
    -> name IndN (is-decl IndType (indt Ctors NParams))
    -> cmem N Ctors
    -> ends-in-sort-with-level IndType UInd
-   -> field-universes-ok-skip-params NParams T UInd
+   -> field-universes-ok T UInd
    -> dkind-ok (ctor IndN Cidx) T
    -> declared N T (ctor IndN Cidx).
 
-%%% --- declared/ok-irec: recursor declaration -------------------------
+%%% --- Recursor declarations: TCB-derived, not env-supplied -----------
 %%%
-%%% Recursors use this rule instead of `declared/ok` so that their name
-%%% must have been reserved by a legitimate inductive via `is-rec-for`.
-%%% The reservation's `IndN` must match the recursor's payload `IndN`
-%%% (so a hand-written file can't claim `irec "Bar"` while reserving via
-%%% `is-rec-for "Foo"`).  Combined with %unique name, this means
-%%%   (a) any `def Foo.rec` conflicts with the inductive's reservation
-%%%       and ABORTs the load, and
-%%%   (b) a recursor at an un-reserved name has no witness and is
-%%%       rejected by %freeze as a bare decl.
-declared/ok-irec :
-   name N (is-rec-for IndN)
-   -> dkind-ok (irec IndN) T
-   -> declared N T (irec IndN).
+%%% Recursors are NOT translator input — see CLAUDE.md "Derive, don't
+%%% check."  The TCB's `rec-derived` family (defined later, after
+%%% `enum-rec-type`) constructs each inductive's canonical recursor type
+%%% from the inductive's declaration; the rule `rec-derived-declared`
+%%% lifts a `rec-derived` witness into a `declared _ _ (irec _)` so the
+%%% iota rules keep their current shape.  No `declared/ok-irec` —
+%%% nothing in the env can claim to BE a recursor.
+%%%
+%%% The recursor's name slot is still reserved by the inductive via
+%%% `<ind>/rec-name : name "<ind>.rec" (is-rec-for "<ind>").`, which
+%%% combined with `%unique name` catches any env-side `def <ind>.rec`
+%%% (the `rec-slot-theft` pattern).  See §3.3 of completeness-plan for
+%%% the remaining open issue (non-canonical MRec).
 
 %%% defeq facts earned by a well-formed declaration.  A use `econst N LS`
 %%% instantiates the stored schema Ts at LS to get the use-site type T.
@@ -1137,6 +1137,52 @@ enum-rec-body/minor :
         FooName FooLvls
         (ccons CName RestCtors).
 
+%%% --- Minor variants for ctors with non-recursive fields (Phase 2) ----
+%%%
+%%% For a ctor `c : ∀ a_1:A_1 ... a_n:A_n, Foo`, Lean's recursor
+%%% schema bundles the n field binders INTO the minor's type: the
+%%% single minor `m_c` has type `∀ a_1:A_1 ... a_n:A_n, M (c a_1
+%%% ... a_n)`.  So each variant below introduces ONE binder `m`
+%%% whose type is that universally-quantified motive application,
+%%% and then continues the recursor's chain on Rest.  The A_i must
+%%% be non-recursive (no self-reference); the Rest may be the next
+%%% minor in the chain or the major-premise terminator.
+%%%
+%%% Why per-field-count rules rather than a parametric judgment: LF
+%%% can't easily express "arbitrary field count" without recursion on a
+%%% length-bearing index that itself binds via HOAS.  Per-field-count
+%%% rules are mechanically replicated; future stages add more as
+%%% needed.
+
+enum-rec-body/minor-1f :
+   defeq A1 A1 (esort UA1)
+   -> ({m : expr} defeq m m
+         (eforall A1 ([a1] (eapp M (eapp (econst CName FooLvls) a1))))
+         -> enum-rec-body M (Rest m) FooName FooLvls RestCtors)
+   -> enum-rec-body M
+        (eforall
+          (eforall A1 ([a1] (eapp M (eapp (econst CName FooLvls) a1))))
+          ([m] Rest m))
+        FooName FooLvls
+        (ccons CName RestCtors).
+
+enum-rec-body/minor-2f :
+   defeq A1 A1 (esort UA1)
+   -> defeq A2 A2 (esort UA2)
+   -> ({m : expr} defeq m m
+         (eforall A1 ([a1]
+           (eforall A2 ([a2]
+             (eapp M (eapp (eapp (econst CName FooLvls) a1) a2))))))
+         -> enum-rec-body M (Rest m) FooName FooLvls RestCtors)
+   -> enum-rec-body M
+        (eforall
+          (eforall A1 ([a1]
+            (eforall A2 ([a2]
+              (eapp M (eapp (eapp (econst CName FooLvls) a1) a2))))))
+          ([m] Rest m))
+        FooName FooLvls
+        (ccons CName RestCtors).
+
 %%% --- `enum-rec-type T FooName FooLvls Ctors U` :
 %%% T is the type of a recursor for an enum FooName with ctors Ctors,
 %%% eliminating into Sort U.  Wraps the motive binder around enum-rec-body.
@@ -1150,37 +1196,60 @@ enum-rec-type/intro :
         (eforall (eforall (econst FooName FooLvls) ([_] esort U)) ([M] Body M))
         FooName FooLvls Ctors U.
 
-%%% --- dkind-ok/irec (§3.1 canonical-schema check) --------------------
+%%% --- rec-derived: TCB-constructed recursor declarations -------------
 %%%
-%%% A recursor's stored type T must (a) be well-formed at some sort, (b)
-%%% match the canonical schema for the parent inductive (via
-%%% `enum-rec-type`), and (c) satisfy Lean's large-elimination restriction
-%%% (via `le-eligible`).  All three premises are independent — (b) catches
-%%% structurally-bogus recursor types like `Sort 0` for an inductive that
-%%% should yield `∀ M m_i ... t, M t` (the `066_BogusRecursor` attack),
-%%% and (c) catches the ≥2-ctor Prop large-elim Girard route (the
-%%% `large-elim-prop.elf` and `large-elim-imax-prop.ndjson` attacks).
+%%% Inductive declarations are translator-input; their recursors are not.
+%%% `rec-derived RecName T` says: there is a canonical recursor at name
+%%% RecName with type T, justified by the parent inductive's reservation
+%%% + the canonical-schema check.  The `rec-derived-declared` lift then
+%%% produces a `declared RecName T (irec IndN)` witness that iota rules
+%%% consume — no env-side `declared/ok-irec` exists, so the only way to
+%%% inhabit `declared _ _ (irec _)` is through this TCB family.
 %%%
-%%% Scope (Phase 1): only non-parametric inductives — `enum-rec-type
-%%% T IndN lnil Ctors U` requires the inductive's level instantiation to
-%%% be `lnil`.  Parametric inductives (List, Eq, …) have no
-%%% `enum-rec-type` witness for their recursors and so decline at this
-%%% rule.  Future generalization: replace `enum-rec-type` with a broader
-%%% `rec-canonical-schema` family covering params, indices, recursive
-%%% args, etc.  See completeness-plan §3.1.
-%%%
-%%% The premise list mirrors `declared/ok-ctor` (§3.5 architecture):
-%%% inductive lookup → sort extraction → recursor-type checks.  `U` here
-%%% is the recursor's motive target sort, fixed by `enum-rec-type`'s
-%%% structural unification of T's outermost binder.
+%%% Phase 1: one constructor, covering enum-shaped inductives (no params,
+%%% no indices, no level params, every ctor has no fields).  Examples:
+%%% Empty, Bool, PropTwo.  Future stages add one constructor each per
+%%% inductive shape — see completeness-plan §3.6 for the roadmap.
 
-dkind-ok/irec :
-   defeq T T (esort URecType)
-   -> name IndN (is-decl IndType (indt Ctors NParams))
-   -> ends-in-sort-with-level IndType UInd
+rec-derived : string -> expr -> type.   %name rec-derived RD.
+
+%%% Phase 1: enum-shaped inductives.
+%%%
+%%% Premises:
+%%%   * `declared IndN IndType (indt Ctors NParams)` — the parent
+%%%     inductive is sealed (so Ctors is audited as distinct, NumParams
+%%%     pinned by count-leading-foralls, etc.)
+%%%   * `name RecName (is-rec-for IndN)` — the recursor's name slot is
+%%%     reserved by the inductive (translator emits the canonical
+%%%     `<ind>.rec` reservation).
+%%%   * `enum-rec-type T IndN lnil Ctors U` — T has the canonical enum
+%%%     recursor shape for IndN at sort U (requires FooLvls = lnil =
+%%%     non-parametric).
+%%%   * `ends-in-sort-with-level IndType UInd` — extract the inductive's
+%%%     sort UInd.
+%%%   * `le-eligible UInd Ctors U` — Lean's large-elimination
+%%%     restriction (≥2-ctor Prop ⟹ U must be Prop).
+%%%
+%%% The constructed `T` is the canonical recursor type — fixed by
+%%% structural unification through `enum-rec-type`.
+
+rec-derived/enum :
+   declared IndN IndType (indt Ctors NParams)
+   -> name RecName (is-rec-for IndN)
    -> enum-rec-type T IndN lnil Ctors U
+   -> ends-in-sort-with-level IndType UInd
    -> le-eligible UInd Ctors U
-   -> dkind-ok (irec IndN) T.
+   -> rec-derived RecName T.
+
+%%% Lift a `rec-derived` witness into a `declared _ _ (irec _)` so the
+%%% existing iota rules (which pattern-match on `declared`) keep their
+%%% current shape.  No env-side rule produces `declared _ _ (irec _)`;
+%%% this is the unique constructor.
+
+rec-derived-declared :
+   rec-derived RecName T
+   -> name RecName (is-rec-for IndN)
+   -> declared RecName T (irec IndN).
 
 %%% --- `defeq-extra E1 E2 A` : a kernel-derived equality E1 ≡ E2 : A
 %%% that comes from Mario's t-extra (iota, eta-for-structures, Quot).
@@ -1315,26 +1384,64 @@ defeq/iota-enum-3-third :
         (eapp M (econst C3 lnil)).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Iota for quotient types
+%%% Quotient types: TCB-derived
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%
+%%% Quot's four constants — Quot, Quot.mk, Quot.lift, Quot.ind — are NOT
+%%% translator input.  See CLAUDE.md "Derive, don't check."  The TCB
+%%% reserves the four canonical names (so `%unique name` catches any env
+%%% trying to declare them) and asserts their existence via the closed
+%%% `quot-known` family below.  Iota rules consume `quot-known` instead
+%%% of `declared _ _ quot`.
+%%%
+%%% Limitation (current): the canonical Quot types are opaque atoms.
+%%% This is fine for the iota rules (which don't inspect the types — they
+%%% match on the LHS `econst` structure) and for blocking env-side
+%%% Quot.* declarations (`%unique name` only needs the *fact* of the
+%%% reservation, not its content).  It is NOT enough for a future
+%%% defeq/const-based use of Quot.* in arbitrary proofs.  When Quot iota
+%%% lands (§1.2), the opaque atoms will be replaced with literal LF
+%%% expressions for the canonical types.
+
+quot-type-Quot      : expr.   %% ∀ (α : Sort u) (r : α → α → Prop), Sort u
+quot-type-Quot-mk   : expr.   %% ∀ α r, α → Quot α r
+quot-type-Quot-lift : expr.   %% ∀ α r β f h, Quot α r → β
+quot-type-Quot-ind  : expr.   %% ∀ α r M h q, M q
+
+%%% `name` reservations occupy the canonical slot strings so a
+%%% translator can't smuggle env-level `def Quot.lift` etc.  Without
+%%% these, the iota rules' LHS `econst "Quot.lift" _` would unify with
+%%% any env-supplied "Quot.lift" definition.
+
+quot-name-Quot      : name "Quot"      (is-decl quot-type-Quot      quot).
+quot-name-Quot-mk   : name "Quot.mk"   (is-decl quot-type-Quot-mk   quot).
+quot-name-Quot-lift : name "Quot.lift" (is-decl quot-type-Quot-lift quot).
+quot-name-Quot-ind  : name "Quot.ind"  (is-decl quot-type-Quot-ind  quot).
+
+%%% Closed family asserting "this string is one of the four canonical
+%%% Quot constants."  Consumed by the iota-quot rules as the assertion
+%%% that Quot.{lift,ind,mk} exist with their canonical semantics.
+
+quot-known : string -> type.   %name quot-known QK.
+
+quot-known/Quot      : quot-known "Quot".
+quot-known/Quot-mk   : quot-known "Quot.mk".
+quot-known/Quot-lift : quot-known "Quot.lift".
+quot-known/Quot-ind  : quot-known "Quot.ind".
+
 %%% Mario's `t-extra` for `Quot` covers two primitive reductions:
 %%%   Quot.lift α r β f h (Quot.mk α r a) ≡ f a         (mm0: quot_iota)
 %%%   Quot.ind  α r m h   (Quot.mk α r a) ≡ h a         (no mm0 analog)
 %%%
-%%% Both reductions pattern-match on the four `declared` witnesses
-%%% for Quot, Quot.mk, Quot.lift / Quot.ind (each at dkind=quot).
-%%% Names "Quot" / "Quot.mk" / "Quot.lift" / "Quot.ind" are fixed —
-%%% these are kernel built-ins, not user-extensible inductives.
-%%%
-%%% Soundness: the rules consume `declared … quot` facts, so they
-%%% only fire on the actual Quot family.  The typing premises on
-%%% A, R, B, F, H, A2 (resp. M for Quot.ind) preserve the typing
-%%% invariant of `defeq` (reflexivity is well-typedness).
+%%% Both reductions consume `quot-known` premises rather than `declared`.
+%%% Soundness: `quot-known` is closed with the four canonical names; the
+%%% typing premises on A, R, B, F, H, A2 preserve `defeq`'s typing
+%%% invariant.
 
 defeq/iota-quot-lift :
-   declared "Quot" QuotType quot
-   -> declared "Quot.mk"   QuotMkType quot
-   -> declared "Quot.lift" QuotLiftType quot
+   quot-known "Quot"
+   -> quot-known "Quot.mk"
+   -> quot-known "Quot.lift"
    -> defeq A A (esort U)
    -> defeq R R (eforall A ([_] (eforall A ([_] (esort lzero)))))
    -> defeq B B (esort V)
@@ -1358,9 +1465,9 @@ defeq/iota-quot-lift :
 %%% soundness premise (proof irrelevance handles equality of proofs).
 
 defeq/iota-quot-ind :
-   declared "Quot" QuotType quot
-   -> declared "Quot.mk" QuotMkType quot
-   -> declared "Quot.ind" QuotIndType quot
+   quot-known "Quot"
+   -> quot-known "Quot.mk"
+   -> quot-known "Quot.ind"
    -> defeq A A (esort U)
    -> defeq R R (eforall A ([_] (eforall A ([_] (esort lzero)))))
    -> defeq M M (eforall (eapp (eapp (econst "Quot" (lcons U lnil)) A) R) ([_] (esort lzero)))

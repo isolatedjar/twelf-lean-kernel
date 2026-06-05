@@ -30,16 +30,13 @@ dup_ctor_def/rec-name : name "dup_ctor_def.rec" (is-rec-for "dup_ctor_def").
 dup_ctor_def/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
-dup_ctor_def/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = count-leading-foralls/zero.
-
 dup_ctor_def/cnd : cnames-distinct (ccons "dup_ctor_def.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
 dup_ctor_def/name : name "dup_ctor_def" (is-decl (esort (lsucc lzero)) (indt (ccons "dup_ctor_def.mk" cnil) liz)).
 
 dup_ctor_def/decl : declared "dup_ctor_def" (esort (lsucc lzero)) (indt (ccons "dup_ctor_def.mk" cnil) liz)
-   = declared/ok-indt dup_ctor_def/name dup_ctor_def/rec-name dup_ctor_def/clf dup_ctor_def/cnd (dkind-ok/indt dup_ctor_def/type-wf dup_ctor_def/ends-in-sort).
+   = declared/ok-indt dup_ctor_def/name dup_ctor_def/rec-name dup_ctor_def/cnd (dkind-ok/indt dup_ctor_def/type-wf dup_ctor_def/ends-in-sort).
 
 %% ctor dup_ctor_def.mk (of dup_ctor_def)
 dup_ctor_def_mk/type-wf-sort : lvl
@@ -56,54 +53,16 @@ dup_ctor_def_mk/positivity : ctor-positive "dup_ctor_def" lnil (econst "dup_ctor
 dup_ctor_def_mk/cmem : cmem "dup_ctor_def.mk" (ccons "dup_ctor_def.mk" cnil)
    = cmem/here.
 
-dup_ctor_def_mk/fuo : field-universes-ok-skip-params liz (econst "dup_ctor_def" lnil) (lsucc lzero)
-   = (field-universes-ok-skip-params/start
-       (field-universes-ok/done not-forall/const)).
+dup_ctor_def_mk/fuo : field-universes-ok (econst "dup_ctor_def" lnil) (lsucc lzero)
+   = (field-universes-ok/done not-forall/const).
 
 dup_ctor_def_mk/name : name "dup_ctor_def.mk" (is-decl (econst "dup_ctor_def" lnil) (ctor "dup_ctor_def" liz)).
 
 dup_ctor_def_mk/decl : declared "dup_ctor_def.mk" (econst "dup_ctor_def" lnil) (ctor "dup_ctor_def" liz)
    = declared/ok-ctor dup_ctor_def_mk/name dup_ctor_def/name dup_ctor_def_mk/cmem dup_ctor_def/eisl dup_ctor_def_mk/fuo (dkind-ok/ctor dup_ctor_def_mk/type-wf dup_ctor_def_mk/positivity).
 
-%% recursor dup_ctor_def.rec
-dup_ctor_def_rec/type-wf-sort : lvl
-   = (limax
-       (limax (lsucc lzero) (lsucc (lvar liz)))
-       (limax (lvar liz) (limax (lsucc lzero) (lvar liz)))).
-
-dup_ctor_def_rec/type-wf : of
-  (eforall (eforall (econst "dup_ctor_def" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ctor_def.mk" lnil)) ([y] (eforall (econst "dup_ctor_def" lnil) ([z] (eapp x z)))))))
-  (esort dup_ctor_def_rec/type-wf-sort)
-   = (defeq/forall
-       (defeq/forall
-         (defeq/const
-           dup_ctor_def/decl
-           (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
-         ([x] ([h] defeq/sort-refl)))
-       ([x]
-         ([h]
-           (defeq/forall
-             (defeq/app
-               h
-               (defeq/const
-                 dup_ctor_def_mk/decl
-                 (inst-expr/const lvls-inst/nil)))
-             ([y]
-               ([h1]
-                 (defeq/forall
-                   (defeq/const
-                     dup_ctor_def/decl
-                     (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
-                   ([z] ([h2] (defeq/app h h2)))))))))).
-
-dup_ctor_def_rec/ert : enum-rec-type (eforall (eforall (econst "dup_ctor_def" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ctor_def.mk" lnil)) ([y] (eforall (econst "dup_ctor_def" lnil) ([z] (eapp x z))))))) "dup_ctor_def" lnil (ccons "dup_ctor_def.mk" cnil) (lvar liz)
-   = (enum-rec-type/intro
-       ([x] ([h] (enum-rec-body/minor ([y] ([h1] enum-rec-body/done)))))).
-
-dup_ctor_def_rec/lee : le-eligible (lsucc lzero) (ccons "dup_ctor_def.mk" cnil) (lvar liz)
-   = le-eligible/csingle.
-
-dup_ctor_def_rec/decl : declared "dup_ctor_def.rec"
-  (eforall (eforall (econst "dup_ctor_def" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ctor_def.mk" lnil)) ([y] (eforall (econst "dup_ctor_def" lnil) ([z] (eapp x z)))))))
-  (irec "dup_ctor_def")
-   = declared/ok-irec dup_ctor_def/rec-name (dkind-ok/irec dup_ctor_def_rec/type-wf dup_ctor_def/name dup_ctor_def/eisl dup_ctor_def_rec/ert dup_ctor_def_rec/lee).
+%% recursor dup_ctor_def.rec (TCB-derived; informational only)
+%%   level params: u
+%%   type:   (eforall (eforall (econst "dup_ctor_def" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ctor_def.mk" lnil)) ([y] (eforall (econst "dup_ctor_def" lnil) ([z] (eapp x z)))))))
+%%   rules:
+%%     dup_ctor_def.rec … dup_ctor_def.mk … = (elam (eforall (econst "dup_ctor_def" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "dup_ctor_def.mk" lnil)) ([y] y))))   (0 fields)

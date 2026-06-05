@@ -3,6 +3,8 @@
 %%% 
 %%% The lean kernel allows projections out of propositions if they precede
 %%% all dependent data fields. Non-dependent data fields are not relevant.
+%solve nonneg_0 : 0 >= 0.
+
 sneq/0 : string-neq "PUnit" "PropStructure".
 sneq/1 : string-neq "Eq" "PropStructure".
 
@@ -21,16 +23,13 @@ PUnit/rec-name : name "PUnit.rec" (is-rec-for "PUnit").
 PUnit/eisl : ends-in-sort-with-level (esort (lvar liz)) (lvar liz)
    = ends-in-sort-with-level/sort.
 
-PUnit/clf : count-leading-foralls (esort (lvar liz)) liz
-   = count-leading-foralls/zero.
-
 PUnit/cnd : cnames-distinct (ccons "PUnit.unit" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
 PUnit/name : name "PUnit" (is-decl (esort (lvar liz)) (indt (ccons "PUnit.unit" cnil) liz)).
 
 PUnit/decl : declared "PUnit" (esort (lvar liz)) (indt (ccons "PUnit.unit" cnil) liz)
-   = declared/ok-indt PUnit/name PUnit/rec-name PUnit/clf PUnit/cnd (dkind-ok/indt PUnit/type-wf PUnit/ends-in-sort).
+   = declared/ok-indt PUnit/name PUnit/rec-name PUnit/cnd (dkind-ok/indt PUnit/type-wf PUnit/ends-in-sort).
 
 %% ctor PUnit.unit (of PUnit)
 PUnit_unit/type-wf-sort : lvl
@@ -45,51 +44,19 @@ PUnit_unit/positivity : ctor-positive "PUnit" (lcons (lvar liz) lnil) (econst "P
 PUnit_unit/cmem : cmem "PUnit.unit" (ccons "PUnit.unit" cnil)
    = cmem/here.
 
-PUnit_unit/fuo : field-universes-ok-skip-params liz (econst "PUnit" (lcons (lvar liz) lnil)) (lvar liz)
-   = (field-universes-ok-skip-params/start
-       (field-universes-ok/done not-forall/const)).
+PUnit_unit/fuo : field-universes-ok (econst "PUnit" (lcons (lvar liz) lnil)) (lvar liz)
+   = (field-universes-ok/done not-forall/const).
 
 PUnit_unit/name : name "PUnit.unit" (is-decl (econst "PUnit" (lcons (lvar liz) lnil)) (ctor "PUnit" liz)).
 
 PUnit_unit/decl : declared "PUnit.unit" (econst "PUnit" (lcons (lvar liz) lnil)) (ctor "PUnit" liz)
    = declared/ok-ctor PUnit_unit/name PUnit/name PUnit_unit/cmem PUnit/eisl PUnit_unit/fuo (dkind-ok/ctor PUnit_unit/type-wf PUnit_unit/positivity).
 
-%% recursor PUnit.rec
-PUnit_rec/type-wf-sort : lvl
-   = (limax
-       (limax (lvar (lis liz)) (lsucc (lvar liz)))
-       (limax (lvar liz) (limax (lvar (lis liz)) (lvar liz)))).
-
-PUnit_rec/type-wf : of
-  (eforall (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz))))
-    ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z)))))))
-  (esort PUnit_rec/type-wf-sort)
-   = (defeq/forall
-       (defeq/forall
-         (defeq/const PUnit/decl (inst-expr/sort (lvl-inst/var lvl-nth/zero)))
-         ([x] ([h] defeq/sort-refl)))
-       ([x]
-         ([h]
-           (defeq/forall
-             (defeq/app
-               h
-               (defeq/const
-                 PUnit_unit/decl
-                 (inst-expr/const
-                   (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil))))
-             ([y]
-               ([h1]
-                 (defeq/forall
-                   (defeq/const
-                     PUnit/decl
-                     (inst-expr/sort (lvl-inst/var lvl-nth/zero)))
-                   ([z] ([h2] (defeq/app h h2)))))))))).
-
-%%% HOLE: recursor PUnit.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
-PUnit_rec/decl : declared "PUnit.rec"
-  (eforall (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz))))
-    ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z)))))))
-  (irec "PUnit").
+%% recursor PUnit.rec (TCB-derived; informational only)
+%%   level params: u_1 u
+%%   type:   (eforall (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z)))))))
+%%   rules:
+%%     PUnit.rec … PUnit.unit … = (elam (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] y))))   (0 fields)
 
 %% inductive Eq
 Eq/type-wf-sort : lvl
@@ -122,17 +89,13 @@ Eq/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall x ([
              (ends-in-sort-with-level/forall
                ([z] ends-in-sort-with-level/sort)))))).
 
-Eq/clf : count-leading-foralls (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (lis (lis liz))
-   = (count-leading-foralls/succ
-       ([x] (count-leading-foralls/succ ([y] count-leading-foralls/zero)))).
-
 Eq/cnd : cnames-distinct (ccons "Eq.refl" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
 Eq/name : name "Eq" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis liz)))).
 
 Eq/decl : declared "Eq" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis liz)))
-   = declared/ok-indt Eq/name Eq/rec-name Eq/clf Eq/cnd (dkind-ok/indt Eq/type-wf Eq/ends-in-sort).
+   = declared/ok-indt Eq/name Eq/rec-name Eq/cnd (dkind-ok/indt Eq/type-wf Eq/ends-in-sort).
 
 %% ctor Eq.refl (of Eq)
 Eq_refl/type-wf-sort : lvl
@@ -187,158 +150,28 @@ Eq_refl/positivity : ctor-positive "Eq" (lcons (lvar liz) lnil) (eforall (esort 
 Eq_refl/cmem : cmem "Eq.refl" (ccons "Eq.refl" cnil)
    = cmem/here.
 
-Eq_refl/fuo : field-universes-ok-skip-params (lis (lis liz)) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) lzero
-   = (field-universes-ok-skip-params/skip
+Eq_refl/fuo : field-universes-ok (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) lzero
+   = (field-universes-ok/forall
+       defeq/sort-refl
+       (mleq/imax-lzL (mleq/self nonneg_0))
        ([x]
          ([h]
-           (field-universes-ok-skip-params/skip
-             ([y]
-               ([h1]
-                 (field-universes-ok-skip-params/start
-                   (field-universes-ok/done not-forall/app)))))))).
+           (field-universes-ok/forall
+             h
+             (mleq/imax-lzL (mleq/self nonneg_0))
+             ([y] ([h1] (field-universes-ok/done not-forall/app))))))).
 
 Eq_refl/name : name "Eq.refl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (ctor "Eq" liz)).
 
 Eq_refl/decl : declared "Eq.refl" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (ctor "Eq" liz)
    = declared/ok-ctor Eq_refl/name Eq/name Eq_refl/cmem Eq/eisl Eq_refl/fuo (dkind-ok/ctor Eq_refl/type-wf Eq_refl/positivity).
 
-%% recursor Eq.rec
-Eq_rec/type-wf-sort : lvl
-   = (limax
-       (lsucc (lvar (lis liz)))
-       (limax
-         (lvar (lis liz))
-         (limax
-           (limax (lvar (lis liz)) (limax lzero (lsucc (lvar liz))))
-           (limax
-             (lvar liz)
-             (limax (lvar (lis liz)) (limax lzero (lvar liz))))))).
-
-Eq_rec/type-wf : of
-  (eforall (esort (lvar (lis liz)))
-    ([x]
-      (eforall x
-        ([y]
-          (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz))))))
-            ([z]
-              (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y))
-                ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1)))))))))))))
-  (esort Eq_rec/type-wf-sort)
-   = (defeq/forall
-       defeq/sort-refl
-       ([x]
-         ([h]
-           (defeq/forall
-             h
-             ([y]
-               ([h1]
-                 (defeq/forall
-                   (defeq/forall
-                     h
-                     ([z]
-                       ([h2]
-                         (defeq/forall
-                           (defeq/app
-                             (defeq/app
-                               (defeq/app
-                                 (defeq/const
-                                   Eq/decl
-                                   (inst-expr/forall
-                                     (inst-expr/sort
-                                       (lvl-inst/var lvl-nth/zero))
-                                     ([x]
-                                       ([h]
-                                         (inst-expr/forall
-                                           h
-                                           ([y]
-                                             ([h1]
-                                               (inst-expr/forall
-                                                 h
-                                                 ([z]
-                                                   ([h2]
-                                                     (inst-expr/sort
-                                                       lvl-inst/zero)))))))))))
-                                 h)
-                               h1)
-                             h2)
-                           ([w] ([h3] defeq/sort-refl))))))
-                   ([z]
-                     ([h2]
-                       (defeq/forall
-                         (defeq/app
-                           (defeq/app h2 h1)
-                           (defeq/app
-                             (defeq/app
-                               (defeq/const
-                                 Eq_refl/decl
-                                 (inst-expr/forall
-                                   (inst-expr/sort (lvl-inst/var lvl-nth/zero))
-                                   ([x]
-                                     ([h]
-                                       (inst-expr/forall
-                                         h
-                                         ([y]
-                                           ([h1]
-                                             (inst-expr/app
-                                               (inst-expr/app
-                                                 (inst-expr/app
-                                                   (inst-expr/const
-                                                     (lvls-inst/cons
-                                                       (lvl-inst/var
-                                                         lvl-nth/zero)
-                                                       lvls-inst/nil))
-                                                   h)
-                                                 h1)
-                                               h1))))))))
-                               h)
-                             h1))
-                         ([w]
-                           ([h3]
-                             (defeq/forall
-                               h
-                               ([x1]
-                                 ([h4]
-                                   (defeq/forall
-                                     (defeq/app
-                                       (defeq/app
-                                         (defeq/app
-                                           (defeq/const
-                                             Eq/decl
-                                             (inst-expr/forall
-                                               (inst-expr/sort
-                                                 (lvl-inst/var lvl-nth/zero))
-                                               ([x]
-                                                 ([h]
-                                                   (inst-expr/forall
-                                                     h
-                                                     ([y]
-                                                       ([h1]
-                                                         (inst-expr/forall
-                                                           h
-                                                           ([z]
-                                                             ([h2]
-                                                               (inst-expr/sort
-                                                                 lvl-inst/zero)))))))))))
-                                           h)
-                                         h1)
-                                       h4)
-                                     ([y1]
-                                       ([h5]
-                                         (defeq/app
-                                           (defeq/app h2 h4)
-                                           h5))))))))))))))))))).
-
-%%% HOLE: recursor Eq.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
-Eq_rec/decl : declared "Eq.rec"
-  (eforall (esort (lvar (lis liz)))
-    ([x]
-      (eforall x
-        ([y]
-          (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz))))))
-            ([z]
-              (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y))
-                ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1)))))))))))))
-  (irec "Eq").
+%% recursor Eq.rec (TCB-derived; informational only)
+%%   level params: u u_1
+%%   type:   (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1)))))))))))))
+%%   rules:
+%%     Eq.rec … Eq.refl … = (elam (esort (lvar (lis liz))) ([x] (elam x ([y] (elam (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (elam (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] w))))))))   (0 fields)
+%%   K-like reduction: yes
 
 %% inductive PropStructure
 PropStructure/type-wf-sort : lvl
@@ -355,16 +188,13 @@ PropStructure/rec-name : name "PropStructure.rec" (is-rec-for "PropStructure").
 PropStructure/eisl : ends-in-sort-with-level (esort lzero) lzero
    = ends-in-sort-with-level/sort.
 
-PropStructure/clf : count-leading-foralls (esort lzero) liz
-   = count-leading-foralls/zero.
-
 PropStructure/cnd : cnames-distinct (ccons "PropStructure.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
 PropStructure/name : name "PropStructure" (is-decl (esort lzero) (indt (ccons "PropStructure.mk" cnil) liz)).
 
 PropStructure/decl : declared "PropStructure" (esort lzero) (indt (ccons "PropStructure.mk" cnil) liz)
-   = declared/ok-indt PropStructure/name PropStructure/rec-name PropStructure/clf PropStructure/cnd (dkind-ok/indt PropStructure/type-wf PropStructure/ends-in-sort).
+   = declared/ok-indt PropStructure/name PropStructure/rec-name PropStructure/cnd (dkind-ok/indt PropStructure/type-wf PropStructure/ends-in-sort).
 
 %% ctor PropStructure.mk (of PropStructure)
 PropStructure_mk/type-wf-sort : lvl
@@ -510,8 +340,73 @@ PropStructure_mk/positivity : ctor-positive "PropStructure" (lcons (lvar liz) (l
 PropStructure_mk/cmem : cmem "PropStructure.mk" (ccons "PropStructure.mk" cnil)
    = cmem/here.
 
-%%% HOLE: PropStructure_mk/fuo
-PropStructure_mk/fuo : field-universes-ok-skip-params liz (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([x] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([y] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([z] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([w] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) (econst "PUnit" (lcons (lvar (lis liz)) lnil))) w) w) ([x1] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([y1] (econst "PropStructure" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))))))))))))))) lzero.
+PropStructure_mk/fuo : field-universes-ok (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([x] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([y] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([z] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([w] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) (econst "PUnit" (lcons (lvar (lis liz)) lnil))) w) w) ([x1] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([y1] (econst "PropStructure" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))))))))))))))) lzero
+   = (field-universes-ok/forall
+       (defeq/const PUnit/decl (inst-expr/sort (lvl-inst/var lvl-nth/zero)))
+       (mleq/imax-lzL (mleq/self nonneg_0))
+       ([x]
+         ([h]
+           (field-universes-ok/forall
+             (defeq/const
+               PUnit/decl
+               (inst-expr/sort (lvl-inst/var lvl-nth/zero)))
+             (mleq/imax-lzL (mleq/self nonneg_0))
+             ([y]
+               ([h1]
+                 (field-universes-ok/forall
+                   (defeq/const
+                     PUnit/decl
+                     (inst-expr/sort (lvl-inst/var lvl-nth/zero)))
+                   (mleq/imax-lzL (mleq/self nonneg_0))
+                   ([z]
+                     ([h2]
+                       (field-universes-ok/forall
+                         (defeq/const
+                           PUnit/decl
+                           (inst-expr/sort (lvl-inst/var lvl-nth/zero)))
+                         (mleq/imax-lzL (mleq/self nonneg_0))
+                         ([w]
+                           ([h3]
+                             (field-universes-ok/forall
+                               (defeq/app
+                                 (defeq/app
+                                   (defeq/app
+                                     (defeq/const
+                                       Eq/decl
+                                       (inst-expr/forall
+                                         (inst-expr/sort
+                                           (lvl-inst/var lvl-nth/zero))
+                                         ([x]
+                                           ([h]
+                                             (inst-expr/forall
+                                               h
+                                               ([y]
+                                                 ([h1]
+                                                   (inst-expr/forall
+                                                     h
+                                                     ([z]
+                                                       ([h2]
+                                                         (inst-expr/sort
+                                                           lvl-inst/zero)))))))))))
+                                     (defeq/const
+                                       PUnit/decl
+                                       (inst-expr/sort
+                                         (lvl-inst/var lvl-nth/zero))))
+                                   h3)
+                                 h3)
+                               (mleq/imax-lzL (mleq/self nonneg_0))
+                               ([x1]
+                                 ([h4]
+                                   (field-universes-ok/forall
+                                     (defeq/const
+                                       PUnit/decl
+                                       (inst-expr/sort
+                                         (lvl-inst/var lvl-nth/zero)))
+                                     (mleq/imax-lzL (mleq/self nonneg_0))
+                                     ([y1]
+                                       ([h5]
+                                         (field-universes-ok/done
+                                           not-forall/const))))))))))))))))))).
 
 PropStructure_mk/name : name "PropStructure.mk" (is-decl
   (eforall (econst "PUnit" (lcons (lvar liz) lnil))
@@ -540,219 +435,11 @@ PropStructure_mk/decl : declared "PropStructure.mk"
   (ctor "PropStructure" liz)
    = declared/ok-ctor PropStructure_mk/name PropStructure/name PropStructure_mk/cmem PropStructure/eisl PropStructure_mk/fuo (dkind-ok/ctor PropStructure_mk/type-wf PropStructure_mk/positivity).
 
-%% recursor PropStructure.rec
-PropStructure_rec/type-wf-sort : lvl
-   = (limax
-       (limax lzero (lsucc lzero))
-       (limax
-         (limax
-           (lvar liz)
-           (limax
-             (lvar (lis liz))
-             (limax
-               (lvar liz)
-               (limax
-                 (lvar (lis liz))
-                 (limax lzero (limax (lvar liz) lzero))))))
-         (limax lzero lzero))).
-
-PropStructure_rec/type-wf : of
-  (eforall (eforall (econst "PropStructure" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) ([x] (esort lzero)))
-    ([x]
-      (eforall (eforall (econst "PUnit" (lcons (lvar liz) lnil))
-        ([y]
-          (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil))
-            ([z]
-              (eforall (econst "PUnit" (lcons (lvar liz) lnil))
-                ([w]
-                  (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil))
-                    ([x1]
-                      (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) (econst "PUnit" (lcons (lvar (lis liz)) lnil))) x1) x1)
-                        ([y1]
-                          (eforall (econst "PUnit" (lcons (lvar liz) lnil))
-                            ([z1] (eapp x (eapp (eapp (eapp (eapp (eapp (eapp (econst "PropStructure.mk" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) y) z) w) x1) y1) z1))))))))))))))
-        ([y] (eforall (econst "PropStructure" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) ([z] (eapp x z)))))))
-  (esort PropStructure_rec/type-wf-sort)
-   = (defeq/forall
-       (defeq/forall
-         (defeq/const PropStructure/decl (inst-expr/sort lvl-inst/zero))
-         ([x] ([h] defeq/sort-refl)))
-       ([x]
-         ([h]
-           (defeq/forall
-             (defeq/forall
-               (defeq/const
-                 PUnit/decl
-                 (inst-expr/sort (lvl-inst/var lvl-nth/zero)))
-               ([y]
-                 ([h1]
-                   (defeq/forall
-                     (defeq/const
-                       PUnit/decl
-                       (inst-expr/sort (lvl-inst/var lvl-nth/zero)))
-                     ([z]
-                       ([h2]
-                         (defeq/forall
-                           (defeq/const
-                             PUnit/decl
-                             (inst-expr/sort (lvl-inst/var lvl-nth/zero)))
-                           ([w]
-                             ([h3]
-                               (defeq/forall
-                                 (defeq/const
-                                   PUnit/decl
-                                   (inst-expr/sort (lvl-inst/var lvl-nth/zero)))
-                                 ([x1]
-                                   ([h4]
-                                     (defeq/forall
-                                       (defeq/app
-                                         (defeq/app
-                                           (defeq/app
-                                             (defeq/const
-                                               Eq/decl
-                                               (inst-expr/forall
-                                                 (inst-expr/sort
-                                                   (lvl-inst/var lvl-nth/zero))
-                                                 ([x]
-                                                   ([h]
-                                                     (inst-expr/forall
-                                                       h
-                                                       ([y]
-                                                         ([h1]
-                                                           (inst-expr/forall
-                                                             h
-                                                             ([z]
-                                                               ([h2]
-                                                                 (inst-expr/sort
-                                                                   lvl-inst/zero)))))))))))
-                                             (defeq/const
-                                               PUnit/decl
-                                               (inst-expr/sort
-                                                 (lvl-inst/var lvl-nth/zero))))
-                                           h4)
-                                         h4)
-                                       ([y1]
-                                         ([h5]
-                                           (defeq/forall
-                                             (defeq/const
-                                               PUnit/decl
-                                               (inst-expr/sort
-                                                 (lvl-inst/var lvl-nth/zero)))
-                                             ([z1]
-                                               ([h6]
-                                                 (defeq/app
-                                                   h
-                                                   (defeq/app
-                                                     (defeq/app
-                                                       (defeq/app
-                                                         (defeq/app
-                                                           (defeq/app
-                                                             (defeq/app
-                                                               (defeq/const
-                                                                 PropStructure_mk/decl
-                                                                 (inst-expr/forall
-                                                                   (inst-expr/const
-                                                                     (lvls-inst/cons
-                                                                       (lvl-inst/var
-                                                                         lvl-nth/zero)
-                                                                       lvls-inst/nil))
-                                                                   ([x]
-                                                                     ([h]
-                                                                       (inst-expr/forall
-                                                                         (inst-expr/const
-                                                                           (lvls-inst/cons
-                                                                             (lvl-inst/var
-                                                                               (lvl-nth/succ
-                                                                                 lvl-nth/zero))
-                                                                             lvls-inst/nil))
-                                                                         ([y]
-                                                                           ([h1]
-                                                                             (inst-expr/forall
-                                                                               (inst-expr/const
-                                                                                 (lvls-inst/cons
-                                                                                   (lvl-inst/var
-                                                                                     lvl-nth/zero)
-                                                                                   lvls-inst/nil))
-                                                                               ([z]
-                                                                                 ([h2]
-                                                                                   (inst-expr/forall
-                                                                                     (inst-expr/const
-                                                                                       (lvls-inst/cons
-                                                                                         (lvl-inst/var
-                                                                                           (lvl-nth/succ
-                                                                                             lvl-nth/zero))
-                                                                                         lvls-inst/nil))
-                                                                                     ([w]
-                                                                                       ([h3]
-                                                                                         (inst-expr/forall
-                                                                                           (inst-expr/app
-                                                                                             (inst-expr/app
-                                                                                               (inst-expr/app
-                                                                                                 (inst-expr/const
-                                                                                                   (lvls-inst/cons
-                                                                                                     (lvl-inst/var
-                                                                                                       (lvl-nth/succ
-                                                                                                         lvl-nth/zero))
-                                                                                                     lvls-inst/nil))
-                                                                                                 (inst-expr/const
-                                                                                                   (lvls-inst/cons
-                                                                                                     (lvl-inst/var
-                                                                                                       (lvl-nth/succ
-                                                                                                         lvl-nth/zero))
-                                                                                                     lvls-inst/nil)))
-                                                                                               h3)
-                                                                                             h3)
-                                                                                           ([x1]
-                                                                                             ([h4]
-                                                                                               (inst-expr/forall
-                                                                                                 (inst-expr/const
-                                                                                                   (lvls-inst/cons
-                                                                                                     (lvl-inst/var
-                                                                                                       lvl-nth/zero)
-                                                                                                     lvls-inst/nil))
-                                                                                                 ([y1]
-                                                                                                   ([h5]
-                                                                                                     (inst-expr/const
-                                                                                                       (lvls-inst/cons
-                                                                                                         (lvl-inst/var
-                                                                                                           lvl-nth/zero)
-                                                                                                         (lvls-inst/cons
-                                                                                                           (lvl-inst/var
-                                                                                                             (lvl-nth/succ
-                                                                                                               lvl-nth/zero))
-                                                                                                           lvls-inst/nil))))))))))))))))))))))
-                                                               h1)
-                                                             h2)
-                                                           h3)
-                                                         h4)
-                                                       h5)
-                                                     h6))))))))))))))))))))
-             ([y]
-               ([h1]
-                 (defeq/forall
-                   (defeq/const
-                     PropStructure/decl
-                     (inst-expr/sort lvl-inst/zero))
-                   ([z] ([h2] (defeq/app h h2)))))))))).
-
-%%% HOLE: recursor PropStructure.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
-PropStructure_rec/decl : declared "PropStructure.rec"
-  (eforall (eforall (econst "PropStructure" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) ([x] (esort lzero)))
-    ([x]
-      (eforall (eforall (econst "PUnit" (lcons (lvar liz) lnil))
-        ([y]
-          (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil))
-            ([z]
-              (eforall (econst "PUnit" (lcons (lvar liz) lnil))
-                ([w]
-                  (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil))
-                    ([x1]
-                      (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) (econst "PUnit" (lcons (lvar (lis liz)) lnil))) x1) x1)
-                        ([y1]
-                          (eforall (econst "PUnit" (lcons (lvar liz) lnil))
-                            ([z1] (eapp x (eapp (eapp (eapp (eapp (eapp (eapp (econst "PropStructure.mk" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) y) z) w) x1) y1) z1))))))))))))))
-        ([y] (eforall (econst "PropStructure" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) ([z] (eapp x z)))))))
-  (irec "PropStructure").
+%% recursor PropStructure.rec (TCB-derived; informational only)
+%%   level params: u v
+%%   type:   (eforall (eforall (econst "PropStructure" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) ([x] (esort lzero))) ([x] (eforall (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([w] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) (econst "PUnit" (lcons (lvar (lis liz)) lnil))) x1) x1) ([y1] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([z1] (eapp x (eapp (eapp (eapp (eapp (eapp (eapp (econst "PropStructure.mk" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) y) z) w) x1) y1) z1)))))))))))))) ([y] (eforall (econst "PropStructure" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) ([z] (eapp x z)))))))
+%%   rules:
+%%     PropStructure.rec … PropStructure.mk … = (elam (eforall (econst "PropStructure" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) ([x] (esort lzero))) ([x] (elam (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([w] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) (econst "PUnit" (lcons (lvar (lis liz)) lnil))) x1) x1) ([y1] (eforall (econst "PUnit" (lcons (lvar liz) lnil)) ([z1] (eapp x (eapp (eapp (eapp (eapp (eapp (eapp (econst "PropStructure.mk" (lcons (lvar liz) (lcons (lvar (lis liz)) lnil))) y) z) w) x1) y1) z1)))))))))))))) ([y] (elam (econst "PUnit" (lcons (lvar liz) lnil)) ([z] (elam (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([w] (elam (econst "PUnit" (lcons (lvar liz) lnil)) ([x1] (elam (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([y1] (elam (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) (econst "PUnit" (lcons (lvar (lis liz)) lnil))) y1) y1) ([z1] (elam (econst "PUnit" (lcons (lvar liz) lnil)) ([w1] (eapp (eapp (eapp (eapp (eapp (eapp y z) w) x1) y1) z1) w1)))))))))))))))))   (6 fields)
 
 %% def projProp3
 projProp3/type-wf-sort : lvl

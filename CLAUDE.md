@@ -50,6 +50,28 @@ trusted `.elf`: `tcb.elf`, `freeze.elf`, `final-checks.elf`); `prover.ts` /
 `synth.ts` are untrusted — a prover bug can only lose completeness (a wrongful
 HOLE/reject), never accept an ill-typed term.
 
+### Derive, don't check
+
+The recursors and Quot constants in `.ndjson` are kernel-derivable from the
+inductive declarations (per lean4export's spec — "[the export] contains
+information that is redundant and would likely be ignored or only validated
+by a full external checker"). We take the **rederive** path: those
+declarations do *not* appear in `.render.elf` as load-bearing entries.
+Instead `tcb.elf` carries closed families `rec-derived` and `quot-derived`
+whose inhabitants are constructed from the inductive declarations + the
+hardcoded Quot types. Iota rules consume these derived families directly.
+
+The translator emits an informational comment block in `.render.elf`
+documenting the lean4export-supplied recursor types/rules for human
+readability — purely a comment, not a Twelf declaration. The prover gets
+access to the same supplied data via the `ParsedEnv` and uses it as a hint
+when synthesizing iota proofs.
+
+Soundness consequence: a bogus recursor in `.ndjson` (e.g. arena
+`066_BogusRecursor`) can't be admitted because the translator doesn't emit
+it. The same applies to bogus Quot definitions. See `completeness-plan.md`
+§3.4 / §3.5.
+
 ### Posited facts audited globally (the `%unique` / `string-neq` pattern)
 
 Two soundness checks follow the same shape: the environment is allowed to
@@ -198,8 +220,8 @@ HOLE isn't filled), distinct from Twelf verifying it bad (❌).
 
 ## Plans and design docs
 
-- `completeness-plan.md` — the live roadmap: a tick-box accounting of how much
-  of Mario Carneiro's declarative `IsDefEq` spec the TCB encodes, plus
-  salvaged design notes for the highest-value remaining work (level-equality
-  decision procedure, name-reservation soundness check, `lean.mm1` borrows).
+- `completeness-plan.md` — the live roadmap: tick-box accounting of how
+  much of Mario Carneiro's declarative `IsDefEq` spec the TCB encodes, the
+  derive-canonical architecture (recursors/Quot are TCB-built, not
+  env-supplied), and a forward-looking gap list ranked by impact.
   Start here for "what's left to do."

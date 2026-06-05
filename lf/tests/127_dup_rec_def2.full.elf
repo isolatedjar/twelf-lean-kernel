@@ -32,16 +32,13 @@ dup_rec_def2/rec-name : name "dup_rec_def2.rec" (is-rec-for "dup_rec_def2").
 dup_rec_def2/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
-dup_rec_def2/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = count-leading-foralls/zero.
-
 dup_rec_def2/cnd : cnames-distinct (ccons "dup_rec_def2.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
 dup_rec_def2/name : name "dup_rec_def2" (is-decl (esort (lsucc lzero)) (indt (ccons "dup_rec_def2.mk" cnil) liz)).
 
 dup_rec_def2/decl : declared "dup_rec_def2" (esort (lsucc lzero)) (indt (ccons "dup_rec_def2.mk" cnil) liz)
-   = declared/ok-indt dup_rec_def2/name dup_rec_def2/rec-name dup_rec_def2/clf dup_rec_def2/cnd (dkind-ok/indt dup_rec_def2/type-wf dup_rec_def2/ends-in-sort).
+   = declared/ok-indt dup_rec_def2/name dup_rec_def2/rec-name dup_rec_def2/cnd (dkind-ok/indt dup_rec_def2/type-wf dup_rec_def2/ends-in-sort).
 
 %% ctor dup_rec_def2.mk (of dup_rec_def2)
 dup_rec_def2_mk/type-wf-sort : lvl
@@ -58,47 +55,16 @@ dup_rec_def2_mk/positivity : ctor-positive "dup_rec_def2" lnil (econst "dup_rec_
 dup_rec_def2_mk/cmem : cmem "dup_rec_def2.mk" (ccons "dup_rec_def2.mk" cnil)
    = cmem/here.
 
-dup_rec_def2_mk/fuo : field-universes-ok-skip-params liz (econst "dup_rec_def2" lnil) (lsucc lzero)
-   = (field-universes-ok-skip-params/start
-       (field-universes-ok/done not-forall/const)).
+dup_rec_def2_mk/fuo : field-universes-ok (econst "dup_rec_def2" lnil) (lsucc lzero)
+   = (field-universes-ok/done not-forall/const).
 
 dup_rec_def2_mk/name : name "dup_rec_def2.mk" (is-decl (econst "dup_rec_def2" lnil) (ctor "dup_rec_def2" liz)).
 
 dup_rec_def2_mk/decl : declared "dup_rec_def2.mk" (econst "dup_rec_def2" lnil) (ctor "dup_rec_def2" liz)
    = declared/ok-ctor dup_rec_def2_mk/name dup_rec_def2/name dup_rec_def2_mk/cmem dup_rec_def2/eisl dup_rec_def2_mk/fuo (dkind-ok/ctor dup_rec_def2_mk/type-wf dup_rec_def2_mk/positivity).
 
-%% recursor dup_rec_def2.not_rec
-dup_rec_def2_not_rec/type-wf-sort : lvl
-   = (limax
-       (limax (lsucc lzero) (lsucc (lvar liz)))
-       (limax (lvar liz) (limax (lsucc lzero) (lvar liz)))).
-
-dup_rec_def2_not_rec/type-wf : of
-  (eforall (eforall (econst "dup_rec_def2" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_rec_def2.mk" lnil)) ([y] (eforall (econst "dup_rec_def2" lnil) ([z] (eapp x z)))))))
-  (esort dup_rec_def2_not_rec/type-wf-sort)
-   = (defeq/forall
-       (defeq/forall
-         (defeq/const
-           dup_rec_def2/decl
-           (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
-         ([x] ([h] defeq/sort-refl)))
-       ([x]
-         ([h]
-           (defeq/forall
-             (defeq/app
-               h
-               (defeq/const
-                 dup_rec_def2_mk/decl
-                 (inst-expr/const lvls-inst/nil)))
-             ([y]
-               ([h1]
-                 (defeq/forall
-                   (defeq/const
-                     dup_rec_def2/decl
-                     (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
-                   ([z] ([h2] (defeq/app h h2)))))))))).
-
-%%% HOLE: recursor dup_rec_def2.not_rec — name does not follow <inductive>.rec convention
-dup_rec_def2_not_rec/decl : declared "dup_rec_def2.not_rec"
-  (eforall (eforall (econst "dup_rec_def2" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_rec_def2.mk" lnil)) ([y] (eforall (econst "dup_rec_def2" lnil) ([z] (eapp x z)))))))
-  (irec "<unknown>").
+%% recursor dup_rec_def2.not_rec (TCB-derived; informational only)
+%%   level params: u
+%%   type:   (eforall (eforall (econst "dup_rec_def2" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_rec_def2.mk" lnil)) ([y] (eforall (econst "dup_rec_def2" lnil) ([z] (eapp x z)))))))
+%%   rules:
+%%     dup_rec_def2.not_rec … dup_rec_def2.mk … = (elam (eforall (econst "dup_rec_def2" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "dup_rec_def2.mk" lnil)) ([y] y))))   (0 fields)

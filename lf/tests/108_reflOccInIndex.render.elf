@@ -20,9 +20,6 @@ Nat/rec-name : name "Nat.rec" (is-rec-for "Nat").
 Nat/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
-Nat/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = count-leading-foralls/zero.
-
 Nat/cnd : cnames-distinct (ccons "Nat.zero" (ccons "Nat.succ" cnil))
    = (cnames-distinct/cons
        (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil)
@@ -31,7 +28,7 @@ Nat/cnd : cnames-distinct (ccons "Nat.zero" (ccons "Nat.succ" cnil))
 Nat/name : name "Nat" (is-decl (esort (lsucc lzero)) (indt (ccons "Nat.zero" (ccons "Nat.succ" cnil)) liz)).
 
 Nat/decl : declared "Nat" (esort (lsucc lzero)) (indt (ccons "Nat.zero" (ccons "Nat.succ" cnil)) liz)
-   = declared/ok-indt Nat/name Nat/rec-name Nat/clf Nat/cnd (dkind-ok/indt Nat/type-wf Nat/ends-in-sort).
+   = declared/ok-indt Nat/name Nat/rec-name Nat/cnd (dkind-ok/indt Nat/type-wf Nat/ends-in-sort).
 
 %% ctor Nat.zero (of Nat)
 %%% HOLE
@@ -47,7 +44,7 @@ Nat_zero/cmem : cmem "Nat.zero" (ccons "Nat.zero" (ccons "Nat.succ" cnil))
    = cmem/here.
 
 %%% HOLE: Nat_zero/fuo
-Nat_zero/fuo : field-universes-ok-skip-params liz (econst "Nat" lnil) (lsucc lzero).
+Nat_zero/fuo : field-universes-ok (econst "Nat" lnil) (lsucc lzero).
 
 Nat_zero/name : name "Nat.zero" (is-decl (econst "Nat" lnil) (ctor "Nat" liz)).
 
@@ -68,31 +65,18 @@ Nat_succ/cmem : cmem "Nat.succ" (ccons "Nat.zero" (ccons "Nat.succ" cnil))
    = (cmem/there cmem/here).
 
 %%% HOLE: Nat_succ/fuo
-Nat_succ/fuo : field-universes-ok-skip-params liz (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (lsucc lzero).
+Nat_succ/fuo : field-universes-ok (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (lsucc lzero).
 
 Nat_succ/name : name "Nat.succ" (is-decl (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (ctor "Nat" (lis liz))).
 
 Nat_succ/decl : declared "Nat.succ" (eforall (econst "Nat" lnil) ([x] (econst "Nat" lnil))) (ctor "Nat" (lis liz))
    = declared/ok-ctor Nat_succ/name Nat/name Nat_succ/cmem Nat/eisl Nat_succ/fuo (dkind-ok/ctor Nat_succ/type-wf Nat_succ/positivity).
 
-%% recursor Nat.rec
-%%% HOLE
-Nat_rec/type-wf-sort : lvl.
-
-%%% HOLE
-Nat_rec/type-wf : of
-  (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz))))
-    ([x]
-      (eforall (eapp x (econst "Nat.zero" lnil))
-        ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w)))))))))
-  (esort Nat_rec/type-wf-sort).
-
-%%% HOLE: recursor Nat.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
-Nat_rec/decl : declared "Nat.rec"
-  (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz))))
-    ([x]
-      (eforall (eapp x (econst "Nat.zero" lnil))
-        ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w)))))))))
-  (irec "Nat").
+%% recursor Nat.rec (TCB-derived; informational only)
+%%   level params: u
+%%   type:   (eforall (eforall (econst "Nat" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Nat.zero" lnil)) ([y] (eforall (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (eforall (econst "Nat" lnil) ([w] (eapp x w)))))))))
+%%   rules:
+%%     Nat.rec … Nat.zero … = (elam (eforall (econst "Nat" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "Nat.zero" lnil)) ([y] (elam (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] y))))))   (0 fields)
+%%     Nat.rec … Nat.succ … = (elam (eforall (econst "Nat" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "Nat.zero" lnil)) ([y] (elam (eforall (econst "Nat" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "Nat.succ" lnil) z)))))) ([z] (elam (econst "Nat" lnil) ([w] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "Nat.rec" (lcons (lvar liz) lnil)) x) y) z) w))))))))))   (1 fields)
 
 %%% SKIP: ctor reflOccInIndex.mk — field #1 has type Sort 1 (lives at Sort 2); inductive is at Sort 1

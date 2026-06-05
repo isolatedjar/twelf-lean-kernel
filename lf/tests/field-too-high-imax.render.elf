@@ -31,16 +31,13 @@ Foo/rec-name : name "Foo.rec" (is-rec-for "Foo").
 Foo/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
    = ends-in-sort-with-level/sort.
 
-Foo/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = count-leading-foralls/zero.
-
 Foo/cnd : cnames-distinct (ccons "Foo.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
 Foo/name : name "Foo" (is-decl (esort (lsucc lzero)) (indt (ccons "Foo.mk" cnil) liz)).
 
 Foo/decl : declared "Foo" (esort (lsucc lzero)) (indt (ccons "Foo.mk" cnil) liz)
-   = declared/ok-indt Foo/name Foo/rec-name Foo/clf Foo/cnd (dkind-ok/indt Foo/type-wf Foo/ends-in-sort).
+   = declared/ok-indt Foo/name Foo/rec-name Foo/cnd (dkind-ok/indt Foo/type-wf Foo/ends-in-sort).
 
 %% ctor Foo.mk (of Foo)
 %%% HOLE
@@ -56,19 +53,12 @@ Foo_mk/cmem : cmem "Foo.mk" (ccons "Foo.mk" cnil)
    = cmem/here.
 
 %%% HOLE: Foo_mk/fuo
-Foo_mk/fuo : field-universes-ok-skip-params liz (eforall (esort (limax (lsucc lzero) (lsucc lzero))) ([x] (econst "Foo" lnil))) (lsucc lzero).
+Foo_mk/fuo : field-universes-ok (eforall (esort (limax (lsucc lzero) (lsucc lzero))) ([x] (econst "Foo" lnil))) (lsucc lzero).
 
 Foo_mk/name : name "Foo.mk" (is-decl (eforall (esort (limax (lsucc lzero) (lsucc lzero))) ([x] (econst "Foo" lnil))) (ctor "Foo" liz)).
 
 Foo_mk/decl : declared "Foo.mk" (eforall (esort (limax (lsucc lzero) (lsucc lzero))) ([x] (econst "Foo" lnil))) (ctor "Foo" liz)
    = declared/ok-ctor Foo_mk/name Foo/name Foo_mk/cmem Foo/eisl Foo_mk/fuo (dkind-ok/ctor Foo_mk/type-wf Foo_mk/positivity).
 
-%% recursor Foo.rec
-%%% HOLE
-Foo_rec/type-wf-sort : lvl.
-
-%%% HOLE
-Foo_rec/type-wf : of (esort lzero) (esort Foo_rec/type-wf-sort).
-
-%%% HOLE: recursor Foo.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
-Foo_rec/decl : declared "Foo.rec" (esort lzero) (irec "Foo").
+%% recursor Foo.rec (TCB-derived; informational only)
+%%   type:   (esort lzero)

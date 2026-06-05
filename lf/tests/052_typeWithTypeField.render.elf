@@ -15,16 +15,13 @@ TypeWithTypeField/rec-name : name "TypeWithTypeField.rec" (is-rec-for "TypeWithT
 TypeWithTypeField/eisl : ends-in-sort-with-level (esort (lsucc (lsucc lzero))) (lsucc (lsucc lzero))
    = ends-in-sort-with-level/sort.
 
-TypeWithTypeField/clf : count-leading-foralls (esort (lsucc (lsucc lzero))) liz
-   = count-leading-foralls/zero.
-
 TypeWithTypeField/cnd : cnames-distinct (ccons "TypeWithTypeField.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
 TypeWithTypeField/name : name "TypeWithTypeField" (is-decl (esort (lsucc (lsucc lzero))) (indt (ccons "TypeWithTypeField.mk" cnil) liz)).
 
 TypeWithTypeField/decl : declared "TypeWithTypeField" (esort (lsucc (lsucc lzero))) (indt (ccons "TypeWithTypeField.mk" cnil) liz)
-   = declared/ok-indt TypeWithTypeField/name TypeWithTypeField/rec-name TypeWithTypeField/clf TypeWithTypeField/cnd (dkind-ok/indt TypeWithTypeField/type-wf TypeWithTypeField/ends-in-sort).
+   = declared/ok-indt TypeWithTypeField/name TypeWithTypeField/rec-name TypeWithTypeField/cnd (dkind-ok/indt TypeWithTypeField/type-wf TypeWithTypeField/ends-in-sort).
 
 %% ctor TypeWithTypeField.mk (of TypeWithTypeField)
 %%% HOLE
@@ -40,28 +37,18 @@ TypeWithTypeField_mk/cmem : cmem "TypeWithTypeField.mk" (ccons "TypeWithTypeFiel
    = cmem/here.
 
 %%% HOLE: TypeWithTypeField_mk/fuo
-TypeWithTypeField_mk/fuo : field-universes-ok-skip-params liz (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil))) (lsucc (lsucc lzero)).
+TypeWithTypeField_mk/fuo : field-universes-ok (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil))) (lsucc (lsucc lzero)).
 
 TypeWithTypeField_mk/name : name "TypeWithTypeField.mk" (is-decl (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil))) (ctor "TypeWithTypeField" liz)).
 
 TypeWithTypeField_mk/decl : declared "TypeWithTypeField.mk" (eforall (esort (lsucc lzero)) ([x] (econst "TypeWithTypeField" lnil))) (ctor "TypeWithTypeField" liz)
    = declared/ok-ctor TypeWithTypeField_mk/name TypeWithTypeField/name TypeWithTypeField_mk/cmem TypeWithTypeField/eisl TypeWithTypeField_mk/fuo (dkind-ok/ctor TypeWithTypeField_mk/type-wf TypeWithTypeField_mk/positivity).
 
-%% recursor TypeWithTypeField.rec
-%%% HOLE
-TypeWithTypeField_rec/type-wf-sort : lvl.
-
-%%% HOLE
-TypeWithTypeField_rec/type-wf : of
-  (eforall (eforall (econst "TypeWithTypeField" lnil) ([x] (esort (lvar liz))))
-    ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "TypeWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "TypeWithTypeField" lnil) ([z] (eapp x z)))))))
-  (esort TypeWithTypeField_rec/type-wf-sort).
-
-%%% HOLE: recursor TypeWithTypeField.rec — non-enum shape (parametric/indexed inductive, or ctor with fields) — §3.1 canonical-schema only handles plain enums in phase 1
-TypeWithTypeField_rec/decl : declared "TypeWithTypeField.rec"
-  (eforall (eforall (econst "TypeWithTypeField" lnil) ([x] (esort (lvar liz))))
-    ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "TypeWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "TypeWithTypeField" lnil) ([z] (eapp x z)))))))
-  (irec "TypeWithTypeField").
+%% recursor TypeWithTypeField.rec (TCB-derived; informational only)
+%%   level params: u
+%%   type:   (eforall (eforall (econst "TypeWithTypeField" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "TypeWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "TypeWithTypeField" lnil) ([z] (eapp x z)))))))
+%%   rules:
+%%     TypeWithTypeField.rec … TypeWithTypeField.mk … = (elam (eforall (econst "TypeWithTypeField" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "TypeWithTypeField.mk" lnil) y)))) ([y] (elam (esort (lsucc lzero)) ([z] (eapp y z)))))))   (1 fields)
 
 %% def typeWithTypeField
 %%% HOLE
