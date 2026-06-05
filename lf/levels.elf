@@ -82,6 +82,9 @@ last rule is not moded: it invents a variable out of nowhere. In order for
 this judgment to work as a logic program, we'd need to either add a "splitting
 order" as an input, or we'd need some complete way of deciding which variable
 to split on; both would complicate the judgment.
+
+(Both `leq-lvl/imaxRz` and `leq-lvl/imaxRs` are missing in Carneiro's thesis,
+but that appears to be a simple oversight.)
 !}%
 
 leq-lvl : lvl -> lvl -> nat -> type.
@@ -100,8 +103,12 @@ leq-lvl/maxR2  : leq-lvl L (lmax L1 L2) N
                  <- leq-lvl L L2 N.
 leq-lvl/imaxLz : leq-lvl (limax L1 lzero) L N
                  <- leq-lvl lzero L N.
+leq-lvl/imaxRz : leq-lvl L (limax L1 lzero) N
+                 <- leq-lvl L lzero N.
 leq-lvl/imaxLs : leq-lvl (limax L1 (lsucc L2)) L N
                  <- leq-lvl (lmax L1 (lsucc L2)) L N.
+leq-lvl/imaxRs : leq-lvl L (limax L1 (lsucc L2)) N
+                 <- leq-lvl L (lmax L1 (lsucc L2)) N.
 leq-lvl/imaxLi : leq-lvl (limax L1 (limax L2 L3)) L N
                  <- leq-lvl (lmax (limax L1 L3) (limax L2 L3)) L N.
 leq-lvl/imaxRi : leq-lvl L (limax L1 (limax L2 L3)) N
