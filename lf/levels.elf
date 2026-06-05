@@ -158,6 +158,12 @@ inst-lvl/imax : inst-lvl LS (limax L1 L2) (limax L1' L2')
 inst-lvl/var  : inst-lvl LS (lvar I) L
                 <- nth-lvl LS I L.
 
+inst-lvls : lvls -> lvls -> lvls -> type.
+inst-lvls/nil  : inst-lvls LS lnil lnil.
+inst-lvls/cons : inst-lvls LS (lcons L' LS') (lcons L'' LS'')
+                 <- inst-lvl LS L' L''
+                 <- inst-lvls LS LS' LS''.
+
 %{! #### Properties !}%
 
 %mode nth-lvl +LS +I -L.
@@ -167,4 +173,8 @@ inst-lvl/var  : inst-lvl LS (lvar I) L
 %mode inst-lvl +LS +L -L'.
 %worlds () (inst-lvl _ _ _).
 %unique inst-lvl +LS +L -L'.
+
+%mode inst-lvls +LS +LS' -LS''.
+%worlds () (inst-lvls _ _ _).
+%unique inst-lvls +LS +LS' -LS''.
 
