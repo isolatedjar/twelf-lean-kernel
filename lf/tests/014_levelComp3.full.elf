@@ -4,8 +4,21 @@
 levelComp3/type-wf : of (esort (lsucc (lsucc (lsucc lzero)))) (esort (lsucc (lsucc (lsucc (lsucc lzero)))))
    = defeq/sort-refl.
 
-%%% HOLE
-levelComp3/value-typed : of (esort (limax (lsucc (lsucc lzero)) (lsucc lzero))) (esort (lsucc (lsucc (lsucc lzero)))).
+levelComp3/value-typed : of (esort (limax (lsucc (lsucc lzero)) (lsucc lzero))) (esort (lsucc (lsucc (lsucc lzero))))
+   = (defeq/conv
+       (defeq/sort-eq
+         (eq-lvl/le
+           (leq-lvl/sR
+             (leq-lvl/sL (leq-lvl/imaxRs (leq-lvl/maxR1 leq-lvl/self))))
+           (leq-lvl/sR
+             (leq-lvl/sL
+               (leq-lvl/imaxLs
+                 (leq-lvl/sR
+                   (leq-lvl/sR
+                     (leq-lvl/maxL
+                       (leq-lvl/sL leq-lvl/self)
+                       (leq-lvl/sL (leq-lvl/sL leq-lvl/self))))))))))
+       defeq/sort-refl).
 
 levelComp3/name : name "levelComp3" (is-decl (esort (lsucc (lsucc (lsucc lzero)))) (defn (esort (limax (lsucc (lsucc lzero)) (lsucc lzero))))).
 

@@ -186,11 +186,68 @@ rfl/decl : declared "rfl"
    = declared/ok rfl/name dkind-non-inductive/defn (dkind-ok/defn rfl/type-wf rfl/value-typed).
 
 %% thm funEta
-%%% HOLE
 funEta/type-wf : of
   (eforall (esort (lsucc lzero))
     ([x] (eforall (esort (lsucc lzero)) ([y] (eforall (eforall x ([w] y)) ([w] (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eforall x ([v] y))) (elam x ([v] (eapp w v)))) w)))))))
-  (esort lzero).
+  (esort lzero)
+   = (defeq/conv
+       (defeq/sort-eq
+         (eq-lvl/le
+           leq-lvl/lz
+           (leq-lvl/imaxLi
+             (leq-lvl/maxL
+               (leq-lvl/imaxLi
+                 (leq-lvl/maxL
+                   (leq-lvl/imaxLz leq-lvl/self)
+                   (leq-lvl/imaxLz leq-lvl/self)))
+               (leq-lvl/imaxLi
+                 (leq-lvl/maxL
+                   (leq-lvl/imaxLz leq-lvl/self)
+                   (leq-lvl/imaxLz leq-lvl/self)))))))
+       (defeq/forall
+         defeq/sort-refl
+         ([x]
+           ([h]
+             (defeq/forall
+               defeq/sort-refl
+               ([y]
+                 ([h1]
+                   (defeq/forall
+                     (defeq/forall h ([w] ([h2] h1)))
+                     ([w]
+                       ([h2]
+                         (defeq/app
+                           (defeq/app
+                             (defeq/app
+                               (defeq/const
+                                 Eq/decl
+                                 (inst-expr/forall
+                                   (inst-expr/sort (inst-lvl/var nth-lvl/z))
+                                   ([x]
+                                     ([h]
+                                       (inst-expr/forall
+                                         h
+                                         ([y]
+                                           ([h1]
+                                             (inst-expr/forall
+                                               h
+                                               ([w]
+                                                 ([h2]
+                                                   (inst-expr/sort
+                                                     inst-lvl/zero)))))))))))
+                               (defeq/conv
+                                 (defeq/sort-eq
+                                   (eq-lvl/le
+                                     (leq-lvl/imaxRs
+                                       (leq-lvl/maxR1 leq-lvl/self))
+                                     (leq-lvl/imaxLs
+                                       (leq-lvl/sR
+                                         (leq-lvl/maxL
+                                           (leq-lvl/sL leq-lvl/self)
+                                           (leq-lvl/sL leq-lvl/self))))))
+                                 (defeq/forall h ([v] ([h3] h1)))))
+                             (defeq/lam h ([v] ([h3] (defeq/app h2 h3)))))
+                           h2))))))))))).
 
 %%% HOLE
 funEta/value-typed : of

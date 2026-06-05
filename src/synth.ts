@@ -531,13 +531,19 @@ function imaxRewriteL(al: Level, r: Level): { newL: Level; ctor: string } | null
   }
 }
 
-// The RHS `imax` rewrites (imaxRi/Rm), dual to the LHS ones for the `imax-
-// of-imax` and `imax-of-max` cases.  No imaxRz/imaxRs counterparts: those
-// are absent from Mario's thesis, and case analysis on the LHS (combined
-// with `leq-lvl/split` for `lvar`) covers any goal that would otherwise
-// need them.
+// The RHS `imax` rewrites: full dual of the LHS rewrites.  imaxRz and
+// imaxRs are not in Mario's thesis or mm0-lean's lean.mm1, but they
+// encode the same imax-equational laws (oriented for RHS); without them
+// our directional LF encoding can't reach goals like `(lsucc lzero) ≤
+// (limax (lsucc lzero) (lsucc lzero)) + 0` that the prover encounters
+// when checking `λx:Type 0, Type 0 : Type 1`.  See levels.elf for the
+// rule comment.
 function imaxRewriteR(bl: Level, r: Level): { newR: Level; ctor: string } | null {
   switch (r.kind) {
+    case "zero":
+      return { newR: { kind: "zero" }, ctor: "leq-lvl/imaxRz" };
+    case "succ":
+      return { newR: { kind: "max", l: bl, r }, ctor: "leq-lvl/imaxRs" };
     case "imax": // limax L1 (limax L2 L3) → lmax (limax L1 L3) (limax L2 L3)
       return {
         newR: {
@@ -667,11 +673,35 @@ function substLevel(l: Level, i: number, mode: "zero" | "succ"): Level {
   }
 }
 
-// `lvl-subst V I L L'` proof for substituting at index `i` over `l`.  The new
-// (levels.elf) rule for the variable case is unified: `lvl-subst/var`
-// consumes `ord-nat I J O` + `if-eq-lvl O V (lvar J) L`.  Both are
-// %total/%mode-d functional families, so we emit `_ _` and let Twelf
-// reconstruct the witnesses from the conclusion's structure.
+// Build an `ord-nat i j O` proof for concrete nats i, j (using nat.elf's
+// rules: ord-nat/lt for `ord-nat z (s _) gt`, ord-nat/gt for `ord-nat
+// (s _) z lt`, ord-nat/eq for `ord-nat z z eq`, ord-nat/cong to lift
+// both args by 1).  We wrap with cong as many times as min(i,j); the
+// remaining "tail" picks the lt/gt/eq leaf.
+function buildOrdNat(i: number, j: number): { proof: Fmt; ord: string } {
+  const m = Math.min(i, j);
+  let proof: Fmt;
+  let ord: string;
+  if (i < j) {
+    proof = atom("ord-nat/lt"); // ord-nat z (s _) gt — output `gt` means j > i
+    ord = "gt";
+  } else if (i > j) {
+    proof = atom("ord-nat/gt"); // ord-nat (s _) z lt — output `lt` means j < i
+    ord = "lt";
+  } else {
+    proof = atom("ord-nat/eq");
+    ord = "eq";
+  }
+  for (let k = 0; k < m; k++) proof = app(atom("ord-nat/cong"), proof);
+  return { proof, ord };
+}
+
+// `lvl-subst V I L L'` proof for substituting at index `i` over `l`.
+// For the variable case, the new (levels.elf) `lvl-subst/var` consumes
+// `ord-nat I J O` + `if-eq-lvl O V (lvar J) L`.  We construct both
+// explicitly — using `_ _` here creates Twelf metavariables that
+// transgress the lvl/expr subordination boundary in HOAS contexts
+// (the `Freezing violation: lvl would depend on expr` error).
 // `null` if a parameter has no known index.
 function buildLvlSubst(l: Level, i: number): Fmt | null {
   switch (l.kind) {
@@ -695,10 +725,11 @@ function buildLvlSubst(l: Level, i: number): Fmt | null {
     case "param": {
       const j = paramIndex(l.name);
       if (j === null) return null;
+      const { proof: ordNatProof, ord } = buildOrdNat(i, j);
+      const ifEqProof = atom(`if-eq-lvl/${ord}`);
       // `lvl-subst/var` source: `<- ord-nat I J O <- if-eq-lvl O V (lvar J) L`.
-      // Left-assoc reverses: if-eq-lvl FIRST, then ord-nat.  Both anonymous —
-      // Twelf reconstructs from the typed context.
-      return app(atom("lvl-subst/var"), atom("_"), atom("_"));
+      // Left-assoc reverses: if-eq-lvl FIRST, then ord-nat.
+      return app(atom("lvl-subst/var"), ifEqProof, ordNatProof);
     }
   }
 }

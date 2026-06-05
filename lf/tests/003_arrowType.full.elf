@@ -4,8 +4,17 @@
 arrowType/type-wf : of (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = defeq/sort-refl.
 
-%%% HOLE
-arrowType/value-typed : of (eforall (esort lzero) ([x] (esort lzero))) (esort (lsucc lzero)).
+arrowType/value-typed : of (eforall (esort lzero) ([x] (esort lzero))) (esort (lsucc lzero))
+   = (defeq/conv
+       (defeq/sort-eq
+         (eq-lvl/le
+           (leq-lvl/imaxRs (leq-lvl/maxR1 leq-lvl/self))
+           (leq-lvl/imaxLs
+             (leq-lvl/sR
+               (leq-lvl/maxL
+                 (leq-lvl/sL leq-lvl/self)
+                 (leq-lvl/sL leq-lvl/self))))))
+       (defeq/forall defeq/sort-refl ([x] ([h] defeq/sort-refl)))).
 
 arrowType/name : name "arrowType" (is-decl (esort (lsucc lzero)) (defn (eforall (esort lzero) ([x] (esort lzero))))).
 

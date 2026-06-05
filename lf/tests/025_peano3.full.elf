@@ -4,8 +4,93 @@
 PN/type-wf : of (esort (limax (lsucc (lvar z)) (lvar z))) (esort (lsucc (limax (lsucc (lvar z)) (lvar z))))
    = defeq/sort-refl.
 
-%%% HOLE
-PN/value-typed : of (eforall (esort (lvar z)) ([x] (eforall (eforall x ([y] x)) ([y] (eforall x ([w] x)))))) (esort (limax (lsucc (lvar z)) (lvar z))).
+PN/value-typed : of (eforall (esort (lvar z)) ([x] (eforall (eforall x ([y] x)) ([y] (eforall x ([w] x)))))) (esort (limax (lsucc (lvar z)) (lvar z)))
+   = (defeq/conv
+       (defeq/sort-eq
+         (eq-lvl/le
+           (leq-lvl/imaxRi
+             (leq-lvl/maxR1 (leq-lvl/imaxRi (leq-lvl/maxR1 leq-lvl/self))))
+           (leq-lvl/imaxLi
+             (leq-lvl/maxL
+               (leq-lvl/imaxLi
+                 (leq-lvl/maxL
+                   (leq-lvl/split
+                     z
+                     (leq-lvl/imaxLs
+                       (leq-lvl/imaxRs
+                         (leq-lvl/maxL
+                           (leq-lvl/maxR1 (leq-lvl/sR leq-lvl/self))
+                           (leq-lvl/maxR1 (leq-lvl/sR leq-lvl/self)))))
+                     (lvl-subst/imax
+                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                       (lvl-subst/succ (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                     (lvl-subst/imax
+                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq))
+                     (leq-lvl/imaxLz leq-lvl/lz)
+                     (lvl-subst/imax
+                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                       (lvl-subst/succ (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                     (lvl-subst/imax
+                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                   (leq-lvl/split
+                     z
+                     (leq-lvl/imaxLs
+                       (leq-lvl/imaxRs
+                         (leq-lvl/maxL
+                           (leq-lvl/maxR1 (leq-lvl/sR leq-lvl/self))
+                           (leq-lvl/imaxLs
+                             (leq-lvl/maxL
+                               (leq-lvl/maxR1 (leq-lvl/sR leq-lvl/self))
+                               (leq-lvl/maxR1 (leq-lvl/sR leq-lvl/self)))))))
+                     (lvl-subst/imax
+                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                       (lvl-subst/succ (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                     (lvl-subst/imax
+                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                       (lvl-subst/imax
+                         (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                         (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                     (leq-lvl/imaxLz leq-lvl/lz)
+                     (lvl-subst/imax
+                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                       (lvl-subst/succ (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                     (lvl-subst/imax
+                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                       (lvl-subst/imax
+                         (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                         (lvl-subst/var if-eq-lvl/eq ord-nat/eq))))))
+               (leq-lvl/imaxLi
+                 (leq-lvl/maxL
+                   (leq-lvl/split
+                     z
+                     (leq-lvl/imaxLs
+                       (leq-lvl/imaxRs
+                         (leq-lvl/maxL
+                           (leq-lvl/maxR1 (leq-lvl/sR leq-lvl/self))
+                           (leq-lvl/maxR1 (leq-lvl/sR leq-lvl/self)))))
+                     (lvl-subst/imax
+                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                       (lvl-subst/succ (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                     (lvl-subst/imax
+                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq))
+                     (leq-lvl/imaxLz leq-lvl/lz)
+                     (lvl-subst/imax
+                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                       (lvl-subst/succ (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                     (lvl-subst/imax
+                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                   leq-lvl/self))))))
+       (defeq/forall
+         defeq/sort-refl
+         ([x]
+           ([h]
+             (defeq/forall
+               (defeq/forall h ([y] ([h1] h)))
+               ([y] ([h1] (defeq/forall h ([w] ([h2] h)))))))))).
 
 PN/name : name "PN" (is-decl (esort (limax (lsucc (lvar z)) (lvar z))) (defn (eforall (esort (lvar z)) ([x] (eforall (eforall x ([y] x)) ([y] (eforall x ([w] x)))))))).
 
@@ -30,10 +115,187 @@ PN_succ/type-wf : of (eforall (econst "PN" (lcons (lvar z) lnil)) ([x] (econst "
                  (inst-lvl/var nth-lvl/z)
                  (inst-lvl/succ (inst-lvl/var nth-lvl/z)))))))).
 
-%%% HOLE
 PN_succ/value-typed : of
   (elam (econst "PN" (lcons (lvar z) lnil)) ([x] (elam (esort (lvar z)) ([y] (elam (eforall y ([w] y)) ([w] (elam y ([v] (eapp w (eapp (eapp (eapp x y) w) v))))))))))
-  (eforall (econst "PN" (lcons (lvar z) lnil)) ([x] (econst "PN" (lcons (lvar z) lnil)))).
+  (eforall (econst "PN" (lcons (lvar z) lnil)) ([x] (econst "PN" (lcons (lvar z) lnil))))
+   = (defeq/conv
+       (defeq/forall
+         (defeq/const
+           PN/decl
+           (inst-expr/sort
+             (inst-lvl/imax
+               (inst-lvl/var nth-lvl/z)
+               (inst-lvl/succ (inst-lvl/var nth-lvl/z)))))
+         ([x]
+           ([h]
+             (defeq/trans
+               (defeq/forall
+                 defeq/sort-refl
+                 ([y]
+                   ([h1]
+                     (defeq/forall
+                       (defeq/forall h1 ([w] ([h2] h1)))
+                       ([w] ([h2] (defeq/forall h1 ([v] ([h3] h1)))))))))
+               (defeq/conv
+                 (defeq/sort-eq
+                   (eq-lvl/le
+                     (leq-lvl/imaxLi
+                       (leq-lvl/maxL
+                         (leq-lvl/imaxLi
+                           (leq-lvl/maxL
+                             (leq-lvl/split
+                               z
+                               (leq-lvl/imaxLs
+                                 (leq-lvl/imaxRs
+                                   (leq-lvl/maxL
+                                     (leq-lvl/maxR1 (leq-lvl/sR leq-lvl/self))
+                                     (leq-lvl/maxR1
+                                       (leq-lvl/sR leq-lvl/self)))))
+                               (lvl-subst/imax
+                                 (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                 (lvl-subst/succ
+                                   (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                               (lvl-subst/imax
+                                 (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                 (lvl-subst/var if-eq-lvl/eq ord-nat/eq))
+                               (leq-lvl/imaxLz leq-lvl/lz)
+                               (lvl-subst/imax
+                                 (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                 (lvl-subst/succ
+                                   (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                               (lvl-subst/imax
+                                 (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                 (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                             (leq-lvl/split
+                               z
+                               (leq-lvl/imaxLs
+                                 (leq-lvl/imaxRs
+                                   (leq-lvl/maxL
+                                     (leq-lvl/maxR1 (leq-lvl/sR leq-lvl/self))
+                                     (leq-lvl/imaxLs
+                                       (leq-lvl/maxL
+                                         (leq-lvl/maxR1
+                                           (leq-lvl/sR leq-lvl/self))
+                                         (leq-lvl/maxR1
+                                           (leq-lvl/sR leq-lvl/self)))))))
+                               (lvl-subst/imax
+                                 (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                 (lvl-subst/succ
+                                   (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                               (lvl-subst/imax
+                                 (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                 (lvl-subst/imax
+                                   (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                   (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                               (leq-lvl/imaxLz leq-lvl/lz)
+                               (lvl-subst/imax
+                                 (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                 (lvl-subst/succ
+                                   (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                               (lvl-subst/imax
+                                 (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                 (lvl-subst/imax
+                                   (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                   (lvl-subst/var if-eq-lvl/eq ord-nat/eq))))))
+                         (leq-lvl/imaxLi
+                           (leq-lvl/maxL
+                             (leq-lvl/split
+                               z
+                               (leq-lvl/imaxLs
+                                 (leq-lvl/imaxRs
+                                   (leq-lvl/maxL
+                                     (leq-lvl/maxR1 (leq-lvl/sR leq-lvl/self))
+                                     (leq-lvl/maxR1
+                                       (leq-lvl/sR leq-lvl/self)))))
+                               (lvl-subst/imax
+                                 (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                 (lvl-subst/succ
+                                   (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                               (lvl-subst/imax
+                                 (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                 (lvl-subst/var if-eq-lvl/eq ord-nat/eq))
+                               (leq-lvl/imaxLz leq-lvl/lz)
+                               (lvl-subst/imax
+                                 (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                 (lvl-subst/succ
+                                   (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                               (lvl-subst/imax
+                                 (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                 (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                             leq-lvl/self))))
+                     (leq-lvl/imaxRi
+                       (leq-lvl/maxR1
+                         (leq-lvl/imaxRi (leq-lvl/maxR1 leq-lvl/self))))))
+                 (defeq/symm
+                   (defeq/delta
+                     PN/decl
+                     (inst-expr/sort
+                       (inst-lvl/imax
+                         (inst-lvl/var nth-lvl/z)
+                         (inst-lvl/succ (inst-lvl/var nth-lvl/z))))
+                     (inst-expr/forall
+                       (inst-expr/sort (inst-lvl/var nth-lvl/z))
+                       ([x]
+                         ([h]
+                           (inst-expr/forall
+                             (inst-expr/forall h ([y] ([h1] h)))
+                             ([y]
+                               ([h1]
+                                 (inst-expr/forall
+                                   h
+                                   ([w] ([h2] h))))))))))))))))
+       (defeq/lam
+         (defeq/const
+           PN/decl
+           (inst-expr/sort
+             (inst-lvl/imax
+               (inst-lvl/var nth-lvl/z)
+               (inst-lvl/succ (inst-lvl/var nth-lvl/z)))))
+         ([x]
+           ([h]
+             (defeq/lam
+               defeq/sort-refl
+               ([y]
+                 ([h1]
+                   (defeq/lam
+                     (defeq/forall h1 ([w] ([h2] h1)))
+                     ([w]
+                       ([h2]
+                         (defeq/lam
+                           h1
+                           ([v]
+                             ([h3]
+                               (defeq/app
+                                 h2
+                                 (defeq/app
+                                   (defeq/app
+                                     (defeq/app
+                                       (defeq/conv
+                                         (defeq/delta
+                                           PN/decl
+                                           (inst-expr/sort
+                                             (inst-lvl/imax
+                                               (inst-lvl/var nth-lvl/z)
+                                               (inst-lvl/succ
+                                                 (inst-lvl/var nth-lvl/z))))
+                                           (inst-expr/forall
+                                             (inst-expr/sort
+                                               (inst-lvl/var nth-lvl/z))
+                                             ([x]
+                                               ([h]
+                                                 (inst-expr/forall
+                                                   (inst-expr/forall
+                                                     h
+                                                     ([y] ([h1] h)))
+                                                   ([y]
+                                                     ([h1]
+                                                       (inst-expr/forall
+                                                         h
+                                                         ([w] ([h2] h))))))))))
+                                         h)
+                                       h1)
+                                     h2)
+                                   h3))))))))))))))).
 
 PN_succ/name : name "PN.succ" (is-decl
   (eforall (econst "PN" (lcons (lvar z) lnil)) ([x] (econst "PN" (lcons (lvar z) lnil))))
@@ -53,8 +315,124 @@ PN_zero/type-wf : of (econst "PN" (lcons (lvar z) lnil)) (esort (limax (lsucc (l
            (inst-lvl/var nth-lvl/z)
            (inst-lvl/succ (inst-lvl/var nth-lvl/z))))).
 
-%%% HOLE
-PN_zero/value-typed : of (elam (esort (lvar z)) ([x] (elam (eforall x ([y] x)) ([y] (elam x ([w] w)))))) (econst "PN" (lcons (lvar z) lnil)).
+PN_zero/value-typed : of (elam (esort (lvar z)) ([x] (elam (eforall x ([y] x)) ([y] (elam x ([w] w)))))) (econst "PN" (lcons (lvar z) lnil))
+   = (defeq/conv
+       (defeq/trans
+         (defeq/forall
+           defeq/sort-refl
+           ([x]
+             ([h]
+               (defeq/forall
+                 (defeq/forall h ([y] ([h1] h)))
+                 ([y] ([h1] (defeq/forall h ([w] ([h2] h)))))))))
+         (defeq/conv
+           (defeq/sort-eq
+             (eq-lvl/le
+               (leq-lvl/imaxLi
+                 (leq-lvl/maxL
+                   (leq-lvl/imaxLi
+                     (leq-lvl/maxL
+                       (leq-lvl/split
+                         z
+                         (leq-lvl/imaxLs
+                           (leq-lvl/imaxRs
+                             (leq-lvl/maxL
+                               (leq-lvl/maxR1 (leq-lvl/sR leq-lvl/self))
+                               (leq-lvl/maxR1 (leq-lvl/sR leq-lvl/self)))))
+                         (lvl-subst/imax
+                           (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                           (lvl-subst/succ
+                             (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                         (lvl-subst/imax
+                           (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                           (lvl-subst/var if-eq-lvl/eq ord-nat/eq))
+                         (leq-lvl/imaxLz leq-lvl/lz)
+                         (lvl-subst/imax
+                           (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                           (lvl-subst/succ
+                             (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                         (lvl-subst/imax
+                           (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                           (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                       (leq-lvl/split
+                         z
+                         (leq-lvl/imaxLs
+                           (leq-lvl/imaxRs
+                             (leq-lvl/maxL
+                               (leq-lvl/maxR1 (leq-lvl/sR leq-lvl/self))
+                               (leq-lvl/imaxLs
+                                 (leq-lvl/maxL
+                                   (leq-lvl/maxR1 (leq-lvl/sR leq-lvl/self))
+                                   (leq-lvl/maxR1
+                                     (leq-lvl/sR leq-lvl/self)))))))
+                         (lvl-subst/imax
+                           (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                           (lvl-subst/succ
+                             (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                         (lvl-subst/imax
+                           (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                           (lvl-subst/imax
+                             (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                             (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                         (leq-lvl/imaxLz leq-lvl/lz)
+                         (lvl-subst/imax
+                           (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                           (lvl-subst/succ
+                             (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                         (lvl-subst/imax
+                           (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                           (lvl-subst/imax
+                             (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                             (lvl-subst/var if-eq-lvl/eq ord-nat/eq))))))
+                   (leq-lvl/imaxLi
+                     (leq-lvl/maxL
+                       (leq-lvl/split
+                         z
+                         (leq-lvl/imaxLs
+                           (leq-lvl/imaxRs
+                             (leq-lvl/maxL
+                               (leq-lvl/maxR1 (leq-lvl/sR leq-lvl/self))
+                               (leq-lvl/maxR1 (leq-lvl/sR leq-lvl/self)))))
+                         (lvl-subst/imax
+                           (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                           (lvl-subst/succ
+                             (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                         (lvl-subst/imax
+                           (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                           (lvl-subst/var if-eq-lvl/eq ord-nat/eq))
+                         (leq-lvl/imaxLz leq-lvl/lz)
+                         (lvl-subst/imax
+                           (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                           (lvl-subst/succ
+                             (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                         (lvl-subst/imax
+                           (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                           (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                       leq-lvl/self))))
+               (leq-lvl/imaxRi
+                 (leq-lvl/maxR1
+                   (leq-lvl/imaxRi (leq-lvl/maxR1 leq-lvl/self))))))
+           (defeq/symm
+             (defeq/delta
+               PN/decl
+               (inst-expr/sort
+                 (inst-lvl/imax
+                   (inst-lvl/var nth-lvl/z)
+                   (inst-lvl/succ (inst-lvl/var nth-lvl/z))))
+               (inst-expr/forall
+                 (inst-expr/sort (inst-lvl/var nth-lvl/z))
+                 ([x]
+                   ([h]
+                     (inst-expr/forall
+                       (inst-expr/forall h ([y] ([h1] h)))
+                       ([y] ([h1] (inst-expr/forall h ([w] ([h2] h)))))))))))))
+       (defeq/lam
+         defeq/sort-refl
+         ([x]
+           ([h]
+             (defeq/lam
+               (defeq/forall h ([y] ([h1] h)))
+               ([y] ([h1] (defeq/lam h ([w] ([h2] h2)))))))))).
 
 PN_zero/name : name "PN.zero" (is-decl (econst "PN" (lcons (lvar z) lnil)) (defn (elam (esort (lvar z)) ([x] (elam (eforall x ([y] x)) ([y] (elam x ([w] w)))))))).
 
@@ -230,11 +608,253 @@ PN_mul/type-wf : of
                        (inst-lvl/var nth-lvl/z)
                        (inst-lvl/succ (inst-lvl/var nth-lvl/z))))))))))).
 
-%%% HOLE
 PN_mul/value-typed : of
   (elam (econst "PN" (lcons (lvar z) lnil))
     ([x] (elam (econst "PN" (lcons (lvar z) lnil)) ([y] (elam (esort (lvar z)) ([w] (elam (eforall w ([v] w)) ([v] (elam w ([x1] (eapp (eapp (eapp x w) (eapp (eapp y w) v)) x1)))))))))))
-  (eforall (econst "PN" (lcons (lvar z) lnil)) ([x] (eforall (econst "PN" (lcons (lvar z) lnil)) ([y] (econst "PN" (lcons (lvar z) lnil)))))).
+  (eforall (econst "PN" (lcons (lvar z) lnil)) ([x] (eforall (econst "PN" (lcons (lvar z) lnil)) ([y] (econst "PN" (lcons (lvar z) lnil))))))
+   = (defeq/conv
+       (defeq/forall
+         (defeq/const
+           PN/decl
+           (inst-expr/sort
+             (inst-lvl/imax
+               (inst-lvl/var nth-lvl/z)
+               (inst-lvl/succ (inst-lvl/var nth-lvl/z)))))
+         ([x]
+           ([h]
+             (defeq/forall
+               (defeq/const
+                 PN/decl
+                 (inst-expr/sort
+                   (inst-lvl/imax
+                     (inst-lvl/var nth-lvl/z)
+                     (inst-lvl/succ (inst-lvl/var nth-lvl/z)))))
+               ([y]
+                 ([h1]
+                   (defeq/trans
+                     (defeq/forall
+                       defeq/sort-refl
+                       ([w]
+                         ([h2]
+                           (defeq/forall
+                             (defeq/forall h2 ([v] ([h3] h2)))
+                             ([v] ([h3] (defeq/forall h2 ([x1] ([h4] h2)))))))))
+                     (defeq/conv
+                       (defeq/sort-eq
+                         (eq-lvl/le
+                           (leq-lvl/imaxLi
+                             (leq-lvl/maxL
+                               (leq-lvl/imaxLi
+                                 (leq-lvl/maxL
+                                   (leq-lvl/split
+                                     z
+                                     (leq-lvl/imaxLs
+                                       (leq-lvl/imaxRs
+                                         (leq-lvl/maxL
+                                           (leq-lvl/maxR1
+                                             (leq-lvl/sR leq-lvl/self))
+                                           (leq-lvl/maxR1
+                                             (leq-lvl/sR leq-lvl/self)))))
+                                     (lvl-subst/imax
+                                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                       (lvl-subst/succ
+                                         (lvl-subst/var
+                                           if-eq-lvl/eq
+                                           ord-nat/eq)))
+                                     (lvl-subst/imax
+                                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq))
+                                     (leq-lvl/imaxLz leq-lvl/lz)
+                                     (lvl-subst/imax
+                                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                       (lvl-subst/succ
+                                         (lvl-subst/var
+                                           if-eq-lvl/eq
+                                           ord-nat/eq)))
+                                     (lvl-subst/imax
+                                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                                   (leq-lvl/split
+                                     z
+                                     (leq-lvl/imaxLs
+                                       (leq-lvl/imaxRs
+                                         (leq-lvl/maxL
+                                           (leq-lvl/maxR1
+                                             (leq-lvl/sR leq-lvl/self))
+                                           (leq-lvl/imaxLs
+                                             (leq-lvl/maxL
+                                               (leq-lvl/maxR1
+                                                 (leq-lvl/sR leq-lvl/self))
+                                               (leq-lvl/maxR1
+                                                 (leq-lvl/sR leq-lvl/self)))))))
+                                     (lvl-subst/imax
+                                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                       (lvl-subst/succ
+                                         (lvl-subst/var
+                                           if-eq-lvl/eq
+                                           ord-nat/eq)))
+                                     (lvl-subst/imax
+                                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                       (lvl-subst/imax
+                                         (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                         (lvl-subst/var
+                                           if-eq-lvl/eq
+                                           ord-nat/eq)))
+                                     (leq-lvl/imaxLz leq-lvl/lz)
+                                     (lvl-subst/imax
+                                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                       (lvl-subst/succ
+                                         (lvl-subst/var
+                                           if-eq-lvl/eq
+                                           ord-nat/eq)))
+                                     (lvl-subst/imax
+                                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                       (lvl-subst/imax
+                                         (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                         (lvl-subst/var
+                                           if-eq-lvl/eq
+                                           ord-nat/eq))))))
+                               (leq-lvl/imaxLi
+                                 (leq-lvl/maxL
+                                   (leq-lvl/split
+                                     z
+                                     (leq-lvl/imaxLs
+                                       (leq-lvl/imaxRs
+                                         (leq-lvl/maxL
+                                           (leq-lvl/maxR1
+                                             (leq-lvl/sR leq-lvl/self))
+                                           (leq-lvl/maxR1
+                                             (leq-lvl/sR leq-lvl/self)))))
+                                     (lvl-subst/imax
+                                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                       (lvl-subst/succ
+                                         (lvl-subst/var
+                                           if-eq-lvl/eq
+                                           ord-nat/eq)))
+                                     (lvl-subst/imax
+                                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq))
+                                     (leq-lvl/imaxLz leq-lvl/lz)
+                                     (lvl-subst/imax
+                                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                       (lvl-subst/succ
+                                         (lvl-subst/var
+                                           if-eq-lvl/eq
+                                           ord-nat/eq)))
+                                     (lvl-subst/imax
+                                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)
+                                       (lvl-subst/var if-eq-lvl/eq ord-nat/eq)))
+                                   leq-lvl/self))))
+                           (leq-lvl/imaxRi
+                             (leq-lvl/maxR1
+                               (leq-lvl/imaxRi (leq-lvl/maxR1 leq-lvl/self))))))
+                       (defeq/symm
+                         (defeq/delta
+                           PN/decl
+                           (inst-expr/sort
+                             (inst-lvl/imax
+                               (inst-lvl/var nth-lvl/z)
+                               (inst-lvl/succ (inst-lvl/var nth-lvl/z))))
+                           (inst-expr/forall
+                             (inst-expr/sort (inst-lvl/var nth-lvl/z))
+                             ([x]
+                               ([h]
+                                 (inst-expr/forall
+                                   (inst-expr/forall h ([y] ([h1] h)))
+                                   ([y]
+                                     ([h1]
+                                       (inst-expr/forall
+                                         h
+                                         ([w] ([h2] h)))))))))))))))))))
+       (defeq/lam
+         (defeq/const
+           PN/decl
+           (inst-expr/sort
+             (inst-lvl/imax
+               (inst-lvl/var nth-lvl/z)
+               (inst-lvl/succ (inst-lvl/var nth-lvl/z)))))
+         ([x]
+           ([h]
+             (defeq/lam
+               (defeq/const
+                 PN/decl
+                 (inst-expr/sort
+                   (inst-lvl/imax
+                     (inst-lvl/var nth-lvl/z)
+                     (inst-lvl/succ (inst-lvl/var nth-lvl/z)))))
+               ([y]
+                 ([h1]
+                   (defeq/lam
+                     defeq/sort-refl
+                     ([w]
+                       ([h2]
+                         (defeq/lam
+                           (defeq/forall h2 ([v] ([h3] h2)))
+                           ([v]
+                             ([h3]
+                               (defeq/lam
+                                 h2
+                                 ([x1]
+                                   ([h4]
+                                     (defeq/app
+                                       (defeq/app
+                                         (defeq/app
+                                           (defeq/conv
+                                             (defeq/delta
+                                               PN/decl
+                                               (inst-expr/sort
+                                                 (inst-lvl/imax
+                                                   (inst-lvl/var nth-lvl/z)
+                                                   (inst-lvl/succ
+                                                     (inst-lvl/var nth-lvl/z))))
+                                               (inst-expr/forall
+                                                 (inst-expr/sort
+                                                   (inst-lvl/var nth-lvl/z))
+                                                 ([x]
+                                                   ([h]
+                                                     (inst-expr/forall
+                                                       (inst-expr/forall
+                                                         h
+                                                         ([y] ([h1] h)))
+                                                       ([y]
+                                                         ([h1]
+                                                           (inst-expr/forall
+                                                             h
+                                                             ([w]
+                                                               ([h2] h))))))))))
+                                             h)
+                                           h2)
+                                         (defeq/app
+                                           (defeq/app
+                                             (defeq/conv
+                                               (defeq/delta
+                                                 PN/decl
+                                                 (inst-expr/sort
+                                                   (inst-lvl/imax
+                                                     (inst-lvl/var nth-lvl/z)
+                                                     (inst-lvl/succ
+                                                       (inst-lvl/var
+                                                         nth-lvl/z))))
+                                                 (inst-expr/forall
+                                                   (inst-expr/sort
+                                                     (inst-lvl/var nth-lvl/z))
+                                                   ([x]
+                                                     ([h]
+                                                       (inst-expr/forall
+                                                         (inst-expr/forall
+                                                           h
+                                                           ([y] ([h1] h)))
+                                                         ([y]
+                                                           ([h1]
+                                                             (inst-expr/forall
+                                                               h
+                                                               ([w]
+                                                                 ([h2]
+                                                                   h))))))))))
+                                               h1)
+                                             h2)
+                                           h3))
+                                       h4))))))))))))))))).
 
 PN_mul/name : name "PN.mul" (is-decl
   (eforall (econst "PN" (lcons (lvar z) lnil)) ([x] (eforall (econst "PN" (lcons (lvar z) lnil)) ([y] (econst "PN" (lcons (lvar z) lnil))))))

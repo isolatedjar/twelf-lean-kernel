@@ -318,14 +318,79 @@ T_val/decl : declared "T.val" (eforall (econst "T" lnil) ([x] (econst "Bool" lni
    = declared/ok T_val/name dkind-non-inductive/defn (dkind-ok/defn T_val/type-wf T_val/value-typed).
 
 %% def etaCtor
-%%% HOLE
 etaCtor/type-wf : of
   (eforall (eforall (econst "True" lnil) ([x] (econst "T" lnil)))
     ([x]
       (eapp (eapp (eapp (econst "Eq" (lcons (lsucc lzero) lnil)) (eforall (econst "True" lnil) ([y] (econst "T" lnil))))
         (eapp (econst "T.mk" lnil) (eapp (econst "T.val" lnil) (eapp x (econst "True.intro" lnil)))))
         x)))
-  (esort _).
+  (esort (limax (limax lzero (lsucc lzero)) lzero))
+   = (defeq/forall
+       (defeq/forall
+         (defeq/const True/decl (inst-expr/sort inst-lvl/zero))
+         ([x]
+           ([h]
+             (defeq/const
+               T/decl
+               (inst-expr/sort (inst-lvl/succ inst-lvl/zero))))))
+       ([x]
+         ([h]
+           (defeq/app
+             (defeq/app
+               (defeq/app
+                 (defeq/const
+                   Eq/decl
+                   (inst-expr/forall
+                     (inst-expr/sort (inst-lvl/var nth-lvl/z))
+                     ([x]
+                       ([h]
+                         (inst-expr/forall
+                           h
+                           ([y]
+                             ([h1]
+                               (inst-expr/forall
+                                 h
+                                 ([w]
+                                   ([h2]
+                                     (inst-expr/sort inst-lvl/zero)))))))))))
+                 (defeq/conv
+                   (defeq/sort-eq
+                     (eq-lvl/le
+                       (leq-lvl/imaxRs (leq-lvl/maxR2 leq-lvl/self))
+                       (leq-lvl/imaxLs
+                         (leq-lvl/sR
+                           (leq-lvl/maxL
+                             (leq-lvl/sL leq-lvl/self)
+                             leq-lvl/self)))))
+                   (defeq/forall
+                     (defeq/const True/decl (inst-expr/sort inst-lvl/zero))
+                     ([y]
+                       ([h1]
+                         (defeq/const
+                           T/decl
+                           (inst-expr/sort (inst-lvl/succ inst-lvl/zero))))))))
+               (defeq/app
+                 (defeq/const
+                   T_mk/decl
+                   (inst-expr/forall
+                     (inst-expr/const inst-lvls/nil)
+                     ([x]
+                       ([h]
+                         (inst-expr/forall
+                           (inst-expr/const inst-lvls/nil)
+                           ([y] ([h1] (inst-expr/const inst-lvls/nil))))))))
+                 (defeq/app
+                   (defeq/const
+                     T_val/decl
+                     (inst-expr/forall
+                       (inst-expr/const inst-lvls/nil)
+                       ([x] ([h] (inst-expr/const inst-lvls/nil)))))
+                   (defeq/app
+                     h
+                     (defeq/const
+                       True_intro/decl
+                       (inst-expr/const inst-lvls/nil))))))
+             h)))).
 
 %%% HOLE
 etaCtor/value-typed : of

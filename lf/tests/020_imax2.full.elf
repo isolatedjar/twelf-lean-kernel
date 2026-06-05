@@ -4,8 +4,24 @@
 imax2/type-wf : of (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc lzero))))) (esort (limax (lsucc (lsucc lzero)) (lsucc (lsucc (lsucc lzero)))))
    = (defeq/forall defeq/sort-refl ([x] ([h] defeq/sort-refl))).
 
-%%% HOLE
-imax2/value-typed : of (elam (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] x)))) (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc lzero))))).
+imax2/value-typed : of (elam (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] x)))) (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc lzero)))))
+   = (defeq/conv
+       (defeq/forall
+         (defeq/sort-eq eq-lvl/refl)
+         ([x]
+           ([h]
+             (defeq/sort-eq
+               (eq-lvl/le
+                 (leq-lvl/imaxRs (leq-lvl/maxR1 leq-lvl/self))
+                 (leq-lvl/imaxLs
+                   (leq-lvl/sR
+                     (leq-lvl/sR
+                       (leq-lvl/maxL
+                         (leq-lvl/sL leq-lvl/self)
+                         (leq-lvl/sL (leq-lvl/sL leq-lvl/self)))))))))))
+       (defeq/lam
+         defeq/sort-refl
+         ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] h))))))).
 
 imax2/name : name "imax2" (is-decl (eforall (esort (lsucc lzero)) ([x] (esort (lsucc (lsucc lzero))))) (defn (elam (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] x)))))).
 
