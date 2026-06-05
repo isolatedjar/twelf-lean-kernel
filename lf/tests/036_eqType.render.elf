@@ -2,71 +2,62 @@
 %%% Equality, as an important indexed non-recursive data type
 %% inductive Eq
 %%% HOLE
-Eq/type-wf-sort : lvl.
+Eq/type-wf : of (eforall (esort (lvar z)) ([x] (eforall x ([y] (eforall x ([w] (esort lzero))))))) (esort _).
 
 %%% HOLE
-Eq/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (esort Eq/type-wf-sort).
-
-%%% HOLE
-Eq/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))).
+Eq/ends-in-sort : ends-in-sort (eforall (esort (lvar z)) ([x] (eforall x ([y] (eforall x ([w] (esort lzero))))))).
 
 Eq/rec-name : name "Eq.rec" (is-rec-for "Eq").
 
-Eq/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) lzero
+Eq/eisl : ends-in-sort-with-level (eforall (esort (lvar z)) ([x] (eforall x ([y] (eforall x ([w] (esort lzero))))))) lzero
    = (ends-in-sort-with-level/forall
        ([x]
          (ends-in-sort-with-level/forall
            ([y]
              (ends-in-sort-with-level/forall
-               ([z] ends-in-sort-with-level/sort)))))).
+               ([w] ends-in-sort-with-level/sort)))))).
 
 Eq/cnd : cnames-distinct (ccons "Eq.refl" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
-Eq/name : name "Eq" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis liz)))).
+Eq/name : name "Eq" (is-decl (eforall (esort (lvar z)) ([x] (eforall x ([y] (eforall x ([w] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (s (s z)))).
 
-Eq/decl : declared "Eq" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis liz)))
+Eq/decl : declared "Eq" (eforall (esort (lvar z)) ([x] (eforall x ([y] (eforall x ([w] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (s (s z)))
    = declared/ok-indt Eq/name Eq/rec-name Eq/cnd (dkind-ok/indt Eq/type-wf Eq/ends-in-sort).
 
 %% ctor Eq.refl (of Eq)
 %%% HOLE
-Eq_refl/type-wf-sort : lvl.
+Eq_refl/type-wf : of (eforall (esort (lvar z)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar z) lnil)) x) y) y))))) (esort _).
 
 %%% HOLE
-Eq_refl/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (esort Eq_refl/type-wf-sort).
-
-%%% HOLE
-Eq_refl/positivity : ctor-positive "Eq" (lcons (lvar liz) lnil) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))).
+Eq_refl/positivity : ctor-positive "Eq" (lcons (lvar z) lnil) (eforall (esort (lvar z)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar z) lnil)) x) y) y))))).
 
 Eq_refl/cmem : cmem "Eq.refl" (ccons "Eq.refl" cnil)
    = cmem/here.
 
 %%% HOLE: Eq_refl/fuo
-Eq_refl/fuo : field-universes-ok (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) lzero.
+Eq_refl/fuo : field-universes-ok (eforall (esort (lvar z)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar z) lnil)) x) y) y))))) lzero.
 
-Eq_refl/name : name "Eq.refl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (ctor "Eq" liz)).
+Eq_refl/name : name "Eq.refl" (is-decl (eforall (esort (lvar z)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar z) lnil)) x) y) y))))) (ctor "Eq" z)).
 
-Eq_refl/decl : declared "Eq.refl" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (ctor "Eq" liz)
+Eq_refl/decl : declared "Eq.refl" (eforall (esort (lvar z)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar z) lnil)) x) y) y))))) (ctor "Eq" z)
    = declared/ok-ctor Eq_refl/name Eq/name Eq_refl/cmem Eq/eisl Eq_refl/fuo (dkind-ok/ctor Eq_refl/type-wf Eq_refl/positivity).
 
 %% recursor Eq.rec (TCB-derived; informational only)
 %%   level params: u u_1
-%%   type:   (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1)))))))))))))
+%%   type:   (eforall (esort (lvar (s z))) ([x] (eforall x ([y] (eforall (eforall x ([w] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (s z)) lnil)) x) y) w) ([v] (esort (lvar z)))))) ([w] (eforall (eapp (eapp w y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (s z)) lnil)) x) y)) ([v] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (s z)) lnil)) x) y) x1) ([y1] (eapp (eapp w x1) y1)))))))))))))
 %%   rules:
-%%     Eq.rec … Eq.refl … = (elam (esort (lvar (lis liz))) ([x] (elam x ([y] (elam (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (elam (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] w))))))))   (0 fields)
+%%     Eq.rec … Eq.refl … = (elam (esort (lvar (s z))) ([x] (elam x ([y] (elam (eforall x ([w] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (s z)) lnil)) x) y) w) ([v] (esort (lvar z)))))) ([w] (elam (eapp (eapp w y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (s z)) lnil)) x) y)) ([v] v))))))))   (0 fields)
 %%   K-like reduction: yes
 
 %% def eqType
 %%% HOLE
-eqType/type-wf-sort : lvl.
+eqType/type-wf : of (eforall (esort (lvar z)) ([x] (eforall x ([y] (eforall x ([w] (esort lzero))))))) (esort _).
 
 %%% HOLE
-eqType/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (esort eqType/type-wf-sort).
+eqType/value-typed : of (econst "Eq" (lcons (lvar z) lnil)) (eforall (esort (lvar z)) ([x] (eforall x ([y] (eforall x ([w] (esort lzero))))))).
 
-%%% HOLE
-eqType/value-typed : of (econst "Eq" (lcons (lvar liz) lnil)) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))).
+eqType/name : name "eqType" (is-decl (eforall (esort (lvar z)) ([x] (eforall x ([y] (eforall x ([w] (esort lzero))))))) (defn (econst "Eq" (lcons (lvar z) lnil)))).
 
-eqType/name : name "eqType" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (defn (econst "Eq" (lcons (lvar liz) lnil)))).
-
-eqType/decl : declared "eqType" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (defn (econst "Eq" (lcons (lvar liz) lnil)))
+eqType/decl : declared "eqType" (eforall (esort (lvar z)) ([x] (eforall x ([y] (eforall x ([w] (esort lzero))))))) (defn (econst "Eq" (lcons (lvar z) lnil)))
    = declared/ok eqType/name dkind-non-inductive/defn (dkind-ok/defn eqType/type-wf eqType/value-typed).

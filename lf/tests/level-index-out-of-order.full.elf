@@ -13,10 +13,7 @@
 %%% 1 were swapped, this would be the expected encoding of `axiom foo : Sort 2`.
 %%% This encoding should be equivalent.
 %% axiom foo
-foo/type-wf-sort : lvl
-   = (lsucc (lsucc (lsucc lzero))).
-
-foo/type-wf : of (esort (lsucc (lsucc lzero))) (esort foo/type-wf-sort)
+foo/type-wf : of (esort (lsucc (lsucc lzero))) (esort (lsucc (lsucc (lsucc lzero))))
    = defeq/sort-refl.
 
 foo/name : name "foo" (is-decl (esort (lsucc (lsucc lzero))) ax).

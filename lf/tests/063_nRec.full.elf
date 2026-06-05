@@ -1,14 +1,9 @@
 %%% Expected outcome: accept
 %%% Asserting the type of the generated recursor
-%solve nonneg_0 : 0 >= 0.
-
 sneq/0 : string-neq "N.zero" "N.succ".
 
 %% inductive N
-N/type-wf-sort : lvl
-   = (lsucc (lsucc lzero)).
-
-N/type-wf : of (esort (lsucc lzero)) (esort N/type-wf-sort)
+N/type-wf : of (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = defeq/sort-refl.
 
 N/ends-in-sort : ends-in-sort (esort (lsucc lzero))
@@ -24,17 +19,14 @@ N/cnd : cnames-distinct (ccons "N.zero" (ccons "N.succ" cnil))
        (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil)
        (all-string-neq/cons sneq/0 all-string-neq/nil)).
 
-N/name : name "N" (is-decl (esort (lsucc lzero)) (indt (ccons "N.zero" (ccons "N.succ" cnil)) liz)).
+N/name : name "N" (is-decl (esort (lsucc lzero)) (indt (ccons "N.zero" (ccons "N.succ" cnil)) z)).
 
-N/decl : declared "N" (esort (lsucc lzero)) (indt (ccons "N.zero" (ccons "N.succ" cnil)) liz)
+N/decl : declared "N" (esort (lsucc lzero)) (indt (ccons "N.zero" (ccons "N.succ" cnil)) z)
    = declared/ok-indt N/name N/rec-name N/cnd (dkind-ok/indt N/type-wf N/ends-in-sort).
 
 %% ctor N.zero (of N)
-N_zero/type-wf-sort : lvl
-   = (lsucc lzero).
-
-N_zero/type-wf : of (econst "N" lnil) (esort N_zero/type-wf-sort)
-   = (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
+N_zero/type-wf : of (econst "N" lnil) (esort (lsucc lzero))
+   = (defeq/const N/decl (inst-expr/sort (inst-lvl/succ inst-lvl/zero))).
 
 N_zero/positivity : ctor-positive "N" lnil (econst "N" lnil)
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
@@ -45,23 +37,20 @@ N_zero/cmem : cmem "N.zero" (ccons "N.zero" (ccons "N.succ" cnil))
 N_zero/fuo : field-universes-ok (econst "N" lnil) (lsucc lzero)
    = (field-universes-ok/done not-forall/const).
 
-N_zero/name : name "N.zero" (is-decl (econst "N" lnil) (ctor "N" liz)).
+N_zero/name : name "N.zero" (is-decl (econst "N" lnil) (ctor "N" z)).
 
-N_zero/decl : declared "N.zero" (econst "N" lnil) (ctor "N" liz)
+N_zero/decl : declared "N.zero" (econst "N" lnil) (ctor "N" z)
    = declared/ok-ctor N_zero/name N/name N_zero/cmem N/eisl N_zero/fuo (dkind-ok/ctor N_zero/type-wf N_zero/positivity).
 
 %% ctor N.succ (of N)
-N_succ/type-wf-sort : lvl
-   = (limax (lsucc lzero) (lsucc lzero)).
-
-N_succ/type-wf : of (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (esort N_succ/type-wf-sort)
+N_succ/type-wf : of (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (esort (limax (lsucc lzero) (lsucc lzero)))
    = (defeq/forall
-       (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+       (defeq/const N/decl (inst-expr/sort (inst-lvl/succ inst-lvl/zero)))
        ([x]
          ([h]
            (defeq/const
              N/decl
-             (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))))).
+             (inst-expr/sort (inst-lvl/succ inst-lvl/zero)))))).
 
 N_succ/positivity : ctor-positive "N" lnil (eforall (econst "N" lnil) ([x] (econst "N" lnil)))
    = (ctor-positive/intro ([S] (eforall S ([x] S))) (ctor-spine/arg
@@ -73,64 +62,53 @@ N_succ/cmem : cmem "N.succ" (ccons "N.zero" (ccons "N.succ" cnil))
 
 N_succ/fuo : field-universes-ok (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (lsucc lzero)
    = (field-universes-ok/forall
-       (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
-       (mleq/imax-lsL
-         (mleq/sR
-           (mleq/maxL
-             (mleq/sL (mleq/self nonneg_0))
-             (mleq/sL (mleq/self nonneg_0)))))
+       (defeq/const N/decl (inst-expr/sort (inst-lvl/succ inst-lvl/zero)))
+       (leq-lvl/imaxLs
+         (leq-lvl/sR
+           (leq-lvl/maxL (leq-lvl/sL leq-lvl/self) (leq-lvl/sL leq-lvl/self))))
        ([x] ([h] (field-universes-ok/done not-forall/const)))).
 
-N_succ/name : name "N.succ" (is-decl (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (ctor "N" (lis liz))).
+N_succ/name : name "N.succ" (is-decl (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (ctor "N" (s z))).
 
-N_succ/decl : declared "N.succ" (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (ctor "N" (lis liz))
+N_succ/decl : declared "N.succ" (eforall (econst "N" lnil) ([x] (econst "N" lnil))) (ctor "N" (s z))
    = declared/ok-ctor N_succ/name N/name N_succ/cmem N/eisl N_succ/fuo (dkind-ok/ctor N_succ/type-wf N_succ/positivity).
 
 %% recursor N.rec (TCB-derived; informational only)
 %%   level params: u
-%%   type:   (eforall (eforall (econst "N" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w)))))))))
+%%   type:   (eforall (eforall (econst "N" lnil) ([x] (esort (lvar z)))) ([x] (eforall (eapp x (econst "N.zero" lnil)) ([y] (eforall (eforall (econst "N" lnil) ([w] (eforall (eapp x w) ([v] (eapp x (eapp (econst "N.succ" lnil) w)))))) ([w] (eforall (econst "N" lnil) ([v] (eapp x v)))))))))
 %%   rules:
-%%     N.rec … N.zero … = (elam (eforall (econst "N" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "N.zero" lnil)) ([y] (elam (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] y))))))   (0 fields)
-%%     N.rec … N.succ … = (elam (eforall (econst "N" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "N.zero" lnil)) ([y] (elam (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (elam (econst "N" lnil) ([w] (eapp (eapp z w) (eapp (eapp (eapp (eapp (econst "N.rec" (lcons (lvar liz) lnil)) x) y) z) w))))))))))   (1 fields)
+%%     N.rec … N.zero … = (elam (eforall (econst "N" lnil) ([x] (esort (lvar z)))) ([x] (elam (eapp x (econst "N.zero" lnil)) ([y] (elam (eforall (econst "N" lnil) ([w] (eforall (eapp x w) ([v] (eapp x (eapp (econst "N.succ" lnil) w)))))) ([w] y))))))   (0 fields)
+%%     N.rec … N.succ … = (elam (eforall (econst "N" lnil) ([x] (esort (lvar z)))) ([x] (elam (eapp x (econst "N.zero" lnil)) ([y] (elam (eforall (econst "N" lnil) ([w] (eforall (eapp x w) ([v] (eapp x (eapp (econst "N.succ" lnil) w)))))) ([w] (elam (econst "N" lnil) ([v] (eapp (eapp w v) (eapp (eapp (eapp (eapp (econst "N.rec" (lcons (lvar z) lnil)) x) y) w) v))))))))))   (1 fields)
 
 %% def nRec
-nRec/type-wf-sort : lvl
-   = (limax
-       (limax (lsucc lzero) (lsucc (lvar liz)))
-       (limax
-         (lvar liz)
-         (limax
-           (limax (lsucc lzero) (limax (lvar liz) (lvar liz)))
-           (limax (lsucc lzero) (lvar liz))))).
-
 nRec/type-wf : of
-  (eforall (eforall (econst "N" lnil) ([x] (esort (lvar liz))))
+  (eforall (eforall (econst "N" lnil) ([x] (esort (lvar z))))
     ([x]
       (eforall (eapp x (econst "N.zero" lnil))
-        ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w)))))))))
-  (esort nRec/type-wf-sort)
+        ([y] (eforall (eforall (econst "N" lnil) ([w] (eforall (eapp x w) ([v] (eapp x (eapp (econst "N.succ" lnil) w)))))) ([w] (eforall (econst "N" lnil) ([v] (eapp x v)))))))))
+  (esort (limax (limax (lsucc lzero) (lsucc (lvar z))) (limax (lvar z) (limax (limax (lsucc lzero) (limax (lvar z) (lvar z))) (limax (lsucc lzero) (lvar z))))))
    = (defeq/forall
        (defeq/forall
-         (defeq/const N/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
+         (defeq/const N/decl (inst-expr/sort (inst-lvl/succ inst-lvl/zero)))
          ([x] ([h] defeq/sort-refl)))
        ([x]
          ([h]
            (defeq/forall
              (defeq/app
                h
-               (defeq/const N_zero/decl (inst-expr/const lvls-inst/nil)))
+               (defeq/const N_zero/decl (inst-expr/const inst-lvls/nil)))
              ([y]
                ([h1]
                  (defeq/forall
                    (defeq/forall
                      (defeq/const
                        N/decl
-                       (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
-                     ([z]
+                       (inst-expr/sort (inst-lvl/succ inst-lvl/zero)))
+                     ([w]
                        ([h2]
                          (defeq/forall
                            (defeq/app h h2)
-                           ([w]
+                           ([v]
                              ([h3]
                                (defeq/app
                                  h
@@ -138,38 +116,38 @@ nRec/type-wf : of
                                    (defeq/const
                                      N_succ/decl
                                      (inst-expr/forall
-                                       (inst-expr/const lvls-inst/nil)
+                                       (inst-expr/const inst-lvls/nil)
                                        ([x]
                                          ([h]
-                                           (inst-expr/const lvls-inst/nil)))))
+                                           (inst-expr/const inst-lvls/nil)))))
                                    h2))))))))
-                   ([z]
+                   ([w]
                      ([h2]
                        (defeq/forall
                          (defeq/const
                            N/decl
-                           (inst-expr/sort (lvl-inst/succ lvl-inst/zero)))
-                         ([w] ([h3] (defeq/app h h3))))))))))))).
+                           (inst-expr/sort (inst-lvl/succ inst-lvl/zero)))
+                         ([v] ([h3] (defeq/app h h3))))))))))))).
 
 %%% HOLE
 nRec/value-typed : of
-  (econst "N.rec" (lcons (lvar liz) lnil))
-  (eforall (eforall (econst "N" lnil) ([x] (esort (lvar liz))))
+  (econst "N.rec" (lcons (lvar z) lnil))
+  (eforall (eforall (econst "N" lnil) ([x] (esort (lvar z))))
     ([x]
       (eforall (eapp x (econst "N.zero" lnil))
-        ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w))))))))).
+        ([y] (eforall (eforall (econst "N" lnil) ([w] (eforall (eapp x w) ([v] (eapp x (eapp (econst "N.succ" lnil) w)))))) ([w] (eforall (econst "N" lnil) ([v] (eapp x v))))))))).
 
 nRec/name : name "nRec" (is-decl
-  (eforall (eforall (econst "N" lnil) ([x] (esort (lvar liz))))
+  (eforall (eforall (econst "N" lnil) ([x] (esort (lvar z))))
     ([x]
       (eforall (eapp x (econst "N.zero" lnil))
-        ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w)))))))))
-  (defn (econst "N.rec" (lcons (lvar liz) lnil)))).
+        ([y] (eforall (eforall (econst "N" lnil) ([w] (eforall (eapp x w) ([v] (eapp x (eapp (econst "N.succ" lnil) w)))))) ([w] (eforall (econst "N" lnil) ([v] (eapp x v)))))))))
+  (defn (econst "N.rec" (lcons (lvar z) lnil)))).
 
 nRec/decl : declared "nRec"
-  (eforall (eforall (econst "N" lnil) ([x] (esort (lvar liz))))
+  (eforall (eforall (econst "N" lnil) ([x] (esort (lvar z))))
     ([x]
       (eforall (eapp x (econst "N.zero" lnil))
-        ([y] (eforall (eforall (econst "N" lnil) ([z] (eforall (eapp x z) ([w] (eapp x (eapp (econst "N.succ" lnil) z)))))) ([z] (eforall (econst "N" lnil) ([w] (eapp x w)))))))))
-  (defn (econst "N.rec" (lcons (lvar liz) lnil)))
+        ([y] (eforall (eforall (econst "N" lnil) ([w] (eforall (eapp x w) ([v] (eapp x (eapp (econst "N.succ" lnil) w)))))) ([w] (eforall (econst "N" lnil) ([v] (eapp x v)))))))))
+  (defn (econst "N.rec" (lcons (lvar z) lnil)))
    = declared/ok nRec/name dkind-non-inductive/defn (dkind-ok/defn nRec/type-wf nRec/value-typed).

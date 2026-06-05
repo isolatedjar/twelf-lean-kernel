@@ -4,10 +4,7 @@ sneq/0 : string-neq "dup_ind_con_con.mk" "dup_ind_con_con.mk".
 
 %% inductive DupConCon
 %%% HOLE
-DupConCon/type-wf-sort : lvl.
-
-%%% HOLE
-DupConCon/type-wf : of (esort (lsucc lzero)) (esort DupConCon/type-wf-sort).
+DupConCon/type-wf : of (esort (lsucc lzero)) (esort _).
 
 %%% HOLE
 DupConCon/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
@@ -22,17 +19,14 @@ DupConCon/cnd : cnames-distinct (ccons "dup_ind_con_con.mk" (ccons "dup_ind_con_
        (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil)
        (all-string-neq/cons sneq/0 all-string-neq/nil)).
 
-DupConCon/name : name "DupConCon" (is-decl (esort (lsucc lzero)) (indt (ccons "dup_ind_con_con.mk" (ccons "dup_ind_con_con.mk" cnil)) liz)).
+DupConCon/name : name "DupConCon" (is-decl (esort (lsucc lzero)) (indt (ccons "dup_ind_con_con.mk" (ccons "dup_ind_con_con.mk" cnil)) z)).
 
-DupConCon/decl : declared "DupConCon" (esort (lsucc lzero)) (indt (ccons "dup_ind_con_con.mk" (ccons "dup_ind_con_con.mk" cnil)) liz)
+DupConCon/decl : declared "DupConCon" (esort (lsucc lzero)) (indt (ccons "dup_ind_con_con.mk" (ccons "dup_ind_con_con.mk" cnil)) z)
    = declared/ok-indt DupConCon/name DupConCon/rec-name DupConCon/cnd (dkind-ok/indt DupConCon/type-wf DupConCon/ends-in-sort).
 
 %% ctor dup_ind_con_con.mk (of DupConCon)
 %%% HOLE
-dup_ind_con_con_mk/type-wf-sort : lvl.
-
-%%% HOLE
-dup_ind_con_con_mk/type-wf : of (econst "DupConCon" lnil) (esort dup_ind_con_con_mk/type-wf-sort).
+dup_ind_con_con_mk/type-wf : of (econst "DupConCon" lnil) (esort _).
 
 %%% HOLE
 dup_ind_con_con_mk/positivity : ctor-positive "DupConCon" lnil (econst "DupConCon" lnil).
@@ -43,17 +37,14 @@ dup_ind_con_con_mk/cmem : cmem "dup_ind_con_con.mk" (ccons "dup_ind_con_con.mk" 
 %%% HOLE: dup_ind_con_con_mk/fuo
 dup_ind_con_con_mk/fuo : field-universes-ok (econst "DupConCon" lnil) (lsucc lzero).
 
-dup_ind_con_con_mk/name : name "dup_ind_con_con.mk" (is-decl (econst "DupConCon" lnil) (ctor "DupConCon" liz)).
+dup_ind_con_con_mk/name : name "dup_ind_con_con.mk" (is-decl (econst "DupConCon" lnil) (ctor "DupConCon" z)).
 
-dup_ind_con_con_mk/decl : declared "dup_ind_con_con.mk" (econst "DupConCon" lnil) (ctor "DupConCon" liz)
+dup_ind_con_con_mk/decl : declared "dup_ind_con_con.mk" (econst "DupConCon" lnil) (ctor "DupConCon" z)
    = declared/ok-ctor dup_ind_con_con_mk/name DupConCon/name dup_ind_con_con_mk/cmem DupConCon/eisl dup_ind_con_con_mk/fuo (dkind-ok/ctor dup_ind_con_con_mk/type-wf dup_ind_con_con_mk/positivity).
 
 %% ctor dup_ind_con_con.mk (of DupConCon)
 %%% HOLE
-dup_ind_con_con_mk/type-wf-sort : lvl.
-
-%%% HOLE
-dup_ind_con_con_mk/type-wf : of (econst "DupConCon" lnil) (esort dup_ind_con_con_mk/type-wf-sort).
+dup_ind_con_con_mk/type-wf : of (econst "DupConCon" lnil) (esort _).
 
 %%% HOLE
 dup_ind_con_con_mk/positivity : ctor-positive "DupConCon" lnil (econst "DupConCon" lnil).
@@ -64,14 +55,14 @@ dup_ind_con_con_mk/cmem : cmem "dup_ind_con_con.mk" (ccons "dup_ind_con_con.mk" 
 %%% HOLE: dup_ind_con_con_mk/fuo
 dup_ind_con_con_mk/fuo : field-universes-ok (econst "DupConCon" lnil) (lsucc lzero).
 
-dup_ind_con_con_mk/name : name "dup_ind_con_con.mk" (is-decl (econst "DupConCon" lnil) (ctor "DupConCon" liz)).
+dup_ind_con_con_mk/name : name "dup_ind_con_con.mk" (is-decl (econst "DupConCon" lnil) (ctor "DupConCon" z)).
 
-dup_ind_con_con_mk/decl : declared "dup_ind_con_con.mk" (econst "DupConCon" lnil) (ctor "DupConCon" liz)
+dup_ind_con_con_mk/decl : declared "dup_ind_con_con.mk" (econst "DupConCon" lnil) (ctor "DupConCon" z)
    = declared/ok-ctor dup_ind_con_con_mk/name DupConCon/name dup_ind_con_con_mk/cmem DupConCon/eisl dup_ind_con_con_mk/fuo (dkind-ok/ctor dup_ind_con_con_mk/type-wf dup_ind_con_con_mk/positivity).
 
 %% recursor DupConCon.rec (TCB-derived; informational only)
 %%   level params: u
-%%   type:   (eforall (eforall (econst "DupConCon" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] (eforall (econst "DupConCon" lnil) ([w] (eapp x w)))))))))
+%%   type:   (eforall (eforall (econst "DupConCon" lnil) ([x] (esort (lvar z)))) ([x] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (eforall (eapp x (econst "dup_ind_con_con.mk" lnil)) ([w] (eforall (econst "DupConCon" lnil) ([v] (eapp x v)))))))))
 %%   rules:
-%%     DupConCon.rec … dup_ind_con_con.mk … = (elam (eforall (econst "DupConCon" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (elam (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] y))))))   (0 fields)
-%%     DupConCon.rec … dup_ind_con_con.mk … = (elam (eforall (econst "DupConCon" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (elam (eapp x (econst "dup_ind_con_con.mk" lnil)) ([z] z))))))   (0 fields)
+%%     DupConCon.rec … dup_ind_con_con.mk … = (elam (eforall (econst "DupConCon" lnil) ([x] (esort (lvar z)))) ([x] (elam (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (elam (eapp x (econst "dup_ind_con_con.mk" lnil)) ([w] y))))))   (0 fields)
+%%     DupConCon.rec … dup_ind_con_con.mk … = (elam (eforall (econst "DupConCon" lnil) ([x] (esort (lvar z)))) ([x] (elam (eapp x (econst "dup_ind_con_con.mk" lnil)) ([y] (elam (eapp x (econst "dup_ind_con_con.mk" lnil)) ([w] w))))))   (0 fields)

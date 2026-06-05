@@ -1,10 +1,7 @@
 %%% Expected outcome: reject
 %%% A definition and a constructor with the same name
 %% def dup_ctor_def.mk
-dup_ctor_def_mk/type-wf-sort : lvl
-   = (lsucc (lsucc lzero)).
-
-dup_ctor_def_mk/type-wf : of (esort (lsucc lzero)) (esort dup_ctor_def_mk/type-wf-sort)
+dup_ctor_def_mk/type-wf : of (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = defeq/sort-refl.
 
 dup_ctor_def_mk/value-typed : of (esort lzero) (esort (lsucc lzero))
@@ -16,10 +13,7 @@ dup_ctor_def_mk/decl : declared "dup_ctor_def.mk" (esort (lsucc lzero)) (defn (e
    = declared/ok dup_ctor_def_mk/name dkind-non-inductive/defn (dkind-ok/defn dup_ctor_def_mk/type-wf dup_ctor_def_mk/value-typed).
 
 %% inductive dup_ctor_def
-dup_ctor_def/type-wf-sort : lvl
-   = (lsucc (lsucc lzero)).
-
-dup_ctor_def/type-wf : of (esort (lsucc lzero)) (esort dup_ctor_def/type-wf-sort)
+dup_ctor_def/type-wf : of (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = defeq/sort-refl.
 
 dup_ctor_def/ends-in-sort : ends-in-sort (esort (lsucc lzero))
@@ -33,19 +27,16 @@ dup_ctor_def/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 dup_ctor_def/cnd : cnames-distinct (ccons "dup_ctor_def.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
-dup_ctor_def/name : name "dup_ctor_def" (is-decl (esort (lsucc lzero)) (indt (ccons "dup_ctor_def.mk" cnil) liz)).
+dup_ctor_def/name : name "dup_ctor_def" (is-decl (esort (lsucc lzero)) (indt (ccons "dup_ctor_def.mk" cnil) z)).
 
-dup_ctor_def/decl : declared "dup_ctor_def" (esort (lsucc lzero)) (indt (ccons "dup_ctor_def.mk" cnil) liz)
+dup_ctor_def/decl : declared "dup_ctor_def" (esort (lsucc lzero)) (indt (ccons "dup_ctor_def.mk" cnil) z)
    = declared/ok-indt dup_ctor_def/name dup_ctor_def/rec-name dup_ctor_def/cnd (dkind-ok/indt dup_ctor_def/type-wf dup_ctor_def/ends-in-sort).
 
 %% ctor dup_ctor_def.mk (of dup_ctor_def)
-dup_ctor_def_mk/type-wf-sort : lvl
-   = (lsucc lzero).
-
-dup_ctor_def_mk/type-wf : of (econst "dup_ctor_def" lnil) (esort dup_ctor_def_mk/type-wf-sort)
+dup_ctor_def_mk/type-wf : of (econst "dup_ctor_def" lnil) (esort (lsucc lzero))
    = (defeq/const
        dup_ctor_def/decl
-       (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
+       (inst-expr/sort (inst-lvl/succ inst-lvl/zero))).
 
 dup_ctor_def_mk/positivity : ctor-positive "dup_ctor_def" lnil (econst "dup_ctor_def" lnil)
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
@@ -56,13 +47,13 @@ dup_ctor_def_mk/cmem : cmem "dup_ctor_def.mk" (ccons "dup_ctor_def.mk" cnil)
 dup_ctor_def_mk/fuo : field-universes-ok (econst "dup_ctor_def" lnil) (lsucc lzero)
    = (field-universes-ok/done not-forall/const).
 
-dup_ctor_def_mk/name : name "dup_ctor_def.mk" (is-decl (econst "dup_ctor_def" lnil) (ctor "dup_ctor_def" liz)).
+dup_ctor_def_mk/name : name "dup_ctor_def.mk" (is-decl (econst "dup_ctor_def" lnil) (ctor "dup_ctor_def" z)).
 
-dup_ctor_def_mk/decl : declared "dup_ctor_def.mk" (econst "dup_ctor_def" lnil) (ctor "dup_ctor_def" liz)
+dup_ctor_def_mk/decl : declared "dup_ctor_def.mk" (econst "dup_ctor_def" lnil) (ctor "dup_ctor_def" z)
    = declared/ok-ctor dup_ctor_def_mk/name dup_ctor_def/name dup_ctor_def_mk/cmem dup_ctor_def/eisl dup_ctor_def_mk/fuo (dkind-ok/ctor dup_ctor_def_mk/type-wf dup_ctor_def_mk/positivity).
 
 %% recursor dup_ctor_def.rec (TCB-derived; informational only)
 %%   level params: u
-%%   type:   (eforall (eforall (econst "dup_ctor_def" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ctor_def.mk" lnil)) ([y] (eforall (econst "dup_ctor_def" lnil) ([z] (eapp x z)))))))
+%%   type:   (eforall (eforall (econst "dup_ctor_def" lnil) ([x] (esort (lvar z)))) ([x] (eforall (eapp x (econst "dup_ctor_def.mk" lnil)) ([y] (eforall (econst "dup_ctor_def" lnil) ([w] (eapp x w)))))))
 %%   rules:
-%%     dup_ctor_def.rec … dup_ctor_def.mk … = (elam (eforall (econst "dup_ctor_def" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "dup_ctor_def.mk" lnil)) ([y] y))))   (0 fields)
+%%     dup_ctor_def.rec … dup_ctor_def.mk … = (elam (eforall (econst "dup_ctor_def" lnil) ([x] (esort (lvar z)))) ([x] (elam (eapp x (econst "dup_ctor_def.mk" lnil)) ([y] y))))   (0 fields)

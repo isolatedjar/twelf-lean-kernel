@@ -4,27 +4,19 @@
 sneq/0 : string-neq "id" "reduceCtorParamRefl2".
 
 %% def id
-id/type-wf-sort : lvl
-   = (limax (lsucc (lvar liz)) (limax (lvar liz) (lvar liz))).
-
-id/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall x ([y] x)))) (esort id/type-wf-sort)
+id/type-wf : of (eforall (esort (lvar z)) ([x] (eforall x ([y] x)))) (esort (limax (lsucc (lvar z)) (limax (lvar z) (lvar z))))
    = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall h ([y] ([h1] h)))))).
 
-id/value-typed : of (elam (esort (lvar liz)) ([x] (elam x ([y] y)))) (eforall (esort (lvar liz)) ([x] (eforall x ([y] x))))
+id/value-typed : of (elam (esort (lvar z)) ([x] (elam x ([y] y)))) (eforall (esort (lvar z)) ([x] (eforall x ([y] x))))
    = (defeq/lam defeq/sort-refl ([x] ([h] (defeq/lam h ([y] ([h1] h1)))))).
 
-id/name : name "id" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] x)))) (defn (elam (esort (lvar liz)) ([x] (elam x ([y] y)))))).
+id/name : name "id" (is-decl (eforall (esort (lvar z)) ([x] (eforall x ([y] x)))) (defn (elam (esort (lvar z)) ([x] (elam x ([y] y)))))).
 
-id/decl : declared "id" (eforall (esort (lvar liz)) ([x] (eforall x ([y] x)))) (defn (elam (esort (lvar liz)) ([x] (elam x ([y] y)))))
+id/decl : declared "id" (eforall (esort (lvar z)) ([x] (eforall x ([y] x)))) (defn (elam (esort (lvar z)) ([x] (elam x ([y] y)))))
    = declared/ok id/name dkind-non-inductive/defn (dkind-ok/defn id/type-wf id/value-typed).
 
 %% def constType
-constType/type-wf-sort : lvl
-   = (limax
-       (lsucc (lsucc lzero))
-       (limax (lsucc (lsucc lzero)) (lsucc (lsucc lzero)))).
-
-constType/type-wf : of (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort constType/type-wf-sort)
+constType/type-wf : of (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort (limax (lsucc (lsucc lzero)) (limax (lsucc (lsucc lzero)) (lsucc (lsucc lzero)))))
    = (defeq/forall
        defeq/sort-refl
        ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] defeq/sort-refl)))))).
@@ -42,10 +34,7 @@ constType/decl : declared "constType" (eforall (esort (lsucc lzero)) ([x] (efora
    = declared/ok constType/name dkind-non-inductive/defn (dkind-ok/defn constType/type-wf constType/value-typed).
 
 %% inductive reduceCtorParamRefl2
-reduceCtorParamRefl2/type-wf-sort : lvl
-   = (limax (lsucc (lsucc lzero)) (lsucc (lsucc lzero))).
-
-reduceCtorParamRefl2/type-wf : of (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (esort reduceCtorParamRefl2/type-wf-sort)
+reduceCtorParamRefl2/type-wf : of (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (esort (limax (lsucc (lsucc lzero)) (lsucc (lsucc lzero))))
    = (defeq/forall defeq/sort-refl ([x] ([h] defeq/sort-refl))).
 
 reduceCtorParamRefl2/ends-in-sort : ends-in-sort (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero))))
@@ -59,28 +48,23 @@ reduceCtorParamRefl2/eisl : ends-in-sort-with-level (eforall (esort (lsucc lzero
 reduceCtorParamRefl2/cnd : cnames-distinct (ccons "reduceCtorParamRefl2.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
-reduceCtorParamRefl2/name : name "reduceCtorParamRefl2" (is-decl (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (indt (ccons "reduceCtorParamRefl2.mk" cnil) (lis liz))).
+reduceCtorParamRefl2/name : name "reduceCtorParamRefl2" (is-decl (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (indt (ccons "reduceCtorParamRefl2.mk" cnil) (s z))).
 
-reduceCtorParamRefl2/decl : declared "reduceCtorParamRefl2" (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (indt (ccons "reduceCtorParamRefl2.mk" cnil) (lis liz))
+reduceCtorParamRefl2/decl : declared "reduceCtorParamRefl2" (eforall (esort (lsucc lzero)) ([x] (esort (lsucc lzero)))) (indt (ccons "reduceCtorParamRefl2.mk" cnil) (s z))
    = declared/ok-indt reduceCtorParamRefl2/name reduceCtorParamRefl2/rec-name reduceCtorParamRefl2/cnd (dkind-ok/indt reduceCtorParamRefl2/type-wf reduceCtorParamRefl2/ends-in-sort).
 
 %% ctor reduceCtorParamRefl2.mk (of reduceCtorParamRefl2)
-reduceCtorParamRefl2_mk/type-wf-sort : lvl
-   = (limax
-       (lsucc (lsucc lzero))
-       (limax (limax (lsucc lzero) (lsucc lzero)) (lsucc lzero))).
-
 reduceCtorParamRefl2_mk/type-wf : of
   (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero)))
     ([x] (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x))) ([y] (eapp (econst "reduceCtorParamRefl2" lnil) x)))))
-  (esort reduceCtorParamRefl2_mk/type-wf-sort)
+  (esort (limax (lsucc (lsucc lzero)) (limax (limax (lsucc lzero) (lsucc lzero)) (lsucc lzero))))
    = (defeq/forall
        (defeq/app
          (defeq/app
            (defeq/const
              id/decl
              (inst-expr/forall
-               (inst-expr/sort (lvl-inst/var lvl-nth/zero))
+               (inst-expr/sort (inst-lvl/var nth-lvl/z))
                ([x] ([h] (inst-expr/forall h ([y] ([h1] h)))))))
            defeq/sort-refl)
          defeq/sort-refl)
@@ -93,7 +77,7 @@ reduceCtorParamRefl2_mk/type-wf : of
                  (defeq/conv
                    (defeq/app
                      (defeq/beta
-                       ([y] ([h1] (defeq/lam h1 ([z] ([h2] h2)))))
+                       ([y] ([h1] (defeq/lam h1 ([w] ([h2] h2)))))
                        defeq/sort-refl)
                      defeq/sort-refl)
                    (defeq/conv
@@ -102,10 +86,10 @@ reduceCtorParamRefl2_mk/type-wf : of
                          (defeq/delta
                            id/decl
                            (inst-expr/forall
-                             (inst-expr/sort (lvl-inst/var lvl-nth/zero))
+                             (inst-expr/sort (inst-lvl/var nth-lvl/z))
                              ([x] ([h] (inst-expr/forall h ([y] ([h1] h))))))
                            (inst-expr/lam
-                             (inst-expr/sort (lvl-inst/var lvl-nth/zero))
+                             (inst-expr/sort (inst-lvl/var nth-lvl/z))
                              ([x] ([h] (inst-expr/lam h ([y] ([h1] h1)))))))
                          defeq/sort-refl)
                        defeq/sort-refl)
@@ -117,24 +101,24 @@ reduceCtorParamRefl2_mk/type-wf : of
                        (defeq/const
                          constType/decl
                          (inst-expr/forall
-                           (inst-expr/sort (lvl-inst/succ lvl-inst/zero))
+                           (inst-expr/sort (inst-lvl/succ inst-lvl/zero))
                            ([x]
                              ([h]
                                (inst-expr/forall
-                                 (inst-expr/sort (lvl-inst/succ lvl-inst/zero))
+                                 (inst-expr/sort (inst-lvl/succ inst-lvl/zero))
                                  ([y]
                                    ([h1]
                                      (inst-expr/sort
-                                       (lvl-inst/succ lvl-inst/zero)))))))))
+                                       (inst-lvl/succ inst-lvl/zero)))))))))
                        (defeq/app
                          (defeq/const
                            reduceCtorParamRefl2/decl
                            (inst-expr/forall
-                             (inst-expr/sort (lvl-inst/succ lvl-inst/zero))
+                             (inst-expr/sort (inst-lvl/succ inst-lvl/zero))
                              ([x]
                                ([h]
                                  (inst-expr/sort
-                                   (lvl-inst/succ lvl-inst/zero))))))
+                                   (inst-lvl/succ inst-lvl/zero))))))
                          (defeq/conv
                            (defeq/trans
                              (defeq/app
@@ -142,14 +126,12 @@ reduceCtorParamRefl2_mk/type-wf : of
                                  (defeq/delta
                                    id/decl
                                    (inst-expr/forall
-                                     (inst-expr/sort
-                                       (lvl-inst/var lvl-nth/zero))
+                                     (inst-expr/sort (inst-lvl/var nth-lvl/z))
                                      ([x]
                                        ([h]
                                          (inst-expr/forall h ([y] ([h1] h))))))
                                    (inst-expr/lam
-                                     (inst-expr/sort
-                                       (lvl-inst/var lvl-nth/zero))
+                                     (inst-expr/sort (inst-lvl/var nth-lvl/z))
                                      ([x]
                                        ([h]
                                          (inst-expr/lam h ([y] ([h1] h1)))))))
@@ -158,11 +140,11 @@ reduceCtorParamRefl2_mk/type-wf : of
                              (defeq/trans
                                (defeq/app
                                  (defeq/beta
-                                   ([z] ([h2] (defeq/lam h2 ([w] ([h3] h3)))))
+                                   ([w] ([h2] (defeq/lam h2 ([v] ([h3] h3)))))
                                    defeq/sort-refl)
                                  defeq/sort-refl)
                                (defeq/trans
-                                 (defeq/beta ([z] ([h2] h2)) defeq/sort-refl)
+                                 (defeq/beta ([w] ([h2] h2)) defeq/sort-refl)
                                  defeq/sort-refl)))
                            h)))
                      (defeq/conv
@@ -172,22 +154,22 @@ reduceCtorParamRefl2_mk/type-wf : of
                              (defeq/delta
                                id/decl
                                (inst-expr/forall
-                                 (inst-expr/sort (lvl-inst/var lvl-nth/zero))
+                                 (inst-expr/sort (inst-lvl/var nth-lvl/z))
                                  ([x]
                                    ([h] (inst-expr/forall h ([y] ([h1] h))))))
                                (inst-expr/lam
-                                 (inst-expr/sort (lvl-inst/var lvl-nth/zero))
+                                 (inst-expr/sort (inst-lvl/var nth-lvl/z))
                                  ([x] ([h] (inst-expr/lam h ([y] ([h1] h1)))))))
                              defeq/sort-refl)
                            defeq/sort-refl)
                          (defeq/trans
                            (defeq/app
                              (defeq/beta
-                               ([z] ([h2] (defeq/lam h2 ([w] ([h3] h3)))))
+                               ([w] ([h2] (defeq/lam h2 ([v] ([h3] h3)))))
                                defeq/sort-refl)
                              defeq/sort-refl)
                            (defeq/trans
-                             (defeq/beta ([z] ([h2] h2)) defeq/sort-refl)
+                             (defeq/beta ([w] ([h2] h2)) defeq/sort-refl)
                              defeq/sort-refl)))
                        h)))))
              ([y]
@@ -196,9 +178,9 @@ reduceCtorParamRefl2_mk/type-wf : of
                    (defeq/const
                      reduceCtorParamRefl2/decl
                      (inst-expr/forall
-                       (inst-expr/sort (lvl-inst/succ lvl-inst/zero))
+                       (inst-expr/sort (inst-lvl/succ inst-lvl/zero))
                        ([x]
-                         ([h] (inst-expr/sort (lvl-inst/succ lvl-inst/zero))))))
+                         ([h] (inst-expr/sort (inst-lvl/succ inst-lvl/zero))))))
                    (defeq/conv
                      (defeq/trans
                        (defeq/app
@@ -206,21 +188,21 @@ reduceCtorParamRefl2_mk/type-wf : of
                            (defeq/delta
                              id/decl
                              (inst-expr/forall
-                               (inst-expr/sort (lvl-inst/var lvl-nth/zero))
+                               (inst-expr/sort (inst-lvl/var nth-lvl/z))
                                ([x] ([h] (inst-expr/forall h ([y] ([h1] h))))))
                              (inst-expr/lam
-                               (inst-expr/sort (lvl-inst/var lvl-nth/zero))
+                               (inst-expr/sort (inst-lvl/var nth-lvl/z))
                                ([x] ([h] (inst-expr/lam h ([y] ([h1] h1)))))))
                            defeq/sort-refl)
                          defeq/sort-refl)
                        (defeq/trans
                          (defeq/app
                            (defeq/beta
-                             ([z] ([h2] (defeq/lam h2 ([w] ([h3] h3)))))
+                             ([w] ([h2] (defeq/lam h2 ([v] ([h3] h3)))))
                              defeq/sort-refl)
                            defeq/sort-refl)
                          (defeq/trans
-                           (defeq/beta ([z] ([h2] h2)) defeq/sort-refl)
+                           (defeq/beta ([w] ([h2] h2)) defeq/sort-refl)
                            defeq/sort-refl)))
                      h)))))))).
 
@@ -236,16 +218,16 @@ reduceCtorParamRefl2_mk/fuo : field-universes-ok (eforall (eapp (eapp (econst "i
 reduceCtorParamRefl2_mk/name : name "reduceCtorParamRefl2.mk" (is-decl
   (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero)))
     ([x] (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x))) ([y] (eapp (econst "reduceCtorParamRefl2" lnil) x)))))
-  (ctor "reduceCtorParamRefl2" liz)).
+  (ctor "reduceCtorParamRefl2" z)).
 
 reduceCtorParamRefl2_mk/decl : declared "reduceCtorParamRefl2.mk"
   (eforall (eapp (eapp (econst "id" (lcons (lsucc (lsucc (lsucc lzero))) lnil)) (esort (lsucc (lsucc lzero)))) (esort (lsucc lzero)))
     ([x] (eforall (eforall x ([y] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x))) ([y] (eapp (econst "reduceCtorParamRefl2" lnil) x)))))
-  (ctor "reduceCtorParamRefl2" liz)
+  (ctor "reduceCtorParamRefl2" z)
    = declared/ok-ctor reduceCtorParamRefl2_mk/name reduceCtorParamRefl2/name reduceCtorParamRefl2_mk/cmem reduceCtorParamRefl2/eisl reduceCtorParamRefl2_mk/fuo (dkind-ok/ctor reduceCtorParamRefl2_mk/type-wf reduceCtorParamRefl2_mk/positivity).
 
 %% recursor reduceCtorParamRefl2.rec (TCB-derived; informational only)
 %%   level params: u
-%%   type:   (eforall (esort (lsucc lzero)) ([x] (eforall (eforall (eapp (econst "reduceCtorParamRefl2" lnil) x) ([y] (esort (lvar liz)))) ([y] (eforall (eforall (eforall x ([z] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x))) ([z] (eforall (eforall x ([w] (eapp y (eapp z w)))) ([w] (eapp y (eapp (eapp (econst "reduceCtorParamRefl2.mk" lnil) x) z)))))) ([z] (eforall (eapp (econst "reduceCtorParamRefl2" lnil) x) ([w] (eapp y w)))))))))
+%%   type:   (eforall (esort (lsucc lzero)) ([x] (eforall (eforall (eapp (econst "reduceCtorParamRefl2" lnil) x) ([y] (esort (lvar z)))) ([y] (eforall (eforall (eforall x ([w] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x))) ([w] (eforall (eforall x ([v] (eapp y (eapp w v)))) ([v] (eapp y (eapp (eapp (econst "reduceCtorParamRefl2.mk" lnil) x) w)))))) ([w] (eforall (eapp (econst "reduceCtorParamRefl2" lnil) x) ([v] (eapp y v)))))))))
 %%   rules:
-%%     reduceCtorParamRefl2.rec … reduceCtorParamRefl2.mk … = (elam (esort (lsucc lzero)) ([x] (elam (eforall (eapp (econst "reduceCtorParamRefl2" lnil) x) ([y] (esort (lvar liz)))) ([y] (elam (eforall (eforall x ([z] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x))) ([z] (eforall (eforall x ([w] (eapp y (eapp z w)))) ([w] (eapp y (eapp (eapp (econst "reduceCtorParamRefl2.mk" lnil) x) z)))))) ([z] (elam (eforall x ([w] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x))) ([w] (eapp (eapp z w) (elam x ([x1] (eapp (eapp (eapp (eapp (econst "reduceCtorParamRefl2.rec" (lcons (lvar liz) lnil)) x) y) z) (eapp w x1)))))))))))))   (1 fields)
+%%     reduceCtorParamRefl2.rec … reduceCtorParamRefl2.mk … = (elam (esort (lsucc lzero)) ([x] (elam (eforall (eapp (econst "reduceCtorParamRefl2" lnil) x) ([y] (esort (lvar z)))) ([y] (elam (eforall (eforall x ([w] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x))) ([w] (eforall (eforall x ([v] (eapp y (eapp w v)))) ([v] (eapp y (eapp (eapp (econst "reduceCtorParamRefl2.mk" lnil) x) w)))))) ([w] (elam (eforall x ([v] (eapp (eapp (econst "constType" lnil) (eapp (econst "reduceCtorParamRefl2" lnil) x)) x))) ([v] (eapp (eapp w v) (elam x ([x1] (eapp (eapp (eapp (eapp (econst "reduceCtorParamRefl2.rec" (lcons (lvar z) lnil)) x) y) w) (eapp v x1)))))))))))))   (1 fields)

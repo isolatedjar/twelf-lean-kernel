@@ -5,10 +5,7 @@ sneq/1 : string-neq "RTree.leaf" "RTree.node".
 
 %% inductive Bool
 %%% HOLE
-Bool/type-wf-sort : lvl.
-
-%%% HOLE
-Bool/type-wf : of (esort (lsucc lzero)) (esort Bool/type-wf-sort).
+Bool/type-wf : of (esort (lsucc lzero)) (esort _).
 
 %%% HOLE
 Bool/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
@@ -23,17 +20,14 @@ Bool/cnd : cnames-distinct (ccons "Bool.false" (ccons "Bool.true" cnil))
        (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil)
        (all-string-neq/cons sneq/0 all-string-neq/nil)).
 
-Bool/name : name "Bool" (is-decl (esort (lsucc lzero)) (indt (ccons "Bool.false" (ccons "Bool.true" cnil)) liz)).
+Bool/name : name "Bool" (is-decl (esort (lsucc lzero)) (indt (ccons "Bool.false" (ccons "Bool.true" cnil)) z)).
 
-Bool/decl : declared "Bool" (esort (lsucc lzero)) (indt (ccons "Bool.false" (ccons "Bool.true" cnil)) liz)
+Bool/decl : declared "Bool" (esort (lsucc lzero)) (indt (ccons "Bool.false" (ccons "Bool.true" cnil)) z)
    = declared/ok-indt Bool/name Bool/rec-name Bool/cnd (dkind-ok/indt Bool/type-wf Bool/ends-in-sort).
 
 %% ctor Bool.false (of Bool)
 %%% HOLE
-Bool_false/type-wf-sort : lvl.
-
-%%% HOLE
-Bool_false/type-wf : of (econst "Bool" lnil) (esort Bool_false/type-wf-sort).
+Bool_false/type-wf : of (econst "Bool" lnil) (esort _).
 
 %%% HOLE
 Bool_false/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil).
@@ -44,17 +38,14 @@ Bool_false/cmem : cmem "Bool.false" (ccons "Bool.false" (ccons "Bool.true" cnil)
 %%% HOLE: Bool_false/fuo
 Bool_false/fuo : field-universes-ok (econst "Bool" lnil) (lsucc lzero).
 
-Bool_false/name : name "Bool.false" (is-decl (econst "Bool" lnil) (ctor "Bool" liz)).
+Bool_false/name : name "Bool.false" (is-decl (econst "Bool" lnil) (ctor "Bool" z)).
 
-Bool_false/decl : declared "Bool.false" (econst "Bool" lnil) (ctor "Bool" liz)
+Bool_false/decl : declared "Bool.false" (econst "Bool" lnil) (ctor "Bool" z)
    = declared/ok-ctor Bool_false/name Bool/name Bool_false/cmem Bool/eisl Bool_false/fuo (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity).
 
 %% ctor Bool.true (of Bool)
 %%% HOLE
-Bool_true/type-wf-sort : lvl.
-
-%%% HOLE
-Bool_true/type-wf : of (econst "Bool" lnil) (esort Bool_true/type-wf-sort).
+Bool_true/type-wf : of (econst "Bool" lnil) (esort _).
 
 %%% HOLE
 Bool_true/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil).
@@ -65,24 +56,21 @@ Bool_true/cmem : cmem "Bool.true" (ccons "Bool.false" (ccons "Bool.true" cnil))
 %%% HOLE: Bool_true/fuo
 Bool_true/fuo : field-universes-ok (econst "Bool" lnil) (lsucc lzero).
 
-Bool_true/name : name "Bool.true" (is-decl (econst "Bool" lnil) (ctor "Bool" (lis liz))).
+Bool_true/name : name "Bool.true" (is-decl (econst "Bool" lnil) (ctor "Bool" (s z))).
 
-Bool_true/decl : declared "Bool.true" (econst "Bool" lnil) (ctor "Bool" (lis liz))
+Bool_true/decl : declared "Bool.true" (econst "Bool" lnil) (ctor "Bool" (s z))
    = declared/ok-ctor Bool_true/name Bool/name Bool_true/cmem Bool/eisl Bool_true/fuo (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity).
 
 %% recursor Bool.rec (TCB-derived; informational only)
 %%   level params: u
-%%   type:   (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w)))))))))
+%%   type:   (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar z)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([w] (eforall (econst "Bool" lnil) ([v] (eapp x v)))))))))
 %%   rules:
-%%     Bool.rec … Bool.false … = (elam (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] y))))))   (0 fields)
-%%     Bool.rec … Bool.true … = (elam (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] z))))))   (0 fields)
+%%     Bool.rec … Bool.false … = (elam (eforall (econst "Bool" lnil) ([x] (esort (lvar z)))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([w] y))))))   (0 fields)
+%%     Bool.rec … Bool.true … = (elam (eforall (econst "Bool" lnil) ([x] (esort (lvar z)))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([w] w))))))   (0 fields)
 
 %% inductive RTree
 %%% HOLE
-RTree/type-wf-sort : lvl.
-
-%%% HOLE
-RTree/type-wf : of (esort (lsucc lzero)) (esort RTree/type-wf-sort).
+RTree/type-wf : of (esort (lsucc lzero)) (esort _).
 
 %%% HOLE
 RTree/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
@@ -97,17 +85,14 @@ RTree/cnd : cnames-distinct (ccons "RTree.leaf" (ccons "RTree.node" cnil))
        (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil)
        (all-string-neq/cons sneq/1 all-string-neq/nil)).
 
-RTree/name : name "RTree" (is-decl (esort (lsucc lzero)) (indt (ccons "RTree.leaf" (ccons "RTree.node" cnil)) liz)).
+RTree/name : name "RTree" (is-decl (esort (lsucc lzero)) (indt (ccons "RTree.leaf" (ccons "RTree.node" cnil)) z)).
 
-RTree/decl : declared "RTree" (esort (lsucc lzero)) (indt (ccons "RTree.leaf" (ccons "RTree.node" cnil)) liz)
+RTree/decl : declared "RTree" (esort (lsucc lzero)) (indt (ccons "RTree.leaf" (ccons "RTree.node" cnil)) z)
    = declared/ok-indt RTree/name RTree/rec-name RTree/cnd (dkind-ok/indt RTree/type-wf RTree/ends-in-sort).
 
 %% ctor RTree.leaf (of RTree)
 %%% HOLE
-RTree_leaf/type-wf-sort : lvl.
-
-%%% HOLE
-RTree_leaf/type-wf : of (econst "RTree" lnil) (esort RTree_leaf/type-wf-sort).
+RTree_leaf/type-wf : of (econst "RTree" lnil) (esort _).
 
 %%% HOLE
 RTree_leaf/positivity : ctor-positive "RTree" lnil (econst "RTree" lnil).
@@ -118,17 +103,14 @@ RTree_leaf/cmem : cmem "RTree.leaf" (ccons "RTree.leaf" (ccons "RTree.node" cnil
 %%% HOLE: RTree_leaf/fuo
 RTree_leaf/fuo : field-universes-ok (econst "RTree" lnil) (lsucc lzero).
 
-RTree_leaf/name : name "RTree.leaf" (is-decl (econst "RTree" lnil) (ctor "RTree" liz)).
+RTree_leaf/name : name "RTree.leaf" (is-decl (econst "RTree" lnil) (ctor "RTree" z)).
 
-RTree_leaf/decl : declared "RTree.leaf" (econst "RTree" lnil) (ctor "RTree" liz)
+RTree_leaf/decl : declared "RTree.leaf" (econst "RTree" lnil) (ctor "RTree" z)
    = declared/ok-ctor RTree_leaf/name RTree/name RTree_leaf/cmem RTree/eisl RTree_leaf/fuo (dkind-ok/ctor RTree_leaf/type-wf RTree_leaf/positivity).
 
 %% ctor RTree.node (of RTree)
 %%% HOLE
-RTree_node/type-wf-sort : lvl.
-
-%%% HOLE
-RTree_node/type-wf : of (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil))) (esort RTree_node/type-wf-sort).
+RTree_node/type-wf : of (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil))) (esort _).
 
 %%% HOLE
 RTree_node/positivity : ctor-positive "RTree" lnil (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil))).
@@ -139,61 +121,58 @@ RTree_node/cmem : cmem "RTree.node" (ccons "RTree.leaf" (ccons "RTree.node" cnil
 %%% HOLE: RTree_node/fuo
 RTree_node/fuo : field-universes-ok (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil))) (lsucc lzero).
 
-RTree_node/name : name "RTree.node" (is-decl (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil))) (ctor "RTree" (lis liz))).
+RTree_node/name : name "RTree.node" (is-decl (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil))) (ctor "RTree" (s z))).
 
-RTree_node/decl : declared "RTree.node" (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil))) (ctor "RTree" (lis liz))
+RTree_node/decl : declared "RTree.node" (eforall (eforall (econst "Bool" lnil) ([x] (econst "RTree" lnil))) ([x] (econst "RTree" lnil))) (ctor "RTree" (s z))
    = declared/ok-ctor RTree_node/name RTree/name RTree_node/cmem RTree/eisl RTree_node/fuo (dkind-ok/ctor RTree_node/type-wf RTree_node/positivity).
 
 %% recursor RTree.rec (TCB-derived; informational only)
 %%   level params: u
-%%   type:   (eforall (eforall (econst "RTree" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "RTree.leaf" lnil)) ([y] (eforall (eforall (eforall (econst "Bool" lnil) ([z] (econst "RTree" lnil))) ([z] (eforall (eforall (econst "Bool" lnil) ([w] (eapp x (eapp z w)))) ([w] (eapp x (eapp (econst "RTree.node" lnil) z)))))) ([z] (eforall (econst "RTree" lnil) ([w] (eapp x w)))))))))
+%%   type:   (eforall (eforall (econst "RTree" lnil) ([x] (esort (lvar z)))) ([x] (eforall (eapp x (econst "RTree.leaf" lnil)) ([y] (eforall (eforall (eforall (econst "Bool" lnil) ([w] (econst "RTree" lnil))) ([w] (eforall (eforall (econst "Bool" lnil) ([v] (eapp x (eapp w v)))) ([v] (eapp x (eapp (econst "RTree.node" lnil) w)))))) ([w] (eforall (econst "RTree" lnil) ([v] (eapp x v)))))))))
 %%   rules:
-%%     RTree.rec … RTree.leaf … = (elam (eforall (econst "RTree" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "RTree.leaf" lnil)) ([y] (elam (eforall (eforall (econst "Bool" lnil) ([z] (econst "RTree" lnil))) ([z] (eforall (eforall (econst "Bool" lnil) ([w] (eapp x (eapp z w)))) ([w] (eapp x (eapp (econst "RTree.node" lnil) z)))))) ([z] y))))))   (0 fields)
-%%     RTree.rec … RTree.node … = (elam (eforall (econst "RTree" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "RTree.leaf" lnil)) ([y] (elam (eforall (eforall (econst "Bool" lnil) ([z] (econst "RTree" lnil))) ([z] (eforall (eforall (econst "Bool" lnil) ([w] (eapp x (eapp z w)))) ([w] (eapp x (eapp (econst "RTree.node" lnil) z)))))) ([z] (elam (eforall (econst "Bool" lnil) ([w] (econst "RTree" lnil))) ([w] (eapp (eapp z w) (elam (econst "Bool" lnil) ([x1] (eapp (eapp (eapp (eapp (econst "RTree.rec" (lcons (lvar liz) lnil)) x) y) z) (eapp w x1)))))))))))))   (1 fields)
+%%     RTree.rec … RTree.leaf … = (elam (eforall (econst "RTree" lnil) ([x] (esort (lvar z)))) ([x] (elam (eapp x (econst "RTree.leaf" lnil)) ([y] (elam (eforall (eforall (econst "Bool" lnil) ([w] (econst "RTree" lnil))) ([w] (eforall (eforall (econst "Bool" lnil) ([v] (eapp x (eapp w v)))) ([v] (eapp x (eapp (econst "RTree.node" lnil) w)))))) ([w] y))))))   (0 fields)
+%%     RTree.rec … RTree.node … = (elam (eforall (econst "RTree" lnil) ([x] (esort (lvar z)))) ([x] (elam (eapp x (econst "RTree.leaf" lnil)) ([y] (elam (eforall (eforall (econst "Bool" lnil) ([w] (econst "RTree" lnil))) ([w] (eforall (eforall (econst "Bool" lnil) ([v] (eapp x (eapp w v)))) ([v] (eapp x (eapp (econst "RTree.node" lnil) w)))))) ([w] (elam (eforall (econst "Bool" lnil) ([v] (econst "RTree" lnil))) ([v] (eapp (eapp w v) (elam (econst "Bool" lnil) ([x1] (eapp (eapp (eapp (eapp (econst "RTree.rec" (lcons (lvar z) lnil)) x) y) w) (eapp v x1)))))))))))))   (1 fields)
 
 %% def rTreeRec
 %%% HOLE
-rTreeRec/type-wf-sort : lvl.
-
-%%% HOLE
 rTreeRec/type-wf : of
-  (eforall (eforall (econst "RTree" lnil) ([x] (esort (lvar liz))))
+  (eforall (eforall (econst "RTree" lnil) ([x] (esort (lvar z))))
     ([x]
       (eforall (eapp x (econst "RTree.leaf" lnil))
         ([y]
-          (eforall (eforall (eforall (econst "Bool" lnil) ([z] (econst "RTree" lnil)))
-            ([z] (eforall (eforall (econst "Bool" lnil) ([w] (eapp x (eapp z w)))) ([w] (eapp x (eapp (econst "RTree.node" lnil) z))))))
-            ([z] (eforall (econst "RTree" lnil) ([w] (eapp x w)))))))))
-  (esort rTreeRec/type-wf-sort).
+          (eforall (eforall (eforall (econst "Bool" lnil) ([w] (econst "RTree" lnil)))
+            ([w] (eforall (eforall (econst "Bool" lnil) ([v] (eapp x (eapp w v)))) ([v] (eapp x (eapp (econst "RTree.node" lnil) w))))))
+            ([w] (eforall (econst "RTree" lnil) ([v] (eapp x v)))))))))
+  (esort _).
 
 %%% HOLE
 rTreeRec/value-typed : of
-  (econst "RTree.rec" (lcons (lvar liz) lnil))
-  (eforall (eforall (econst "RTree" lnil) ([x] (esort (lvar liz))))
+  (econst "RTree.rec" (lcons (lvar z) lnil))
+  (eforall (eforall (econst "RTree" lnil) ([x] (esort (lvar z))))
     ([x]
       (eforall (eapp x (econst "RTree.leaf" lnil))
         ([y]
-          (eforall (eforall (eforall (econst "Bool" lnil) ([z] (econst "RTree" lnil)))
-            ([z] (eforall (eforall (econst "Bool" lnil) ([w] (eapp x (eapp z w)))) ([w] (eapp x (eapp (econst "RTree.node" lnil) z))))))
-            ([z] (eforall (econst "RTree" lnil) ([w] (eapp x w))))))))).
+          (eforall (eforall (eforall (econst "Bool" lnil) ([w] (econst "RTree" lnil)))
+            ([w] (eforall (eforall (econst "Bool" lnil) ([v] (eapp x (eapp w v)))) ([v] (eapp x (eapp (econst "RTree.node" lnil) w))))))
+            ([w] (eforall (econst "RTree" lnil) ([v] (eapp x v))))))))).
 
 rTreeRec/name : name "rTreeRec" (is-decl
-  (eforall (eforall (econst "RTree" lnil) ([x] (esort (lvar liz))))
+  (eforall (eforall (econst "RTree" lnil) ([x] (esort (lvar z))))
     ([x]
       (eforall (eapp x (econst "RTree.leaf" lnil))
         ([y]
-          (eforall (eforall (eforall (econst "Bool" lnil) ([z] (econst "RTree" lnil)))
-            ([z] (eforall (eforall (econst "Bool" lnil) ([w] (eapp x (eapp z w)))) ([w] (eapp x (eapp (econst "RTree.node" lnil) z))))))
-            ([z] (eforall (econst "RTree" lnil) ([w] (eapp x w)))))))))
-  (defn (econst "RTree.rec" (lcons (lvar liz) lnil)))).
+          (eforall (eforall (eforall (econst "Bool" lnil) ([w] (econst "RTree" lnil)))
+            ([w] (eforall (eforall (econst "Bool" lnil) ([v] (eapp x (eapp w v)))) ([v] (eapp x (eapp (econst "RTree.node" lnil) w))))))
+            ([w] (eforall (econst "RTree" lnil) ([v] (eapp x v)))))))))
+  (defn (econst "RTree.rec" (lcons (lvar z) lnil)))).
 
 rTreeRec/decl : declared "rTreeRec"
-  (eforall (eforall (econst "RTree" lnil) ([x] (esort (lvar liz))))
+  (eforall (eforall (econst "RTree" lnil) ([x] (esort (lvar z))))
     ([x]
       (eforall (eapp x (econst "RTree.leaf" lnil))
         ([y]
-          (eforall (eforall (eforall (econst "Bool" lnil) ([z] (econst "RTree" lnil)))
-            ([z] (eforall (eforall (econst "Bool" lnil) ([w] (eapp x (eapp z w)))) ([w] (eapp x (eapp (econst "RTree.node" lnil) z))))))
-            ([z] (eforall (econst "RTree" lnil) ([w] (eapp x w)))))))))
-  (defn (econst "RTree.rec" (lcons (lvar liz) lnil)))
+          (eforall (eforall (eforall (econst "Bool" lnil) ([w] (econst "RTree" lnil)))
+            ([w] (eforall (eforall (econst "Bool" lnil) ([v] (eapp x (eapp w v)))) ([v] (eapp x (eapp (econst "RTree.node" lnil) w))))))
+            ([w] (eforall (econst "RTree" lnil) ([v] (eapp x v)))))))))
+  (defn (econst "RTree.rec" (lcons (lvar z) lnil)))
    = declared/ok rTreeRec/name dkind-non-inductive/defn (dkind-ok/defn rTreeRec/type-wf rTreeRec/value-typed).

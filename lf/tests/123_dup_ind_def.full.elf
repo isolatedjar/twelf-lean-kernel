@@ -1,10 +1,7 @@
 %%% Expected outcome: reject
 %%% A definition and a constructor with the same name
 %% def dup_ind_def
-dup_ind_def/type-wf-sort : lvl
-   = (lsucc (lsucc lzero)).
-
-dup_ind_def/type-wf : of (esort (lsucc lzero)) (esort dup_ind_def/type-wf-sort)
+dup_ind_def/type-wf : of (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = defeq/sort-refl.
 
 dup_ind_def/value-typed : of (esort lzero) (esort (lsucc lzero))
@@ -16,10 +13,7 @@ dup_ind_def/decl : declared "dup_ind_def" (esort (lsucc lzero)) (defn (esort lze
    = declared/ok dup_ind_def/name dkind-non-inductive/defn (dkind-ok/defn dup_ind_def/type-wf dup_ind_def/value-typed).
 
 %% inductive dup_ind_def
-dup_ind_def/type-wf-sort : lvl
-   = (lsucc (lsucc lzero)).
-
-dup_ind_def/type-wf : of (esort (lsucc lzero)) (esort dup_ind_def/type-wf-sort)
+dup_ind_def/type-wf : of (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = defeq/sort-refl.
 
 dup_ind_def/ends-in-sort : ends-in-sort (esort (lsucc lzero))
@@ -33,19 +27,16 @@ dup_ind_def/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 dup_ind_def/cnd : cnames-distinct (ccons "dup_ind_def.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
-dup_ind_def/name : name "dup_ind_def" (is-decl (esort (lsucc lzero)) (indt (ccons "dup_ind_def.mk" cnil) liz)).
+dup_ind_def/name : name "dup_ind_def" (is-decl (esort (lsucc lzero)) (indt (ccons "dup_ind_def.mk" cnil) z)).
 
-dup_ind_def/decl : declared "dup_ind_def" (esort (lsucc lzero)) (indt (ccons "dup_ind_def.mk" cnil) liz)
+dup_ind_def/decl : declared "dup_ind_def" (esort (lsucc lzero)) (indt (ccons "dup_ind_def.mk" cnil) z)
    = declared/ok-indt dup_ind_def/name dup_ind_def/rec-name dup_ind_def/cnd (dkind-ok/indt dup_ind_def/type-wf dup_ind_def/ends-in-sort).
 
 %% ctor dup_ind_def.mk (of dup_ind_def)
-dup_ind_def_mk/type-wf-sort : lvl
-   = (lsucc lzero).
-
-dup_ind_def_mk/type-wf : of (econst "dup_ind_def" lnil) (esort dup_ind_def_mk/type-wf-sort)
+dup_ind_def_mk/type-wf : of (econst "dup_ind_def" lnil) (esort (lsucc lzero))
    = (defeq/const
        dup_ind_def/decl
-       (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
+       (inst-expr/sort (inst-lvl/succ inst-lvl/zero))).
 
 dup_ind_def_mk/positivity : ctor-positive "dup_ind_def" lnil (econst "dup_ind_def" lnil)
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
@@ -56,13 +47,13 @@ dup_ind_def_mk/cmem : cmem "dup_ind_def.mk" (ccons "dup_ind_def.mk" cnil)
 dup_ind_def_mk/fuo : field-universes-ok (econst "dup_ind_def" lnil) (lsucc lzero)
    = (field-universes-ok/done not-forall/const).
 
-dup_ind_def_mk/name : name "dup_ind_def.mk" (is-decl (econst "dup_ind_def" lnil) (ctor "dup_ind_def" liz)).
+dup_ind_def_mk/name : name "dup_ind_def.mk" (is-decl (econst "dup_ind_def" lnil) (ctor "dup_ind_def" z)).
 
-dup_ind_def_mk/decl : declared "dup_ind_def.mk" (econst "dup_ind_def" lnil) (ctor "dup_ind_def" liz)
+dup_ind_def_mk/decl : declared "dup_ind_def.mk" (econst "dup_ind_def" lnil) (ctor "dup_ind_def" z)
    = declared/ok-ctor dup_ind_def_mk/name dup_ind_def/name dup_ind_def_mk/cmem dup_ind_def/eisl dup_ind_def_mk/fuo (dkind-ok/ctor dup_ind_def_mk/type-wf dup_ind_def_mk/positivity).
 
 %% recursor dup_ind_def.rec (TCB-derived; informational only)
 %%   level params: u
-%%   type:   (eforall (eforall (econst "dup_ind_def" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ind_def.mk" lnil)) ([y] (eforall (econst "dup_ind_def" lnil) ([z] (eapp x z)))))))
+%%   type:   (eforall (eforall (econst "dup_ind_def" lnil) ([x] (esort (lvar z)))) ([x] (eforall (eapp x (econst "dup_ind_def.mk" lnil)) ([y] (eforall (econst "dup_ind_def" lnil) ([w] (eapp x w)))))))
 %%   rules:
-%%     dup_ind_def.rec … dup_ind_def.mk … = (elam (eforall (econst "dup_ind_def" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "dup_ind_def.mk" lnil)) ([y] y))))   (0 fields)
+%%     dup_ind_def.rec … dup_ind_def.mk … = (elam (eforall (econst "dup_ind_def" lnil) ([x] (esort (lvar z)))) ([x] (elam (eapp x (econst "dup_ind_def.mk" lnil)) ([y] y))))   (0 fields)

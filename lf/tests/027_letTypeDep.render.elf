@@ -2,10 +2,7 @@
 %%% Type checking a dependent let
 %% axiom aDepProp
 %%% HOLE
-aDepProp/type-wf-sort : lvl.
-
-%%% HOLE
-aDepProp/type-wf : of (eforall (esort (lsucc lzero)) ([x] (esort lzero))) (esort aDepProp/type-wf-sort).
+aDepProp/type-wf : of (eforall (esort (lsucc lzero)) ([x] (esort lzero))) (esort _).
 
 aDepProp/name : name "aDepProp" (is-decl (eforall (esort (lsucc lzero)) ([x] (esort lzero))) ax).
 
@@ -14,10 +11,7 @@ aDepProp/decl : declared "aDepProp" (eforall (esort (lsucc lzero)) ([x] (esort l
 
 %% axiom mkADepProp
 %%% HOLE
-mkADepProp/type-wf-sort : lvl.
-
-%%% HOLE
-mkADepProp/type-wf : of (eforall (esort (lsucc lzero)) ([x] (eapp (econst "aDepProp" lnil) x))) (esort mkADepProp/type-wf-sort).
+mkADepProp/type-wf : of (eforall (esort (lsucc lzero)) ([x] (eapp (econst "aDepProp" lnil) x))) (esort _).
 
 mkADepProp/name : name "mkADepProp" (is-decl (eforall (esort (lsucc lzero)) ([x] (eapp (econst "aDepProp" lnil) x))) ax).
 
@@ -26,10 +20,7 @@ mkADepProp/decl : declared "mkADepProp" (eforall (esort (lsucc lzero)) ([x] (eap
 
 %% def letTypeDep
 %%% HOLE
-letTypeDep/type-wf-sort : lvl.
-
-%%% HOLE
-letTypeDep/type-wf : of (eapp (econst "aDepProp" lnil) (esort lzero)) (esort letTypeDep/type-wf-sort).
+letTypeDep/type-wf : of (eapp (econst "aDepProp" lnil) (esort lzero)) (esort _).
 
 %%% HOLE
 letTypeDep/value-typed : of (eapp (elam (esort (lsucc lzero)) ([x] (eapp (econst "mkADepProp" lnil) x))) (esort lzero)) (eapp (econst "aDepProp" lnil) (esort lzero)).

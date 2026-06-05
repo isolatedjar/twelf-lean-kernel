@@ -1,12 +1,7 @@
 %%% Expected outcome: accept
 %%% An inductive proposition can have constructors with fields of arbitrary level.
-%solve nonneg_0 : 0 >= 0.
-
 %% inductive PredWithTypeField
-PredWithTypeField/type-wf-sort : lvl
-   = (lsucc lzero).
-
-PredWithTypeField/type-wf : of (esort lzero) (esort PredWithTypeField/type-wf-sort)
+PredWithTypeField/type-wf : of (esort lzero) (esort (lsucc lzero))
    = defeq/sort-refl.
 
 PredWithTypeField/ends-in-sort : ends-in-sort (esort lzero)
@@ -20,23 +15,20 @@ PredWithTypeField/eisl : ends-in-sort-with-level (esort lzero) lzero
 PredWithTypeField/cnd : cnames-distinct (ccons "PredWithTypeField.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
-PredWithTypeField/name : name "PredWithTypeField" (is-decl (esort lzero) (indt (ccons "PredWithTypeField.mk" cnil) liz)).
+PredWithTypeField/name : name "PredWithTypeField" (is-decl (esort lzero) (indt (ccons "PredWithTypeField.mk" cnil) z)).
 
-PredWithTypeField/decl : declared "PredWithTypeField" (esort lzero) (indt (ccons "PredWithTypeField.mk" cnil) liz)
+PredWithTypeField/decl : declared "PredWithTypeField" (esort lzero) (indt (ccons "PredWithTypeField.mk" cnil) z)
    = declared/ok-indt PredWithTypeField/name PredWithTypeField/rec-name PredWithTypeField/cnd (dkind-ok/indt PredWithTypeField/type-wf PredWithTypeField/ends-in-sort).
 
 %% ctor PredWithTypeField.mk (of PredWithTypeField)
-PredWithTypeField_mk/type-wf-sort : lvl
-   = (limax (lsucc (lsucc lzero)) lzero).
-
-PredWithTypeField_mk/type-wf : of (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil))) (esort PredWithTypeField_mk/type-wf-sort)
+PredWithTypeField_mk/type-wf : of (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil))) (esort (limax (lsucc (lsucc lzero)) lzero))
    = (defeq/forall
        defeq/sort-refl
        ([x]
          ([h]
            (defeq/const
              PredWithTypeField/decl
-             (inst-expr/sort lvl-inst/zero))))).
+             (inst-expr/sort inst-lvl/zero))))).
 
 PredWithTypeField_mk/positivity : ctor-positive "PredWithTypeField" lnil (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil)))
    = (ctor-positive/intro ([S] (eforall (esort (lsucc lzero)) ([x] S))) (ctor-spine/arg
@@ -49,28 +41,25 @@ PredWithTypeField_mk/cmem : cmem "PredWithTypeField.mk" (ccons "PredWithTypeFiel
 PredWithTypeField_mk/fuo : field-universes-ok (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil))) lzero
    = (field-universes-ok/forall
        defeq/sort-refl
-       (mleq/imax-lzL (mleq/self nonneg_0))
+       (leq-lvl/imaxLz leq-lvl/self)
        ([x] ([h] (field-universes-ok/done not-forall/const)))).
 
-PredWithTypeField_mk/name : name "PredWithTypeField.mk" (is-decl (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil))) (ctor "PredWithTypeField" liz)).
+PredWithTypeField_mk/name : name "PredWithTypeField.mk" (is-decl (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil))) (ctor "PredWithTypeField" z)).
 
-PredWithTypeField_mk/decl : declared "PredWithTypeField.mk" (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil))) (ctor "PredWithTypeField" liz)
+PredWithTypeField_mk/decl : declared "PredWithTypeField.mk" (eforall (esort (lsucc lzero)) ([x] (econst "PredWithTypeField" lnil))) (ctor "PredWithTypeField" z)
    = declared/ok-ctor PredWithTypeField_mk/name PredWithTypeField/name PredWithTypeField_mk/cmem PredWithTypeField/eisl PredWithTypeField_mk/fuo (dkind-ok/ctor PredWithTypeField_mk/type-wf PredWithTypeField_mk/positivity).
 
 %% recursor PredWithTypeField.rec (TCB-derived; informational only)
-%%   type:   (eforall (eforall (econst "PredWithTypeField" lnil) ([x] (esort lzero))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "PredWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "PredWithTypeField" lnil) ([z] (eapp x z)))))))
+%%   type:   (eforall (eforall (econst "PredWithTypeField" lnil) ([x] (esort lzero))) ([x] (eforall (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "PredWithTypeField.mk" lnil) y)))) ([y] (eforall (econst "PredWithTypeField" lnil) ([w] (eapp x w)))))))
 %%   rules:
-%%     PredWithTypeField.rec … PredWithTypeField.mk … = (elam (eforall (econst "PredWithTypeField" lnil) ([x] (esort lzero))) ([x] (elam (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "PredWithTypeField.mk" lnil) y)))) ([y] (elam (esort (lsucc lzero)) ([z] (eapp y z)))))))   (1 fields)
+%%     PredWithTypeField.rec … PredWithTypeField.mk … = (elam (eforall (econst "PredWithTypeField" lnil) ([x] (esort lzero))) ([x] (elam (eforall (esort (lsucc lzero)) ([y] (eapp x (eapp (econst "PredWithTypeField.mk" lnil) y)))) ([y] (elam (esort (lsucc lzero)) ([w] (eapp y w)))))))   (1 fields)
 
 %% def predWithTypeField
-predWithTypeField/type-wf-sort : lvl
-   = (lsucc lzero).
-
-predWithTypeField/type-wf : of (esort lzero) (esort predWithTypeField/type-wf-sort)
+predWithTypeField/type-wf : of (esort lzero) (esort (lsucc lzero))
    = defeq/sort-refl.
 
 predWithTypeField/value-typed : of (econst "PredWithTypeField" lnil) (esort lzero)
-   = (defeq/const PredWithTypeField/decl (inst-expr/sort lvl-inst/zero)).
+   = (defeq/const PredWithTypeField/decl (inst-expr/sort inst-lvl/zero)).
 
 predWithTypeField/name : name "predWithTypeField" (is-decl (esort lzero) (defn (econst "PredWithTypeField" lnil))).
 

@@ -2,10 +2,7 @@
 %%% The classic example of an inductive with negative recursive occurrence
 %% inductive indNeg
 %%% HOLE
-indNeg/type-wf-sort : lvl.
-
-%%% HOLE
-indNeg/type-wf : of (esort (lsucc lzero)) (esort indNeg/type-wf-sort).
+indNeg/type-wf : of (esort (lsucc lzero)) (esort _).
 
 %%% HOLE
 indNeg/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
@@ -18,17 +15,14 @@ indNeg/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 indNeg/cnd : cnames-distinct (ccons "indNeg.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
-indNeg/name : name "indNeg" (is-decl (esort (lsucc lzero)) (indt (ccons "indNeg.mk" cnil) liz)).
+indNeg/name : name "indNeg" (is-decl (esort (lsucc lzero)) (indt (ccons "indNeg.mk" cnil) z)).
 
-indNeg/decl : declared "indNeg" (esort (lsucc lzero)) (indt (ccons "indNeg.mk" cnil) liz)
+indNeg/decl : declared "indNeg" (esort (lsucc lzero)) (indt (ccons "indNeg.mk" cnil) z)
    = declared/ok-indt indNeg/name indNeg/rec-name indNeg/cnd (dkind-ok/indt indNeg/type-wf indNeg/ends-in-sort).
 
 %% ctor indNeg.mk (of indNeg)
 %%% HOLE
-indNeg_mk/type-wf-sort : lvl.
-
-%%% HOLE
-indNeg_mk/type-wf : of (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (esort indNeg_mk/type-wf-sort).
+indNeg_mk/type-wf : of (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (esort _).
 
 %%% HOLE
 indNeg_mk/positivity : ctor-positive "indNeg" lnil (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))).
@@ -39,9 +33,9 @@ indNeg_mk/cmem : cmem "indNeg.mk" (ccons "indNeg.mk" cnil)
 %%% HOLE: indNeg_mk/fuo
 indNeg_mk/fuo : field-universes-ok (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (lsucc lzero).
 
-indNeg_mk/name : name "indNeg.mk" (is-decl (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (ctor "indNeg" liz)).
+indNeg_mk/name : name "indNeg.mk" (is-decl (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (ctor "indNeg" z)).
 
-indNeg_mk/decl : declared "indNeg.mk" (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (ctor "indNeg" liz)
+indNeg_mk/decl : declared "indNeg.mk" (eforall (eforall (econst "indNeg" lnil) ([x] (econst "indNeg" lnil))) ([x] (econst "indNeg" lnil))) (ctor "indNeg" z)
    = declared/ok-ctor indNeg_mk/name indNeg/name indNeg_mk/cmem indNeg/eisl indNeg_mk/fuo (dkind-ok/ctor indNeg_mk/type-wf indNeg_mk/positivity).
 
 %% recursor indNeg.rec (TCB-derived; informational only)

@@ -19,10 +19,7 @@
 sneq/0 : string-neq "ImaxProp.a" "ImaxProp.b".
 
 %% inductive ImaxProp
-ImaxProp/type-wf-sort : lvl
-   = (lsucc (limax (lsucc lzero) lzero)).
-
-ImaxProp/type-wf : of (esort (limax (lsucc lzero) lzero)) (esort ImaxProp/type-wf-sort)
+ImaxProp/type-wf : of (esort (limax (lsucc lzero) lzero)) (esort (lsucc (limax (lsucc lzero) lzero)))
    = defeq/sort-refl.
 
 ImaxProp/ends-in-sort : ends-in-sort (esort (limax (lsucc lzero) lzero))
@@ -38,20 +35,17 @@ ImaxProp/cnd : cnames-distinct (ccons "ImaxProp.a" (ccons "ImaxProp.b" cnil))
        (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil)
        (all-string-neq/cons sneq/0 all-string-neq/nil)).
 
-ImaxProp/name : name "ImaxProp" (is-decl (esort (limax (lsucc lzero) lzero)) (indt (ccons "ImaxProp.a" (ccons "ImaxProp.b" cnil)) liz)).
+ImaxProp/name : name "ImaxProp" (is-decl (esort (limax (lsucc lzero) lzero)) (indt (ccons "ImaxProp.a" (ccons "ImaxProp.b" cnil)) z)).
 
-ImaxProp/decl : declared "ImaxProp" (esort (limax (lsucc lzero) lzero)) (indt (ccons "ImaxProp.a" (ccons "ImaxProp.b" cnil)) liz)
+ImaxProp/decl : declared "ImaxProp" (esort (limax (lsucc lzero) lzero)) (indt (ccons "ImaxProp.a" (ccons "ImaxProp.b" cnil)) z)
    = declared/ok-indt ImaxProp/name ImaxProp/rec-name ImaxProp/cnd (dkind-ok/indt ImaxProp/type-wf ImaxProp/ends-in-sort).
 
 %% ctor ImaxProp.a (of ImaxProp)
-ImaxProp_a/type-wf-sort : lvl
-   = (limax (lsucc lzero) lzero).
-
-ImaxProp_a/type-wf : of (econst "ImaxProp" lnil) (esort ImaxProp_a/type-wf-sort)
+ImaxProp_a/type-wf : of (econst "ImaxProp" lnil) (esort (limax (lsucc lzero) lzero))
    = (defeq/const
        ImaxProp/decl
        (inst-expr/sort
-         (lvl-inst/imax (lvl-inst/succ lvl-inst/zero) lvl-inst/zero))).
+         (inst-lvl/imax inst-lvl/zero (inst-lvl/succ inst-lvl/zero)))).
 
 ImaxProp_a/positivity : ctor-positive "ImaxProp" lnil (econst "ImaxProp" lnil)
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
@@ -62,20 +56,17 @@ ImaxProp_a/cmem : cmem "ImaxProp.a" (ccons "ImaxProp.a" (ccons "ImaxProp.b" cnil
 ImaxProp_a/fuo : field-universes-ok (econst "ImaxProp" lnil) (limax (lsucc lzero) lzero)
    = (field-universes-ok/done not-forall/const).
 
-ImaxProp_a/name : name "ImaxProp.a" (is-decl (econst "ImaxProp" lnil) (ctor "ImaxProp" liz)).
+ImaxProp_a/name : name "ImaxProp.a" (is-decl (econst "ImaxProp" lnil) (ctor "ImaxProp" z)).
 
-ImaxProp_a/decl : declared "ImaxProp.a" (econst "ImaxProp" lnil) (ctor "ImaxProp" liz)
+ImaxProp_a/decl : declared "ImaxProp.a" (econst "ImaxProp" lnil) (ctor "ImaxProp" z)
    = declared/ok-ctor ImaxProp_a/name ImaxProp/name ImaxProp_a/cmem ImaxProp/eisl ImaxProp_a/fuo (dkind-ok/ctor ImaxProp_a/type-wf ImaxProp_a/positivity).
 
 %% ctor ImaxProp.b (of ImaxProp)
-ImaxProp_b/type-wf-sort : lvl
-   = (limax (lsucc lzero) lzero).
-
-ImaxProp_b/type-wf : of (econst "ImaxProp" lnil) (esort ImaxProp_b/type-wf-sort)
+ImaxProp_b/type-wf : of (econst "ImaxProp" lnil) (esort (limax (lsucc lzero) lzero))
    = (defeq/const
        ImaxProp/decl
        (inst-expr/sort
-         (lvl-inst/imax (lvl-inst/succ lvl-inst/zero) lvl-inst/zero))).
+         (inst-lvl/imax inst-lvl/zero (inst-lvl/succ inst-lvl/zero)))).
 
 ImaxProp_b/positivity : ctor-positive "ImaxProp" lnil (econst "ImaxProp" lnil)
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
@@ -86,13 +77,13 @@ ImaxProp_b/cmem : cmem "ImaxProp.b" (ccons "ImaxProp.a" (ccons "ImaxProp.b" cnil
 ImaxProp_b/fuo : field-universes-ok (econst "ImaxProp" lnil) (limax (lsucc lzero) lzero)
    = (field-universes-ok/done not-forall/const).
 
-ImaxProp_b/name : name "ImaxProp.b" (is-decl (econst "ImaxProp" lnil) (ctor "ImaxProp" (lis liz))).
+ImaxProp_b/name : name "ImaxProp.b" (is-decl (econst "ImaxProp" lnil) (ctor "ImaxProp" (s z))).
 
-ImaxProp_b/decl : declared "ImaxProp.b" (econst "ImaxProp" lnil) (ctor "ImaxProp" (lis liz))
+ImaxProp_b/decl : declared "ImaxProp.b" (econst "ImaxProp" lnil) (ctor "ImaxProp" (s z))
    = declared/ok-ctor ImaxProp_b/name ImaxProp/name ImaxProp_b/cmem ImaxProp/eisl ImaxProp_b/fuo (dkind-ok/ctor ImaxProp_b/type-wf ImaxProp_b/positivity).
 
 %% recursor ImaxProp.rec (TCB-derived; informational only)
-%%   type:   (eforall (eforall (econst "ImaxProp" lnil) ([x] (esort (lsucc lzero)))) ([x] (eforall (eapp x (econst "ImaxProp.a" lnil)) ([y] (eforall (eapp x (econst "ImaxProp.b" lnil)) ([z] (eforall (econst "ImaxProp" lnil) ([w] (eapp x w)))))))))
+%%   type:   (eforall (eforall (econst "ImaxProp" lnil) ([x] (esort (lsucc lzero)))) ([x] (eforall (eapp x (econst "ImaxProp.a" lnil)) ([y] (eforall (eapp x (econst "ImaxProp.b" lnil)) ([w] (eforall (econst "ImaxProp" lnil) ([v] (eapp x v)))))))))
 %%   rules:
-%%     ImaxProp.rec … ImaxProp.a … = (elam (eforall (econst "ImaxProp" lnil) ([x] (esort (lsucc lzero)))) ([x] (elam (eapp x (econst "ImaxProp.a" lnil)) ([y] (elam (eapp x (econst "ImaxProp.b" lnil)) ([z] y))))))   (0 fields)
-%%     ImaxProp.rec … ImaxProp.b … = (elam (eforall (econst "ImaxProp" lnil) ([x] (esort (lsucc lzero)))) ([x] (elam (eapp x (econst "ImaxProp.a" lnil)) ([y] (elam (eapp x (econst "ImaxProp.b" lnil)) ([z] z))))))   (0 fields)
+%%     ImaxProp.rec … ImaxProp.a … = (elam (eforall (econst "ImaxProp" lnil) ([x] (esort (lsucc lzero)))) ([x] (elam (eapp x (econst "ImaxProp.a" lnil)) ([y] (elam (eapp x (econst "ImaxProp.b" lnil)) ([w] y))))))   (0 fields)
+%%     ImaxProp.rec … ImaxProp.b … = (elam (eforall (econst "ImaxProp" lnil) ([x] (esort (lsucc lzero)))) ([x] (elam (eapp x (econst "ImaxProp.a" lnil)) ([y] (elam (eapp x (econst "ImaxProp.b" lnil)) ([w] w))))))   (0 fields)

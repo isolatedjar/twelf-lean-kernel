@@ -1,12 +1,7 @@
 %%% Expected outcome: reject
 %%% An inductive type with a non-sort type
 %% def constType
-constType/type-wf-sort : lvl
-   = (limax
-       (lsucc (lsucc lzero))
-       (limax (lsucc (lsucc lzero)) (lsucc (lsucc lzero)))).
-
-constType/type-wf : of (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort constType/type-wf-sort)
+constType/type-wf : of (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort (limax (lsucc (lsucc lzero)) (limax (lsucc (lsucc lzero)) (lsucc (lsucc lzero)))))
    = (defeq/forall
        defeq/sort-refl
        ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] defeq/sort-refl)))))).
@@ -25,10 +20,7 @@ constType/decl : declared "constType" (eforall (esort (lsucc lzero)) ([x] (efora
 
 %% inductive inductBadNonSort
 %%% HOLE
-inductBadNonSort/type-wf-sort : lvl.
-
-%%% HOLE
-inductBadNonSort/type-wf : of (econst "constType" lnil) (esort inductBadNonSort/type-wf-sort).
+inductBadNonSort/type-wf : of (econst "constType" lnil) (esort _).
 
 %%% HOLE
 inductBadNonSort/ends-in-sort : ends-in-sort (econst "constType" lnil).
@@ -38,7 +30,7 @@ inductBadNonSort/rec-name : name "inductBadNonSort.rec" (is-rec-for "inductBadNo
 inductBadNonSort/cnd : cnames-distinct cnil
    = cnames-distinct/nil.
 
-inductBadNonSort/name : name "inductBadNonSort" (is-decl (econst "constType" lnil) (indt cnil liz)).
+inductBadNonSort/name : name "inductBadNonSort" (is-decl (econst "constType" lnil) (indt cnil z)).
 
-inductBadNonSort/decl : declared "inductBadNonSort" (econst "constType" lnil) (indt cnil liz)
+inductBadNonSort/decl : declared "inductBadNonSort" (econst "constType" lnil) (indt cnil z)
    = declared/ok-indt inductBadNonSort/name inductBadNonSort/rec-name inductBadNonSort/cnd (dkind-ok/indt inductBadNonSort/type-wf inductBadNonSort/ends-in-sort).

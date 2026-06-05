@@ -1,12 +1,7 @@
 %%% Expected outcome: reject
 %%% The type of a declaration has to be a type, not some other expression
 %% def constType
-constType/type-wf-sort : lvl
-   = (limax
-       (lsucc (lsucc lzero))
-       (limax (lsucc (lsucc lzero)) (lsucc (lsucc lzero)))).
-
-constType/type-wf : of (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort constType/type-wf-sort)
+constType/type-wf : of (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort (limax (lsucc (lsucc lzero)) (limax (lsucc (lsucc lzero)) (lsucc (lsucc lzero)))))
    = (defeq/forall
        defeq/sort-refl
        ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] defeq/sort-refl)))))).
@@ -25,10 +20,7 @@ constType/decl : declared "constType" (eforall (esort (lsucc lzero)) ([x] (efora
 
 %% def nonTypeType
 %%% HOLE
-nonTypeType/type-wf-sort : lvl.
-
-%%% HOLE
-nonTypeType/type-wf : of (econst "constType" lnil) (esort nonTypeType/type-wf-sort).
+nonTypeType/type-wf : of (econst "constType" lnil) (esort _).
 
 %%% HOLE
 nonTypeType/value-typed : of (esort lzero) (econst "constType" lnil).

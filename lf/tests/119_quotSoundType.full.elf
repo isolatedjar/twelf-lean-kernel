@@ -1,51 +1,41 @@
 %%% Expected outcome: accept
 %%% Asserting the type of `Quot.sound`.
-%solve nonneg_0 : 0 >= 0.
-
 %% inductive Eq
-Eq/type-wf-sort : lvl
-   = (limax
-       (lsucc (lvar liz))
-       (limax (lvar liz) (limax (lvar liz) (lsucc lzero)))).
-
-Eq/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (esort Eq/type-wf-sort)
+Eq/type-wf : of (eforall (esort (lvar z)) ([x] (eforall x ([y] (eforall x ([w] (esort lzero))))))) (esort (limax (lsucc (lvar z)) (limax (lvar z) (limax (lvar z) (lsucc lzero)))))
    = (defeq/forall
        defeq/sort-refl
        ([x]
          ([h]
            (defeq/forall
              h
-             ([y] ([h1] (defeq/forall h ([z] ([h2] defeq/sort-refl))))))))).
+             ([y] ([h1] (defeq/forall h ([w] ([h2] defeq/sort-refl))))))))).
 
-Eq/ends-in-sort : ends-in-sort (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero)))))))
+Eq/ends-in-sort : ends-in-sort (eforall (esort (lvar z)) ([x] (eforall x ([y] (eforall x ([w] (esort lzero)))))))
    = (ends-in-sort/forall
        ([x]
          (ends-in-sort/forall
-           ([y] (ends-in-sort/forall ([z] ends-in-sort/sort)))))).
+           ([y] (ends-in-sort/forall ([w] ends-in-sort/sort)))))).
 
 Eq/rec-name : name "Eq.rec" (is-rec-for "Eq").
 
-Eq/eisl : ends-in-sort-with-level (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) lzero
+Eq/eisl : ends-in-sort-with-level (eforall (esort (lvar z)) ([x] (eforall x ([y] (eforall x ([w] (esort lzero))))))) lzero
    = (ends-in-sort-with-level/forall
        ([x]
          (ends-in-sort-with-level/forall
            ([y]
              (ends-in-sort-with-level/forall
-               ([z] ends-in-sort-with-level/sort)))))).
+               ([w] ends-in-sort-with-level/sort)))))).
 
 Eq/cnd : cnames-distinct (ccons "Eq.refl" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
-Eq/name : name "Eq" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis liz)))).
+Eq/name : name "Eq" (is-decl (eforall (esort (lvar z)) ([x] (eforall x ([y] (eforall x ([w] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (s (s z)))).
 
-Eq/decl : declared "Eq" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eforall x ([z] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (lis (lis liz)))
+Eq/decl : declared "Eq" (eforall (esort (lvar z)) ([x] (eforall x ([y] (eforall x ([w] (esort lzero))))))) (indt (ccons "Eq.refl" cnil) (s (s z)))
    = declared/ok-indt Eq/name Eq/rec-name Eq/cnd (dkind-ok/indt Eq/type-wf Eq/ends-in-sort).
 
 %% ctor Eq.refl (of Eq)
-Eq_refl/type-wf-sort : lvl
-   = (limax (lsucc (lvar liz)) (limax (lvar liz) lzero)).
-
-Eq_refl/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (esort Eq_refl/type-wf-sort)
+Eq_refl/type-wf : of (eforall (esort (lvar z)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar z) lnil)) x) y) y))))) (esort (limax (lsucc (lvar z)) (limax (lvar z) lzero)))
    = (defeq/forall
        defeq/sort-refl
        ([x]
@@ -60,7 +50,7 @@ Eq_refl/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eap
                        (defeq/const
                          Eq/decl
                          (inst-expr/forall
-                           (inst-expr/sort (lvl-inst/var lvl-nth/zero))
+                           (inst-expr/sort (inst-lvl/var nth-lvl/z))
                            ([x]
                              ([h]
                                (inst-expr/forall
@@ -69,23 +59,23 @@ Eq_refl/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eap
                                    ([h1]
                                      (inst-expr/forall
                                        h
-                                       ([z]
+                                       ([w]
                                          ([h2]
                                            (inst-expr/sort
-                                             lvl-inst/zero)))))))))))
+                                             inst-lvl/zero)))))))))))
                        h)
                      h1)
                    h1))))))).
 
-Eq_refl/positivity : ctor-positive "Eq" (lcons (lvar liz) lnil) (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y)))))
-   = (ctor-positive/intro ([S] (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp S x) y) y)))))) (ctor-spine/arg
-       (strict-pos/no-occur (esort (lvar liz)) no-self-ref/sort)
+Eq_refl/positivity : ctor-positive "Eq" (lcons (lvar z) lnil) (eforall (esort (lvar z)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar z) lnil)) x) y) y)))))
+   = (ctor-positive/intro ([S] (eforall (esort (lvar z)) ([x] (eforall x ([y] (eapp (eapp (eapp S x) y) y)))))) (ctor-spine/arg
+       (strict-pos/no-occur (esort (lvar z)) no-self-ref/sort)
        ([x]
          ([y]
            (ctor-spine/arg
              (strict-pos/no-occur x y)
-             ([z]
-               ([w]
+             ([w]
+               ([v]
                  (ctor-spine/result
                    (applies-self/app
                      (applies-self/app
@@ -94,27 +84,27 @@ Eq_refl/positivity : ctor-positive "Eq" (lcons (lvar liz) lnil) (eforall (esort 
 Eq_refl/cmem : cmem "Eq.refl" (ccons "Eq.refl" cnil)
    = cmem/here.
 
-Eq_refl/fuo : field-universes-ok (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) lzero
+Eq_refl/fuo : field-universes-ok (eforall (esort (lvar z)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar z) lnil)) x) y) y))))) lzero
    = (field-universes-ok/forall
        defeq/sort-refl
-       (mleq/imax-lzL (mleq/self nonneg_0))
+       (leq-lvl/imaxLz leq-lvl/self)
        ([x]
          ([h]
            (field-universes-ok/forall
              h
-             (mleq/imax-lzL (mleq/self nonneg_0))
+             (leq-lvl/imaxLz leq-lvl/self)
              ([y] ([h1] (field-universes-ok/done not-forall/app))))))).
 
-Eq_refl/name : name "Eq.refl" (is-decl (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (ctor "Eq" liz)).
+Eq_refl/name : name "Eq.refl" (is-decl (eforall (esort (lvar z)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar z) lnil)) x) y) y))))) (ctor "Eq" z)).
 
-Eq_refl/decl : declared "Eq.refl" (eforall (esort (lvar liz)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) x) y) y))))) (ctor "Eq" liz)
+Eq_refl/decl : declared "Eq.refl" (eforall (esort (lvar z)) ([x] (eforall x ([y] (eapp (eapp (eapp (econst "Eq" (lcons (lvar z) lnil)) x) y) y))))) (ctor "Eq" z)
    = declared/ok-ctor Eq_refl/name Eq/name Eq_refl/cmem Eq/eisl Eq_refl/fuo (dkind-ok/ctor Eq_refl/type-wf Eq_refl/positivity).
 
 %% recursor Eq.rec (TCB-derived; informational only)
 %%   level params: u u_1
-%%   type:   (eforall (esort (lvar (lis liz))) ([x] (eforall x ([y] (eforall (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (eforall (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) x1) ([y1] (eapp (eapp z x1) y1)))))))))))))
+%%   type:   (eforall (esort (lvar (s z))) ([x] (eforall x ([y] (eforall (eforall x ([w] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (s z)) lnil)) x) y) w) ([v] (esort (lvar z)))))) ([w] (eforall (eapp (eapp w y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (s z)) lnil)) x) y)) ([v] (eforall x ([x1] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (s z)) lnil)) x) y) x1) ([y1] (eapp (eapp w x1) y1)))))))))))))
 %%   rules:
-%%     Eq.rec … Eq.refl … = (elam (esort (lvar (lis liz))) ([x] (elam x ([y] (elam (eforall x ([z] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (lis liz)) lnil)) x) y) z) ([w] (esort (lvar liz)))))) ([z] (elam (eapp (eapp z y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (lis liz)) lnil)) x) y)) ([w] w))))))))   (0 fields)
+%%     Eq.rec … Eq.refl … = (elam (esort (lvar (s z))) ([x] (elam x ([y] (elam (eforall x ([w] (eforall (eapp (eapp (eapp (econst "Eq" (lcons (lvar (s z)) lnil)) x) y) w) ([v] (esort (lvar z)))))) ([w] (elam (eapp (eapp w y) (eapp (eapp (econst "Eq.refl" (lcons (lvar (s z)) lnil)) x) y)) ([v] v))))))))   (0 fields)
 %%   K-like reduction: yes
 
 %% quot Quot (type) (TCB-derived; informational only)
@@ -131,98 +121,92 @@ Eq_refl/decl : declared "Eq.refl" (eforall (esort (lvar liz)) ([x] (eforall x ([
 
 %% axiom Quot.sound
 %%% HOLE
-Quot_sound/type-wf-sort : lvl.
-
-%%% HOLE
 Quot_sound/type-wf : of
-  (eforall (esort (lvar liz))
+  (eforall (esort (lvar z))
     ([x]
-      (eforall (eforall x ([y] (eforall x ([z] (esort lzero)))))
+      (eforall (eforall x ([y] (eforall x ([w] (esort lzero)))))
         ([y]
           (eforall x
-            ([z]
+            ([w]
               (eforall x
-                ([w]
-                  (eforall (eapp (eapp y z) w)
+                ([v]
+                  (eforall (eapp (eapp y w) v)
                     ([x1]
-                      (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y))
-                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar liz) lnil)) x) y) z))
-                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar liz) lnil)) x) y) w))))))))))))
-  (esort Quot_sound/type-wf-sort).
+                      (eapp (eapp (eapp (econst "Eq" (lcons (lvar z) lnil)) (eapp (eapp (econst "Quot" (lcons (lvar z) lnil)) x) y))
+                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar z) lnil)) x) y) w))
+                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar z) lnil)) x) y) v))))))))))))
+  (esort _).
 
 Quot_sound/name : name "Quot.sound" (is-decl
-  (eforall (esort (lvar liz))
+  (eforall (esort (lvar z))
     ([x]
-      (eforall (eforall x ([y] (eforall x ([z] (esort lzero)))))
+      (eforall (eforall x ([y] (eforall x ([w] (esort lzero)))))
         ([y]
           (eforall x
-            ([z]
+            ([w]
               (eforall x
-                ([w]
-                  (eforall (eapp (eapp y z) w)
+                ([v]
+                  (eforall (eapp (eapp y w) v)
                     ([x1]
-                      (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y))
-                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar liz) lnil)) x) y) z))
-                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar liz) lnil)) x) y) w))))))))))))
+                      (eapp (eapp (eapp (econst "Eq" (lcons (lvar z) lnil)) (eapp (eapp (econst "Quot" (lcons (lvar z) lnil)) x) y))
+                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar z) lnil)) x) y) w))
+                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar z) lnil)) x) y) v))))))))))))
   ax).
 
 Quot_sound/decl : declared "Quot.sound"
-  (eforall (esort (lvar liz))
+  (eforall (esort (lvar z))
     ([x]
-      (eforall (eforall x ([y] (eforall x ([z] (esort lzero)))))
+      (eforall (eforall x ([y] (eforall x ([w] (esort lzero)))))
         ([y]
           (eforall x
-            ([z]
+            ([w]
               (eforall x
-                ([w]
-                  (eforall (eapp (eapp y z) w)
+                ([v]
+                  (eforall (eapp (eapp y w) v)
                     ([x1]
-                      (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y))
-                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar liz) lnil)) x) y) z))
-                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar liz) lnil)) x) y) w))))))))))))
+                      (eapp (eapp (eapp (econst "Eq" (lcons (lvar z) lnil)) (eapp (eapp (econst "Quot" (lcons (lvar z) lnil)) x) y))
+                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar z) lnil)) x) y) w))
+                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar z) lnil)) x) y) v))))))))))))
   ax
    = declared/ok Quot_sound/name dkind-non-inductive/ax (dkind-ok/ax Quot_sound/type-wf).
 
 %% def quotSoundType
 %%% HOLE
-quotSoundType/type-wf-sort : lvl.
-
-%%% HOLE
 quotSoundType/type-wf : of
-  (eforall (esort (lvar liz))
+  (eforall (esort (lvar z))
     ([x]
-      (eforall (eforall x ([y] (eforall x ([z] (esort lzero)))))
+      (eforall (eforall x ([y] (eforall x ([w] (esort lzero)))))
         ([y]
           (eforall x
-            ([z]
+            ([w]
               (eforall x
-                ([w]
-                  (eforall (eapp (eapp y z) w)
+                ([v]
+                  (eforall (eapp (eapp y w) v)
                     ([x1]
-                      (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y))
-                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar liz) lnil)) x) y) z))
-                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar liz) lnil)) x) y) w))))))))))))
-  (esort quotSoundType/type-wf-sort).
+                      (eapp (eapp (eapp (econst "Eq" (lcons (lvar z) lnil)) (eapp (eapp (econst "Quot" (lcons (lvar z) lnil)) x) y))
+                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar z) lnil)) x) y) w))
+                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar z) lnil)) x) y) v))))))))))))
+  (esort _).
 
 quotSoundType/value-typed : of
-  (econst "Quot.sound" (lcons (lvar liz) lnil))
-  (eforall (esort (lvar liz))
+  (econst "Quot.sound" (lcons (lvar z) lnil))
+  (eforall (esort (lvar z))
     ([x]
-      (eforall (eforall x ([y] (eforall x ([z] (esort lzero)))))
+      (eforall (eforall x ([y] (eforall x ([w] (esort lzero)))))
         ([y]
           (eforall x
-            ([z]
+            ([w]
               (eforall x
-                ([w]
-                  (eforall (eapp (eapp y z) w)
+                ([v]
+                  (eforall (eapp (eapp y w) v)
                     ([x1]
-                      (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y))
-                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar liz) lnil)) x) y) z))
-                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar liz) lnil)) x) y) w))))))))))))
+                      (eapp (eapp (eapp (econst "Eq" (lcons (lvar z) lnil)) (eapp (eapp (econst "Quot" (lcons (lvar z) lnil)) x) y))
+                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar z) lnil)) x) y) w))
+                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar z) lnil)) x) y) v))))))))))))
    = (defeq/const
        Quot_sound/decl
        (inst-expr/forall
-         (inst-expr/sort (lvl-inst/var lvl-nth/zero))
+         (inst-expr/sort (inst-lvl/var nth-lvl/z))
          ([x]
            ([h]
              (inst-expr/forall
@@ -232,16 +216,16 @@ quotSoundType/value-typed : of
                    ([h1]
                      (inst-expr/forall
                        h
-                       ([z] ([h2] (inst-expr/sort lvl-inst/zero)))))))
+                       ([w] ([h2] (inst-expr/sort inst-lvl/zero)))))))
                ([y]
                  ([h1]
                    (inst-expr/forall
                      h
-                     ([z]
+                     ([w]
                        ([h2]
                          (inst-expr/forall
                            h
-                           ([w]
+                           ([v]
                              ([h3]
                                (inst-expr/forall
                                  (inst-expr/app (inst-expr/app h1 h2) h3)
@@ -251,24 +235,24 @@ quotSoundType/value-typed : of
                                        (inst-expr/app
                                          (inst-expr/app
                                            (inst-expr/const
-                                             (lvls-inst/cons
-                                               (lvl-inst/var lvl-nth/zero)
-                                               lvls-inst/nil))
+                                             (inst-lvls/cons
+                                               inst-lvls/nil
+                                               (inst-lvl/var nth-lvl/z)))
                                            (inst-expr/app
                                              (inst-expr/app
                                                (inst-expr/const
-                                                 (lvls-inst/cons
-                                                   (lvl-inst/var lvl-nth/zero)
-                                                   lvls-inst/nil))
+                                                 (inst-lvls/cons
+                                                   inst-lvls/nil
+                                                   (inst-lvl/var nth-lvl/z)))
                                                h)
                                              h1))
                                          (inst-expr/app
                                            (inst-expr/app
                                              (inst-expr/app
                                                (inst-expr/const
-                                                 (lvls-inst/cons
-                                                   (lvl-inst/var lvl-nth/zero)
-                                                   lvls-inst/nil))
+                                                 (inst-lvls/cons
+                                                   inst-lvls/nil
+                                                   (inst-lvl/var nth-lvl/z)))
                                                h)
                                              h1)
                                            h2))
@@ -276,42 +260,42 @@ quotSoundType/value-typed : of
                                          (inst-expr/app
                                            (inst-expr/app
                                              (inst-expr/const
-                                               (lvls-inst/cons
-                                                 (lvl-inst/var lvl-nth/zero)
-                                                 lvls-inst/nil))
+                                               (inst-lvls/cons
+                                                 inst-lvls/nil
+                                                 (inst-lvl/var nth-lvl/z)))
                                              h)
                                            h1)
                                          h3)))))))))))))))))).
 
 quotSoundType/name : name "quotSoundType" (is-decl
-  (eforall (esort (lvar liz))
+  (eforall (esort (lvar z))
     ([x]
-      (eforall (eforall x ([y] (eforall x ([z] (esort lzero)))))
+      (eforall (eforall x ([y] (eforall x ([w] (esort lzero)))))
         ([y]
           (eforall x
-            ([z]
+            ([w]
               (eforall x
-                ([w]
-                  (eforall (eapp (eapp y z) w)
+                ([v]
+                  (eforall (eapp (eapp y w) v)
                     ([x1]
-                      (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y))
-                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar liz) lnil)) x) y) z))
-                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar liz) lnil)) x) y) w))))))))))))
-  (defn (econst "Quot.sound" (lcons (lvar liz) lnil)))).
+                      (eapp (eapp (eapp (econst "Eq" (lcons (lvar z) lnil)) (eapp (eapp (econst "Quot" (lcons (lvar z) lnil)) x) y))
+                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar z) lnil)) x) y) w))
+                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar z) lnil)) x) y) v))))))))))))
+  (defn (econst "Quot.sound" (lcons (lvar z) lnil)))).
 
 quotSoundType/decl : declared "quotSoundType"
-  (eforall (esort (lvar liz))
+  (eforall (esort (lvar z))
     ([x]
-      (eforall (eforall x ([y] (eforall x ([z] (esort lzero)))))
+      (eforall (eforall x ([y] (eforall x ([w] (esort lzero)))))
         ([y]
           (eforall x
-            ([z]
+            ([w]
               (eforall x
-                ([w]
-                  (eforall (eapp (eapp y z) w)
+                ([v]
+                  (eforall (eapp (eapp y w) v)
                     ([x1]
-                      (eapp (eapp (eapp (econst "Eq" (lcons (lvar liz) lnil)) (eapp (eapp (econst "Quot" (lcons (lvar liz) lnil)) x) y))
-                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar liz) lnil)) x) y) z))
-                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar liz) lnil)) x) y) w))))))))))))
-  (defn (econst "Quot.sound" (lcons (lvar liz) lnil)))
+                      (eapp (eapp (eapp (econst "Eq" (lcons (lvar z) lnil)) (eapp (eapp (econst "Quot" (lcons (lvar z) lnil)) x) y))
+                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar z) lnil)) x) y) w))
+                        (eapp (eapp (eapp (econst "Quot.mk" (lcons (lvar z) lnil)) x) y) v))))))))))))
+  (defn (econst "Quot.sound" (lcons (lvar z) lnil)))
    = declared/ok quotSoundType/name dkind-non-inductive/defn (dkind-ok/defn quotSoundType/type-wf quotSoundType/value-typed).

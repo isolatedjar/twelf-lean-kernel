@@ -1,12 +1,7 @@
 %%% Expected outcome: accept
 %%% Lambda expression
 %% def constType
-constType/type-wf-sort : lvl
-   = (limax
-       (lsucc (lsucc lzero))
-       (limax (lsucc (lsucc lzero)) (lsucc (lsucc lzero)))).
-
-constType/type-wf : of (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort constType/type-wf-sort)
+constType/type-wf : of (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort (limax (lsucc (lsucc lzero)) (limax (lsucc (lsucc lzero)) (lsucc (lsucc lzero)))))
    = (defeq/forall
        defeq/sort-refl
        ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] defeq/sort-refl)))))).

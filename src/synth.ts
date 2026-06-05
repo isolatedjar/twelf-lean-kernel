@@ -6,7 +6,7 @@
 // and, when an EnvMap is supplied, for constants, applications, and
 // β/δ-reduction obligations. Anything unhandled → null (→ HOLE), never wrong.
 
-import { freshVar, levelParamIndices, mangle, recordNonneg, recordStringNeq } from "./render.ts";
+import { freshVar, levelParamIndices, mangle, recordStringNeq } from "./render.ts";
 import type { Expr, Fmt, Level, Name, ParsedEnv } from "./shared.ts";
 import { app, atom, lam, nameToString } from "./shared.ts";
 
@@ -361,34 +361,39 @@ function instantiateLevels(e: Expr, lpNames: Name[], ls: Level[]): Expr {
 // ---------------------------------------------------------------------------
 
 function buildLvlNth(i: number): Fmt {
-  if (i === 0) return atom("lvl-nth/zero");
-  return app(atom("lvl-nth/succ"), buildLvlNth(i - 1));
+  if (i === 0) return atom("nth-lvl/z");
+  return app(atom("nth-lvl/s"), buildLvlNth(i - 1));
 }
 
 function buildLvlInst(l: Level, lpNames: Name[]): Fmt {
   switch (l.kind) {
     case "zero":
-      return atom("lvl-inst/zero");
+      return atom("inst-lvl/zero");
     case "succ":
-      return app(atom("lvl-inst/succ"), buildLvlInst(l.arg, lpNames));
+      return app(atom("inst-lvl/succ"), buildLvlInst(l.arg, lpNames));
     case "max":
-      return app(atom("lvl-inst/max"), buildLvlInst(l.l, lpNames), buildLvlInst(l.r, lpNames));
+      // `<-` is left-associative: source-order premises appear in REVERSE
+      // arrow order, so we emit R-proof FIRST then L-proof.  inst-lvl/max
+      // source: `<- inst-lvl LS L1 L1' <- inst-lvl LS L2 L2'`.
+      return app(atom("inst-lvl/max"), buildLvlInst(l.r, lpNames), buildLvlInst(l.l, lpNames));
     case "imax":
-      return app(atom("lvl-inst/imax"), buildLvlInst(l.l, lpNames), buildLvlInst(l.r, lpNames));
+      return app(atom("inst-lvl/imax"), buildLvlInst(l.r, lpNames), buildLvlInst(l.l, lpNames));
     case "param": {
       const i = lpNames.findIndex((p) => nameToString(p) === nameToString(l.name));
-      if (i < 0) return atom("lvl-inst/zero"); // fallback; shouldn't occur in well-formed schemas
-      return app(atom("lvl-inst/var"), buildLvlNth(i));
+      if (i < 0) return atom("inst-lvl/zero"); // fallback; shouldn't occur in well-formed schemas
+      return app(atom("inst-lvl/var"), buildLvlNth(i));
     }
   }
 }
 
 function buildLvlsInst(us: Level[], lpNames: Name[]): Fmt {
-  if (us.length === 0) return atom("lvls-inst/nil");
+  if (us.length === 0) return atom("inst-lvls/nil");
+  // inst-lvls/cons source: `<- inst-lvl LS L' L'' <- inst-lvls LS LS' LS''`.
+  // Reverse: rest-proof FIRST, then head-proof.
   return app(
-    atom("lvls-inst/cons"),
-    buildLvlInst(us[0]!, lpNames),
+    atom("inst-lvls/cons"),
     buildLvlsInst(us.slice(1), lpNames),
+    buildLvlInst(us[0]!, lpNames),
   );
 }
 
@@ -444,8 +449,8 @@ function buildInstExpr(e: Expr, lpNames: Name[], ieScope: string[], used: string
 // ---------------------------------------------------------------------------
 
 function lidxFmt(i: number): Fmt {
-  let acc = atom("liz");
-  for (let k = 0; k < i; k++) acc = app(atom("lis"), acc);
+  let acc = atom("z");
+  for (let k = 0; k < i; k++) acc = app(atom("s"), acc);
   return acc;
 }
 
@@ -475,27 +480,34 @@ function sortLevel(e: Expr): Level | null {
   return e.kind === "sort" ? e.level : null;
 }
 
-// --- Carneiro's algorithmic level inequality (see `mleq` in tcb.elf) -------
+// --- Carneiro's algorithmic level inequality (see `leq-lvl` in levels.elf) --
 //
-// `proveMleq a b n` builds an `mleq a b n` proof term (a ≤ b + n for every
-// valuation) as an Fmt, or null.  The offset `n` is concrete and threaded
-// down the recursion, so every node has a ground integer index and Twelf only
-// has to *check* the `N±1` / `N >= 0` constraints, never solve for them.  The
-// `mleq/self` and `mleq/lz` leaves require an `n >= 0` witness, recorded via
-// `recordNonneg` (shares the generator's `nonneg_<n>` %solve mechanism); they
-// fire only when n >= 0, so negative-offset branches dead-end and the search
-// backtracks.  This is a completeness-only routine: a wrong or missing proof
-// becomes a HOLE, never an unsound acceptance.
+// `proveMleq a b n` builds a `leq-lvl a b n` proof term (a ≤ b + n for every
+// valuation) as an Fmt, or null.  The offset `n` is a non-negative integer
+// in TS; the emitted LF term uses `nat`-encoded offsets (`z`/`s`).  Twelf
+// reconstructs the offset by unification when applying each rule.
+//
+// `leq-lvl/sL` and `leq-lvl/sR` are the "tight" forms (matching Mario's
+// thesis): premise has offset `(s N)`, conclusion has offset `N` (sL) or
+// the dual on the other side.  The prover recurses with `n - 1` (for sL,
+// when the LHS is lsucc-headed and n > 0) and `n + 1` (for sR).  Negative
+// recursion is unreachable because sL only fires when n > 0; for the
+// non-zero check on sL the recursion would need an offset of `s _`, which
+// `z` can't unify with.  No `n >= 0` premise is needed at the leaves —
+// the offset is `nat`-encoded and structurally non-negative.
+//
+// Completeness-only routine: a wrong or missing proof becomes a HOLE,
+// never an unsound acceptance.
 
-// The four LHS `imax` rewrites (imax-lzL/lsL/imL/mxL): given `a = limax a.l r`,
-// return the level `a` rewrites to and the rule atom.  `null` for `r` a bare
-// param (the unencoded variable-elimination case → HOLE).
+// The four LHS `imax` rewrites (imaxLz/Ls/Li/Lm): given `a = limax a.l r`,
+// return the level `a` rewrites to and the rule atom.  `null` for `r` a
+// bare param (the unencoded variable-elimination case → HOLE).
 function imaxRewriteL(al: Level, r: Level): { newL: Level; ctor: string } | null {
   switch (r.kind) {
     case "zero":
-      return { newL: { kind: "zero" }, ctor: "mleq/imax-lzL" };
+      return { newL: { kind: "zero" }, ctor: "leq-lvl/imaxLz" };
     case "succ":
-      return { newL: { kind: "max", l: al, r }, ctor: "mleq/imax-lsL" };
+      return { newL: { kind: "max", l: al, r }, ctor: "leq-lvl/imaxLs" };
     case "imax": // limax L1 (limax L2 L3) → lmax (limax L1 L3) (limax L2 L3)
       return {
         newL: {
@@ -503,7 +515,7 @@ function imaxRewriteL(al: Level, r: Level): { newL: Level; ctor: string } | null
           l: { kind: "imax", l: al, r: r.r },
           r: { kind: "imax", l: r.l, r: r.r },
         },
-        ctor: "mleq/imax-imL",
+        ctor: "leq-lvl/imaxLi",
       };
     case "max": // limax L1 (lmax L2 L3) → lmax (limax L1 L2) (limax L1 L3)
       return {
@@ -512,22 +524,20 @@ function imaxRewriteL(al: Level, r: Level): { newL: Level; ctor: string } | null
           l: { kind: "imax", l: al, r: r.l },
           r: { kind: "imax", l: al, r: r.r },
         },
-        ctor: "mleq/imax-mxL",
+        ctor: "leq-lvl/imaxLm",
       };
     default:
       return null;
   }
 }
 
-// The RHS `imax` rewrites (imax-lzR/lsR/imR/mxR), dual to the LHS ones: given
-// `b = limax bl r`, return the level `b` rewrites to.  `param` → null (the
-// unencoded variable-elimination case → HOLE).
+// The RHS `imax` rewrites (imaxRi/Rm), dual to the LHS ones for the `imax-
+// of-imax` and `imax-of-max` cases.  No imaxRz/imaxRs counterparts: those
+// are absent from Mario's thesis, and case analysis on the LHS (combined
+// with `leq-lvl/split` for `lvar`) covers any goal that would otherwise
+// need them.
 function imaxRewriteR(bl: Level, r: Level): { newR: Level; ctor: string } | null {
   switch (r.kind) {
-    case "zero":
-      return { newR: { kind: "zero" }, ctor: "mleq/imax-lzR" };
-    case "succ":
-      return { newR: { kind: "max", l: bl, r }, ctor: "mleq/imax-lsR" };
     case "imax": // limax L1 (limax L2 L3) → lmax (limax L1 L3) (limax L2 L3)
       return {
         newR: {
@@ -535,7 +545,7 @@ function imaxRewriteR(bl: Level, r: Level): { newR: Level; ctor: string } | null
           l: { kind: "imax", l: bl, r: r.r },
           r: { kind: "imax", l: r.l, r: r.r },
         },
-        ctor: "mleq/imax-imR",
+        ctor: "leq-lvl/imaxRi",
       };
     case "max": // limax L1 (lmax L2 L3) → lmax (limax L1 L2) (limax L1 L3)
       return {
@@ -544,7 +554,7 @@ function imaxRewriteR(bl: Level, r: Level): { newR: Level; ctor: string } | null
           l: { kind: "imax", l: bl, r: r.l },
           r: { kind: "imax", l: bl, r: r.r },
         },
-        ctor: "mleq/imax-mxR",
+        ctor: "leq-lvl/imaxRm",
       };
     default:
       return null;
@@ -553,9 +563,10 @@ function imaxRewriteR(bl: Level, r: Level): { newR: Level; ctor: string } | null
 
 function proveMleq(a: Level, b: Level, n: number, depth = 0): Fmt | null {
   if (depth > 40) return null;
-  // Leaves (need n >= 0): mleq/self covers a ≡ b, mleq/lz covers lzero ≤ _.
-  if (n >= 0 && levelEq(a, b)) return app(atom("mleq/self"), atom(recordNonneg(n)));
-  if (n >= 0 && a.kind === "zero") return app(atom("mleq/lz"), atom(recordNonneg(n)));
+  // Leaves: leq-lvl/self covers a ≡ b, leq-lvl/lz covers lzero ≤ _.
+  // Both fire at any nat offset (no >= 0 premise needed).
+  if (n >= 0 && levelEq(a, b)) return atom("leq-lvl/self");
+  if (n >= 0 && a.kind === "zero") return atom("leq-lvl/lz");
   // Deterministic LHS rewrites: imax-elimination then succ-on-left.
   if (a.kind === "imax") {
     const rw = imaxRewriteL(a.l, a.r);
@@ -564,11 +575,14 @@ function proveMleq(a: Level, b: Level, n: number, depth = 0): Fmt | null {
       if (p) return app(atom(rw.ctor), p);
     }
   }
-  if (a.kind === "succ") {
+  if (a.kind === "succ" && n > 0) {
     const p = proveMleq(a.arg, b, n - 1, depth + 1);
-    if (p) return app(atom("mleq/sL"), p);
+    if (p) return app(atom("leq-lvl/sL"), p);
   }
-  // Deterministic RHS rewrites: imax-elimination then succ-on-right.
+  // Deterministic RHS rewrites: imax-elimination (only Ri/Rm, see comment
+  // on imaxRewriteR) then succ-on-right (the "tight" form — premise has
+  // offset n+1, conclusion has offset n; absorbs one lsucc from b into
+  // the offset).
   if (b.kind === "imax") {
     const rw = imaxRewriteR(b.l, b.r);
     if (rw) {
@@ -578,24 +592,26 @@ function proveMleq(a: Level, b: Level, n: number, depth = 0): Fmt | null {
   }
   if (b.kind === "succ") {
     const p = proveMleq(a, b.arg, n + 1, depth + 1);
-    if (p) return app(atom("mleq/sR"), p);
+    if (p) return app(atom("leq-lvl/sR"), p);
   }
   // Branching: decompose an LHS max (both halves), or pick an RHS max disjunct.
   if (a.kind === "max") {
     const l = proveMleq(a.l, b, n, depth + 1);
     if (l) {
       const r = proveMleq(a.r, b, n, depth + 1);
-      if (r) return app(atom("mleq/maxL"), l, r);
+      // leq-lvl/maxL source: `<- leq-lvl L1 L N <- leq-lvl L2 L N`.
+      // Left-assoc reverses: r (L2-proof) FIRST, then l (L1-proof).
+      if (r) return app(atom("leq-lvl/maxL"), r, l);
     }
   }
   if (b.kind === "max") {
     const l = proveMleq(a, b.l, n, depth + 1);
-    if (l) return app(atom("mleq/maxR-l"), l);
+    if (l) return app(atom("leq-lvl/maxR1"), l);
     const r = proveMleq(a, b.r, n, depth + 1);
-    if (r) return app(atom("mleq/maxR-r"), r);
+    if (r) return app(atom("leq-lvl/maxR2"), r);
   }
   // Last resort: eliminate a universe variable blocking as an imax second-arg
-  // (the thesis' 14th rule).  Case-split it via `mleq/var-elim` (see tcb.elf).
+  // (the thesis' 14th rule).  Case-split it via `leq-lvl/split` (levels.elf).
   const i = findImaxBlockingIndex(a) ?? findImaxBlockingIndex(b);
   if (i !== null) {
     const ve = proveVarElim(a, b, n, i, depth);
@@ -651,23 +667,12 @@ function substLevel(l: Level, i: number, mode: "zero" | "succ"): Level {
   }
 }
 
-// lidx-eq i i  (i nested lidx-eq/s around lidx-eq/z).
-function buildLidxEq(i: number): Fmt {
-  let f = atom("lidx-eq/z");
-  for (let k = 0; k < i; k++) f = app(atom("lidx-eq/s"), f);
-  return f;
-}
-
-// lidx-neq i j  for i ≠ j.
-function buildLidxNeq(i: number, j: number): Fmt {
-  if (i === 0) return atom("lidx-neq/zs"); // j > 0
-  if (j === 0) return atom("lidx-neq/sz"); // i > 0
-  return app(atom("lidx-neq/ss"), buildLidxNeq(i - 1, j - 1));
-}
-
-// lvl-subst proof for index `i` over `l` (V is implicit, reconstructed by the
-// var-elim rule's type; the proof shape is the same for the zero/succ branches).
-// null if a parameter has no known index (cannot build the substitution proof).
+// `lvl-subst V I L L'` proof for substituting at index `i` over `l`.  The new
+// (levels.elf) rule for the variable case is unified: `lvl-subst/var`
+// consumes `ord-nat I J O` + `if-eq-lvl O V (lvar J) L`.  Both are
+// %total/%mode-d functional families, so we emit `_ _` and let Twelf
+// reconstruct the witnesses from the conclusion's structure.
+// `null` if a parameter has no known index.
 function buildLvlSubst(l: Level, i: number): Fmt | null {
   switch (l.kind) {
     case "zero":
@@ -679,45 +684,60 @@ function buildLvlSubst(l: Level, i: number): Fmt | null {
     case "max": {
       const lp = buildLvlSubst(l.l, i);
       const rp = lp && buildLvlSubst(l.r, i);
-      return lp && rp && app(atom("lvl-subst/max"), lp, rp);
+      // <- L1 sub <- L2 sub → arg order is L2 first, then L1.
+      return lp && rp && app(atom("lvl-subst/max"), rp, lp);
     }
     case "imax": {
       const lp = buildLvlSubst(l.l, i);
       const rp = lp && buildLvlSubst(l.r, i);
-      return lp && rp && app(atom("lvl-subst/imax"), lp, rp);
+      return lp && rp && app(atom("lvl-subst/imax"), rp, lp);
     }
     case "param": {
       const j = paramIndex(l.name);
       if (j === null) return null;
-      return j === i
-        ? app(atom("lvl-subst/var-eq"), buildLidxEq(i))
-        : app(atom("lvl-subst/var-neq"), buildLidxNeq(i, j));
+      // `lvl-subst/var` source: `<- ord-nat I J O <- if-eq-lvl O V (lvar J) L`.
+      // Left-assoc reverses: if-eq-lvl FIRST, then ord-nat.  Both anonymous —
+      // Twelf reconstructs from the typed context.
+      return app(atom("lvl-subst/var"), atom("_"), atom("_"));
     }
   }
 }
 
-// Prove `mleq a b n` by eliminating the universe variable at index `i`:
+// Prove `leq-lvl a b n` by eliminating the universe variable at index `i`:
 // it suffices to prove the goal with that variable set to 0 and to S(itself).
 function proveVarElim(a: Level, b: Level, n: number, i: number, depth: number): Fmt | null {
-  const aSub = buildLvlSubst(a, i);
-  const bSub = buildLvlSubst(b, i);
-  if (!aSub || !bSub) return null;
+  const aSubZ = buildLvlSubst(a, i);
+  const bSubZ = buildLvlSubst(b, i);
+  if (!aSubZ || !bSubZ) return null;
+  const aSubS = buildLvlSubst(a, i);
+  const bSubS = buildLvlSubst(b, i);
+  if (!aSubS || !bSubS) return null;
   const p0 = proveMleq(substLevel(a, i, "zero"), substLevel(b, i, "zero"), n, depth + 1);
   if (!p0) return null;
   const p1 = proveMleq(substLevel(a, i, "succ"), substLevel(b, i, "succ"), n, depth + 1);
   if (!p1) return null;
-  // The two lvl-subst derivations are reused: the proof shape is independent of
-  // the substituted value (lzero vs lsucc); Twelf reconstructs V per branch.
-  return app(atom("mleq/var-elim"), lidxFmt(i), aSub, bSub, p0, aSub, bSub, p1);
+  // `leq-lvl/split` source-order premises (after the {I} binder):
+  //   1. lvl-subst lzero I A Az
+  //   2. lvl-subst lzero I B Bz
+  //   3. leq-lvl Az Bz N
+  //   4. lvl-subst (lsucc (lvar I)) I A As
+  //   5. lvl-subst (lsucc (lvar I)) I B Bs
+  //   6. leq-lvl As Bs N
+  // `<-` is left-associative, so explicit-arg order is the REVERSE of
+  // source order: succ-branch leq first, then succ B-sub, succ A-sub, then
+  // zero-branch leq, zero B-sub, zero A-sub.
+  return app(atom("leq-lvl/split"), lidxFmt(i), p1, bSubS, aSubS, p0, bSubZ, aSubZ);
 }
 
 export function proveLvlEq(a: Level, b: Level): Fmt | null {
-  if (levelEq(a, b)) return atom("lvl-eq/refl"); // fast path, keeps proof terms small
+  if (levelEq(a, b)) return atom("eq-lvl/refl"); // fast path, keeps proof terms small
   const le = proveMleq(a, b, 0);
   if (le === null) return null;
   const ge = proveMleq(b, a, 0);
   if (ge === null) return null;
-  return app(atom("lvl-eq/le"), le, ge);
+  // eq-lvl/le source: `<- leq-lvl L L' z <- leq-lvl L' L z`.  Left-assoc
+  // reverses: ge (L' ≤ L) first, then le (L ≤ L').
+  return app(atom("eq-lvl/le"), ge, le);
 }
 
 // ---------------------------------------------------------------------------

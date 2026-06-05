@@ -18,10 +18,7 @@
 %%% correctly SKIP-declined; the `imax` disguise slips past.
 %% inductive Foo
 %%% HOLE
-Foo/type-wf-sort : lvl.
-
-%%% HOLE
-Foo/type-wf : of (esort (lsucc lzero)) (esort Foo/type-wf-sort).
+Foo/type-wf : of (esort (lsucc lzero)) (esort _).
 
 %%% HOLE
 Foo/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
@@ -34,17 +31,14 @@ Foo/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Foo/cnd : cnames-distinct (ccons "Foo.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
-Foo/name : name "Foo" (is-decl (esort (lsucc lzero)) (indt (ccons "Foo.mk" cnil) liz)).
+Foo/name : name "Foo" (is-decl (esort (lsucc lzero)) (indt (ccons "Foo.mk" cnil) z)).
 
-Foo/decl : declared "Foo" (esort (lsucc lzero)) (indt (ccons "Foo.mk" cnil) liz)
+Foo/decl : declared "Foo" (esort (lsucc lzero)) (indt (ccons "Foo.mk" cnil) z)
    = declared/ok-indt Foo/name Foo/rec-name Foo/cnd (dkind-ok/indt Foo/type-wf Foo/ends-in-sort).
 
 %% ctor Foo.mk (of Foo)
 %%% HOLE
-Foo_mk/type-wf-sort : lvl.
-
-%%% HOLE
-Foo_mk/type-wf : of (eforall (esort (limax (lsucc lzero) (lsucc lzero))) ([x] (econst "Foo" lnil))) (esort Foo_mk/type-wf-sort).
+Foo_mk/type-wf : of (eforall (esort (limax (lsucc lzero) (lsucc lzero))) ([x] (econst "Foo" lnil))) (esort _).
 
 %%% HOLE
 Foo_mk/positivity : ctor-positive "Foo" lnil (eforall (esort (limax (lsucc lzero) (lsucc lzero))) ([x] (econst "Foo" lnil))).
@@ -55,9 +49,9 @@ Foo_mk/cmem : cmem "Foo.mk" (ccons "Foo.mk" cnil)
 %%% HOLE: Foo_mk/fuo
 Foo_mk/fuo : field-universes-ok (eforall (esort (limax (lsucc lzero) (lsucc lzero))) ([x] (econst "Foo" lnil))) (lsucc lzero).
 
-Foo_mk/name : name "Foo.mk" (is-decl (eforall (esort (limax (lsucc lzero) (lsucc lzero))) ([x] (econst "Foo" lnil))) (ctor "Foo" liz)).
+Foo_mk/name : name "Foo.mk" (is-decl (eforall (esort (limax (lsucc lzero) (lsucc lzero))) ([x] (econst "Foo" lnil))) (ctor "Foo" z)).
 
-Foo_mk/decl : declared "Foo.mk" (eforall (esort (limax (lsucc lzero) (lsucc lzero))) ([x] (econst "Foo" lnil))) (ctor "Foo" liz)
+Foo_mk/decl : declared "Foo.mk" (eforall (esort (limax (lsucc lzero) (lsucc lzero))) ([x] (econst "Foo" lnil))) (ctor "Foo" z)
    = declared/ok-ctor Foo_mk/name Foo/name Foo_mk/cmem Foo/eisl Foo_mk/fuo (dkind-ok/ctor Foo_mk/type-wf Foo_mk/positivity).
 
 %% recursor Foo.rec (TCB-derived; informational only)

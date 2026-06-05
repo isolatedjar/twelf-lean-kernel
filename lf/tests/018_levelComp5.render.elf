@@ -2,15 +2,12 @@
 %%% Some level computation
 %% def levelComp5
 %%% HOLE
-levelComp5/type-wf-sort : lvl.
+levelComp5/type-wf : of (esort (lsucc (lvar z))) (esort _).
 
 %%% HOLE
-levelComp5/type-wf : of (esort (lsucc (lvar liz))) (esort levelComp5/type-wf-sort).
+levelComp5/value-typed : of (esort (lvar z)) (esort (lsucc (lvar z))).
 
-%%% HOLE
-levelComp5/value-typed : of (esort (lvar liz)) (esort (lsucc (lvar liz))).
+levelComp5/name : name "levelComp5" (is-decl (esort (lsucc (lvar z))) (defn (esort (lvar z)))).
 
-levelComp5/name : name "levelComp5" (is-decl (esort (lsucc (lvar liz))) (defn (esort (lvar liz)))).
-
-levelComp5/decl : declared "levelComp5" (esort (lsucc (lvar liz))) (defn (esort (lvar liz)))
+levelComp5/decl : declared "levelComp5" (esort (lsucc (lvar z))) (defn (esort (lvar z)))
    = declared/ok levelComp5/name dkind-non-inductive/defn (dkind-ok/defn levelComp5/type-wf levelComp5/value-typed).

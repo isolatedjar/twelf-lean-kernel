@@ -1,10 +1,7 @@
 %%% Expected outcome: reject
 %%% A definition and a recursor with the same name
 %% def dup_rec_def.rec
-dup_rec_def_rec/type-wf-sort : lvl
-   = (lsucc (lsucc lzero)).
-
-dup_rec_def_rec/type-wf : of (esort (lsucc lzero)) (esort dup_rec_def_rec/type-wf-sort)
+dup_rec_def_rec/type-wf : of (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = defeq/sort-refl.
 
 dup_rec_def_rec/value-typed : of (esort lzero) (esort (lsucc lzero))
@@ -16,10 +13,7 @@ dup_rec_def_rec/decl : declared "dup_rec_def.rec" (esort (lsucc lzero)) (defn (e
    = declared/ok dup_rec_def_rec/name dkind-non-inductive/defn (dkind-ok/defn dup_rec_def_rec/type-wf dup_rec_def_rec/value-typed).
 
 %% inductive dup_rec_def
-dup_rec_def/type-wf-sort : lvl
-   = (lsucc (lsucc lzero)).
-
-dup_rec_def/type-wf : of (esort (lsucc lzero)) (esort dup_rec_def/type-wf-sort)
+dup_rec_def/type-wf : of (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = defeq/sort-refl.
 
 dup_rec_def/ends-in-sort : ends-in-sort (esort (lsucc lzero))
@@ -33,19 +27,16 @@ dup_rec_def/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 dup_rec_def/cnd : cnames-distinct (ccons "dup_rec_def.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
-dup_rec_def/name : name "dup_rec_def" (is-decl (esort (lsucc lzero)) (indt (ccons "dup_rec_def.mk" cnil) liz)).
+dup_rec_def/name : name "dup_rec_def" (is-decl (esort (lsucc lzero)) (indt (ccons "dup_rec_def.mk" cnil) z)).
 
-dup_rec_def/decl : declared "dup_rec_def" (esort (lsucc lzero)) (indt (ccons "dup_rec_def.mk" cnil) liz)
+dup_rec_def/decl : declared "dup_rec_def" (esort (lsucc lzero)) (indt (ccons "dup_rec_def.mk" cnil) z)
    = declared/ok-indt dup_rec_def/name dup_rec_def/rec-name dup_rec_def/cnd (dkind-ok/indt dup_rec_def/type-wf dup_rec_def/ends-in-sort).
 
 %% ctor dup_rec_def.mk (of dup_rec_def)
-dup_rec_def_mk/type-wf-sort : lvl
-   = (lsucc lzero).
-
-dup_rec_def_mk/type-wf : of (econst "dup_rec_def" lnil) (esort dup_rec_def_mk/type-wf-sort)
+dup_rec_def_mk/type-wf : of (econst "dup_rec_def" lnil) (esort (lsucc lzero))
    = (defeq/const
        dup_rec_def/decl
-       (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
+       (inst-expr/sort (inst-lvl/succ inst-lvl/zero))).
 
 dup_rec_def_mk/positivity : ctor-positive "dup_rec_def" lnil (econst "dup_rec_def" lnil)
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
@@ -56,13 +47,13 @@ dup_rec_def_mk/cmem : cmem "dup_rec_def.mk" (ccons "dup_rec_def.mk" cnil)
 dup_rec_def_mk/fuo : field-universes-ok (econst "dup_rec_def" lnil) (lsucc lzero)
    = (field-universes-ok/done not-forall/const).
 
-dup_rec_def_mk/name : name "dup_rec_def.mk" (is-decl (econst "dup_rec_def" lnil) (ctor "dup_rec_def" liz)).
+dup_rec_def_mk/name : name "dup_rec_def.mk" (is-decl (econst "dup_rec_def" lnil) (ctor "dup_rec_def" z)).
 
-dup_rec_def_mk/decl : declared "dup_rec_def.mk" (econst "dup_rec_def" lnil) (ctor "dup_rec_def" liz)
+dup_rec_def_mk/decl : declared "dup_rec_def.mk" (econst "dup_rec_def" lnil) (ctor "dup_rec_def" z)
    = declared/ok-ctor dup_rec_def_mk/name dup_rec_def/name dup_rec_def_mk/cmem dup_rec_def/eisl dup_rec_def_mk/fuo (dkind-ok/ctor dup_rec_def_mk/type-wf dup_rec_def_mk/positivity).
 
 %% recursor dup_rec_def.rec (TCB-derived; informational only)
 %%   level params: u
-%%   type:   (eforall (eforall (econst "dup_rec_def" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_rec_def.mk" lnil)) ([y] (eforall (econst "dup_rec_def" lnil) ([z] (eapp x z)))))))
+%%   type:   (eforall (eforall (econst "dup_rec_def" lnil) ([x] (esort (lvar z)))) ([x] (eforall (eapp x (econst "dup_rec_def.mk" lnil)) ([y] (eforall (econst "dup_rec_def" lnil) ([w] (eapp x w)))))))
 %%   rules:
-%%     dup_rec_def.rec … dup_rec_def.mk … = (elam (eforall (econst "dup_rec_def" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "dup_rec_def.mk" lnil)) ([y] y))))   (0 fields)
+%%     dup_rec_def.rec … dup_rec_def.mk … = (elam (eforall (econst "dup_rec_def" lnil) ([x] (esort (lvar z)))) ([x] (elam (eapp x (econst "dup_rec_def.mk" lnil)) ([y] y))))   (0 fields)

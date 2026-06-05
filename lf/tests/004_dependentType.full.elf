@@ -1,18 +1,12 @@
 %%% Expected outcome: accept
 %%% Dependent type (forall)
-%solve nonneg_0 : 0 >= 0.
-
 %% def dependentType
-dependentType/type-wf-sort : lvl
-   = (lsucc lzero).
-
-dependentType/type-wf : of (esort lzero) (esort dependentType/type-wf-sort)
+dependentType/type-wf : of (esort lzero) (esort (lsucc lzero))
    = defeq/sort-refl.
 
 dependentType/value-typed : of (eforall (esort lzero) ([x] x)) (esort lzero)
    = (defeq/conv
-       (defeq/sort-eq
-         (lvl-eq/le (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/lz nonneg_0)))
+       (defeq/sort-eq (eq-lvl/le leq-lvl/lz (leq-lvl/imaxLz leq-lvl/self)))
        (defeq/forall defeq/sort-refl ([x] ([h] h)))).
 
 dependentType/name : name "dependentType" (is-decl (esort lzero) (defn (eforall (esort lzero) ([x] x)))).

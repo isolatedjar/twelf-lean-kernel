@@ -39,7 +39,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LF_DIR="$REPO_ROOT/lf"
 TESTS_DIR="$LF_DIR/tests"
 
-for f in tcb.elf freeze.elf derived.elf final-checks.elf; do
+for f in nat.elf levels.elf tcb.elf freeze.elf derived.elf final-checks.elf; do
     if [[ ! -f "$LF_DIR/$f" ]]; then
         echo "Error: $LF_DIR/$f is missing." >&2
         exit 1
@@ -70,7 +70,9 @@ run_twelf() {
 
 # .render.elf without freeze or final-checks.
 load_render_nofreeze() {
-    run_twelf "loadFile tcb.elf
+    run_twelf "loadFile nat.elf
+loadFile levels.elf
+loadFile tcb.elf
 loadFile derived.elf
 loadFile $1
 OS.exit"
@@ -78,7 +80,9 @@ OS.exit"
 
 # .full.elf through the full pipeline (freeze + final-checks).
 load_full_freeze() {
-    run_twelf "loadFile tcb.elf
+    run_twelf "loadFile nat.elf
+loadFile levels.elf
+loadFile tcb.elf
 set unsafe true
 loadFile freeze.elf
 set unsafe false
@@ -90,7 +94,9 @@ OS.exit"
 
 # .full.elf with the freeze step skipped (final-checks still loaded).
 load_full_nofreeze() {
-    run_twelf "loadFile tcb.elf
+    run_twelf "loadFile nat.elf
+loadFile levels.elf
+loadFile tcb.elf
 loadFile derived.elf
 loadFile $1
 loadFile final-checks.elf

@@ -2,29 +2,21 @@
 %%% inequality.
 %%%
 %%% This hand-written ADVERSARIAL development attempts to prove `succ u ≤ u`
-%%% (i.e. `mleq (lsucc (lvar liz)) (lvar liz) 0`), which is false — at the
-%%% valuation u = 0 it claims 1 ≤ 0.  The attack uses `mleq/var-elim` exactly
-%%% as the honest prover would: it correctly substitutes the variable, so the
-%%% two `lvl-subst` derivations type-check.  The obstruction is the zero branch
-%%% `mleq (lsucc lzero) lzero 0`: its only applicable rule is `mleq/sL`, which
-%%% demands a subproof of `mleq lzero lzero (0 - 1)`, whose `mleq/lz` / `mleq/self`
-%%% leaf needs a witness of `(0 - 1) >= 0` — unsatisfiable in the integer
-%%% constraint domain.  So no honest offset closes the zero branch, and the
-%%% `%solve` below (the witness the branch would require) fails.
+%%% (i.e. `leq-lvl (lsucc (lvar z)) (lvar z) z`), which is false — at the
+%%% valuation u = 0 it claims 1 ≤ 0.  The attack uses `leq-lvl/split` exactly
+%%% as the honest prover would: substitution computes the two branches.  The
+%%% obstruction is the zero branch `leq-lvl (lsucc lzero) lzero z`: no rule
+%%% derives this — `leq-lvl/sL` needs the offset to be of the form `(s N)`,
+%%% but here it's `z` (nat zero, with no predecessor), so the rule isn't
+%%% applicable.  No subderivation closes the zero branch.
 %%%
-%%% Expected outcome: ABORT.  (Run via scripts/check-soundness.sh.)  This locks
-%%% in that `mleq/var-elim` + the integer domain reject the canonical false
-%%% inequality rather than admitting it.
+%%% Expected outcome: ABORT.  (Run via scripts/check-soundness.sh.)  This
+%%% locks in that `leq-lvl/split` + the structural nat offset reject the
+%%% canonical false inequality rather than admitting it.
 
-%solve zero-branch-witness : (0 - 1) >= 0.
-
-%%% The shape the attack would take if the witness above existed (it does not):
-%%%
-%%%   attack : mleq (lsucc (lvar liz)) (lvar liz) 0
-%%%      = mleq/var-elim liz
-%%%          (lvl-subst/succ (lvl-subst/var-eq lidx-eq/z))   %% (succ u)[u := 0]   = succ 0
-%%%          (lvl-subst/var-eq lidx-eq/z)                    %% u[u := 0]          = 0
-%%%          (mleq/sL (mleq/lz zero-branch-witness))         %% mleq (lsucc 0) 0 0 — needs -1 >= 0
-%%%          (lvl-subst/succ (lvl-subst/var-eq lidx-eq/z))   %% (succ u)[u := S u] = S (S u)
-%%%          (lvl-subst/var-eq lidx-eq/z)                    %% u[u := S u]        = S u
-%%%          <succ branch>.
+%%% Bare obligation on the closed `leq-lvl` family — frozen by freeze.elf,
+%%% so leaving it without a body is rejected by Twelf's freeze check.  We
+%%% don't even bother sketching a "would-be" derivation: with `nat` offsets,
+%%% the impossible step is now a structural unification failure, not an
+%%% arithmetic-domain failure, so there's no `%solve`-able stub to point at.
+attack : leq-lvl (lsucc (lvar z)) (lvar z) z.

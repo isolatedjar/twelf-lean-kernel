@@ -13,10 +13,7 @@
 %%% of type `Prop`. A correct kernel notices the discrepancy and rejects.
 %% inductive BogusRecursor
 %%% HOLE
-BogusRecursor/type-wf-sort : lvl.
-
-%%% HOLE
-BogusRecursor/type-wf : of (esort (lsucc lzero)) (esort BogusRecursor/type-wf-sort).
+BogusRecursor/type-wf : of (esort (lsucc lzero)) (esort _).
 
 %%% HOLE
 BogusRecursor/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
@@ -29,17 +26,14 @@ BogusRecursor/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 BogusRecursor/cnd : cnames-distinct (ccons "BogusRecursor.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
-BogusRecursor/name : name "BogusRecursor" (is-decl (esort (lsucc lzero)) (indt (ccons "BogusRecursor.mk" cnil) liz)).
+BogusRecursor/name : name "BogusRecursor" (is-decl (esort (lsucc lzero)) (indt (ccons "BogusRecursor.mk" cnil) z)).
 
-BogusRecursor/decl : declared "BogusRecursor" (esort (lsucc lzero)) (indt (ccons "BogusRecursor.mk" cnil) liz)
+BogusRecursor/decl : declared "BogusRecursor" (esort (lsucc lzero)) (indt (ccons "BogusRecursor.mk" cnil) z)
    = declared/ok-indt BogusRecursor/name BogusRecursor/rec-name BogusRecursor/cnd (dkind-ok/indt BogusRecursor/type-wf BogusRecursor/ends-in-sort).
 
 %% ctor BogusRecursor.mk (of BogusRecursor)
 %%% HOLE
-BogusRecursor_mk/type-wf-sort : lvl.
-
-%%% HOLE
-BogusRecursor_mk/type-wf : of (econst "BogusRecursor" lnil) (esort BogusRecursor_mk/type-wf-sort).
+BogusRecursor_mk/type-wf : of (econst "BogusRecursor" lnil) (esort _).
 
 %%% HOLE
 BogusRecursor_mk/positivity : ctor-positive "BogusRecursor" lnil (econst "BogusRecursor" lnil).
@@ -50,9 +44,9 @@ BogusRecursor_mk/cmem : cmem "BogusRecursor.mk" (ccons "BogusRecursor.mk" cnil)
 %%% HOLE: BogusRecursor_mk/fuo
 BogusRecursor_mk/fuo : field-universes-ok (econst "BogusRecursor" lnil) (lsucc lzero).
 
-BogusRecursor_mk/name : name "BogusRecursor.mk" (is-decl (econst "BogusRecursor" lnil) (ctor "BogusRecursor" liz)).
+BogusRecursor_mk/name : name "BogusRecursor.mk" (is-decl (econst "BogusRecursor" lnil) (ctor "BogusRecursor" z)).
 
-BogusRecursor_mk/decl : declared "BogusRecursor.mk" (econst "BogusRecursor" lnil) (ctor "BogusRecursor" liz)
+BogusRecursor_mk/decl : declared "BogusRecursor.mk" (econst "BogusRecursor" lnil) (ctor "BogusRecursor" z)
    = declared/ok-ctor BogusRecursor_mk/name BogusRecursor/name BogusRecursor_mk/cmem BogusRecursor/eisl BogusRecursor_mk/fuo (dkind-ok/ctor BogusRecursor_mk/type-wf BogusRecursor_mk/positivity).
 
 %% recursor BogusRecursor.rec (TCB-derived; informational only)

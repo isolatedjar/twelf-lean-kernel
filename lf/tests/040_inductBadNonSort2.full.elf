@@ -1,10 +1,7 @@
 %%% Expected outcome: reject
 %%% Another inductive type with a non-sort type
 %% axiom aType
-aType/type-wf-sort : lvl
-   = (lsucc (lsucc lzero)).
-
-aType/type-wf : of (esort (lsucc lzero)) (esort aType/type-wf-sort)
+aType/type-wf : of (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = defeq/sort-refl.
 
 aType/name : name "aType" (is-decl (esort (lsucc lzero)) ax).
@@ -13,11 +10,8 @@ aType/decl : declared "aType" (esort (lsucc lzero)) ax
    = declared/ok aType/name dkind-non-inductive/ax (dkind-ok/ax aType/type-wf).
 
 %% inductive inductBadNonSort2
-inductBadNonSort2/type-wf-sort : lvl
-   = (lsucc lzero).
-
-inductBadNonSort2/type-wf : of (econst "aType" lnil) (esort inductBadNonSort2/type-wf-sort)
-   = (defeq/const aType/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
+inductBadNonSort2/type-wf : of (econst "aType" lnil) (esort (lsucc lzero))
+   = (defeq/const aType/decl (inst-expr/sort (inst-lvl/succ inst-lvl/zero))).
 
 %%% HOLE
 inductBadNonSort2/ends-in-sort : ends-in-sort (econst "aType" lnil).
@@ -27,7 +21,7 @@ inductBadNonSort2/rec-name : name "inductBadNonSort2.rec" (is-rec-for "inductBad
 inductBadNonSort2/cnd : cnames-distinct cnil
    = cnames-distinct/nil.
 
-inductBadNonSort2/name : name "inductBadNonSort2" (is-decl (econst "aType" lnil) (indt cnil liz)).
+inductBadNonSort2/name : name "inductBadNonSort2" (is-decl (econst "aType" lnil) (indt cnil z)).
 
-inductBadNonSort2/decl : declared "inductBadNonSort2" (econst "aType" lnil) (indt cnil liz)
+inductBadNonSort2/decl : declared "inductBadNonSort2" (econst "aType" lnil) (indt cnil z)
    = declared/ok-indt inductBadNonSort2/name inductBadNonSort2/rec-name inductBadNonSort2/cnd (dkind-ok/indt inductBadNonSort2/type-wf inductBadNonSort2/ends-in-sort).

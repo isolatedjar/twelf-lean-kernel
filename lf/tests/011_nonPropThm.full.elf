@@ -1,15 +1,12 @@
 %%% Expected outcome: reject
 %%% The type of a theorem has to be a proposition
-%solve nonneg_0 : 0 >= 0.
-
 %% thm nonPropThm
 %%% HOLE
 nonPropThm/type-wf : of (esort lzero) (esort lzero).
 
 nonPropThm/value-typed : of (eforall (esort lzero) ([x] x)) (esort lzero)
    = (defeq/conv
-       (defeq/sort-eq
-         (lvl-eq/le (mleq/imax-lzL (mleq/self nonneg_0)) (mleq/lz nonneg_0)))
+       (defeq/sort-eq (eq-lvl/le leq-lvl/lz (leq-lvl/imaxLz leq-lvl/self)))
        (defeq/forall defeq/sort-refl ([x] ([h] h)))).
 
 nonPropThm/name : name "nonPropThm" (is-decl (esort lzero) (thm (eforall (esort lzero) ([x] x)))).

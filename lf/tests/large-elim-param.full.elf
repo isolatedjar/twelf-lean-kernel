@@ -15,10 +15,7 @@
 sneq/0 : string-neq "MyBool.tt" "MyBool.ff".
 
 %% inductive False
-False/type-wf-sort : lvl
-   = (lsucc lzero).
-
-False/type-wf : of (esort lzero) (esort False/type-wf-sort)
+False/type-wf : of (esort lzero) (esort (lsucc lzero))
    = defeq/sort-refl.
 
 False/ends-in-sort : ends-in-sort (esort lzero)
@@ -32,16 +29,13 @@ False/eisl : ends-in-sort-with-level (esort lzero) lzero
 False/cnd : cnames-distinct cnil
    = cnames-distinct/nil.
 
-False/name : name "False" (is-decl (esort lzero) (indt cnil liz)).
+False/name : name "False" (is-decl (esort lzero) (indt cnil z)).
 
-False/decl : declared "False" (esort lzero) (indt cnil liz)
+False/decl : declared "False" (esort lzero) (indt cnil z)
    = declared/ok-indt False/name False/rec-name False/cnd (dkind-ok/indt False/type-wf False/ends-in-sort).
 
 %% inductive True
-True/type-wf-sort : lvl
-   = (lsucc lzero).
-
-True/type-wf : of (esort lzero) (esort True/type-wf-sort)
+True/type-wf : of (esort lzero) (esort (lsucc lzero))
    = defeq/sort-refl.
 
 True/ends-in-sort : ends-in-sort (esort lzero)
@@ -55,17 +49,14 @@ True/eisl : ends-in-sort-with-level (esort lzero) lzero
 True/cnd : cnames-distinct (ccons "True.intro" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
-True/name : name "True" (is-decl (esort lzero) (indt (ccons "True.intro" cnil) liz)).
+True/name : name "True" (is-decl (esort lzero) (indt (ccons "True.intro" cnil) z)).
 
-True/decl : declared "True" (esort lzero) (indt (ccons "True.intro" cnil) liz)
+True/decl : declared "True" (esort lzero) (indt (ccons "True.intro" cnil) z)
    = declared/ok-indt True/name True/rec-name True/cnd (dkind-ok/indt True/type-wf True/ends-in-sort).
 
 %% ctor True.intro (of True)
-True_intro/type-wf-sort : lvl
-   = lzero.
-
-True_intro/type-wf : of (econst "True" lnil) (esort True_intro/type-wf-sort)
-   = (defeq/const True/decl (inst-expr/sort lvl-inst/zero)).
+True_intro/type-wf : of (econst "True" lnil) (esort lzero)
+   = (defeq/const True/decl (inst-expr/sort inst-lvl/zero)).
 
 True_intro/positivity : ctor-positive "True" lnil (econst "True" lnil)
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
@@ -76,24 +67,21 @@ True_intro/cmem : cmem "True.intro" (ccons "True.intro" cnil)
 True_intro/fuo : field-universes-ok (econst "True" lnil) lzero
    = (field-universes-ok/done not-forall/const).
 
-True_intro/name : name "True.intro" (is-decl (econst "True" lnil) (ctor "True" liz)).
+True_intro/name : name "True.intro" (is-decl (econst "True" lnil) (ctor "True" z)).
 
-True_intro/decl : declared "True.intro" (econst "True" lnil) (ctor "True" liz)
+True_intro/decl : declared "True.intro" (econst "True" lnil) (ctor "True" z)
    = declared/ok-ctor True_intro/name True/name True_intro/cmem True/eisl True_intro/fuo (dkind-ok/ctor True_intro/type-wf True_intro/positivity).
 
 %% inductive MyBool
-MyBool/type-wf-sort : lvl
-   = (lsucc (lvar liz)).
-
-MyBool/type-wf : of (esort (lvar liz)) (esort MyBool/type-wf-sort)
+MyBool/type-wf : of (esort (lvar z)) (esort (lsucc (lvar z)))
    = defeq/sort-refl.
 
-MyBool/ends-in-sort : ends-in-sort (esort (lvar liz))
+MyBool/ends-in-sort : ends-in-sort (esort (lvar z))
    = ends-in-sort/sort.
 
 MyBool/rec-name : name "MyBool.rec" (is-rec-for "MyBool").
 
-MyBool/eisl : ends-in-sort-with-level (esort (lvar liz)) (lvar liz)
+MyBool/eisl : ends-in-sort-with-level (esort (lvar z)) (lvar z)
    = ends-in-sort-with-level/sort.
 
 MyBool/cnd : cnames-distinct (ccons "MyBool.tt" (ccons "MyBool.ff" cnil))
@@ -101,63 +89,54 @@ MyBool/cnd : cnames-distinct (ccons "MyBool.tt" (ccons "MyBool.ff" cnil))
        (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil)
        (all-string-neq/cons sneq/0 all-string-neq/nil)).
 
-MyBool/name : name "MyBool" (is-decl (esort (lvar liz)) (indt (ccons "MyBool.tt" (ccons "MyBool.ff" cnil)) liz)).
+MyBool/name : name "MyBool" (is-decl (esort (lvar z)) (indt (ccons "MyBool.tt" (ccons "MyBool.ff" cnil)) z)).
 
-MyBool/decl : declared "MyBool" (esort (lvar liz)) (indt (ccons "MyBool.tt" (ccons "MyBool.ff" cnil)) liz)
+MyBool/decl : declared "MyBool" (esort (lvar z)) (indt (ccons "MyBool.tt" (ccons "MyBool.ff" cnil)) z)
    = declared/ok-indt MyBool/name MyBool/rec-name MyBool/cnd (dkind-ok/indt MyBool/type-wf MyBool/ends-in-sort).
 
 %% ctor MyBool.tt (of MyBool)
-MyBool_tt/type-wf-sort : lvl
-   = (lvar liz).
+MyBool_tt/type-wf : of (econst "MyBool" (lcons (lvar z) lnil)) (esort (lvar z))
+   = (defeq/const MyBool/decl (inst-expr/sort (inst-lvl/var nth-lvl/z))).
 
-MyBool_tt/type-wf : of (econst "MyBool" (lcons (lvar liz) lnil)) (esort MyBool_tt/type-wf-sort)
-   = (defeq/const MyBool/decl (inst-expr/sort (lvl-inst/var lvl-nth/zero))).
-
-MyBool_tt/positivity : ctor-positive "MyBool" (lcons (lvar liz) lnil) (econst "MyBool" (lcons (lvar liz) lnil))
+MyBool_tt/positivity : ctor-positive "MyBool" (lcons (lvar z) lnil) (econst "MyBool" (lcons (lvar z) lnil))
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
 MyBool_tt/cmem : cmem "MyBool.tt" (ccons "MyBool.tt" (ccons "MyBool.ff" cnil))
    = cmem/here.
 
-MyBool_tt/fuo : field-universes-ok (econst "MyBool" (lcons (lvar liz) lnil)) (lvar liz)
+MyBool_tt/fuo : field-universes-ok (econst "MyBool" (lcons (lvar z) lnil)) (lvar z)
    = (field-universes-ok/done not-forall/const).
 
-MyBool_tt/name : name "MyBool.tt" (is-decl (econst "MyBool" (lcons (lvar liz) lnil)) (ctor "MyBool" liz)).
+MyBool_tt/name : name "MyBool.tt" (is-decl (econst "MyBool" (lcons (lvar z) lnil)) (ctor "MyBool" z)).
 
-MyBool_tt/decl : declared "MyBool.tt" (econst "MyBool" (lcons (lvar liz) lnil)) (ctor "MyBool" liz)
+MyBool_tt/decl : declared "MyBool.tt" (econst "MyBool" (lcons (lvar z) lnil)) (ctor "MyBool" z)
    = declared/ok-ctor MyBool_tt/name MyBool/name MyBool_tt/cmem MyBool/eisl MyBool_tt/fuo (dkind-ok/ctor MyBool_tt/type-wf MyBool_tt/positivity).
 
 %% ctor MyBool.ff (of MyBool)
-MyBool_ff/type-wf-sort : lvl
-   = (lvar liz).
+MyBool_ff/type-wf : of (econst "MyBool" (lcons (lvar z) lnil)) (esort (lvar z))
+   = (defeq/const MyBool/decl (inst-expr/sort (inst-lvl/var nth-lvl/z))).
 
-MyBool_ff/type-wf : of (econst "MyBool" (lcons (lvar liz) lnil)) (esort MyBool_ff/type-wf-sort)
-   = (defeq/const MyBool/decl (inst-expr/sort (lvl-inst/var lvl-nth/zero))).
-
-MyBool_ff/positivity : ctor-positive "MyBool" (lcons (lvar liz) lnil) (econst "MyBool" (lcons (lvar liz) lnil))
+MyBool_ff/positivity : ctor-positive "MyBool" (lcons (lvar z) lnil) (econst "MyBool" (lcons (lvar z) lnil))
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
 MyBool_ff/cmem : cmem "MyBool.ff" (ccons "MyBool.tt" (ccons "MyBool.ff" cnil))
    = (cmem/there cmem/here).
 
-MyBool_ff/fuo : field-universes-ok (econst "MyBool" (lcons (lvar liz) lnil)) (lvar liz)
+MyBool_ff/fuo : field-universes-ok (econst "MyBool" (lcons (lvar z) lnil)) (lvar z)
    = (field-universes-ok/done not-forall/const).
 
-MyBool_ff/name : name "MyBool.ff" (is-decl (econst "MyBool" (lcons (lvar liz) lnil)) (ctor "MyBool" (lis liz))).
+MyBool_ff/name : name "MyBool.ff" (is-decl (econst "MyBool" (lcons (lvar z) lnil)) (ctor "MyBool" (s z))).
 
-MyBool_ff/decl : declared "MyBool.ff" (econst "MyBool" (lcons (lvar liz) lnil)) (ctor "MyBool" (lis liz))
+MyBool_ff/decl : declared "MyBool.ff" (econst "MyBool" (lcons (lvar z) lnil)) (ctor "MyBool" (s z))
    = declared/ok-ctor MyBool_ff/name MyBool/name MyBool_ff/cmem MyBool/eisl MyBool_ff/fuo (dkind-ok/ctor MyBool_ff/type-wf MyBool_ff/positivity).
 
 %% def cast
-cast/type-wf-sort : lvl
-   = (limax (limax lzero (lsucc lzero)) (limax lzero lzero)).
-
 cast/type-wf : of
   (eforall (eforall (econst "MyBool" (lcons lzero lnil)) ([x] (esort lzero))) ([x] (eforall (eapp x (econst "MyBool.tt" (lcons lzero lnil))) ([y] (eapp x (econst "MyBool.ff" (lcons lzero lnil)))))))
-  (esort cast/type-wf-sort)
+  (esort (limax (limax lzero (lsucc lzero)) (limax lzero lzero)))
    = (defeq/forall
        (defeq/forall
-         (defeq/const MyBool/decl (inst-expr/sort (lvl-inst/var lvl-nth/zero)))
+         (defeq/const MyBool/decl (inst-expr/sort (inst-lvl/var nth-lvl/z)))
          ([x] ([h] defeq/sort-refl)))
        ([x]
          ([h]
@@ -167,7 +146,7 @@ cast/type-wf : of
                (defeq/const
                  MyBool_tt/decl
                  (inst-expr/const
-                   (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil))))
+                   (inst-lvls/cons inst-lvls/nil (inst-lvl/var nth-lvl/z)))))
              ([y]
                ([h1]
                  (defeq/app
@@ -175,9 +154,9 @@ cast/type-wf : of
                    (defeq/const
                      MyBool_ff/decl
                      (inst-expr/const
-                       (lvls-inst/cons
-                         (lvl-inst/var lvl-nth/zero)
-                         lvls-inst/nil)))))))))).
+                       (inst-lvls/cons
+                         inst-lvls/nil
+                         (inst-lvl/var nth-lvl/z))))))))))).
 
 %%% HOLE
 cast/value-typed : of
@@ -195,7 +174,7 @@ cast/decl : declared "cast"
 
 %% thm false_proof
 false_proof/type-wf : of (econst "False" lnil) (esort lzero)
-   = (defeq/const False/decl (inst-expr/sort lvl-inst/zero)).
+   = (defeq/const False/decl (inst-expr/sort inst-lvl/zero)).
 
 %%% HOLE
 false_proof/value-typed : of

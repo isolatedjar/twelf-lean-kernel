@@ -2,10 +2,7 @@
 %%% A constructor and a recursor with the same name
 %% inductive dup_ctor_rec
 %%% HOLE
-dup_ctor_rec/type-wf-sort : lvl.
-
-%%% HOLE
-dup_ctor_rec/type-wf : of (esort (lsucc lzero)) (esort dup_ctor_rec/type-wf-sort).
+dup_ctor_rec/type-wf : of (esort (lsucc lzero)) (esort _).
 
 %%% HOLE
 dup_ctor_rec/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
@@ -18,17 +15,14 @@ dup_ctor_rec/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 dup_ctor_rec/cnd : cnames-distinct (ccons "dup_ctor_rec.rec" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
-dup_ctor_rec/name : name "dup_ctor_rec" (is-decl (esort (lsucc lzero)) (indt (ccons "dup_ctor_rec.rec" cnil) liz)).
+dup_ctor_rec/name : name "dup_ctor_rec" (is-decl (esort (lsucc lzero)) (indt (ccons "dup_ctor_rec.rec" cnil) z)).
 
-dup_ctor_rec/decl : declared "dup_ctor_rec" (esort (lsucc lzero)) (indt (ccons "dup_ctor_rec.rec" cnil) liz)
+dup_ctor_rec/decl : declared "dup_ctor_rec" (esort (lsucc lzero)) (indt (ccons "dup_ctor_rec.rec" cnil) z)
    = declared/ok-indt dup_ctor_rec/name dup_ctor_rec/rec-name dup_ctor_rec/cnd (dkind-ok/indt dup_ctor_rec/type-wf dup_ctor_rec/ends-in-sort).
 
 %% ctor dup_ctor_rec.rec (of dup_ctor_rec)
 %%% HOLE
-dup_ctor_rec_rec/type-wf-sort : lvl.
-
-%%% HOLE
-dup_ctor_rec_rec/type-wf : of (econst "dup_ctor_rec" lnil) (esort dup_ctor_rec_rec/type-wf-sort).
+dup_ctor_rec_rec/type-wf : of (econst "dup_ctor_rec" lnil) (esort _).
 
 %%% HOLE
 dup_ctor_rec_rec/positivity : ctor-positive "dup_ctor_rec" lnil (econst "dup_ctor_rec" lnil).
@@ -39,13 +33,13 @@ dup_ctor_rec_rec/cmem : cmem "dup_ctor_rec.rec" (ccons "dup_ctor_rec.rec" cnil)
 %%% HOLE: dup_ctor_rec_rec/fuo
 dup_ctor_rec_rec/fuo : field-universes-ok (econst "dup_ctor_rec" lnil) (lsucc lzero).
 
-dup_ctor_rec_rec/name : name "dup_ctor_rec.rec" (is-decl (econst "dup_ctor_rec" lnil) (ctor "dup_ctor_rec" liz)).
+dup_ctor_rec_rec/name : name "dup_ctor_rec.rec" (is-decl (econst "dup_ctor_rec" lnil) (ctor "dup_ctor_rec" z)).
 
-dup_ctor_rec_rec/decl : declared "dup_ctor_rec.rec" (econst "dup_ctor_rec" lnil) (ctor "dup_ctor_rec" liz)
+dup_ctor_rec_rec/decl : declared "dup_ctor_rec.rec" (econst "dup_ctor_rec" lnil) (ctor "dup_ctor_rec" z)
    = declared/ok-ctor dup_ctor_rec_rec/name dup_ctor_rec/name dup_ctor_rec_rec/cmem dup_ctor_rec/eisl dup_ctor_rec_rec/fuo (dkind-ok/ctor dup_ctor_rec_rec/type-wf dup_ctor_rec_rec/positivity).
 
 %% recursor dup_ctor_rec.rec (TCB-derived; informational only)
 %%   level params: u
-%%   type:   (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([z] (eapp x z)))))))
+%%   type:   (eforall (eforall (econst "dup_ctor_rec" lnil) ([x] (esort (lvar z)))) ([x] (eforall (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] (eforall (econst "dup_ctor_rec" lnil) ([w] (eapp x w)))))))
 %%   rules:
-%%     dup_ctor_rec.rec … dup_ctor_rec.rec … = (elam (eforall (econst "dup_ctor_rec" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] y))))   (0 fields)
+%%     dup_ctor_rec.rec … dup_ctor_rec.rec … = (elam (eforall (econst "dup_ctor_rec" lnil) ([x] (esort (lvar z)))) ([x] (elam (eapp x (econst "dup_ctor_rec.rec" lnil)) ([y] y))))   (0 fields)

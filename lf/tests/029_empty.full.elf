@@ -1,10 +1,7 @@
 %%% Expected outcome: accept
 %%% A simple empty inductive type
 %% inductive Empty
-Empty/type-wf-sort : lvl
-   = (lsucc (lsucc lzero)).
-
-Empty/type-wf : of (esort (lsucc lzero)) (esort Empty/type-wf-sort)
+Empty/type-wf : of (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = defeq/sort-refl.
 
 Empty/ends-in-sort : ends-in-sort (esort (lsucc lzero))
@@ -18,24 +15,21 @@ Empty/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 Empty/cnd : cnames-distinct cnil
    = cnames-distinct/nil.
 
-Empty/name : name "Empty" (is-decl (esort (lsucc lzero)) (indt cnil liz)).
+Empty/name : name "Empty" (is-decl (esort (lsucc lzero)) (indt cnil z)).
 
-Empty/decl : declared "Empty" (esort (lsucc lzero)) (indt cnil liz)
+Empty/decl : declared "Empty" (esort (lsucc lzero)) (indt cnil z)
    = declared/ok-indt Empty/name Empty/rec-name Empty/cnd (dkind-ok/indt Empty/type-wf Empty/ends-in-sort).
 
 %% recursor Empty.rec (TCB-derived; informational only)
 %%   level params: u
-%%   type:   (eforall (eforall (econst "Empty" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y)))))
+%%   type:   (eforall (eforall (econst "Empty" lnil) ([x] (esort (lvar z)))) ([x] (eforall (econst "Empty" lnil) ([y] (eapp x y)))))
 
 %% def empty
-empty/type-wf-sort : lvl
-   = (lsucc (lsucc lzero)).
-
-empty/type-wf : of (esort (lsucc lzero)) (esort empty/type-wf-sort)
+empty/type-wf : of (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = defeq/sort-refl.
 
 empty/value-typed : of (econst "Empty" lnil) (esort (lsucc lzero))
-   = (defeq/const Empty/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
+   = (defeq/const Empty/decl (inst-expr/sort (inst-lvl/succ inst-lvl/zero))).
 
 empty/name : name "empty" (is-decl (esort (lsucc lzero)) (defn (econst "Empty" lnil))).
 

@@ -1,914 +1,211 @@
 %%% Expected outcome: accept
 %%% Peano arithmetic: 1 + 1 = 2
-%solve nonneg_0 : 0 >= 0.
-%solve nonneg_1 : 1 >= 0.
-
 %% def PN
-PN/type-wf-sort : lvl
-   = (lsucc (limax (lsucc (lvar liz)) (lvar liz))).
-
-PN/type-wf : of (esort (limax (lsucc (lvar liz)) (lvar liz))) (esort PN/type-wf-sort)
+PN/type-wf : of (esort (limax (lsucc (lvar z)) (lvar z))) (esort (lsucc (limax (lsucc (lvar z)) (lvar z))))
    = defeq/sort-refl.
 
-PN/value-typed : of (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] x)) ([y] (eforall x ([z] x)))))) (esort (limax (lsucc (lvar liz)) (lvar liz)))
-   = (defeq/conv
-       (defeq/sort-eq
-         (lvl-eq/le
-           (mleq/imax-imL
-             (mleq/maxL
-               (mleq/imax-imL
-                 (mleq/maxL
-                   (mleq/self nonneg_0)
-                   (mleq/var-elim
-                     liz
-                     (lvl-subst/imax
-                       (lvl-subst/var-eq lidx-eq/z)
-                       (lvl-subst/var-eq lidx-eq/z))
-                     (lvl-subst/imax
-                       (lvl-subst/succ (lvl-subst/var-eq lidx-eq/z))
-                       (lvl-subst/var-eq lidx-eq/z))
-                     (mleq/imax-lzL (mleq/lz nonneg_0))
-                     (lvl-subst/imax
-                       (lvl-subst/var-eq lidx-eq/z)
-                       (lvl-subst/var-eq lidx-eq/z))
-                     (lvl-subst/imax
-                       (lvl-subst/succ (lvl-subst/var-eq lidx-eq/z))
-                       (lvl-subst/var-eq lidx-eq/z))
-                     (mleq/imax-lsL
-                       (mleq/imax-lsR
-                         (mleq/maxL
-                           (mleq/sL
-                             (mleq/maxR-l
-                               (mleq/sR (mleq/sR (mleq/self nonneg_1)))))
-                           (mleq/sL
-                             (mleq/maxR-l
-                               (mleq/sR (mleq/sR (mleq/self nonneg_1)))))))))))
-               (mleq/imax-imL
-                 (mleq/maxL
-                   (mleq/var-elim
-                     liz
-                     (lvl-subst/imax
-                       (lvl-subst/imax
-                         (lvl-subst/var-eq lidx-eq/z)
-                         (lvl-subst/var-eq lidx-eq/z))
-                       (lvl-subst/var-eq lidx-eq/z))
-                     (lvl-subst/imax
-                       (lvl-subst/succ (lvl-subst/var-eq lidx-eq/z))
-                       (lvl-subst/var-eq lidx-eq/z))
-                     (mleq/imax-lzL (mleq/lz nonneg_0))
-                     (lvl-subst/imax
-                       (lvl-subst/imax
-                         (lvl-subst/var-eq lidx-eq/z)
-                         (lvl-subst/var-eq lidx-eq/z))
-                       (lvl-subst/var-eq lidx-eq/z))
-                     (lvl-subst/imax
-                       (lvl-subst/succ (lvl-subst/var-eq lidx-eq/z))
-                       (lvl-subst/var-eq lidx-eq/z))
-                     (mleq/imax-lsL
-                       (mleq/imax-lsR
-                         (mleq/maxL
-                           (mleq/imax-lsL
-                             (mleq/maxL
-                               (mleq/sL
-                                 (mleq/maxR-l
-                                   (mleq/sR (mleq/sR (mleq/self nonneg_1)))))
-                               (mleq/sL
-                                 (mleq/maxR-l
-                                   (mleq/sR (mleq/sR (mleq/self nonneg_1)))))))
-                           (mleq/sL
-                             (mleq/maxR-l
-                               (mleq/sR (mleq/sR (mleq/self nonneg_1)))))))))
-                   (mleq/var-elim
-                     liz
-                     (lvl-subst/imax
-                       (lvl-subst/var-eq lidx-eq/z)
-                       (lvl-subst/var-eq lidx-eq/z))
-                     (lvl-subst/imax
-                       (lvl-subst/succ (lvl-subst/var-eq lidx-eq/z))
-                       (lvl-subst/var-eq lidx-eq/z))
-                     (mleq/imax-lzL (mleq/lz nonneg_0))
-                     (lvl-subst/imax
-                       (lvl-subst/var-eq lidx-eq/z)
-                       (lvl-subst/var-eq lidx-eq/z))
-                     (lvl-subst/imax
-                       (lvl-subst/succ (lvl-subst/var-eq lidx-eq/z))
-                       (lvl-subst/var-eq lidx-eq/z))
-                     (mleq/imax-lsL
-                       (mleq/imax-lsR
-                         (mleq/maxL
-                           (mleq/sL
-                             (mleq/maxR-l
-                               (mleq/sR (mleq/sR (mleq/self nonneg_1)))))
-                           (mleq/sL
-                             (mleq/maxR-l
-                               (mleq/sR
-                                 (mleq/sR (mleq/self nonneg_1)))))))))))))
-           (mleq/imax-imR
-             (mleq/maxR-l (mleq/imax-imR (mleq/maxR-l (mleq/self nonneg_0)))))))
-       (defeq/forall
-         defeq/sort-refl
-         ([x]
-           ([h]
-             (defeq/forall
-               (defeq/forall h ([y] ([h1] h)))
-               ([y] ([h1] (defeq/forall h ([z] ([h2] h)))))))))).
+%%% HOLE
+PN/value-typed : of (eforall (esort (lvar z)) ([x] (eforall (eforall x ([y] x)) ([y] (eforall x ([w] x)))))) (esort (limax (lsucc (lvar z)) (lvar z))).
 
-PN/name : name "PN" (is-decl (esort (limax (lsucc (lvar liz)) (lvar liz))) (defn (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] x)) ([y] (eforall x ([z] x)))))))).
+PN/name : name "PN" (is-decl (esort (limax (lsucc (lvar z)) (lvar z))) (defn (eforall (esort (lvar z)) ([x] (eforall (eforall x ([y] x)) ([y] (eforall x ([w] x)))))))).
 
-PN/decl : declared "PN" (esort (limax (lsucc (lvar liz)) (lvar liz))) (defn (eforall (esort (lvar liz)) ([x] (eforall (eforall x ([y] x)) ([y] (eforall x ([z] x)))))))
+PN/decl : declared "PN" (esort (limax (lsucc (lvar z)) (lvar z))) (defn (eforall (esort (lvar z)) ([x] (eforall (eforall x ([y] x)) ([y] (eforall x ([w] x)))))))
    = declared/ok PN/name dkind-non-inductive/defn (dkind-ok/defn PN/type-wf PN/value-typed).
 
 %% def PN.succ
-PN_succ/type-wf-sort : lvl
-   = (limax
-       (limax (lsucc (lvar liz)) (lvar liz))
-       (limax (lsucc (lvar liz)) (lvar liz))).
-
-PN_succ/type-wf : of (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (econst "PN" (lcons (lvar liz) lnil)))) (esort PN_succ/type-wf-sort)
+PN_succ/type-wf : of (eforall (econst "PN" (lcons (lvar z) lnil)) ([x] (econst "PN" (lcons (lvar z) lnil)))) (esort (limax (limax (lsucc (lvar z)) (lvar z)) (limax (lsucc (lvar z)) (lvar z))))
    = (defeq/forall
        (defeq/const
          PN/decl
          (inst-expr/sort
-           (lvl-inst/imax
-             (lvl-inst/succ (lvl-inst/var lvl-nth/zero))
-             (lvl-inst/var lvl-nth/zero))))
+           (inst-lvl/imax
+             (inst-lvl/var nth-lvl/z)
+             (inst-lvl/succ (inst-lvl/var nth-lvl/z)))))
        ([x]
          ([h]
            (defeq/const
              PN/decl
              (inst-expr/sort
-               (lvl-inst/imax
-                 (lvl-inst/succ (lvl-inst/var lvl-nth/zero))
-                 (lvl-inst/var lvl-nth/zero))))))).
+               (inst-lvl/imax
+                 (inst-lvl/var nth-lvl/z)
+                 (inst-lvl/succ (inst-lvl/var nth-lvl/z)))))))).
 
+%%% HOLE
 PN_succ/value-typed : of
-  (elam (econst "PN" (lcons (lvar liz) lnil)) ([x] (elam (esort (lvar liz)) ([y] (elam (eforall y ([z] y)) ([z] (elam y ([w] (eapp z (eapp (eapp (eapp x y) z) w))))))))))
-  (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (econst "PN" (lcons (lvar liz) lnil))))
-   = (defeq/conv
-       (defeq/forall
-         (defeq/const
-           PN/decl
-           (inst-expr/sort
-             (lvl-inst/imax
-               (lvl-inst/succ (lvl-inst/var lvl-nth/zero))
-               (lvl-inst/var lvl-nth/zero))))
-         ([x]
-           ([h]
-             (defeq/trans
-               (defeq/forall
-                 defeq/sort-refl
-                 ([y]
-                   ([h1]
-                     (defeq/forall
-                       (defeq/forall h1 ([z] ([h2] h1)))
-                       ([z] ([h2] (defeq/forall h1 ([w] ([h3] h1)))))))))
-               (defeq/conv
-                 (defeq/sort-eq
-                   (lvl-eq/le
-                     (mleq/imax-imR
-                       (mleq/maxR-l
-                         (mleq/imax-imR (mleq/maxR-l (mleq/self nonneg_0)))))
-                     (mleq/imax-imL
-                       (mleq/maxL
-                         (mleq/imax-imL
-                           (mleq/maxL
-                             (mleq/self nonneg_0)
-                             (mleq/var-elim
-                               liz
-                               (lvl-subst/imax
-                                 (lvl-subst/var-eq lidx-eq/z)
-                                 (lvl-subst/var-eq lidx-eq/z))
-                               (lvl-subst/imax
-                                 (lvl-subst/succ (lvl-subst/var-eq lidx-eq/z))
-                                 (lvl-subst/var-eq lidx-eq/z))
-                               (mleq/imax-lzL (mleq/lz nonneg_0))
-                               (lvl-subst/imax
-                                 (lvl-subst/var-eq lidx-eq/z)
-                                 (lvl-subst/var-eq lidx-eq/z))
-                               (lvl-subst/imax
-                                 (lvl-subst/succ (lvl-subst/var-eq lidx-eq/z))
-                                 (lvl-subst/var-eq lidx-eq/z))
-                               (mleq/imax-lsL
-                                 (mleq/imax-lsR
-                                   (mleq/maxL
-                                     (mleq/sL
-                                       (mleq/maxR-l
-                                         (mleq/sR
-                                           (mleq/sR (mleq/self nonneg_1)))))
-                                     (mleq/sL
-                                       (mleq/maxR-l
-                                         (mleq/sR
-                                           (mleq/sR
-                                             (mleq/self nonneg_1)))))))))))
-                         (mleq/imax-imL
-                           (mleq/maxL
-                             (mleq/var-elim
-                               liz
-                               (lvl-subst/imax
-                                 (lvl-subst/imax
-                                   (lvl-subst/var-eq lidx-eq/z)
-                                   (lvl-subst/var-eq lidx-eq/z))
-                                 (lvl-subst/var-eq lidx-eq/z))
-                               (lvl-subst/imax
-                                 (lvl-subst/succ (lvl-subst/var-eq lidx-eq/z))
-                                 (lvl-subst/var-eq lidx-eq/z))
-                               (mleq/imax-lzL (mleq/lz nonneg_0))
-                               (lvl-subst/imax
-                                 (lvl-subst/imax
-                                   (lvl-subst/var-eq lidx-eq/z)
-                                   (lvl-subst/var-eq lidx-eq/z))
-                                 (lvl-subst/var-eq lidx-eq/z))
-                               (lvl-subst/imax
-                                 (lvl-subst/succ (lvl-subst/var-eq lidx-eq/z))
-                                 (lvl-subst/var-eq lidx-eq/z))
-                               (mleq/imax-lsL
-                                 (mleq/imax-lsR
-                                   (mleq/maxL
-                                     (mleq/imax-lsL
-                                       (mleq/maxL
-                                         (mleq/sL
-                                           (mleq/maxR-l
-                                             (mleq/sR
-                                               (mleq/sR (mleq/self nonneg_1)))))
-                                         (mleq/sL
-                                           (mleq/maxR-l
-                                             (mleq/sR
-                                               (mleq/sR
-                                                 (mleq/self nonneg_1)))))))
-                                     (mleq/sL
-                                       (mleq/maxR-l
-                                         (mleq/sR
-                                           (mleq/sR (mleq/self nonneg_1)))))))))
-                             (mleq/var-elim
-                               liz
-                               (lvl-subst/imax
-                                 (lvl-subst/var-eq lidx-eq/z)
-                                 (lvl-subst/var-eq lidx-eq/z))
-                               (lvl-subst/imax
-                                 (lvl-subst/succ (lvl-subst/var-eq lidx-eq/z))
-                                 (lvl-subst/var-eq lidx-eq/z))
-                               (mleq/imax-lzL (mleq/lz nonneg_0))
-                               (lvl-subst/imax
-                                 (lvl-subst/var-eq lidx-eq/z)
-                                 (lvl-subst/var-eq lidx-eq/z))
-                               (lvl-subst/imax
-                                 (lvl-subst/succ (lvl-subst/var-eq lidx-eq/z))
-                                 (lvl-subst/var-eq lidx-eq/z))
-                               (mleq/imax-lsL
-                                 (mleq/imax-lsR
-                                   (mleq/maxL
-                                     (mleq/sL
-                                       (mleq/maxR-l
-                                         (mleq/sR
-                                           (mleq/sR (mleq/self nonneg_1)))))
-                                     (mleq/sL
-                                       (mleq/maxR-l
-                                         (mleq/sR
-                                           (mleq/sR
-                                             (mleq/self nonneg_1)))))))))))))))
-                 (defeq/symm
-                   (defeq/delta
-                     PN/decl
-                     (inst-expr/sort
-                       (lvl-inst/imax
-                         (lvl-inst/succ (lvl-inst/var lvl-nth/zero))
-                         (lvl-inst/var lvl-nth/zero)))
-                     (inst-expr/forall
-                       (inst-expr/sort (lvl-inst/var lvl-nth/zero))
-                       ([x]
-                         ([h]
-                           (inst-expr/forall
-                             (inst-expr/forall h ([y] ([h1] h)))
-                             ([y]
-                               ([h1]
-                                 (inst-expr/forall
-                                   h
-                                   ([z] ([h2] h))))))))))))))))
-       (defeq/lam
-         (defeq/const
-           PN/decl
-           (inst-expr/sort
-             (lvl-inst/imax
-               (lvl-inst/succ (lvl-inst/var lvl-nth/zero))
-               (lvl-inst/var lvl-nth/zero))))
-         ([x]
-           ([h]
-             (defeq/lam
-               defeq/sort-refl
-               ([y]
-                 ([h1]
-                   (defeq/lam
-                     (defeq/forall h1 ([z] ([h2] h1)))
-                     ([z]
-                       ([h2]
-                         (defeq/lam
-                           h1
-                           ([w]
-                             ([h3]
-                               (defeq/app
-                                 h2
-                                 (defeq/app
-                                   (defeq/app
-                                     (defeq/app
-                                       (defeq/conv
-                                         (defeq/delta
-                                           PN/decl
-                                           (inst-expr/sort
-                                             (lvl-inst/imax
-                                               (lvl-inst/succ
-                                                 (lvl-inst/var lvl-nth/zero))
-                                               (lvl-inst/var lvl-nth/zero)))
-                                           (inst-expr/forall
-                                             (inst-expr/sort
-                                               (lvl-inst/var lvl-nth/zero))
-                                             ([x]
-                                               ([h]
-                                                 (inst-expr/forall
-                                                   (inst-expr/forall
-                                                     h
-                                                     ([y] ([h1] h)))
-                                                   ([y]
-                                                     ([h1]
-                                                       (inst-expr/forall
-                                                         h
-                                                         ([z] ([h2] h))))))))))
-                                         h)
-                                       h1)
-                                     h2)
-                                   h3))))))))))))))).
+  (elam (econst "PN" (lcons (lvar z) lnil)) ([x] (elam (esort (lvar z)) ([y] (elam (eforall y ([w] y)) ([w] (elam y ([v] (eapp w (eapp (eapp (eapp x y) w) v))))))))))
+  (eforall (econst "PN" (lcons (lvar z) lnil)) ([x] (econst "PN" (lcons (lvar z) lnil)))).
 
 PN_succ/name : name "PN.succ" (is-decl
-  (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (econst "PN" (lcons (lvar liz) lnil))))
-  (defn (elam (econst "PN" (lcons (lvar liz) lnil)) ([x] (elam (esort (lvar liz)) ([y] (elam (eforall y ([z] y)) ([z] (elam y ([w] (eapp z (eapp (eapp (eapp x y) z) w)))))))))))).
+  (eforall (econst "PN" (lcons (lvar z) lnil)) ([x] (econst "PN" (lcons (lvar z) lnil))))
+  (defn (elam (econst "PN" (lcons (lvar z) lnil)) ([x] (elam (esort (lvar z)) ([y] (elam (eforall y ([w] y)) ([w] (elam y ([v] (eapp w (eapp (eapp (eapp x y) w) v)))))))))))).
 
 PN_succ/decl : declared "PN.succ"
-  (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (econst "PN" (lcons (lvar liz) lnil))))
-  (defn (elam (econst "PN" (lcons (lvar liz) lnil)) ([x] (elam (esort (lvar liz)) ([y] (elam (eforall y ([z] y)) ([z] (elam y ([w] (eapp z (eapp (eapp (eapp x y) z) w)))))))))))
+  (eforall (econst "PN" (lcons (lvar z) lnil)) ([x] (econst "PN" (lcons (lvar z) lnil))))
+  (defn (elam (econst "PN" (lcons (lvar z) lnil)) ([x] (elam (esort (lvar z)) ([y] (elam (eforall y ([w] y)) ([w] (elam y ([v] (eapp w (eapp (eapp (eapp x y) w) v)))))))))))
    = declared/ok PN_succ/name dkind-non-inductive/defn (dkind-ok/defn PN_succ/type-wf PN_succ/value-typed).
 
 %% def PN.zero
-PN_zero/type-wf-sort : lvl
-   = (limax (lsucc (lvar liz)) (lvar liz)).
-
-PN_zero/type-wf : of (econst "PN" (lcons (lvar liz) lnil)) (esort PN_zero/type-wf-sort)
+PN_zero/type-wf : of (econst "PN" (lcons (lvar z) lnil)) (esort (limax (lsucc (lvar z)) (lvar z)))
    = (defeq/const
        PN/decl
        (inst-expr/sort
-         (lvl-inst/imax
-           (lvl-inst/succ (lvl-inst/var lvl-nth/zero))
-           (lvl-inst/var lvl-nth/zero)))).
+         (inst-lvl/imax
+           (inst-lvl/var nth-lvl/z)
+           (inst-lvl/succ (inst-lvl/var nth-lvl/z))))).
 
-PN_zero/value-typed : of (elam (esort (lvar liz)) ([x] (elam (eforall x ([y] x)) ([y] (elam x ([z] z)))))) (econst "PN" (lcons (lvar liz) lnil))
-   = (defeq/conv
-       (defeq/trans
-         (defeq/forall
-           defeq/sort-refl
-           ([x]
-             ([h]
-               (defeq/forall
-                 (defeq/forall h ([y] ([h1] h)))
-                 ([y] ([h1] (defeq/forall h ([z] ([h2] h)))))))))
-         (defeq/conv
-           (defeq/sort-eq
-             (lvl-eq/le
-               (mleq/imax-imR
-                 (mleq/maxR-l
-                   (mleq/imax-imR (mleq/maxR-l (mleq/self nonneg_0)))))
-               (mleq/imax-imL
-                 (mleq/maxL
-                   (mleq/imax-imL
-                     (mleq/maxL
-                       (mleq/self nonneg_0)
-                       (mleq/var-elim
-                         liz
-                         (lvl-subst/imax
-                           (lvl-subst/var-eq lidx-eq/z)
-                           (lvl-subst/var-eq lidx-eq/z))
-                         (lvl-subst/imax
-                           (lvl-subst/succ (lvl-subst/var-eq lidx-eq/z))
-                           (lvl-subst/var-eq lidx-eq/z))
-                         (mleq/imax-lzL (mleq/lz nonneg_0))
-                         (lvl-subst/imax
-                           (lvl-subst/var-eq lidx-eq/z)
-                           (lvl-subst/var-eq lidx-eq/z))
-                         (lvl-subst/imax
-                           (lvl-subst/succ (lvl-subst/var-eq lidx-eq/z))
-                           (lvl-subst/var-eq lidx-eq/z))
-                         (mleq/imax-lsL
-                           (mleq/imax-lsR
-                             (mleq/maxL
-                               (mleq/sL
-                                 (mleq/maxR-l
-                                   (mleq/sR (mleq/sR (mleq/self nonneg_1)))))
-                               (mleq/sL
-                                 (mleq/maxR-l
-                                   (mleq/sR
-                                     (mleq/sR (mleq/self nonneg_1)))))))))))
-                   (mleq/imax-imL
-                     (mleq/maxL
-                       (mleq/var-elim
-                         liz
-                         (lvl-subst/imax
-                           (lvl-subst/imax
-                             (lvl-subst/var-eq lidx-eq/z)
-                             (lvl-subst/var-eq lidx-eq/z))
-                           (lvl-subst/var-eq lidx-eq/z))
-                         (lvl-subst/imax
-                           (lvl-subst/succ (lvl-subst/var-eq lidx-eq/z))
-                           (lvl-subst/var-eq lidx-eq/z))
-                         (mleq/imax-lzL (mleq/lz nonneg_0))
-                         (lvl-subst/imax
-                           (lvl-subst/imax
-                             (lvl-subst/var-eq lidx-eq/z)
-                             (lvl-subst/var-eq lidx-eq/z))
-                           (lvl-subst/var-eq lidx-eq/z))
-                         (lvl-subst/imax
-                           (lvl-subst/succ (lvl-subst/var-eq lidx-eq/z))
-                           (lvl-subst/var-eq lidx-eq/z))
-                         (mleq/imax-lsL
-                           (mleq/imax-lsR
-                             (mleq/maxL
-                               (mleq/imax-lsL
-                                 (mleq/maxL
-                                   (mleq/sL
-                                     (mleq/maxR-l
-                                       (mleq/sR
-                                         (mleq/sR (mleq/self nonneg_1)))))
-                                   (mleq/sL
-                                     (mleq/maxR-l
-                                       (mleq/sR
-                                         (mleq/sR (mleq/self nonneg_1)))))))
-                               (mleq/sL
-                                 (mleq/maxR-l
-                                   (mleq/sR
-                                     (mleq/sR (mleq/self nonneg_1)))))))))
-                       (mleq/var-elim
-                         liz
-                         (lvl-subst/imax
-                           (lvl-subst/var-eq lidx-eq/z)
-                           (lvl-subst/var-eq lidx-eq/z))
-                         (lvl-subst/imax
-                           (lvl-subst/succ (lvl-subst/var-eq lidx-eq/z))
-                           (lvl-subst/var-eq lidx-eq/z))
-                         (mleq/imax-lzL (mleq/lz nonneg_0))
-                         (lvl-subst/imax
-                           (lvl-subst/var-eq lidx-eq/z)
-                           (lvl-subst/var-eq lidx-eq/z))
-                         (lvl-subst/imax
-                           (lvl-subst/succ (lvl-subst/var-eq lidx-eq/z))
-                           (lvl-subst/var-eq lidx-eq/z))
-                         (mleq/imax-lsL
-                           (mleq/imax-lsR
-                             (mleq/maxL
-                               (mleq/sL
-                                 (mleq/maxR-l
-                                   (mleq/sR (mleq/sR (mleq/self nonneg_1)))))
-                               (mleq/sL
-                                 (mleq/maxR-l
-                                   (mleq/sR
-                                     (mleq/sR (mleq/self nonneg_1)))))))))))))))
-           (defeq/symm
-             (defeq/delta
-               PN/decl
-               (inst-expr/sort
-                 (lvl-inst/imax
-                   (lvl-inst/succ (lvl-inst/var lvl-nth/zero))
-                   (lvl-inst/var lvl-nth/zero)))
-               (inst-expr/forall
-                 (inst-expr/sort (lvl-inst/var lvl-nth/zero))
-                 ([x]
-                   ([h]
-                     (inst-expr/forall
-                       (inst-expr/forall h ([y] ([h1] h)))
-                       ([y] ([h1] (inst-expr/forall h ([z] ([h2] h)))))))))))))
-       (defeq/lam
-         defeq/sort-refl
-         ([x]
-           ([h]
-             (defeq/lam
-               (defeq/forall h ([y] ([h1] h)))
-               ([y] ([h1] (defeq/lam h ([z] ([h2] h2)))))))))).
+%%% HOLE
+PN_zero/value-typed : of (elam (esort (lvar z)) ([x] (elam (eforall x ([y] x)) ([y] (elam x ([w] w)))))) (econst "PN" (lcons (lvar z) lnil)).
 
-PN_zero/name : name "PN.zero" (is-decl (econst "PN" (lcons (lvar liz) lnil)) (defn (elam (esort (lvar liz)) ([x] (elam (eforall x ([y] x)) ([y] (elam x ([z] z)))))))).
+PN_zero/name : name "PN.zero" (is-decl (econst "PN" (lcons (lvar z) lnil)) (defn (elam (esort (lvar z)) ([x] (elam (eforall x ([y] x)) ([y] (elam x ([w] w)))))))).
 
-PN_zero/decl : declared "PN.zero" (econst "PN" (lcons (lvar liz) lnil)) (defn (elam (esort (lvar liz)) ([x] (elam (eforall x ([y] x)) ([y] (elam x ([z] z)))))))
+PN_zero/decl : declared "PN.zero" (econst "PN" (lcons (lvar z) lnil)) (defn (elam (esort (lvar z)) ([x] (elam (eforall x ([y] x)) ([y] (elam x ([w] w)))))))
    = declared/ok PN_zero/name dkind-non-inductive/defn (dkind-ok/defn PN_zero/type-wf PN_zero/value-typed).
 
 %% def PN.lit0
-PN_lit0/type-wf-sort : lvl
-   = (limax (lsucc (lvar liz)) (lvar liz)).
-
-PN_lit0/type-wf : of (econst "PN" (lcons (lvar liz) lnil)) (esort PN_lit0/type-wf-sort)
+PN_lit0/type-wf : of (econst "PN" (lcons (lvar z) lnil)) (esort (limax (lsucc (lvar z)) (lvar z)))
    = (defeq/const
        PN/decl
        (inst-expr/sort
-         (lvl-inst/imax
-           (lvl-inst/succ (lvl-inst/var lvl-nth/zero))
-           (lvl-inst/var lvl-nth/zero)))).
+         (inst-lvl/imax
+           (inst-lvl/var nth-lvl/z)
+           (inst-lvl/succ (inst-lvl/var nth-lvl/z))))).
 
-PN_lit0/value-typed : of (econst "PN.zero" (lcons (lvar liz) lnil)) (econst "PN" (lcons (lvar liz) lnil))
+PN_lit0/value-typed : of (econst "PN.zero" (lcons (lvar z) lnil)) (econst "PN" (lcons (lvar z) lnil))
    = (defeq/const
        PN_zero/decl
        (inst-expr/const
-         (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil))).
+         (inst-lvls/cons inst-lvls/nil (inst-lvl/var nth-lvl/z)))).
 
-PN_lit0/name : name "PN.lit0" (is-decl (econst "PN" (lcons (lvar liz) lnil)) (defn (econst "PN.zero" (lcons (lvar liz) lnil)))).
+PN_lit0/name : name "PN.lit0" (is-decl (econst "PN" (lcons (lvar z) lnil)) (defn (econst "PN.zero" (lcons (lvar z) lnil)))).
 
-PN_lit0/decl : declared "PN.lit0" (econst "PN" (lcons (lvar liz) lnil)) (defn (econst "PN.zero" (lcons (lvar liz) lnil)))
+PN_lit0/decl : declared "PN.lit0" (econst "PN" (lcons (lvar z) lnil)) (defn (econst "PN.zero" (lcons (lvar z) lnil)))
    = declared/ok PN_lit0/name dkind-non-inductive/defn (dkind-ok/defn PN_lit0/type-wf PN_lit0/value-typed).
 
 %% def PN.lit1
-PN_lit1/type-wf-sort : lvl
-   = (limax (lsucc (lvar liz)) (lvar liz)).
-
-PN_lit1/type-wf : of (econst "PN" (lcons (lvar liz) lnil)) (esort PN_lit1/type-wf-sort)
+PN_lit1/type-wf : of (econst "PN" (lcons (lvar z) lnil)) (esort (limax (lsucc (lvar z)) (lvar z)))
    = (defeq/const
        PN/decl
        (inst-expr/sort
-         (lvl-inst/imax
-           (lvl-inst/succ (lvl-inst/var lvl-nth/zero))
-           (lvl-inst/var lvl-nth/zero)))).
+         (inst-lvl/imax
+           (inst-lvl/var nth-lvl/z)
+           (inst-lvl/succ (inst-lvl/var nth-lvl/z))))).
 
-PN_lit1/value-typed : of (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econst "PN.lit0" (lcons (lvar liz) lnil))) (econst "PN" (lcons (lvar liz) lnil))
+PN_lit1/value-typed : of (eapp (econst "PN.succ" (lcons (lvar z) lnil)) (econst "PN.lit0" (lcons (lvar z) lnil))) (econst "PN" (lcons (lvar z) lnil))
    = (defeq/app
        (defeq/const
          PN_succ/decl
          (inst-expr/forall
            (inst-expr/const
-             (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil))
+             (inst-lvls/cons inst-lvls/nil (inst-lvl/var nth-lvl/z)))
            ([x]
              ([h]
                (inst-expr/const
-                 (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil))))))
+                 (inst-lvls/cons inst-lvls/nil (inst-lvl/var nth-lvl/z)))))))
        (defeq/const
          PN_lit0/decl
          (inst-expr/const
-           (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)))).
+           (inst-lvls/cons inst-lvls/nil (inst-lvl/var nth-lvl/z))))).
 
-PN_lit1/name : name "PN.lit1" (is-decl (econst "PN" (lcons (lvar liz) lnil)) (defn (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econst "PN.lit0" (lcons (lvar liz) lnil))))).
+PN_lit1/name : name "PN.lit1" (is-decl (econst "PN" (lcons (lvar z) lnil)) (defn (eapp (econst "PN.succ" (lcons (lvar z) lnil)) (econst "PN.lit0" (lcons (lvar z) lnil))))).
 
-PN_lit1/decl : declared "PN.lit1" (econst "PN" (lcons (lvar liz) lnil)) (defn (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econst "PN.lit0" (lcons (lvar liz) lnil))))
+PN_lit1/decl : declared "PN.lit1" (econst "PN" (lcons (lvar z) lnil)) (defn (eapp (econst "PN.succ" (lcons (lvar z) lnil)) (econst "PN.lit0" (lcons (lvar z) lnil))))
    = declared/ok PN_lit1/name dkind-non-inductive/defn (dkind-ok/defn PN_lit1/type-wf PN_lit1/value-typed).
 
 %% def PN.lit2
-PN_lit2/type-wf-sort : lvl
-   = (limax (lsucc (lvar liz)) (lvar liz)).
-
-PN_lit2/type-wf : of (econst "PN" (lcons (lvar liz) lnil)) (esort PN_lit2/type-wf-sort)
+PN_lit2/type-wf : of (econst "PN" (lcons (lvar z) lnil)) (esort (limax (lsucc (lvar z)) (lvar z)))
    = (defeq/const
        PN/decl
        (inst-expr/sort
-         (lvl-inst/imax
-           (lvl-inst/succ (lvl-inst/var lvl-nth/zero))
-           (lvl-inst/var lvl-nth/zero)))).
+         (inst-lvl/imax
+           (inst-lvl/var nth-lvl/z)
+           (inst-lvl/succ (inst-lvl/var nth-lvl/z))))).
 
-PN_lit2/value-typed : of (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econst "PN.lit1" (lcons (lvar liz) lnil))) (econst "PN" (lcons (lvar liz) lnil))
+PN_lit2/value-typed : of (eapp (econst "PN.succ" (lcons (lvar z) lnil)) (econst "PN.lit1" (lcons (lvar z) lnil))) (econst "PN" (lcons (lvar z) lnil))
    = (defeq/app
        (defeq/const
          PN_succ/decl
          (inst-expr/forall
            (inst-expr/const
-             (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil))
+             (inst-lvls/cons inst-lvls/nil (inst-lvl/var nth-lvl/z)))
            ([x]
              ([h]
                (inst-expr/const
-                 (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil))))))
+                 (inst-lvls/cons inst-lvls/nil (inst-lvl/var nth-lvl/z)))))))
        (defeq/const
          PN_lit1/decl
          (inst-expr/const
-           (lvls-inst/cons (lvl-inst/var lvl-nth/zero) lvls-inst/nil)))).
+           (inst-lvls/cons inst-lvls/nil (inst-lvl/var nth-lvl/z))))).
 
-PN_lit2/name : name "PN.lit2" (is-decl (econst "PN" (lcons (lvar liz) lnil)) (defn (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econst "PN.lit1" (lcons (lvar liz) lnil))))).
+PN_lit2/name : name "PN.lit2" (is-decl (econst "PN" (lcons (lvar z) lnil)) (defn (eapp (econst "PN.succ" (lcons (lvar z) lnil)) (econst "PN.lit1" (lcons (lvar z) lnil))))).
 
-PN_lit2/decl : declared "PN.lit2" (econst "PN" (lcons (lvar liz) lnil)) (defn (eapp (econst "PN.succ" (lcons (lvar liz) lnil)) (econst "PN.lit1" (lcons (lvar liz) lnil))))
+PN_lit2/decl : declared "PN.lit2" (econst "PN" (lcons (lvar z) lnil)) (defn (eapp (econst "PN.succ" (lcons (lvar z) lnil)) (econst "PN.lit1" (lcons (lvar z) lnil))))
    = declared/ok PN_lit2/name dkind-non-inductive/defn (dkind-ok/defn PN_lit2/type-wf PN_lit2/value-typed).
 
 %% def PN.add
-PN_add/type-wf-sort : lvl
-   = (limax
-       (limax (lsucc (lvar liz)) (lvar liz))
-       (limax
-         (limax (lsucc (lvar liz)) (lvar liz))
-         (limax (lsucc (lvar liz)) (lvar liz)))).
-
-PN_add/type-wf : of (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (econst "PN" (lcons (lvar liz) lnil)))))) (esort PN_add/type-wf-sort)
+PN_add/type-wf : of
+  (eforall (econst "PN" (lcons (lvar z) lnil)) ([x] (eforall (econst "PN" (lcons (lvar z) lnil)) ([y] (econst "PN" (lcons (lvar z) lnil))))))
+  (esort (limax (limax (lsucc (lvar z)) (lvar z)) (limax (limax (lsucc (lvar z)) (lvar z)) (limax (lsucc (lvar z)) (lvar z)))))
    = (defeq/forall
        (defeq/const
          PN/decl
          (inst-expr/sort
-           (lvl-inst/imax
-             (lvl-inst/succ (lvl-inst/var lvl-nth/zero))
-             (lvl-inst/var lvl-nth/zero))))
+           (inst-lvl/imax
+             (inst-lvl/var nth-lvl/z)
+             (inst-lvl/succ (inst-lvl/var nth-lvl/z)))))
        ([x]
          ([h]
            (defeq/forall
              (defeq/const
                PN/decl
                (inst-expr/sort
-                 (lvl-inst/imax
-                   (lvl-inst/succ (lvl-inst/var lvl-nth/zero))
-                   (lvl-inst/var lvl-nth/zero))))
+                 (inst-lvl/imax
+                   (inst-lvl/var nth-lvl/z)
+                   (inst-lvl/succ (inst-lvl/var nth-lvl/z)))))
              ([y]
                ([h1]
                  (defeq/const
                    PN/decl
                    (inst-expr/sort
-                     (lvl-inst/imax
-                       (lvl-inst/succ (lvl-inst/var lvl-nth/zero))
-                       (lvl-inst/var lvl-nth/zero)))))))))).
+                     (inst-lvl/imax
+                       (inst-lvl/var nth-lvl/z)
+                       (inst-lvl/succ (inst-lvl/var nth-lvl/z))))))))))).
 
+%%% HOLE
 PN_add/value-typed : of
-  (elam (econst "PN" (lcons (lvar liz) lnil))
-    ([x] (elam (econst "PN" (lcons (lvar liz) lnil)) ([y] (elam (esort (lvar liz)) ([z] (elam (eforall z ([w] z)) ([w] (elam z ([x1] (eapp (eapp (eapp x z) w) (eapp (eapp (eapp y z) w) x1))))))))))))
-  (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (econst "PN" (lcons (lvar liz) lnil))))))
-   = (defeq/conv
-       (defeq/forall
-         (defeq/const
-           PN/decl
-           (inst-expr/sort
-             (lvl-inst/imax
-               (lvl-inst/succ (lvl-inst/var lvl-nth/zero))
-               (lvl-inst/var lvl-nth/zero))))
-         ([x]
-           ([h]
-             (defeq/forall
-               (defeq/const
-                 PN/decl
-                 (inst-expr/sort
-                   (lvl-inst/imax
-                     (lvl-inst/succ (lvl-inst/var lvl-nth/zero))
-                     (lvl-inst/var lvl-nth/zero))))
-               ([y]
-                 ([h1]
-                   (defeq/trans
-                     (defeq/forall
-                       defeq/sort-refl
-                       ([z]
-                         ([h2]
-                           (defeq/forall
-                             (defeq/forall h2 ([w] ([h3] h2)))
-                             ([w] ([h3] (defeq/forall h2 ([x1] ([h4] h2)))))))))
-                     (defeq/conv
-                       (defeq/sort-eq
-                         (lvl-eq/le
-                           (mleq/imax-imR
-                             (mleq/maxR-l
-                               (mleq/imax-imR
-                                 (mleq/maxR-l (mleq/self nonneg_0)))))
-                           (mleq/imax-imL
-                             (mleq/maxL
-                               (mleq/imax-imL
-                                 (mleq/maxL
-                                   (mleq/self nonneg_0)
-                                   (mleq/var-elim
-                                     liz
-                                     (lvl-subst/imax
-                                       (lvl-subst/var-eq lidx-eq/z)
-                                       (lvl-subst/var-eq lidx-eq/z))
-                                     (lvl-subst/imax
-                                       (lvl-subst/succ
-                                         (lvl-subst/var-eq lidx-eq/z))
-                                       (lvl-subst/var-eq lidx-eq/z))
-                                     (mleq/imax-lzL (mleq/lz nonneg_0))
-                                     (lvl-subst/imax
-                                       (lvl-subst/var-eq lidx-eq/z)
-                                       (lvl-subst/var-eq lidx-eq/z))
-                                     (lvl-subst/imax
-                                       (lvl-subst/succ
-                                         (lvl-subst/var-eq lidx-eq/z))
-                                       (lvl-subst/var-eq lidx-eq/z))
-                                     (mleq/imax-lsL
-                                       (mleq/imax-lsR
-                                         (mleq/maxL
-                                           (mleq/sL
-                                             (mleq/maxR-l
-                                               (mleq/sR
-                                                 (mleq/sR
-                                                   (mleq/self nonneg_1)))))
-                                           (mleq/sL
-                                             (mleq/maxR-l
-                                               (mleq/sR
-                                                 (mleq/sR
-                                                   (mleq/self
-                                                     nonneg_1)))))))))))
-                               (mleq/imax-imL
-                                 (mleq/maxL
-                                   (mleq/var-elim
-                                     liz
-                                     (lvl-subst/imax
-                                       (lvl-subst/imax
-                                         (lvl-subst/var-eq lidx-eq/z)
-                                         (lvl-subst/var-eq lidx-eq/z))
-                                       (lvl-subst/var-eq lidx-eq/z))
-                                     (lvl-subst/imax
-                                       (lvl-subst/succ
-                                         (lvl-subst/var-eq lidx-eq/z))
-                                       (lvl-subst/var-eq lidx-eq/z))
-                                     (mleq/imax-lzL (mleq/lz nonneg_0))
-                                     (lvl-subst/imax
-                                       (lvl-subst/imax
-                                         (lvl-subst/var-eq lidx-eq/z)
-                                         (lvl-subst/var-eq lidx-eq/z))
-                                       (lvl-subst/var-eq lidx-eq/z))
-                                     (lvl-subst/imax
-                                       (lvl-subst/succ
-                                         (lvl-subst/var-eq lidx-eq/z))
-                                       (lvl-subst/var-eq lidx-eq/z))
-                                     (mleq/imax-lsL
-                                       (mleq/imax-lsR
-                                         (mleq/maxL
-                                           (mleq/imax-lsL
-                                             (mleq/maxL
-                                               (mleq/sL
-                                                 (mleq/maxR-l
-                                                   (mleq/sR
-                                                     (mleq/sR
-                                                       (mleq/self nonneg_1)))))
-                                               (mleq/sL
-                                                 (mleq/maxR-l
-                                                   (mleq/sR
-                                                     (mleq/sR
-                                                       (mleq/self
-                                                         nonneg_1)))))))
-                                           (mleq/sL
-                                             (mleq/maxR-l
-                                               (mleq/sR
-                                                 (mleq/sR
-                                                   (mleq/self nonneg_1)))))))))
-                                   (mleq/var-elim
-                                     liz
-                                     (lvl-subst/imax
-                                       (lvl-subst/var-eq lidx-eq/z)
-                                       (lvl-subst/var-eq lidx-eq/z))
-                                     (lvl-subst/imax
-                                       (lvl-subst/succ
-                                         (lvl-subst/var-eq lidx-eq/z))
-                                       (lvl-subst/var-eq lidx-eq/z))
-                                     (mleq/imax-lzL (mleq/lz nonneg_0))
-                                     (lvl-subst/imax
-                                       (lvl-subst/var-eq lidx-eq/z)
-                                       (lvl-subst/var-eq lidx-eq/z))
-                                     (lvl-subst/imax
-                                       (lvl-subst/succ
-                                         (lvl-subst/var-eq lidx-eq/z))
-                                       (lvl-subst/var-eq lidx-eq/z))
-                                     (mleq/imax-lsL
-                                       (mleq/imax-lsR
-                                         (mleq/maxL
-                                           (mleq/sL
-                                             (mleq/maxR-l
-                                               (mleq/sR
-                                                 (mleq/sR
-                                                   (mleq/self nonneg_1)))))
-                                           (mleq/sL
-                                             (mleq/maxR-l
-                                               (mleq/sR
-                                                 (mleq/sR
-                                                   (mleq/self
-                                                     nonneg_1)))))))))))))))
-                       (defeq/symm
-                         (defeq/delta
-                           PN/decl
-                           (inst-expr/sort
-                             (lvl-inst/imax
-                               (lvl-inst/succ (lvl-inst/var lvl-nth/zero))
-                               (lvl-inst/var lvl-nth/zero)))
-                           (inst-expr/forall
-                             (inst-expr/sort (lvl-inst/var lvl-nth/zero))
-                             ([x]
-                               ([h]
-                                 (inst-expr/forall
-                                   (inst-expr/forall h ([y] ([h1] h)))
-                                   ([y]
-                                     ([h1]
-                                       (inst-expr/forall
-                                         h
-                                         ([z] ([h2] h)))))))))))))))))))
-       (defeq/lam
-         (defeq/const
-           PN/decl
-           (inst-expr/sort
-             (lvl-inst/imax
-               (lvl-inst/succ (lvl-inst/var lvl-nth/zero))
-               (lvl-inst/var lvl-nth/zero))))
-         ([x]
-           ([h]
-             (defeq/lam
-               (defeq/const
-                 PN/decl
-                 (inst-expr/sort
-                   (lvl-inst/imax
-                     (lvl-inst/succ (lvl-inst/var lvl-nth/zero))
-                     (lvl-inst/var lvl-nth/zero))))
-               ([y]
-                 ([h1]
-                   (defeq/lam
-                     defeq/sort-refl
-                     ([z]
-                       ([h2]
-                         (defeq/lam
-                           (defeq/forall h2 ([w] ([h3] h2)))
-                           ([w]
-                             ([h3]
-                               (defeq/lam
-                                 h2
-                                 ([x1]
-                                   ([h4]
-                                     (defeq/app
-                                       (defeq/app
-                                         (defeq/app
-                                           (defeq/conv
-                                             (defeq/delta
-                                               PN/decl
-                                               (inst-expr/sort
-                                                 (lvl-inst/imax
-                                                   (lvl-inst/succ
-                                                     (lvl-inst/var
-                                                       lvl-nth/zero))
-                                                   (lvl-inst/var lvl-nth/zero)))
-                                               (inst-expr/forall
-                                                 (inst-expr/sort
-                                                   (lvl-inst/var lvl-nth/zero))
-                                                 ([x]
-                                                   ([h]
-                                                     (inst-expr/forall
-                                                       (inst-expr/forall
-                                                         h
-                                                         ([y] ([h1] h)))
-                                                       ([y]
-                                                         ([h1]
-                                                           (inst-expr/forall
-                                                             h
-                                                             ([z]
-                                                               ([h2] h))))))))))
-                                             h)
-                                           h2)
-                                         h3)
-                                       (defeq/app
-                                         (defeq/app
-                                           (defeq/app
-                                             (defeq/conv
-                                               (defeq/delta
-                                                 PN/decl
-                                                 (inst-expr/sort
-                                                   (lvl-inst/imax
-                                                     (lvl-inst/succ
-                                                       (lvl-inst/var
-                                                         lvl-nth/zero))
-                                                     (lvl-inst/var
-                                                       lvl-nth/zero)))
-                                                 (inst-expr/forall
-                                                   (inst-expr/sort
-                                                     (lvl-inst/var
-                                                       lvl-nth/zero))
-                                                   ([x]
-                                                     ([h]
-                                                       (inst-expr/forall
-                                                         (inst-expr/forall
-                                                           h
-                                                           ([y] ([h1] h)))
-                                                         ([y]
-                                                           ([h1]
-                                                             (inst-expr/forall
-                                                               h
-                                                               ([z]
-                                                                 ([h2]
-                                                                   h))))))))))
-                                               h1)
-                                             h2)
-                                           h3)
-                                         h4)))))))))))))))))).
+  (elam (econst "PN" (lcons (lvar z) lnil))
+    ([x] (elam (econst "PN" (lcons (lvar z) lnil)) ([y] (elam (esort (lvar z)) ([w] (elam (eforall w ([v] w)) ([v] (elam w ([x1] (eapp (eapp (eapp x w) v) (eapp (eapp (eapp y w) v) x1))))))))))))
+  (eforall (econst "PN" (lcons (lvar z) lnil)) ([x] (eforall (econst "PN" (lcons (lvar z) lnil)) ([y] (econst "PN" (lcons (lvar z) lnil)))))).
 
 PN_add/name : name "PN.add" (is-decl
-  (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (econst "PN" (lcons (lvar liz) lnil))))))
-  (defn (elam (econst "PN" (lcons (lvar liz) lnil)) ([x] (elam (econst "PN" (lcons (lvar liz) lnil)) ([y] (elam (esort (lvar liz)) ([z] (elam (eforall z ([w] z)) ([w] (elam z ([x1] (eapp (eapp (eapp x z) w) (eapp (eapp (eapp y z) w) x1)))))))))))))).
+  (eforall (econst "PN" (lcons (lvar z) lnil)) ([x] (eforall (econst "PN" (lcons (lvar z) lnil)) ([y] (econst "PN" (lcons (lvar z) lnil))))))
+  (defn (elam (econst "PN" (lcons (lvar z) lnil)) ([x] (elam (econst "PN" (lcons (lvar z) lnil)) ([y] (elam (esort (lvar z)) ([w] (elam (eforall w ([v] w)) ([v] (elam w ([x1] (eapp (eapp (eapp x w) v) (eapp (eapp (eapp y w) v) x1)))))))))))))).
 
 PN_add/decl : declared "PN.add"
-  (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (econst "PN" (lcons (lvar liz) lnil))))))
-  (defn (elam (econst "PN" (lcons (lvar liz) lnil)) ([x] (elam (econst "PN" (lcons (lvar liz) lnil)) ([y] (elam (esort (lvar liz)) ([z] (elam (eforall z ([w] z)) ([w] (elam z ([x1] (eapp (eapp (eapp x z) w) (eapp (eapp (eapp y z) w) x1)))))))))))))
+  (eforall (econst "PN" (lcons (lvar z) lnil)) ([x] (eforall (econst "PN" (lcons (lvar z) lnil)) ([y] (econst "PN" (lcons (lvar z) lnil))))))
+  (defn (elam (econst "PN" (lcons (lvar z) lnil)) ([x] (elam (econst "PN" (lcons (lvar z) lnil)) ([y] (elam (esort (lvar z)) ([w] (elam (eforall w ([v] w)) ([v] (elam w ([x1] (eapp (eapp (eapp x w) v) (eapp (eapp (eapp y w) v) x1)))))))))))))
    = declared/ok PN_add/name dkind-non-inductive/defn (dkind-ok/defn PN_add/type-wf PN_add/value-typed).
 
 %% thm peano2
 peano2/type-wf : of
-  (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero)))
-    ([x] (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp x (econst "PN.lit2" (lcons (lvar liz) lnil)))))))
+  (eforall (eforall (econst "PN" (lcons (lvar z) lnil)) ([x] (esort lzero)))
+    ([x] (eforall (eforall (econst "PN" (lcons (lvar z) lnil)) ([y] (eapp x y))) ([y] (eapp x (econst "PN.lit2" (lcons (lvar z) lnil)))))))
   (esort lzero)
    = (defeq/conv
        (defeq/sort-eq
-         (lvl-eq/le
-           (mleq/imax-imL
-             (mleq/maxL
-               (mleq/imax-lzL (mleq/self nonneg_0))
-               (mleq/imax-lzL (mleq/self nonneg_0))))
-           (mleq/lz nonneg_0)))
+         (eq-lvl/le
+           leq-lvl/lz
+           (leq-lvl/imaxLi
+             (leq-lvl/maxL
+               (leq-lvl/imaxLz leq-lvl/self)
+               (leq-lvl/imaxLz leq-lvl/self)))))
        (defeq/forall
          (defeq/forall
            (defeq/const
              PN/decl
              (inst-expr/sort
-               (lvl-inst/imax
-                 (lvl-inst/succ (lvl-inst/var lvl-nth/zero))
-                 (lvl-inst/var lvl-nth/zero))))
+               (inst-lvl/imax
+                 (inst-lvl/var nth-lvl/z)
+                 (inst-lvl/succ (inst-lvl/var nth-lvl/z)))))
            ([x] ([h] defeq/sort-refl)))
          ([x]
            ([h]
@@ -917,9 +214,9 @@ peano2/type-wf : of
                  (defeq/const
                    PN/decl
                    (inst-expr/sort
-                     (lvl-inst/imax
-                       (lvl-inst/succ (lvl-inst/var lvl-nth/zero))
-                       (lvl-inst/var lvl-nth/zero))))
+                     (inst-lvl/imax
+                       (inst-lvl/var nth-lvl/z)
+                       (inst-lvl/succ (inst-lvl/var nth-lvl/z)))))
                  ([y] ([h1] (defeq/app h h1))))
                ([y]
                  ([h1]
@@ -928,26 +225,26 @@ peano2/type-wf : of
                      (defeq/const
                        PN_lit2/decl
                        (inst-expr/const
-                         (lvls-inst/cons
-                           (lvl-inst/var lvl-nth/zero)
-                           lvls-inst/nil))))))))))).
+                         (inst-lvls/cons
+                           inst-lvls/nil
+                           (inst-lvl/var nth-lvl/z)))))))))))).
 
 %%% HOLE
 peano2/value-typed : of
-  (elam (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero)))
+  (elam (eforall (econst "PN" (lcons (lvar z) lnil)) ([x] (esort lzero)))
     ([x]
-      (elam (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y)))
-        ([y] (eapp y (eapp (eapp (econst "PN.add" (lcons (lvar liz) lnil)) (econst "PN.lit1" (lcons (lvar liz) lnil))) (econst "PN.lit1" (lcons (lvar liz) lnil))))))))
-  (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero)))
-    ([x] (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp x (econst "PN.lit2" (lcons (lvar liz) lnil))))))).
+      (elam (eforall (econst "PN" (lcons (lvar z) lnil)) ([y] (eapp x y)))
+        ([y] (eapp y (eapp (eapp (econst "PN.add" (lcons (lvar z) lnil)) (econst "PN.lit1" (lcons (lvar z) lnil))) (econst "PN.lit1" (lcons (lvar z) lnil))))))))
+  (eforall (eforall (econst "PN" (lcons (lvar z) lnil)) ([x] (esort lzero)))
+    ([x] (eforall (eforall (econst "PN" (lcons (lvar z) lnil)) ([y] (eapp x y))) ([y] (eapp x (econst "PN.lit2" (lcons (lvar z) lnil))))))).
 
 peano2/name : name "peano2" (is-decl
-  (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero)))
-    ([x] (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp x (econst "PN.lit2" (lcons (lvar liz) lnil)))))))
-  (thm (elam (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero))) ([x] (elam (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp y (eapp (eapp (econst "PN.add" (lcons (lvar liz) lnil)) (econst "PN.lit1" (lcons (lvar liz) lnil))) (econst "PN.lit1" (lcons (lvar liz) lnil)))))))))).
+  (eforall (eforall (econst "PN" (lcons (lvar z) lnil)) ([x] (esort lzero)))
+    ([x] (eforall (eforall (econst "PN" (lcons (lvar z) lnil)) ([y] (eapp x y))) ([y] (eapp x (econst "PN.lit2" (lcons (lvar z) lnil)))))))
+  (thm (elam (eforall (econst "PN" (lcons (lvar z) lnil)) ([x] (esort lzero))) ([x] (elam (eforall (econst "PN" (lcons (lvar z) lnil)) ([y] (eapp x y))) ([y] (eapp y (eapp (eapp (econst "PN.add" (lcons (lvar z) lnil)) (econst "PN.lit1" (lcons (lvar z) lnil))) (econst "PN.lit1" (lcons (lvar z) lnil)))))))))).
 
 peano2/decl : declared "peano2"
-  (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero)))
-    ([x] (eforall (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp x (econst "PN.lit2" (lcons (lvar liz) lnil)))))))
-  (thm (elam (eforall (econst "PN" (lcons (lvar liz) lnil)) ([x] (esort lzero))) ([x] (elam (eforall (econst "PN" (lcons (lvar liz) lnil)) ([y] (eapp x y))) ([y] (eapp y (eapp (eapp (econst "PN.add" (lcons (lvar liz) lnil)) (econst "PN.lit1" (lcons (lvar liz) lnil))) (econst "PN.lit1" (lcons (lvar liz) lnil)))))))))
+  (eforall (eforall (econst "PN" (lcons (lvar z) lnil)) ([x] (esort lzero)))
+    ([x] (eforall (eforall (econst "PN" (lcons (lvar z) lnil)) ([y] (eapp x y))) ([y] (eapp x (econst "PN.lit2" (lcons (lvar z) lnil)))))))
+  (thm (elam (eforall (econst "PN" (lcons (lvar z) lnil)) ([x] (esort lzero))) ([x] (elam (eforall (econst "PN" (lcons (lvar z) lnil)) ([y] (eapp x y))) ([y] (eapp y (eapp (eapp (econst "PN.add" (lcons (lvar z) lnil)) (econst "PN.lit1" (lcons (lvar z) lnil))) (econst "PN.lit1" (lcons (lvar z) lnil)))))))))
    = declared/ok peano2/name dkind-non-inductive/thm (dkind-ok/thm peano2/type-wf peano2/value-typed).

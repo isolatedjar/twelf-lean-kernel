@@ -1,64 +1,55 @@
 %%% Expected outcome: accept
 %%% Level-polymorphic unit type
 %% inductive PUnit
-PUnit/type-wf-sort : lvl
-   = (lsucc (lvar liz)).
-
-PUnit/type-wf : of (esort (lvar liz)) (esort PUnit/type-wf-sort)
+PUnit/type-wf : of (esort (lvar z)) (esort (lsucc (lvar z)))
    = defeq/sort-refl.
 
-PUnit/ends-in-sort : ends-in-sort (esort (lvar liz))
+PUnit/ends-in-sort : ends-in-sort (esort (lvar z))
    = ends-in-sort/sort.
 
 PUnit/rec-name : name "PUnit.rec" (is-rec-for "PUnit").
 
-PUnit/eisl : ends-in-sort-with-level (esort (lvar liz)) (lvar liz)
+PUnit/eisl : ends-in-sort-with-level (esort (lvar z)) (lvar z)
    = ends-in-sort-with-level/sort.
 
 PUnit/cnd : cnames-distinct (ccons "PUnit.unit" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
-PUnit/name : name "PUnit" (is-decl (esort (lvar liz)) (indt (ccons "PUnit.unit" cnil) liz)).
+PUnit/name : name "PUnit" (is-decl (esort (lvar z)) (indt (ccons "PUnit.unit" cnil) z)).
 
-PUnit/decl : declared "PUnit" (esort (lvar liz)) (indt (ccons "PUnit.unit" cnil) liz)
+PUnit/decl : declared "PUnit" (esort (lvar z)) (indt (ccons "PUnit.unit" cnil) z)
    = declared/ok-indt PUnit/name PUnit/rec-name PUnit/cnd (dkind-ok/indt PUnit/type-wf PUnit/ends-in-sort).
 
 %% ctor PUnit.unit (of PUnit)
-PUnit_unit/type-wf-sort : lvl
-   = (lvar liz).
+PUnit_unit/type-wf : of (econst "PUnit" (lcons (lvar z) lnil)) (esort (lvar z))
+   = (defeq/const PUnit/decl (inst-expr/sort (inst-lvl/var nth-lvl/z))).
 
-PUnit_unit/type-wf : of (econst "PUnit" (lcons (lvar liz) lnil)) (esort PUnit_unit/type-wf-sort)
-   = (defeq/const PUnit/decl (inst-expr/sort (lvl-inst/var lvl-nth/zero))).
-
-PUnit_unit/positivity : ctor-positive "PUnit" (lcons (lvar liz) lnil) (econst "PUnit" (lcons (lvar liz) lnil))
+PUnit_unit/positivity : ctor-positive "PUnit" (lcons (lvar z) lnil) (econst "PUnit" (lcons (lvar z) lnil))
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
 
 PUnit_unit/cmem : cmem "PUnit.unit" (ccons "PUnit.unit" cnil)
    = cmem/here.
 
-PUnit_unit/fuo : field-universes-ok (econst "PUnit" (lcons (lvar liz) lnil)) (lvar liz)
+PUnit_unit/fuo : field-universes-ok (econst "PUnit" (lcons (lvar z) lnil)) (lvar z)
    = (field-universes-ok/done not-forall/const).
 
-PUnit_unit/name : name "PUnit.unit" (is-decl (econst "PUnit" (lcons (lvar liz) lnil)) (ctor "PUnit" liz)).
+PUnit_unit/name : name "PUnit.unit" (is-decl (econst "PUnit" (lcons (lvar z) lnil)) (ctor "PUnit" z)).
 
-PUnit_unit/decl : declared "PUnit.unit" (econst "PUnit" (lcons (lvar liz) lnil)) (ctor "PUnit" liz)
+PUnit_unit/decl : declared "PUnit.unit" (econst "PUnit" (lcons (lvar z) lnil)) (ctor "PUnit" z)
    = declared/ok-ctor PUnit_unit/name PUnit/name PUnit_unit/cmem PUnit/eisl PUnit_unit/fuo (dkind-ok/ctor PUnit_unit/type-wf PUnit_unit/positivity).
 
 %% recursor PUnit.rec (TCB-derived; informational only)
 %%   level params: u_1 u
-%%   type:   (eforall (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([z] (eapp x z)))))))
+%%   type:   (eforall (eforall (econst "PUnit" (lcons (lvar (s z)) lnil)) ([x] (esort (lvar z)))) ([x] (eforall (eapp x (econst "PUnit.unit" (lcons (lvar (s z)) lnil))) ([y] (eforall (econst "PUnit" (lcons (lvar (s z)) lnil)) ([w] (eapp x w)))))))
 %%   rules:
-%%     PUnit.rec … PUnit.unit … = (elam (eforall (econst "PUnit" (lcons (lvar (lis liz)) lnil)) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "PUnit.unit" (lcons (lvar (lis liz)) lnil))) ([y] y))))   (0 fields)
+%%     PUnit.rec … PUnit.unit … = (elam (eforall (econst "PUnit" (lcons (lvar (s z)) lnil)) ([x] (esort (lvar z)))) ([x] (elam (eapp x (econst "PUnit.unit" (lcons (lvar (s z)) lnil))) ([y] y))))   (0 fields)
 
 %% def pUnitType
-pUnitType/type-wf-sort : lvl
-   = (lsucc (lsucc lzero)).
-
-pUnitType/type-wf : of (esort (lsucc lzero)) (esort pUnitType/type-wf-sort)
+pUnitType/type-wf : of (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = defeq/sort-refl.
 
 pUnitType/value-typed : of (econst "PUnit" (lcons (lsucc lzero) lnil)) (esort (lsucc lzero))
-   = (defeq/const PUnit/decl (inst-expr/sort (lvl-inst/var lvl-nth/zero))).
+   = (defeq/const PUnit/decl (inst-expr/sort (inst-lvl/var nth-lvl/z))).
 
 pUnitType/name : name "pUnitType" (is-decl (esort (lsucc lzero)) (defn (econst "PUnit" (lcons (lsucc lzero) lnil)))).
 

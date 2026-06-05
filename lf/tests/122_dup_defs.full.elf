@@ -1,10 +1,7 @@
 %%% Expected outcome: reject
 %%% Two definitions with the same name
 %% def dup_defs
-dup_defs/type-wf-sort : lvl
-   = (lsucc (lsucc lzero)).
-
-dup_defs/type-wf : of (esort (lsucc lzero)) (esort dup_defs/type-wf-sort)
+dup_defs/type-wf : of (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = defeq/sort-refl.
 
 dup_defs/value-typed : of (esort lzero) (esort (lsucc lzero))
@@ -16,10 +13,7 @@ dup_defs/decl : declared "dup_defs" (esort (lsucc lzero)) (defn (esort lzero))
    = declared/ok dup_defs/name dkind-non-inductive/defn (dkind-ok/defn dup_defs/type-wf dup_defs/value-typed).
 
 %% def dup_defs
-dup_defs/type-wf-sort : lvl
-   = (lsucc (lsucc lzero)).
-
-dup_defs/type-wf : of (esort (lsucc lzero)) (esort dup_defs/type-wf-sort)
+dup_defs/type-wf : of (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = defeq/sort-refl.
 
 dup_defs/value-typed : of (esort lzero) (esort (lsucc lzero))

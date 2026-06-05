@@ -1,10 +1,7 @@
 %%% Expected outcome: accept
 %%% Reducing a let
 %% axiom aProp
-aProp/type-wf-sort : lvl
-   = (lsucc lzero).
-
-aProp/type-wf : of (esort lzero) (esort aProp/type-wf-sort)
+aProp/type-wf : of (esort lzero) (esort (lsucc lzero))
    = defeq/sort-refl.
 
 aProp/name : name "aProp" (is-decl (esort lzero) ax).
@@ -13,10 +10,7 @@ aProp/decl : declared "aProp" (esort lzero) ax
    = declared/ok aProp/name dkind-non-inductive/ax (dkind-ok/ax aProp/type-wf).
 
 %% def letRed
-letRed/type-wf-sort : lvl
-   = (lsucc lzero).
-
-letRed/type-wf : of (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (esort letRed/type-wf-sort)
+letRed/type-wf : of (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (esort (lsucc lzero))
    = (defeq/app (defeq/lam defeq/sort-refl ([x] ([h] h))) defeq/sort-refl).
 
 letRed/value-typed : of (econst "aProp" lnil) (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero))
@@ -24,7 +18,7 @@ letRed/value-typed : of (econst "aProp" lnil) (eapp (elam (esort (lsucc lzero)) 
        (defeq/trans
          defeq/sort-refl
          (defeq/symm (defeq/beta ([x] ([h] h)) defeq/sort-refl)))
-       (defeq/const aProp/decl (inst-expr/sort lvl-inst/zero))).
+       (defeq/const aProp/decl (inst-expr/sort inst-lvl/zero))).
 
 letRed/name : name "letRed" (is-decl (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (defn (econst "aProp" lnil))).
 

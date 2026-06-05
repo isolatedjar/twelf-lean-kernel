@@ -1,10 +1,7 @@
 %%% Expected outcome: accept
 %%% Type inference of local variables
 %% def inferVar
-inferVar/type-wf-sort : lvl
-   = (limax (lsucc lzero) (limax lzero lzero)).
-
-inferVar/type-wf : of (eforall (esort lzero) ([x] (eforall x ([y] x)))) (esort inferVar/type-wf-sort)
+inferVar/type-wf : of (eforall (esort lzero) ([x] (eforall x ([y] x)))) (esort (limax (lsucc lzero) (limax lzero lzero)))
    = (defeq/forall defeq/sort-refl ([x] ([h] (defeq/forall h ([y] ([h1] h)))))).
 
 inferVar/value-typed : of (elam (esort lzero) ([x] (elam x ([y] y)))) (eforall (esort lzero) ([x] (eforall x ([y] x))))

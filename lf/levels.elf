@@ -89,8 +89,8 @@ leq-lvl/lz     : leq-lvl lzero L N.
 leq-lvl/self   : leq-lvl L L N.
 leq-lvl/sL     : leq-lvl (lsucc L) L' (s N)
                  <- leq-lvl L L' N.
-leq-lvl/sR     : leq-lvl L (lsucc L') (s N)
-                 <- leq-lvl L L' N.
+leq-lvl/sR     : leq-lvl L (lsucc L') N
+                 <- leq-lvl L L' (s N).
 leq-lvl/maxL   : leq-lvl (lmax L1 L2) L N
                  <- leq-lvl L1 L N
                  <- leq-lvl L2 L N.
@@ -99,14 +99,14 @@ leq-lvl/maxR1  : leq-lvl L (lmax L1 L2) N
 leq-lvl/maxR2  : leq-lvl L (lmax L1 L2) N
                  <- leq-lvl L L2 N.
 leq-lvl/imaxLz : leq-lvl (limax L1 lzero) L N
-                 <- leq-lvl lzero L N. 
+                 <- leq-lvl lzero L N.
 leq-lvl/imaxLs : leq-lvl (limax L1 (lsucc L2)) L N
                  <- leq-lvl (lmax L1 (lsucc L2)) L N.
 leq-lvl/imaxLi : leq-lvl (limax L1 (limax L2 L3)) L N
                  <- leq-lvl (lmax (limax L1 L3) (limax L2 L3)) L N.
 leq-lvl/imaxRi : leq-lvl L (limax L1 (limax L2 L3)) N
                  <- leq-lvl L (lmax (limax L1 L3) (limax L2 L3)) N.
-leq-lvl/imaxLm : leq-lvl (limax L1 (lmax L2 L3)) L N 
+leq-lvl/imaxLm : leq-lvl (limax L1 (lmax L2 L3)) L N
                  <- leq-lvl (lmax (limax L1 L2) (limax L1 L3)) L N.
 leq-lvl/imaxRm : leq-lvl L (limax L1 (lmax L2 L3)) N
                  <- leq-lvl L (lmax (limax L1 L2) (limax L1 L3)) N.
@@ -123,9 +123,9 @@ leq-lvl/split  : {I : nat}
 eq-lvl : lvl -> lvl -> type.
 
 eq-lvl/refl : eq-lvl L L.
-eq-lvl/le   : eq-lvl L L' 
-              <- leq-lvl L L' z 
-              <- leq-lvl L L' z.
+eq-lvl/le   : eq-lvl L L'
+              <- leq-lvl L L' z
+              <- leq-lvl L' L z.
 
 %{!
 ### Simultaneous substitution

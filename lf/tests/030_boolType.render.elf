@@ -4,10 +4,7 @@ sneq/0 : string-neq "Bool.false" "Bool.true".
 
 %% inductive Bool
 %%% HOLE
-Bool/type-wf-sort : lvl.
-
-%%% HOLE
-Bool/type-wf : of (esort (lsucc lzero)) (esort Bool/type-wf-sort).
+Bool/type-wf : of (esort (lsucc lzero)) (esort _).
 
 %%% HOLE
 Bool/ends-in-sort : ends-in-sort (esort (lsucc lzero)).
@@ -22,17 +19,14 @@ Bool/cnd : cnames-distinct (ccons "Bool.false" (ccons "Bool.true" cnil))
        (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil)
        (all-string-neq/cons sneq/0 all-string-neq/nil)).
 
-Bool/name : name "Bool" (is-decl (esort (lsucc lzero)) (indt (ccons "Bool.false" (ccons "Bool.true" cnil)) liz)).
+Bool/name : name "Bool" (is-decl (esort (lsucc lzero)) (indt (ccons "Bool.false" (ccons "Bool.true" cnil)) z)).
 
-Bool/decl : declared "Bool" (esort (lsucc lzero)) (indt (ccons "Bool.false" (ccons "Bool.true" cnil)) liz)
+Bool/decl : declared "Bool" (esort (lsucc lzero)) (indt (ccons "Bool.false" (ccons "Bool.true" cnil)) z)
    = declared/ok-indt Bool/name Bool/rec-name Bool/cnd (dkind-ok/indt Bool/type-wf Bool/ends-in-sort).
 
 %% ctor Bool.false (of Bool)
 %%% HOLE
-Bool_false/type-wf-sort : lvl.
-
-%%% HOLE
-Bool_false/type-wf : of (econst "Bool" lnil) (esort Bool_false/type-wf-sort).
+Bool_false/type-wf : of (econst "Bool" lnil) (esort _).
 
 %%% HOLE
 Bool_false/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil).
@@ -43,17 +37,14 @@ Bool_false/cmem : cmem "Bool.false" (ccons "Bool.false" (ccons "Bool.true" cnil)
 %%% HOLE: Bool_false/fuo
 Bool_false/fuo : field-universes-ok (econst "Bool" lnil) (lsucc lzero).
 
-Bool_false/name : name "Bool.false" (is-decl (econst "Bool" lnil) (ctor "Bool" liz)).
+Bool_false/name : name "Bool.false" (is-decl (econst "Bool" lnil) (ctor "Bool" z)).
 
-Bool_false/decl : declared "Bool.false" (econst "Bool" lnil) (ctor "Bool" liz)
+Bool_false/decl : declared "Bool.false" (econst "Bool" lnil) (ctor "Bool" z)
    = declared/ok-ctor Bool_false/name Bool/name Bool_false/cmem Bool/eisl Bool_false/fuo (dkind-ok/ctor Bool_false/type-wf Bool_false/positivity).
 
 %% ctor Bool.true (of Bool)
 %%% HOLE
-Bool_true/type-wf-sort : lvl.
-
-%%% HOLE
-Bool_true/type-wf : of (econst "Bool" lnil) (esort Bool_true/type-wf-sort).
+Bool_true/type-wf : of (econst "Bool" lnil) (esort _).
 
 %%% HOLE
 Bool_true/positivity : ctor-positive "Bool" lnil (econst "Bool" lnil).
@@ -64,24 +55,21 @@ Bool_true/cmem : cmem "Bool.true" (ccons "Bool.false" (ccons "Bool.true" cnil))
 %%% HOLE: Bool_true/fuo
 Bool_true/fuo : field-universes-ok (econst "Bool" lnil) (lsucc lzero).
 
-Bool_true/name : name "Bool.true" (is-decl (econst "Bool" lnil) (ctor "Bool" (lis liz))).
+Bool_true/name : name "Bool.true" (is-decl (econst "Bool" lnil) (ctor "Bool" (s z))).
 
-Bool_true/decl : declared "Bool.true" (econst "Bool" lnil) (ctor "Bool" (lis liz))
+Bool_true/decl : declared "Bool.true" (econst "Bool" lnil) (ctor "Bool" (s z))
    = declared/ok-ctor Bool_true/name Bool/name Bool_true/cmem Bool/eisl Bool_true/fuo (dkind-ok/ctor Bool_true/type-wf Bool_true/positivity).
 
 %% recursor Bool.rec (TCB-derived; informational only)
 %%   level params: u
-%%   type:   (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([z] (eforall (econst "Bool" lnil) ([w] (eapp x w)))))))))
+%%   type:   (eforall (eforall (econst "Bool" lnil) ([x] (esort (lvar z)))) ([x] (eforall (eapp x (econst "Bool.false" lnil)) ([y] (eforall (eapp x (econst "Bool.true" lnil)) ([w] (eforall (econst "Bool" lnil) ([v] (eapp x v)))))))))
 %%   rules:
-%%     Bool.rec … Bool.false … = (elam (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] y))))))   (0 fields)
-%%     Bool.rec … Bool.true … = (elam (eforall (econst "Bool" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([z] z))))))   (0 fields)
+%%     Bool.rec … Bool.false … = (elam (eforall (econst "Bool" lnil) ([x] (esort (lvar z)))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([w] y))))))   (0 fields)
+%%     Bool.rec … Bool.true … = (elam (eforall (econst "Bool" lnil) ([x] (esort (lvar z)))) ([x] (elam (eapp x (econst "Bool.false" lnil)) ([y] (elam (eapp x (econst "Bool.true" lnil)) ([w] w))))))   (0 fields)
 
 %% def boolType
 %%% HOLE
-boolType/type-wf-sort : lvl.
-
-%%% HOLE
-boolType/type-wf : of (esort (lsucc lzero)) (esort boolType/type-wf-sort).
+boolType/type-wf : of (esort (lsucc lzero)) (esort _).
 
 %%% HOLE
 boolType/value-typed : of (econst "Bool" lnil) (esort (lsucc lzero)).

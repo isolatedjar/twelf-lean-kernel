@@ -22,161 +22,16 @@
 %use equality/strings.
 %use inequality/integers.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Universe levels
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-lvl : type.   %name lvl L.
-
-lzero : lvl.
-lsucc : lvl -> lvl.
-lmax  : lvl -> lvl -> lvl.
-limax : lvl -> lvl -> lvl.
-
-%%% Formal universe parameters of a (polymorphic) declaration, as de Bruijn
-%%% indices.  A declaration's stored type/value is a *schema* over these:
-%%% `lvar liz` is the 0th universe parameter, `lvar (lis liz)` the 1st, etc.
-%%% At a use site `econst N LS`, the schema is instantiated by replacing each
-%%% `lvar i` with the i-th element of `LS` (see `inst-expr` below).  This keeps
-%%% every stored declaration a *ground* term, so the name→definition map has a
-%%% ground codomain and can be sealed with `%unique name +N -K`.
-
-lidx : type.   %name lidx I.
-liz : lidx.
-lis : lidx -> lidx.
-
-lvar : lidx -> lvl.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Algorithmic level inequality   ℓ ≤ ℓ' + n
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Carneiro's algorithmic level inequality (Type Theory of Lean thesis,
-%%% p.7): `mleq L L' N` holds iff ⟦L⟧_v ≤ ⟦L'⟧_v + N for every valuation v
-%%% of the universe variables, with N : integer (the offset, possibly
-%%% negative).  This is the *inference-rule* characterization — searchable
-%%% and checkable — NOT lean4lean's semantic `VLevel.LE` (universal over
-%%% valuations).  Level equality is recovered as the two-sided
-%%% `mleq L L' 0 ∧ mleq L' L 0` (see `lvl-eq/le`).
-%%%
-%%% The 15 structural rules below transcribe the thesis algorithm (its 13,
-%%% plus the two RHS `imax` simplification duals `imax-lzR`/`imax-lsR` the
-%%% comparison needs once an offset has put the imax on the right).  They
-%%% decide the universe-variable-free fragment completely — associativity,
-%%% commutativity, distributivity, and the max/imax zero/succ/idempotence laws
-%%% the old reactive `lvl-eq` table had to special-case one at a time.
-%%%
-%%% Integer handling: the (untrusted) prover supplies a CONCRETE offset at
-%%% every step, so every `mleq` node has a ground index.  Twelf never solves
-%%% for an integer; it only *checks* the ground `N-1` / `N+1` / `N >= 0`
-%%% constraints via the `inequality/integers` domain — the same
-%%% checked-not-solved mode `enatlit`'s `n >= 0` witnesses already use.  The
-%%% `N >= 0` premises of `mleq/lz` and `mleq/self` are discharged by the same
-%%% `%solve nonneg_<n>` witnesses the generator emits for nat literals.
-%%%
-%%% Universe variables: the thesis' 14th rule eliminates a universe variable
-%%% by the case split u ↦ 0 / u ↦ S u.  Because our level variables are
-%%% first-order de Bruijn indices (`lvar : lidx -> lvl`), not HOAS, this is
-%%% encoded directly as `mleq/var-elim` below, using a first-order
-%%% substitution judgment (`lvl-subst`) and structurally-decidable index
-%%% (dis)equality (`lidx-eq` / `lidx-neq`) — no higher-order unification.
-%%% With it, `mleq` decides the full fragment, so `lvl-eq` needs no algebraic
-%%% rules beyond the `mleq` bridge.
-
-mleq : lvl -> lvl -> integer -> type.   %name mleq MLE.
-
-mleq/lz       : N >= 0 -> mleq lzero L N.
-mleq/self     : N >= 0 -> mleq L L N.
-mleq/sL       : mleq L L' (N - 1) -> mleq (lsucc L) L' N.
-mleq/sR       : mleq L L' (N + 1) -> mleq L (lsucc L') N.
-mleq/maxR-l   : mleq L L1 N -> mleq L (lmax L1 L2) N.
-mleq/maxR-r   : mleq L L2 N -> mleq L (lmax L1 L2) N.
-mleq/maxL     : mleq L1 L N -> mleq L2 L N -> mleq (lmax L1 L2) L N.
-%%% imax simplification, on both sides.  imax(L1, 0) = 0 and
-%%% imax(L1, S L2) = max(L1, S L2) hold for every valuation, so each has an
-%%% L- and an R-form (the thesis lists the L-forms; the R-duals are needed
-%%% whenever an offset has driven the comparison to put the imax on the right).
-mleq/imax-lzL : mleq lzero L N -> mleq (limax L1 lzero) L N.
-mleq/imax-lzR : mleq L lzero N -> mleq L (limax L1 lzero) N.
-mleq/imax-lsL : mleq (lmax L1 (lsucc L2)) L N -> mleq (limax L1 (lsucc L2)) L N.
-mleq/imax-lsR : mleq L (lmax L1 (lsucc L2)) N -> mleq L (limax L1 (lsucc L2)) N.
-mleq/imax-imL : mleq (lmax (limax L1 L3) (limax L2 L3)) L N
-                  -> mleq (limax L1 (limax L2 L3)) L N.
-mleq/imax-imR : mleq L (lmax (limax L1 L3) (limax L2 L3)) N
-                  -> mleq L (limax L1 (limax L2 L3)) N.
-mleq/imax-mxL : mleq (lmax (limax L1 L2) (limax L1 L3)) L N
-                  -> mleq (limax L1 (lmax L2 L3)) L N.
-mleq/imax-mxR : mleq L (lmax (limax L1 L2) (limax L1 L3)) N
-                  -> mleq L (limax L1 (lmax L2 L3)) N.
-
-%%% --- Universe-variable elimination (the thesis' 14th rule) ---
-%%% First-order index (dis)equality.  `lidx` is structural (liz / lis), so
-%%% both equality and DISEQUALITY are decidable closed judgments — unlike
-%%% strings, no posit-and-audit is needed.
-
-lidx-eq : lidx -> lidx -> type.   %name lidx-eq IEQ.
-lidx-eq/z : lidx-eq liz liz.
-lidx-eq/s : lidx-eq I J -> lidx-eq (lis I) (lis J).
-
-lidx-neq : lidx -> lidx -> type.   %name lidx-neq INEQ.
-lidx-neq/zs : lidx-neq liz (lis J).
-lidx-neq/sz : lidx-neq (lis I) liz.
-lidx-neq/ss : lidx-neq I J -> lidx-neq (lis I) (lis J).
-
-%%% `lvl-subst I V L L'` : L' is L with every `lvar I` replaced by V (a single-
-%%% index substitution, structural like `lvl-inst`).  Total and exact: the
-%%% `var-eq`/`var-neq` split (decided by `lidx-eq`/`lidx-neq`) replaces exactly
-%%% the matching occurrences and preserves all others.
-
-lvl-subst : lidx -> lvl -> lvl -> lvl -> type.   %name lvl-subst LSUB.
-lvl-subst/zero : lvl-subst I V lzero lzero.
-lvl-subst/succ : lvl-subst I V L L' -> lvl-subst I V (lsucc L) (lsucc L').
-lvl-subst/max  : lvl-subst I V L1 L1' -> lvl-subst I V L2 L2'
-              -> lvl-subst I V (lmax L1 L2) (lmax L1' L2').
-lvl-subst/imax : lvl-subst I V L1 L1' -> lvl-subst I V L2 L2'
-              -> lvl-subst I V (limax L1 L2) (limax L1' L2').
-lvl-subst/var-eq  : lidx-eq I J -> lvl-subst I V (lvar J) V.
-lvl-subst/var-neq : lidx-neq I J -> lvl-subst I V (lvar J) (lvar J).
-
-%%% `mleq/var-elim`: a universe variable `lvar I` ranges over ℕ = {0} ∪ {S k}.
-%%% So `mleq A B N` holds for every valuation iff it holds with `lvar I` set to
-%%% `lzero` (the zero branch) AND with `lvar I` set to `lsucc (lvar I)` — whose
-%%% still-free `lvar I` is the predecessor `k`, covering every successor case.
-%%% Sound for any valuation v: v(I) is 0 (zero branch, with w = v) or S m (succ
-%%% branch, with w = v[I ↦ m]).  Because the goal levels are first-order, the
-%%% abstraction is the explicit `lvl-subst` judgment — no HOAS, no higher-order
-%%% unification.
-
-mleq/var-elim : {I : lidx}
-   lvl-subst I lzero A A0 -> lvl-subst I lzero B B0 -> mleq A0 B0 N
-   -> lvl-subst I (lsucc (lvar I)) A A1 -> lvl-subst I (lsucc (lvar I)) B B1
-   -> mleq A1 B1 N
-   -> mleq A B N.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Level equivalence   ℓ ≈ ℓ'
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% `lvl-eq` is the interface consumed by `defeq/sort-eq`.  With `mleq` now a
-%%% complete decision procedure (including `var-elim` for universe variables),
-%%% equality is just two-sided `mleq` at offset 0 (`lvl-eq/le`); `lvl-eq/refl`
-%%% is kept as the syntactic-equality primitive (used by derived.elf and the
-%%% prover's fast path).  No algebraic or congruence rules are needed.
-
-lvl-eq : lvl -> lvl -> type.   %name lvl-eq E.
-
-lvl-eq/refl : lvl-eq L L.
-lvl-eq/le   : mleq L L' 0 -> mleq L' L 0 -> lvl-eq L L'.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Universe-level instantiation lists
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Each reference to a (potentially universe-polymorphic) const
-%%% carries the list of levels to instantiate.  For non-polymorphic
-%%% definitions this is `lnil`.
-
-lvls : type.   %name lvls LS.
-
-lnil  : lvls.
-lcons : lvl -> lvls -> lvls.
+%%% Universe levels (`lvl`, `lzero`, `lsucc`, `lmax`, `limax`, `lvar`), the
+%%% level-list type (`lvls`, `lnil`, `lcons`), and their associated
+%%% judgments — `eq-lvl`, `leq-lvl`, `lvl-subst`, `nth-lvl`, `inst-lvl`,
+%%% `inst-lvls` — are defined in `levels.elf` (loaded earlier via
+%%% sources.cfg).  Natural numbers (`nat`, `z`, `s`) plus the trichotomy
+%%% judgment `ord-nat` come from `nat.elf`.  Formal universe parameters of
+%%% a polymorphic declaration are de Bruijn indices: `lvar z` is the 0th
+%%% parameter, `lvar (s z)` the 1st, etc.  At a use site `econst N LS`,
+%%% the schema is instantiated by replacing each `lvar i` with the i-th
+%%% element of `LS` (see `inst-expr` below).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Expressions
@@ -197,38 +52,21 @@ enatlit : {n : integer} n >= 0 -> expr.      %% Lean Expr.lit (Literal.natVal n)
 estrlit : string  -> expr.                   %% Lean Expr.lit (Literal.strVal s)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Universe-level instantiation (substituting LS for the lvar schema)
+%%% Universe-level instantiation in expressions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% A polymorphic declaration's type/value is stored as a schema over the
-%%% formal parameters `lvar liz`, `lvar (lis liz)`, …  Using it at a concrete
+%%% formal parameters `lvar z`, `lvar (s z)`, …  Using it at a concrete
 %%% level instantiation `LS` means replacing each `lvar i` with the i-th
 %%% element of `LS`.  `inst-expr E LS E'` is the (total, deterministic)
 %%% substitution; it leaves term structure and HOAS binders untouched —
-%%% levels and term variables are disjoint, so under a binder we just thread
-%%% the reflexive hypothesis `inst-expr x LS x`, mirroring the `defeq` rules.
-
-%%% `lvl-nth LS I L` : L is the I-th element of LS (0-based).
-lvl-nth : lvls -> lidx -> lvl -> type.   %name lvl-nth NTH.
-lvl-nth/zero : lvl-nth (lcons L _) liz L.
-lvl-nth/succ : lvl-nth Rest I L -> lvl-nth (lcons _ Rest) (lis I) L.
-
-lvl-inst : lvl -> lvls -> lvl -> type.   %name lvl-inst LI.
-lvl-inst/zero : lvl-inst lzero LS lzero.
-lvl-inst/succ : lvl-inst L LS L' -> lvl-inst (lsucc L) LS (lsucc L').
-lvl-inst/max  : lvl-inst L1 LS L1' -> lvl-inst L2 LS L2'
-             -> lvl-inst (lmax L1 L2) LS (lmax L1' L2').
-lvl-inst/imax : lvl-inst L1 LS L1' -> lvl-inst L2 LS L2'
-             -> lvl-inst (limax L1 L2) LS (limax L1' L2').
-lvl-inst/var  : lvl-nth LS I L -> lvl-inst (lvar I) LS L.
-
-lvls-inst : lvls -> lvls -> lvls -> type.   %name lvls-inst LSI.
-lvls-inst/nil  : lvls-inst lnil LS lnil.
-lvls-inst/cons : lvl-inst L LS L' -> lvls-inst Rest LS Rest'
-              -> lvls-inst (lcons L Rest) LS (lcons L' Rest').
+%%% levels and term variables are disjoint, so under a binder we just
+%%% thread the reflexive hypothesis `inst-expr x LS x`, mirroring the
+%%% `defeq` rules.  Level-level instantiation (`inst-lvl`) and list-of-
+%%% levels instantiation (`inst-lvls`) come from `levels.elf`.
 
 inst-expr : expr -> lvls -> expr -> type.   %name inst-expr IE.
-inst-expr/sort   : lvl-inst L LS L' -> inst-expr (esort L) LS (esort L').
-inst-expr/const  : lvls-inst LSi LS LSi'
+inst-expr/sort   : inst-lvl LS L L' -> inst-expr (esort L) LS (esort L').
+inst-expr/const  : inst-lvls LS LSi LSi'
                 -> inst-expr (econst N LSi) LS (econst N LSi').
 inst-expr/app    : inst-expr F LS F' -> inst-expr A LS A'
                 -> inst-expr (eapp F A) LS (eapp F' A').
@@ -262,11 +100,11 @@ defeq/conv  : defeq A B (esort U) -> defeq E1 E2 A -> defeq E1 E2 B.
 
 %%% --- sortDF ---
 %%% U_ℓ ≡ U_ℓ' : U_{S ℓ}   when ℓ ≈ ℓ'.
-%%% (For the diagonal case use `defeq/sort-eq lvl-eq/refl`,
+%%% (For the diagonal case use `defeq/sort-eq eq-lvl/refl`,
 %%% or the derived `defeq/sort-refl` in derived.elf.)
 
 defeq/sort-eq :
-   lvl-eq L L' -> defeq (esort L) (esort L') (esort (lsucc L)).
+   eq-lvl L L' -> defeq (esort L) (esort L') (esort (lsucc L)).
 
 %%% --- forallEDF ---
 
@@ -386,8 +224,8 @@ defn : expr -> dkind.
 thm  : expr -> dkind.
 opq  : expr -> dkind.
 ax   : dkind.
-indt : cnames -> lidx -> dkind.        %% Ctors list, NParams
-ctor : string -> lidx -> dkind.        %% parent IndN, cidx
+indt : cnames -> nat -> dkind.        %% Ctors list, NParams
+ctor : string -> nat -> dkind.        %% parent IndN, cidx
 irec : string -> dkind.                %% parent IndN
 quot : dkind.
 
@@ -513,7 +351,7 @@ cnames-distinct/cons : cnames-distinct Rest
 %%% with proof-irrelevance, it derives `defeq P Q` for distinct
 %%% propositions (see `lf/soundness/large-elim-prop.elf`).
 %%%
-%%% Level-equality checks use `mleq` (Carneiro's algorithmic ≤) so
+%%% Level-equality checks use `leq-lvl` (Carneiro's algorithmic ≤) so
 %%% imax-disguised cases like `Sort (imax 1 0)` correctly normalize to
 %%% Prop and trip the prop-prop rule — covers `arena bad/large-elim-
 %%% imax-prop.ndjson`.
@@ -524,20 +362,20 @@ le-eligible : lvl -> cnames -> lvl -> type.   %name le-eligible LEE.
 le-eligible/cnil    : le-eligible UInd cnil U.
 le-eligible/csingle : le-eligible UInd (ccons C cnil) U.
 
-%%% ≥2 ctors AND UInd ≥ Sort 1: no restriction.  `mleq (lsucc lzero) UInd 0`
+%%% ≥2 ctors AND UInd ≥ Sort 1: no restriction.  `leq-lvl (lsucc lzero) UInd z`
 %%% holds iff every valuation puts UInd ≥ 1.
 le-eligible/non-prop :
-   mleq (lsucc lzero) UInd 0
+   leq-lvl (lsucc lzero) UInd z
    -> le-eligible UInd (ccons C1 (ccons C2 Rest)) U.
 
 %%% ≥2 ctors AND UInd ≡ Prop: motive U must also be ≡ Prop.  Both `≡`
-%%% checks via mleq's two-sided bridge — necessary so imax-disguised
+%%% checks via leq-lvl's two-sided bridge — necessary so imax-disguised
 %%% UInd (e.g. `limax 1 0`) and U normalize through.
 le-eligible/prop-prop :
-   mleq UInd lzero 0
-   -> mleq lzero UInd 0
-   -> mleq U    lzero 0
-   -> mleq lzero U    0
+   leq-lvl UInd lzero z
+   -> leq-lvl lzero UInd z
+   -> leq-lvl U    lzero z
+   -> leq-lvl lzero U    z
    -> le-eligible UInd (ccons C1 (ccons C2 Rest)) U.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -610,7 +448,7 @@ not-forall/str   : not-forall (estrlit S).
 %%% `field-universes-ok T UInd` : T is a ctor's RESIDUAL Π-chain (after the
 %%% inductive's params have been peeled), and every Π-binder's domain has
 %%% sort ≤ UInd in the impredicative sense.  Walks T's Π chain; at each
-%%% domain A, demands a sort UA and an `mleq (limax UA UInd) UInd 0`
+%%% domain A, demands a sort UA and an `leq-lvl (limax UA UInd) UInd z`
 %%% derivation.
 %%%
 %%% Why the `imax` form?  This is Lean's actual rule (Mario's `ctor_Pi`
@@ -638,7 +476,7 @@ field-universes-ok/done :
 
 field-universes-ok/forall :
    defeq A A (esort UA)
-   -> mleq (limax UA UInd) UInd 0
+   -> leq-lvl (limax UA UInd) UInd z
    -> ({x : expr} defeq x x A -> field-universes-ok (B x) UInd)
    -> field-universes-ok (eforall A B) UInd.
 
@@ -668,17 +506,17 @@ field-universes-ok/forall :
 %%% compatibility with any other consumers; if confirmed unused
 %%% elsewhere, can be deleted.
 
-count-leading-foralls : expr -> lidx -> type.
+count-leading-foralls : expr -> nat -> type.
    %name count-leading-foralls CLF.
 
 %%% Zero base case: any T satisfies "at least 0 leading Πs", regardless
 %%% of its shape.  (Includes T being a Π itself — we stop counting.)
 count-leading-foralls/zero :
-   count-leading-foralls T liz.
+   count-leading-foralls T z.
 
 count-leading-foralls/succ :
    ({x : expr} count-leading-foralls (B x) N)
-   -> count-leading-foralls (eforall A B) (lis N).
+   -> count-leading-foralls (eforall A B) (s N).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Strict positivity for inductive constructors

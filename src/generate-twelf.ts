@@ -79,15 +79,15 @@ function ppFmt(f: Fmt, hang = 0): string {
 // Level-parameter helpers
 // =====================================================================
 
-// A de Bruijn level index as a unary `lidx` literal: liz, (lis liz), ...
+// A de Bruijn level index as a unary `nat` literal: z, (s z), (s (s z)), ...
 function lidxLit(i: number): string {
-  let acc = "liz";
-  for (let k = 0; k < i; k++) acc = `(lis ${acc})`;
+  let acc = "z";
+  for (let k = 0; k < i; k++) acc = `(s ${acc})`;
   return acc;
 }
 
 // The canonical formal level list for an `n`-parameter declaration:
-// `(lcons (lvar liz) (lcons (lvar (lis liz)) ... lnil))`.  Used where a rule
+// `(lcons (lvar z) (lcons (lvar (s z)) ... lnil))`.  Used where a rule
 // still takes an explicit `lvls` of the declaration's own parameters.
 function formalLvls(n: number): string {
   let acc = "lnil";
@@ -182,12 +182,15 @@ function emitObligation(result: Fmt | null, constName: string, judgmentType: Doc
 // We use the abbreviation to halve the surface size of every type-wf line
 // (T no longer appears twice) without changing any TCB rule.
 //
-// For `thm` the kernel forces U = lzero (the type must be a Prop), so we emit
-// the literal and no universe obligation.  Otherwise U is *synthesized* (the
-// Sort that T inhabits — not in the NDJSON), so we emit it as its own
-// obligation on `lvl`: `lvl` is freezable, so the universe HOLE is itself
-// detectable.  (T may mention `lvar` schema variables; the obligation type
-// stays ground because those are data, not LF binders.)
+// For `thm` the kernel forces U = lzero (the type must be a Prop), so we
+// emit the literal.  Otherwise U is *synthesized* (the Sort that T
+// inhabits — not in the NDJSON).  Previously we emitted U as its own
+// `<mn>/type-wf-sort : lvl = <U-value>.` constant so the .render.elf could
+// leave it as a HOLE on `lvl`.  Now `lvl` is closed by levels.elf (its
+// dependent judgments are `%total`), so bare `<...> : lvl.` declarations
+// are rejected even pre-freeze.  We inline U directly into the type
+// expression — the level is pure computed data, never a real proof
+// obligation, so losing the named indirection doesn't affect auditability.
 function emitTypeWf(result: TypeWfResult, mn: string, T: Doc, isThm: boolean): string {
   // The obligation `of <T> (esort <U>)`: emit T as a Doc child so a big T
   // (the killer case: recursor types) breaks into a readable nested layout.
@@ -196,15 +199,17 @@ function emitTypeWf(result: TypeWfResult, mn: string, T: Doc, isThm: boolean): s
     const proof = result === null ? null : result.proof;
     return emitObligation(proof, `${mn}/type-wf`, ofSort(T, text("lzero")));
   }
-  const sortRef = emitObligation(
-    result === null ? null : result.sort,
-    `${mn}/type-wf-sort`,
-    text("lvl"),
-  );
+  // Inline U into the obligation type.  For .full.elf U comes from the
+  // synthesized result; for .render.elf result is null, so we emit `_`
+  // and let Twelf treat the level as undetermined — the surrounding
+  // declaration is a HOLE on the (frozen) `defeq` family anyway, so the
+  // missing U doesn't matter.
+  const uDoc =
+    result === null || result.sort === null ? text("_") : fmtToDoc(result.sort);
   return emitObligation(
     result === null ? null : result.proof,
     `${mn}/type-wf`,
-    ofSort(T, text(sortRef)),
+    ofSort(T, uDoc),
   );
 }
 

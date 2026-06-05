@@ -24,7 +24,7 @@ export const levelParamBindings: Map<string, string> = new Map();
 // Parallel to `levelParamBindings`: maps a universe parameter's name to its
 // de Bruijn index for the current declaration.  The (untrusted) prover needs
 // the raw index — not just the rendered `(lvar i)` string — to build the
-// `lvl-subst` / `mleq/var-elim` proofs for universe-variable elimination.
+// `lvl-subst` / `leq-lvl/split` proofs for universe-variable elimination.
 export const levelParamIndices: Map<string, number> = new Map();
 
 // =====================================================================
@@ -43,19 +43,11 @@ export const levelParamIndices: Map<string, number> = new Map();
 // — see shared.ts), and Twelf accepts the same text as an integer literal.
 
 // Distinct non-negative integers that need a `%solve nonneg_<n> : <n> >= 0.`
-// witness in the generated prelude.  Populated both by nat literals (during
-// rendering) and by `mleq` leaves (during level-equality proving, see
-// `recordNonneg`); deduped here so the generator emits one witness per value.
+// witness in the generated prelude.  Populated by `enatlit` nat literals
+// during expression rendering.  Level offsets no longer need `>= 0`
+// witnesses because the new `leq-lvl` family uses `nat`-encoded offsets
+// (`z`/`s`), not Twelf `integer`s.
 export const natLiteralsSeen: Set<string> = new Set();
-
-// Register a non-negative integer offset that needs an `n >= 0` witness (used
-// by `mleq/lz` / `mleq/self` leaves in level-equality proofs).  Returns the
-// witness name the proof term should reference.  The caller guarantees n >= 0;
-// the witness is emitted from the same `natLiteralsSeen` set as nat literals.
-export function recordNonneg(n: number): string {
-  natLiteralsSeen.add(String(n));
-  return `nonneg_${n}`;
-}
 
 // ---------------------------------------------------------------------------
 // Posited string-disequality facts
@@ -325,11 +317,17 @@ export function lfExpr(e: Expr, boundVars: string[], self?: SelfSubst): string {
 // =====================================================================
 
 export function freshVar(scope: string[]): string {
-  // Predictable names: x, y, z, w, x1, y1, ...  Scope must include
+  // Predictable names: x, y, w, v, x1, y1, ...  Scope must include
   // *every* bound name (vars and hyps both) — they live in the same
   // LF namespace and would shadow.  Level params are no longer LF
   // variables (they render as `(lvar i)` data), so they can't collide.
-  const letters = ["x", "y", "z", "w"];
+  //
+  // Excludes `z` and `s` because those are nat.elf's nat constructors,
+  // which show up in level-instantiation lists like `(lvar (s z))` and
+  // would silently shadow if reused as binder names.  Also excludes
+  // single letters that are too-common Twelf-stdlib constants (none
+  // currently, but the policy is here).
+  const letters = ["x", "y", "w", "v"];
   for (let suf = 0; suf < 1000; suf++) {
     for (const l of letters) {
       const v = suf === 0 ? l : `${l}${suf}`;

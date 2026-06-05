@@ -2,10 +2,7 @@
 %%% Lambda reduction
 %% def constType
 %%% HOLE
-constType/type-wf-sort : lvl.
-
-%%% HOLE
-constType/type-wf : of (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort constType/type-wf-sort).
+constType/type-wf : of (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))) (esort _).
 
 %%% HOLE
 constType/value-typed : of (elam (esort (lsucc lzero)) ([x] (elam (esort (lsucc lzero)) ([y] x)))) (eforall (esort (lsucc lzero)) ([x] (eforall (esort (lsucc lzero)) ([y] (esort (lsucc lzero)))))).
@@ -19,10 +16,7 @@ constType/decl : declared "constType" (eforall (esort (lsucc lzero)) ([x] (efora
 
 %% def betaReduction
 %%% HOLE
-betaReduction/type-wf-sort : lvl.
-
-%%% HOLE
-betaReduction/type-wf : of (eapp (eapp (econst "constType" lnil) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))) (esort betaReduction/type-wf-sort).
+betaReduction/type-wf : of (eapp (eapp (econst "constType" lnil) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))) (esort _).
 
 %%% HOLE
 betaReduction/value-typed : of (eforall (esort lzero) ([x] x)) (eapp (eapp (econst "constType" lnil) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))).

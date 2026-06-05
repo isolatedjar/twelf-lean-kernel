@@ -30,7 +30,7 @@ fi
 
 run_full_chain() {
     # Load the full trusted chain plus the attack file, capture all output.
-    printf 'loadFile tcb.elf\nset unsafe true\nloadFile freeze.elf\nset unsafe false\nloadFile derived.elf\nloadFile %s\nloadFile final-checks.elf\nOS.exit\n' "$1" \
+    printf 'loadFile nat.elf\nloadFile levels.elf\nloadFile tcb.elf\nset unsafe true\nloadFile freeze.elf\nset unsafe false\nloadFile derived.elf\nloadFile %s\nloadFile final-checks.elf\nOS.exit\n' "$1" \
         | (cd "$LF_DIR" && "$TWELF" 2>&1)
 }
 

@@ -2,25 +2,19 @@
 %%% Level parameters
 %% def levelParamF
 %%% HOLE
-levelParamF/type-wf-sort : lvl.
+levelParamF/type-wf : of (eforall (esort (lvar z)) ([x] (eforall (esort (lvar z)) ([y] (esort (lvar z)))))) (esort _).
 
 %%% HOLE
-levelParamF/type-wf : of (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar liz)) ([y] (esort (lvar liz)))))) (esort levelParamF/type-wf-sort).
+levelParamF/value-typed : of (elam (esort (lvar z)) ([x] (elam (esort (lvar z)) ([y] x)))) (eforall (esort (lvar z)) ([x] (eforall (esort (lvar z)) ([y] (esort (lvar z)))))).
 
-%%% HOLE
-levelParamF/value-typed : of (elam (esort (lvar liz)) ([x] (elam (esort (lvar liz)) ([y] x)))) (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar liz)) ([y] (esort (lvar liz)))))).
+levelParamF/name : name "levelParamF" (is-decl (eforall (esort (lvar z)) ([x] (eforall (esort (lvar z)) ([y] (esort (lvar z)))))) (defn (elam (esort (lvar z)) ([x] (elam (esort (lvar z)) ([y] x)))))).
 
-levelParamF/name : name "levelParamF" (is-decl (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar liz)) ([y] (esort (lvar liz)))))) (defn (elam (esort (lvar liz)) ([x] (elam (esort (lvar liz)) ([y] x)))))).
-
-levelParamF/decl : declared "levelParamF" (eforall (esort (lvar liz)) ([x] (eforall (esort (lvar liz)) ([y] (esort (lvar liz)))))) (defn (elam (esort (lvar liz)) ([x] (elam (esort (lvar liz)) ([y] x)))))
+levelParamF/decl : declared "levelParamF" (eforall (esort (lvar z)) ([x] (eforall (esort (lvar z)) ([y] (esort (lvar z)))))) (defn (elam (esort (lvar z)) ([x] (elam (esort (lvar z)) ([y] x)))))
    = declared/ok levelParamF/name dkind-non-inductive/defn (dkind-ok/defn levelParamF/type-wf levelParamF/value-typed).
 
 %% def levelParams
 %%% HOLE
-levelParams/type-wf-sort : lvl.
-
-%%% HOLE
-levelParams/type-wf : of (eapp (eapp (econst "levelParamF" (lcons (lsucc lzero) lnil)) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))) (esort levelParams/type-wf-sort).
+levelParams/type-wf : of (eapp (eapp (econst "levelParamF" (lcons (lsucc lzero) lnil)) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))) (esort _).
 
 %%% HOLE
 levelParams/value-typed : of (eforall (esort lzero) ([x] x)) (eapp (eapp (econst "levelParamF" (lcons (lsucc lzero) lnil)) (esort lzero)) (eforall (esort lzero) ([x] (esort lzero)))).

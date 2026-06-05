@@ -1,20 +1,15 @@
 %%% Expected outcome: accept
 %%% Some level computation
-%solve nonneg_0 : 0 >= 0.
-
 %% def levelComp1
-levelComp1/type-wf-sort : lvl
-   = (lsucc (lsucc lzero)).
-
-levelComp1/type-wf : of (esort (lsucc lzero)) (esort levelComp1/type-wf-sort)
+levelComp1/type-wf : of (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = defeq/sort-refl.
 
 levelComp1/value-typed : of (esort (limax (lsucc lzero) lzero)) (esort (lsucc lzero))
    = (defeq/conv
        (defeq/sort-eq
-         (lvl-eq/le
-           (mleq/sL (mleq/imax-lzL (mleq/sR (mleq/self nonneg_0))))
-           (mleq/sL (mleq/sR (mleq/lz nonneg_0)))))
+         (eq-lvl/le
+           (leq-lvl/sR (leq-lvl/sL leq-lvl/lz))
+           (leq-lvl/sR (leq-lvl/sL (leq-lvl/imaxLz leq-lvl/self)))))
        defeq/sort-refl).
 
 levelComp1/name : name "levelComp1" (is-decl (esort (lsucc lzero)) (defn (esort (limax (lsucc lzero) lzero)))).

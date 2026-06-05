@@ -1,10 +1,7 @@
 %%% Expected outcome: accept
 %%% Type checking a non-dependent let
 %% def letType
-letType/type-wf-sort : lvl
-   = (lsucc (lsucc lzero)).
-
-letType/type-wf : of (esort (lsucc lzero)) (esort letType/type-wf-sort)
+letType/type-wf : of (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = defeq/sort-refl.
 
 letType/value-typed : of (eapp (elam (esort (lsucc lzero)) ([x] x)) (esort lzero)) (esort (lsucc lzero))

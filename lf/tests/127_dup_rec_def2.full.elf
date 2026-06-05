@@ -3,10 +3,7 @@
 %%% as `dup_rec_def2.not_rec`, it should catch some *other* constant being given
 %%% the name `dup_rec_def2.rec` that is reserved for the recursor.
 %% def dup_rec_def2.rec
-dup_rec_def2_rec/type-wf-sort : lvl
-   = (lsucc (lsucc lzero)).
-
-dup_rec_def2_rec/type-wf : of (esort (lsucc lzero)) (esort dup_rec_def2_rec/type-wf-sort)
+dup_rec_def2_rec/type-wf : of (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = defeq/sort-refl.
 
 dup_rec_def2_rec/value-typed : of (esort lzero) (esort (lsucc lzero))
@@ -18,10 +15,7 @@ dup_rec_def2_rec/decl : declared "dup_rec_def2.rec" (esort (lsucc lzero)) (defn 
    = declared/ok dup_rec_def2_rec/name dkind-non-inductive/defn (dkind-ok/defn dup_rec_def2_rec/type-wf dup_rec_def2_rec/value-typed).
 
 %% inductive dup_rec_def2
-dup_rec_def2/type-wf-sort : lvl
-   = (lsucc (lsucc lzero)).
-
-dup_rec_def2/type-wf : of (esort (lsucc lzero)) (esort dup_rec_def2/type-wf-sort)
+dup_rec_def2/type-wf : of (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = defeq/sort-refl.
 
 dup_rec_def2/ends-in-sort : ends-in-sort (esort (lsucc lzero))
@@ -35,19 +29,16 @@ dup_rec_def2/eisl : ends-in-sort-with-level (esort (lsucc lzero)) (lsucc lzero)
 dup_rec_def2/cnd : cnames-distinct (ccons "dup_rec_def2.mk" cnil)
    = (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil).
 
-dup_rec_def2/name : name "dup_rec_def2" (is-decl (esort (lsucc lzero)) (indt (ccons "dup_rec_def2.mk" cnil) liz)).
+dup_rec_def2/name : name "dup_rec_def2" (is-decl (esort (lsucc lzero)) (indt (ccons "dup_rec_def2.mk" cnil) z)).
 
-dup_rec_def2/decl : declared "dup_rec_def2" (esort (lsucc lzero)) (indt (ccons "dup_rec_def2.mk" cnil) liz)
+dup_rec_def2/decl : declared "dup_rec_def2" (esort (lsucc lzero)) (indt (ccons "dup_rec_def2.mk" cnil) z)
    = declared/ok-indt dup_rec_def2/name dup_rec_def2/rec-name dup_rec_def2/cnd (dkind-ok/indt dup_rec_def2/type-wf dup_rec_def2/ends-in-sort).
 
 %% ctor dup_rec_def2.mk (of dup_rec_def2)
-dup_rec_def2_mk/type-wf-sort : lvl
-   = (lsucc lzero).
-
-dup_rec_def2_mk/type-wf : of (econst "dup_rec_def2" lnil) (esort dup_rec_def2_mk/type-wf-sort)
+dup_rec_def2_mk/type-wf : of (econst "dup_rec_def2" lnil) (esort (lsucc lzero))
    = (defeq/const
        dup_rec_def2/decl
-       (inst-expr/sort (lvl-inst/succ lvl-inst/zero))).
+       (inst-expr/sort (inst-lvl/succ inst-lvl/zero))).
 
 dup_rec_def2_mk/positivity : ctor-positive "dup_rec_def2" lnil (econst "dup_rec_def2" lnil)
    = (ctor-positive/intro ([S] S) (ctor-spine/result applies-self/refl)).
@@ -58,13 +49,13 @@ dup_rec_def2_mk/cmem : cmem "dup_rec_def2.mk" (ccons "dup_rec_def2.mk" cnil)
 dup_rec_def2_mk/fuo : field-universes-ok (econst "dup_rec_def2" lnil) (lsucc lzero)
    = (field-universes-ok/done not-forall/const).
 
-dup_rec_def2_mk/name : name "dup_rec_def2.mk" (is-decl (econst "dup_rec_def2" lnil) (ctor "dup_rec_def2" liz)).
+dup_rec_def2_mk/name : name "dup_rec_def2.mk" (is-decl (econst "dup_rec_def2" lnil) (ctor "dup_rec_def2" z)).
 
-dup_rec_def2_mk/decl : declared "dup_rec_def2.mk" (econst "dup_rec_def2" lnil) (ctor "dup_rec_def2" liz)
+dup_rec_def2_mk/decl : declared "dup_rec_def2.mk" (econst "dup_rec_def2" lnil) (ctor "dup_rec_def2" z)
    = declared/ok-ctor dup_rec_def2_mk/name dup_rec_def2/name dup_rec_def2_mk/cmem dup_rec_def2/eisl dup_rec_def2_mk/fuo (dkind-ok/ctor dup_rec_def2_mk/type-wf dup_rec_def2_mk/positivity).
 
 %% recursor dup_rec_def2.not_rec (TCB-derived; informational only)
 %%   level params: u
-%%   type:   (eforall (eforall (econst "dup_rec_def2" lnil) ([x] (esort (lvar liz)))) ([x] (eforall (eapp x (econst "dup_rec_def2.mk" lnil)) ([y] (eforall (econst "dup_rec_def2" lnil) ([z] (eapp x z)))))))
+%%   type:   (eforall (eforall (econst "dup_rec_def2" lnil) ([x] (esort (lvar z)))) ([x] (eforall (eapp x (econst "dup_rec_def2.mk" lnil)) ([y] (eforall (econst "dup_rec_def2" lnil) ([w] (eapp x w)))))))
 %%   rules:
-%%     dup_rec_def2.not_rec … dup_rec_def2.mk … = (elam (eforall (econst "dup_rec_def2" lnil) ([x] (esort (lvar liz)))) ([x] (elam (eapp x (econst "dup_rec_def2.mk" lnil)) ([y] y))))   (0 fields)
+%%     dup_rec_def2.not_rec … dup_rec_def2.mk … = (elam (eforall (econst "dup_rec_def2" lnil) ([x] (esort (lvar z)))) ([x] (elam (eapp x (econst "dup_rec_def2.mk" lnil)) ([y] y))))   (0 fields)

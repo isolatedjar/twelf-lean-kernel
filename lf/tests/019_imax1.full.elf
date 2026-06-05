@@ -1,24 +1,17 @@
 %%% Expected outcome: accept
 %%% Type inference for forall using imax
-%solve nonneg_0 : 0 >= 0.
-
 %% def imax1
-imax1/type-wf-sort : lvl
-   = (limax (lsucc lzero) (lsucc lzero)).
-
-imax1/type-wf : of (eforall (esort lzero) ([x] (esort lzero))) (esort imax1/type-wf-sort)
+imax1/type-wf : of (eforall (esort lzero) ([x] (esort lzero))) (esort (limax (lsucc lzero) (lsucc lzero)))
    = (defeq/forall defeq/sort-refl ([x] ([h] defeq/sort-refl))).
 
 imax1/value-typed : of (elam (esort lzero) ([x] (eforall (esort (lsucc lzero)) ([y] x)))) (eforall (esort lzero) ([x] (esort lzero)))
    = (defeq/conv
        (defeq/forall
-         (defeq/sort-eq lvl-eq/refl)
+         (defeq/sort-eq eq-lvl/refl)
          ([x]
            ([h]
              (defeq/sort-eq
-               (lvl-eq/le
-                 (mleq/imax-lzL (mleq/self nonneg_0))
-                 (mleq/lz nonneg_0))))))
+               (eq-lvl/le leq-lvl/lz (leq-lvl/imaxLz leq-lvl/self))))))
        (defeq/lam
          defeq/sort-refl
          ([x] ([h] (defeq/forall defeq/sort-refl ([y] ([h1] h))))))).
