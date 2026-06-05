@@ -9,13 +9,14 @@ The goal of this project is to write a Lean kernel in Twelf. This means that,
 if a a file TEST.elf loads in Twelf like this:
 
 ```
-loadFile tcb.elf
+Config.read lf/sources.cfg
+Config.load
 set unsafe true
-loadFile freeze.elf
+loadFile lf/freeze.elf
 set unsafe false
-loadFile derived.elf
+loadFile lf/derived.elf
 loadFile TEST.elf
-loadFile final-checks.elf
+loadFile lf/final-checks.elf
 OS.exit
 ```
 
@@ -23,15 +24,20 @@ then that file encodes a valid Lean signature, and that any valid Lean
 signature can be encoded as such a file.
 
 **Important:** this requires a modified semantics of the `%freeze` and `%thaw`
-commands that is implemented on the `limited-thaw` branch here: 
+commands that is implemented on the `limited-thaw` branch here:
 https://github.com/robsimmons/twelf/tree/limited-thaw
 
 ## Evaluation pipeline
 
-Test inputs are not kept in this repo: they come from the sibling
-`../lean-kernel-arena` checkout. Run `scripts/build-arena-ndjson.sh` to build
-the arena's (non-heavy) test NDJSONs, then `scripts/gen-tests.sh` reads those
-NDJSONs and, for each, produces three files in `lf/tests/`:
+The original Lean source for inputs are not kept in this repo: they come from
+the sibling `../lean-kernel-arena` repository.
+
+- `scripts/build-arena-ndjson.sh` builds the arena's (lighter-weight) test
+  NDJSONs
+- `scripts/gen-tests.sh` reads those NDJSONs and, for each, produces three
+  files in `lf/tests/`
+
+The results of the `gen-tests` script are checked in to the repository.
 
 - A `.json` file that represents a non-structure-sharing version of the NDJSON
   signature; other than that it is in essentially the same format.

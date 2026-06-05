@@ -1,0 +1,170 @@
+%{!
+## Universe levels
+
+Universes can have free variables. Constants can be declared with a set of
+free universe variables; these are representd with de Bruijn indices.
+!}%
+
+lvl : type.
+
+lzero : lvl.
+lsucc : lvl -> lvl.
+lmax  : lvl -> lvl -> lvl.
+limax : lvl -> lvl -> lvl.
+lvar  : nat -> lvl.
+
+eq-lvl : lvl -> lvl -> type.
+eq-lvl/refl : eq-lvl L L.
+
+%{!
+### Single level substitution
+
+Individual level substitution is used in the inequality judgment for levels:
+`lvl-subst V I L L'` means that substituting `V` for `lvar I` in `L` yields `L'`.
+!}%
+
+if-eq-lvl : ord -> lvl -> lvl -> lvl -> type.
+if-eq-lvl/lt : if-eq-lvl lt _ L L.
+if-eq-lvl/eq : if-eq-lvl eq L _ L.
+if-eq-lvl/gt : if-eq-lvl gt _ L L.
+
+lvl-subst : lvl -> nat -> lvl -> lvl -> type.
+
+lvl-subst/zero : lvl-subst V I lzero lzero.
+lvl-subst/succ : lvl-subst V I (lsucc L) (lsucc L')
+                 <- lvl-subst V I L L'.
+lvl-subst/max  : lvl-subst V I (lmax L1 L2) (lmax L1' L2')
+                 <- lvl-subst V I L1 L1' 
+                 <- lvl-subst V I L2 L2'.
+lvl-subst/imax : lvl-subst V I (limax L1 L2) (limax L1' L2')
+                 <- lvl-subst V I L1 L1' 
+                 <- lvl-subst V I L2 L2'.
+lvl-subst/var  : lvl-subst V I (lvar J) L
+                 <- ord-nat I J O
+                 <- if-eq-lvl O V (lvar J) L.
+
+%{! #### Properties !}%
+
+%mode if-eq-lvl +O +LT +LF -L.
+%worlds () (if-eq-lvl _ _ _ _).
+%total [] (if-eq-lvl _ _ _ _).
+%unique if-eq-lvl +O +LT +LF -L.
+
+%mode lvl-subst +V +I +L -L'.
+%worlds () (lvl-subst _ _ _ _).
+%total T (lvl-subst _ _ T _).
+%unique lvl-subst +V +I +L -L'.
+
+%{! With `%solve`, Twelf can run this substitution jusgment. !}%
+
+%define example-subst-result = L
+%solve example-subst-deriv : {l} lvl-subst l (s z)
+  (limax (limax (lvar z) (lvar (s z))) (lmax lzero (lsucc (lvar (s z))))) 
+  (L l).
+
+example-subst-check : {l} eq-lvl 
+  (example-subst-result l)
+  (limax (limax (lvar z) l) (lmax lzero (lsucc l)))
+  = [l] eq-lvl/refl.
+
+%{!
+### Level inequality
+
+There are a couple of different ways of handling level inequality in for Lean
+universes. This *nearly* follows the definition from Mario Carneiro's thesis, 
+with `leq-lvl L L' N` capturing that `L <= L' + N`, but Carneiro's thesis has 
+`N` range over integers; I'm not actually sure if it's complete for relevant
+problems if `N` only ranges over natural numbers, but it's certainly sound.
+
+Despite being described by Carneiro as "algorithmic" inequality, this judgment
+is not algorithmic in Twelf and generally can't be run with %solve, since the
+last rule is not moded: it invents a variable out of nowhere. In order for
+this judgment to work as a logic program, we'd need to either add a "splitting
+order" as an input, or we'd need some complete way of deciding which variable
+to split on; both would complicate the judgment.
+!}%
+
+leq-lvl : lvl -> lvl -> nat -> type.
+leq-lvl/lz     : leq-lvl lzero L N.
+leq-lvl/self   : leq-lvl L L N.
+leq-lvl/sL     : leq-lvl (lsucc L) L' (s N)
+                 <- leq-lvl L L' N.
+leq-lvl/sR     : leq-lvl L (lsucc L') (s N)
+                 <- leq-lvl L L' N.
+leq-lvl/maxL   : leq-lvl (lmax L1 L2) L N
+                 <- leq-lvl L1 L N
+                 <- leq-lvl L2 L N.
+leq-lvl/maxR1  : leq-lvl L (lmax L1 L2) N
+                 <- leq-lvl L L1 N.
+leq-lvl/maxR2  : leq-lvl L (lmax L1 L2) N
+                 <- leq-lvl L L2 N.
+leq-lvl/imaxLz : leq-lvl (limax L1 lzero) L N
+                 <- leq-lvl lzero L N. 
+leq-lvl/imaxLs : leq-lvl (limax L1 (lsucc L2)) L N
+                 <- leq-lvl (lmax L1 (lsucc L2)) L N.
+leq-lvl/imaxLi : leq-lvl (limax L1 (limax L2 L3)) L N
+                 <- leq-lvl (lmax (limax L1 L3) (limax L2 L3)) L N.
+leq-lvl/imaxRi : leq-lvl L (limax L1 (limax L2 L3)) N
+                 <- leq-lvl L (lmax (limax L1 L3) (limax L2 L3)) N.
+leq-lvl/imaxLm : leq-lvl (limax L1 (lmax L2 L3)) L N 
+                 <- leq-lvl (lmax (limax L1 L2) (limax L1 L3)) L N.
+leq-lvl/imaxRm : leq-lvl L (limax L1 (lmax L2 L3)) N
+                 <- leq-lvl L (lmax (limax L1 L2) (limax L1 L3)) N.
+leq-lvl/split  : {I : nat}
+                 (leq-lvl A B N
+                 <- lvl-subst lzero I A Az
+                 <- lvl-subst lzero I B Bz
+                 <- leq-lvl Az Bz N
+                 <- lvl-subst (lsucc (lvar I)) I A As
+                 <- lvl-subst (lsucc (lvar I)) I B Bs
+                 <- leq-lvl As Bs N).
+
+%{! Level equality is easy to derive from level inequality !}%
+eq-lvl : lvl -> lvl -> type.
+
+eq-lvl/refl : eq-lvl L L.
+eq-lvl/le   : eq-lvl L L' 
+              <- leq-lvl L L' z 
+              <- leq-lvl L L' z.
+
+%{!
+### Simultaneous substitution
+
+When a constant is used, a substitution for _all_ of its universe variables
+must be given. A simultaneous substitution is syntactically just a list of
+levels; simultaneous substitution is total, but only if it is given a
+substitution that has mappings for every de Bruijn index in the input.
+!}%
+
+lvls : type.
+lnil  : lvls.
+lcons : lvl -> lvls -> lvls.
+
+nth-lvl : lvls -> nat -> lvl -> type.
+nth-lvl/z : nth-lvl (lcons L _) z L.
+nth-lvl/s : nth-lvl (lcons _ LS) (s N) L
+             <- nth-lvl LS N L.
+
+inst-lvl : lvls -> lvl -> lvl -> type.
+inst-lvl/zero : inst-lvl LS lzero lzero.
+inst-lvl/succ : inst-lvl LS (lsucc L) (lsucc L')
+                <- inst-lvl LS L L'.
+inst-lvl/max  : inst-lvl LS (lmax L1 L2) (lmax L1' L2')
+                <- inst-lvl LS L1 L1'
+                <- inst-lvl LS L2 L2'.
+inst-lvl/imax : inst-lvl LS (limax L1 L2) (limax L1' L2')
+                <- inst-lvl LS L1 L1'
+                <- inst-lvl LS L2 L2'.
+inst-lvl/var  : inst-lvl LS (lvar I) L
+                <- nth-lvl LS I L.
+
+%{! #### Properties !}%
+
+%mode nth-lvl +LS +I -L.
+%worlds () (nth-lvl _ _ _).
+%unique nth-lvl +LS +I -L.
+
+%mode inst-lvl +LS +L -L'.
+%worlds () (inst-lvl _ _ _).
+%unique inst-lvl +LS +L -L'.
+
