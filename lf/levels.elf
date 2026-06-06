@@ -71,10 +71,13 @@ example-subst-check : {l} eq-lvl
 ### Level inequality
 
 There are a couple of different ways of handling level inequality in for Lean
-universes. This *nearly* follows the definition from Mario Carneiro's thesis, 
-with `leq-lvl L L' N` capturing that `L <= L' + N`, but Carneiro's thesis has 
-`N` range over integers; I'm not actually sure if it's complete for relevant
-problems if `N` only ranges over natural numbers, but it's certainly sound.
+universes. This *nearly* follows the definition from Mario Carneiro's thesis,
+with `leq-lvl L L' N` capturing that `L <= L' + N`. Two exceptions:
+
+ - Carneiro's thesis has `N` range over integers; using nats is sound but
+   not necessarily complete.
+ - The rules `leq-lvl/imaxRz` and `leq-lvl/imaxRs` are missing in Carneiro's 
+   thesis; that appears to be a simple oversight.
 
 Despite being described by Carneiro as "algorithmic" inequality, this judgment
 is not algorithmic in Twelf and generally can't be run with %solve, since the
@@ -82,9 +85,6 @@ last rule is not moded: it invents a variable out of nowhere. In order for
 this judgment to work as a logic program, we'd need to either add a "splitting
 order" as an input, or we'd need some complete way of deciding which variable
 to split on; both would complicate the judgment.
-
-(Both `leq-lvl/imaxRz` and `leq-lvl/imaxRs` are missing in Carneiro's thesis,
-but that appears to be a simple oversight.)
 !}%
 
 leq-lvl : lvl -> lvl -> nat -> type.
