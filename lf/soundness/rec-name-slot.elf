@@ -1,55 +1,43 @@
-%%% Spec-compliance probe (NOT a False-route): the TCB still does not pin an
+%%% Spec-compliance probe (NOT a False-route): the TCB does not pin an
 %%% inductive's recursor to the canonical name `<ind>.rec`.
 %%%
-%%% The 2026-06-02 inductive rewrite added `declared/ok-indt`, which requires
-%%% `name MRec (is-rec-for N)` — the inductive must reserve *some* recursor-name
-%%% slot.  But MRec is UNCONSTRAINED: nothing forces it to equal `<ind>.rec`.
-%%% A translator that reserves a non-canonical recursor name (here
-%%% "Foo.evilrec") satisfies the premise while leaving "Foo.rec" free, so a junk
-%%% `def Foo.rec` can still squat on the canonical slot — an environment Lean
-%%% rejects (cf. arena tutorial 125/127 dup_rec_def).  `rec-slot-theft.elf`
-%%% (which DOES reserve "Foo.rec" canonically) is correctly rejected by
-%%% %unique name; this file dodges that by reserving the slot under a different
-%%% name.
+%%% After the 2026-06 refactor recursors are DERIVED (rec-derived), but
+%%% `declared/ok-indt` still only requires `name MRec (is-rec-for N)` for SOME
+%%% MRec (tcb.elf:856) — nothing forces MRec = `<ind>.rec`.  The TCB itself
+%%% flags this at tcb.elf:902-903 ("the remaining open issue (non-canonical
+%%% MRec)").  A translator reserves a non-canonical recursor name
+%%% ("Foo.evilrec") to seal the inductive, leaving "Foo.rec" free for a junk
+%%% `def Foo.rec` to squat — an environment Lean rejects (dup recursor slot).
 %%%
-%%% Why the fix is hard: the TCB has no string concatenation, so it cannot
-%%% express "MRec = N ++ \".rec\"".  Closing this needs either a built-in
-%%% name-shape check or a translator-side guarantee surfaced into the TCB
-%%% (see completeness-plan.md §3.3).
+%%% rec-slot-theft.elf (which reserves "Foo.rec" canonically) is correctly
+%%% caught by %unique name; this file dodges that by reserving a different name.
+%%% Closing it needs a name-shape check (`MRec = N ++ ".rec"`) — the TCB has no
+%%% string concatenation — or a translator-side guarantee surfaced into the TCB.
 %%%
-%%% The 2026-06-03 "Patch holes" commit did NOT add a name-shape check.  It
-%%% briefly read as green only because that commit changed two TCB signatures
-%%% (`count-leading-foralls/zero` dropped its `not-forall` premise; `declared/ok`
-%%% gained a `dkind-non-inductive K` premise) and this file still called the OLD
-%%% ones, ABORTing on a SCHEMATIC type mismatch rather than any real check.
-%%% Updating those two stale calls (done below — no change to exploit logic)
-%%% restores the genuine 💥.
-%%%
-%%% STATUS (2026-06-03): EXPECTED-FAIL — loads CLEAN, so check-soundness.sh
-%%% reports 💥.  Not a proof of False; a missing spec-compliance check.
+%%% STATUS (2026-06-06): EXPECTED-FAIL — loads CLEAN under the current TCB
+%%% (nat/levels/tcb), so check-soundness.sh reports 💥.  Migrated to the
+%%% post-refactor vocabulary (lvar nat indices, indt cnil z, derived recursors).
+%%% Not a proof of False; a missing spec-compliance check.
 
-%% Foo : Type 0, no ctors, no params.
+%% Foo : Type 0, no ctors, no params.  Reserve a NON-canonical recursor name
+%% ("Foo.evilrec") to satisfy declared/ok-indt's unconstrained MRec premise,
+%% leaving the canonical "Foo.rec" slot free.
 Foo/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = defeq/sort-refl.
-Foo/ends-in-sort : ends-in-sort (esort (lsucc lzero)) = ends-in-sort/sort.
-Foo/name : name "Foo" (is-decl (esort (lsucc lzero)) (indt cnil liz)).
-%% Reserve a NON-canonical recursor name to satisfy declared/ok-indt's MRec premise.
-%% Nothing in the TCB requires this to be "Foo.rec".
-Foo/evilrec-name : name "Foo.evilrec" (is-rec-for "Foo").
-Foo/clf : count-leading-foralls (esort (lsucc lzero)) liz
-   = count-leading-foralls/zero.
-Foo/cnd : cnames-distinct cnil = cnames-distinct/nil.
-Foo/decl : declared "Foo" (esort (lsucc lzero)) (indt cnil liz)
-   = declared/ok-indt Foo/name Foo/evilrec-name Foo/clf Foo/cnd
-       (dkind-ok/indt Foo/type-wf Foo/ends-in-sort).
+Foo/ends : ends-in-sort (esort (lsucc lzero)) = ends-in-sort/sort.
+Foo/name : name "Foo" (is-decl (esort (lsucc lzero)) (indt cnil z)).
+Foo/evilrec : name "Foo.evilrec" (is-rec-for "Foo").
+Foo/decl : declared "Foo" (esort (lsucc lzero)) (indt cnil z)
+   = declared/ok-indt Foo/name Foo/evilrec cnames-distinct/nil
+       (dkind-ok/indt Foo/type-wf Foo/ends).
 
-%% def Foo.rec : Type 0 := Foo  — a non-recursor squatting on the canonical
-%% recursor slot.  Lean rejects this (name collision with the reserved rec);
-%% the TCB accepts it because nothing claimed "Foo.rec".
+%% def Foo.rec : Type 0 := Foo  — squats on the canonical recursor slot.
+%% Lean rejects (collision with the reserved recursor); the TCB accepts
+%% because nothing claimed "Foo.rec".
 FooRec/type-wf : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero)))
    = defeq/sort-refl.
-FooRec/value-typed : defeq (econst "Foo" lnil) (econst "Foo" lnil) (esort (lsucc lzero))
-   = defeq/const Foo/decl (inst-expr/sort (lvl-inst/succ lvl-inst/zero)).
+FooRec/value : defeq (econst "Foo" lnil) (econst "Foo" lnil) (esort (lsucc lzero))
+   = defeq/const Foo/decl (inst-expr/sort (inst-lvl/succ inst-lvl/zero)).
 FooRec/name : name "Foo.rec" (is-decl (esort (lsucc lzero)) (defn (econst "Foo" lnil))).
 FooRec/decl : declared "Foo.rec" (esort (lsucc lzero)) (defn (econst "Foo" lnil))
-   = declared/ok FooRec/name dkind-non-inductive/defn (dkind-ok/defn FooRec/type-wf FooRec/value-typed).
+   = declared/ok FooRec/name dkind-non-inductive/defn (dkind-ok/defn FooRec/type-wf FooRec/value).

@@ -634,19 +634,6 @@ function buildNotForall(t: Expr): Fmt | null {
   }
 }
 
-// Structural witness for `count-leading-foralls T N`: T has at least N
-// leading Π binders.  Walks T for N steps; at each `forallE` introduce a
-// fresh LF binder and recurse on the body with N-1.  Terminates with
-// `count-leading-foralls/zero` (any T satisfies "at least 0 leading Πs").
-// Returns null only if N > T's actual leading-Π count.
-function buildCountLeadingForalls(t: Expr, n: number, used: string[] = []): Fmt | null {
-  if (n === 0) return atom("count-leading-foralls/zero");
-  if (t.kind !== "forallE") return null;
-  const x = freshVar(used);
-  const body = buildCountLeadingForalls(t.body, n - 1, [x, ...used]);
-  if (body === null) return null;
-  return app(atom("count-leading-foralls/succ"), lam(x, body));
-}
 
 // Build a `cnames` literal `(ccons "c_0" (ccons "c_1" ... cnil))` from a
 // list of ctor name-strings (already in cidx order).
@@ -1047,18 +1034,15 @@ function generateIndType(prover: Prover, t: IndType, ctorsForT: readonly IndCtor
       emit(`   = ${ppFmt(eislFmt, 5)}.`);
       emit(``);
     }
-    // §3.5: emit the count-leading-foralls and cnames-distinct witnesses
+    // §3.5: emit the cnames-distinct witness
     // that `declared/ok-indt` requires.  Both are structural / posit-and-
     // audited (the cnames-distinct leaves record `string-neq` posits that
     // the global `%query 0 * string-neq X X` audit catches if reflexive).
     //
-    // The `indt`'s NParams payload is the inductive's `numParams`.  The
-    // `count-leading-foralls` premise on `declared/ok-indt` is now an
-    // "at-least" judgment: the inductive's leading Π chain must have AT
-    // LEAST numParams binders.  Indices (the binders after the params,
-    // for an indexed inductive like Eq) are not part of NParams and the
-    // witness doesn't traverse them.  Pinning at numParams blocks the
-    // §3.2.2 over-claim attack while still allowing indexed inductives.
+    // The `indt`'s NParams payload is the inductive's `numParams`, carried
+    // unchecked (declared/ok-indt no longer pins it — field-universes-ok
+    // checks all leading binders uniformly, so there is no skip count to
+    // over-claim against).
     const ctorNames = ctorsForT.map((c) => nameToString(c.name));
     const ctorsCnames = ctorsToCnames(ctorNames);
     const nparamsLidx = lidxLit(t.numParams);

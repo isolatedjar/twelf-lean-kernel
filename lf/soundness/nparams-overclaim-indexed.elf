@@ -1,81 +1,15 @@
-%%% Soundness probe: the ctor field-universe check is bypassed by over-claiming
-%%% NParams on an INDEXED inductive.  This re-opens §3.2 (universe consistency)
-%%% by a different door than the catch-all bypass — and is introduced BY the
-%%% 2026-06-03 "Patch holes" fix itself.
-%%%
-%%%   inductive Idx : ∀ (_ : Type 0), Type 0          -- 1 leading Π = an INDEX
-%%%     | mk (a : Type 0) : Idx Prop                  -- field a : Type 0 at Sort 2 > Sort 1
-%%%
-%%% Lean rejects this: the field `a`'s type lives at Sort 2, above the
-%%% inductive's fixed Sort 1.  In the TCB, `field-universes-ok-skip-params
-%%% NParams T UInd` (on declared/ok-ctor) skips NParams leading binders of the
-%%% ctor before checking field sorts.  The patch pins NParams with
-%%% `count-leading-foralls T NParams`, but it was WEAKENED from "exactly N" to
-%%% "AT-LEAST N" to accommodate indexed inductives (whose type carries
-%%% numParams + numIndices leading Πs).  That bound lets a translator claim
-%%% NParams up to numParams + numIndices.  A ctor's leading binders, however,
-%%% are only the params — indices appear in its result, not as binders.  So
-%%% claiming NParams = 1 here (Idx has 0 params, 1 index) makes skip-params
-%%% consume the ctor's first FIELD (`a`), whose too-high universe is then never
-%%% checked.  The malformed ctor is accepted.
-%%%
-%%% A correct fix must pin NParams to the inductive's actual param count, not
-%%% its total leading-Π count — e.g. carry numIndices in the payload and check
-%%% leading-Π count = numParams + numIndices, or check the ctor's own leading
-%%% param-prefix against the inductive's rather than a bare "at-least" bound.
-%%%
-%%% STATUS (2026-06-03): EXPECTED-FAIL — loads CLEAN (Idx.mk accepted), so
-%%% check-soundness.sh reports 💥.  Demonstrates the MISSING CHECK is
-%%% bypassable; not by itself a proof of False (the Girard/Hurkens route is not
-%%% built here), same standard as universe-too-high-field.elf.
-
-%% Indexed inductive  Idx : ∀ (_ : Type 0), Type 0   (1 leading Π = an INDEX,
-%% zero real params).  Ctor  Idx.mk : ∀ (a : Type 0), Idx Prop  — the field
-%% `a : Type 0` lives at Sort 2 > the inductive's Sort 1, so Lean rejects it.
-%%
-%% BYPASS: the inductive's TYPE has 1 leading Π, so count-leading-foralls
-%% (now "at-least N") admits NParams = 1 even though numParams is really 0.
-%% declared/ok-ctor then runs field-universes-ok-skip-params 1, which SKIPS the
-%% ctor's first leading binder — the field `a` — so its universe is never
-%% checked.  The too-high field sails through.
-
-TIdxType : expr = eforall (esort (lsucc lzero)) ([_] esort (lsucc lzero)).
-ctorType : expr = eforall (esort (lsucc lzero)) ([a] eapp (econst "Idx" lnil) (esort lzero)).
-
-Idx/type-wf : defeq TIdxType TIdxType (esort (limax (lsucc (lsucc lzero)) (lsucc (lsucc lzero))))
-   = defeq/forall defeq/sort-refl ([x] [h] defeq/sort-refl).
-Idx/ends : ends-in-sort TIdxType = ends-in-sort/forall ([x] ends-in-sort/sort).
-Idx/eisl : ends-in-sort-with-level TIdxType (lsucc lzero) = ends-in-sort-with-level/forall ([x] ends-in-sort-with-level/sort).
-Idx/rec-name : name "Idx.rec" (is-rec-for "Idx").
-Idx/name : name "Idx" (is-decl TIdxType (indt (ccons "Idx.mk" cnil) (lis liz))).
-%% NParams claimed = 1, but Idx's type has only an INDEX, not a param.
-Idx/clf : count-leading-foralls TIdxType (lis liz)
-   = count-leading-foralls/succ ([x] count-leading-foralls/zero).
-Idx/cnd : cnames-distinct (ccons "Idx.mk" cnil)
-   = cnames-distinct/cons cnames-distinct/nil all-string-neq/nil.
-Idx/decl : declared "Idx" TIdxType (indt (ccons "Idx.mk" cnil) (lis liz))
-   = declared/ok-indt Idx/name Idx/rec-name Idx/clf Idx/cnd
-       (dkind-ok/indt Idx/type-wf Idx/ends).
-
-instTIdx : inst-expr TIdxType lnil TIdxType
-   = inst-expr/forall (inst-expr/sort (lvl-inst/succ lvl-inst/zero))
-       ([x] [hx] inst-expr/sort (lvl-inst/succ lvl-inst/zero)).
-
-%% `Idx Prop : Type 0` (Prop = esort lzero has type Type 0 = esort (lsucc lzero))
-idxProp-wf : defeq (eapp (econst "Idx" lnil) (esort lzero)) (eapp (econst "Idx" lnil) (esort lzero)) (esort (lsucc lzero))
-   = defeq/app (defeq/const Idx/decl instTIdx) defeq/sort-refl.
-
-Idxmk/type-wf : defeq ctorType ctorType (esort (limax (lsucc (lsucc lzero)) (lsucc lzero)))
-   = defeq/forall defeq/sort-refl ([a] [h] idxProp-wf).
-Idxmk/positivity : ctor-positive "Idx" lnil ctorType
-   = ctor-positive/intro ([S] eforall (esort (lsucc lzero)) ([a] eapp S (esort lzero)))
-       (ctor-spine/arg (strict-pos/no-occur (esort (lsucc lzero)) no-self-ref/sort)
-          ([y] [ny] ctor-spine/result (applies-self/app applies-self/refl))).
-%% The over-claim: skip 1 leading binder (the field a), never checking its sort.
-Idxmk/fuo : field-universes-ok-skip-params (lis liz) ctorType (lsucc lzero)
-   = field-universes-ok-skip-params/skip
-       ([a] [h] field-universes-ok-skip-params/start (field-universes-ok/done not-forall/app)).
-Idxmk/name : name "Idx.mk" (is-decl ctorType (ctor "Idx" liz)).
-Idxmk/decl : declared "Idx.mk" ctorType (ctor "Idx" liz)
-   = declared/ok-ctor Idxmk/name Idx/name cmem/here Idx/eisl Idxmk/fuo
-       (dkind-ok/ctor Idxmk/type-wf Idxmk/positivity).
+%%% Soundness regression (SUPERSEDED by the 2026-06 refactor).
+%%% The original attack over-claimed an inductive's NumParams so that
+%%% `field-universes-ok-skip-params/skip` would consume a real field binder as
+%%% a fake "param", dodging the field-universe check on an indexed inductive.
+%%% The refactor REMOVED skip-params entirely: `declared/ok-ctor` now runs
+%%% `field-universes-ok` over ALL leading Pi binders uniformly (tcb.elf), so
+%%% there is no skip count to over-claim against — the field is always checked
+%%% (cf. universe-too-high-field.elf).  The attack is structurally
+%%% inexpressible; this file asserts the now-unconditional check directly: a
+%%% Type-0 field demands `leq-lvl (imax 2 1) 1 z` (2 <= 1), which is false and
+%%% unbuildable.  Migrated 2026-06-06.  Expected: ABORT.
+bad : field-universes-ok (eforall (esort (lsucc lzero)) ([_] econst "Idx" lnil)) (lsucc lzero)
+   = field-universes-ok/forall defeq/sort-refl
+       (leq-lvl/imaxLs (leq-lvl/maxL leq-lvl/self leq-lvl/self))
+       ([a] [h] field-universes-ok/done not-forall/const).

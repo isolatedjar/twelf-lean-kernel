@@ -1,22 +1,9 @@
-%%% Soundness regression: variable elimination cannot prove a false level
-%%% inequality.
-%%%
-%%% This hand-written ADVERSARIAL development attempts to prove `succ u ≤ u`
-%%% (i.e. `leq-lvl (lsucc (lvar z)) (lvar z) z`), which is false — at the
-%%% valuation u = 0 it claims 1 ≤ 0.  The attack uses `leq-lvl/split` exactly
-%%% as the honest prover would: substitution computes the two branches.  The
-%%% obstruction is the zero branch `leq-lvl (lsucc lzero) lzero z`: no rule
-%%% derives this — `leq-lvl/sL` needs the offset to be of the form `(s N)`,
-%%% but here it's `z` (nat zero, with no predecessor), so the rule isn't
-%%% applicable.  No subderivation closes the zero branch.
-%%%
-%%% Expected outcome: ABORT.  (Run via scripts/check-soundness.sh.)  This
-%%% locks in that `leq-lvl/split` + the structural nat offset reject the
-%%% canonical false inequality rather than admitting it.
-
-%%% Bare obligation on the closed `leq-lvl` family — frozen by freeze.elf,
-%%% so leaving it without a body is rejected by Twelf's freeze check.  We
-%%% don't even bother sketching a "would-be" derivation: with `nat` offsets,
-%%% the impossible step is now a structural unification failure, not an
-%%% arithmetic-domain failure, so there's no `%solve`-able stub to point at.
-attack : leq-lvl (lsucc (lvar z)) (lvar z) z.
+%%% Soundness regression: the nat-offset `leq-lvl` cannot prove a false level
+%%% inequality.  `S u <= u` (leq-lvl (lsucc (lvar z)) (lvar z) z) reduces, via
+%%% leq-lvl/split's zero branch, to `1 <= 0` = leq-lvl (lsucc lzero) lzero z.
+%%% That leaf is UNPROVABLE: the only left-succ rule `leq-lvl/sL` concludes an
+%%% offset `(s N)`, never `z`, so it cannot fire at offset z, and no other rule
+%%% head-matches.  This is the nat soundness gate (replacing Carneiro's integer
+%%% `-1 >= 0` refutation).  The attempt below applies leq-lvl/sL at offset z;
+%%% Twelf rejects it (z vs s N) -> ABORT.  Migrated 2026-06-06.  Expected: ABORT.
+bad : leq-lvl (lsucc lzero) lzero z = leq-lvl/sL leq-lvl/lz.

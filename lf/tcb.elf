@@ -501,22 +501,10 @@ field-universes-ok/forall :
 %%% `lf/soundness/nparams-overclaim-indexed.elf` for verified
 %%% adversarial inputs.)
 
-%%% `count-leading-foralls` is also unused now (it existed only to pin
-%%% the deprecated NParams payload).  Kept as a no-op for backward
-%%% compatibility with any other consumers; if confirmed unused
-%%% elsewhere, can be deleted.
-
-count-leading-foralls : expr -> nat -> type.
-   %name count-leading-foralls CLF.
-
-%%% Zero base case: any T satisfies "at least 0 leading Πs", regardless
-%%% of its shape.  (Includes T being a Π itself — we stop counting.)
-count-leading-foralls/zero :
-   count-leading-foralls T z.
-
-count-leading-foralls/succ :
-   ({x : expr} count-leading-foralls (B x) N)
-   -> count-leading-foralls (eforall A B) (s N).
+%%% (`count-leading-foralls` used to pin the NParams payload here, but the
+%%% switch to checking ALL leading Π binders with `field-universes-ok` made
+%%% it dead — no rule consumed it.  Removed 2026-06-06; the `indt`'s NParams
+%%% payload is now carried unchecked, see the note at `declared/ok-indt`.)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Strict positivity for inductive constructors
@@ -842,15 +830,16 @@ declared/ok :
 %%%     a `def Foo.rec` can squat on the recursor slot because nothing
 %%%     was claimed there.  The reservation makes `%unique name` catch
 %%%     the collision (cf. `rec-slot-theft.elf`, which already passes).
-%%%   * `count-leading-foralls T NParams` — the inductive's NumParams
-%%%     payload must match the actual leading-Π count of its type.
-%%%     §3.2.2 NumParams-bypass: an adversarial translator was able to
-%%%     over-claim NumParams to make `field-universes-ok-skip-params/skip`
-%%%     consume a real field binder as a fake "param", bypassing the
-%%%     field-universe check.  Pinning NParams to T closes that.
 %%%   * `cnames-distinct Ctors` — see §3 below.  Required by §3.4 to kill
 %%%     the duplicate-ctor iota gap, but the premise lives here because
 %%%     the ctor list is on the inductive's reservation.
+%%%
+%%% NOTE: the `NParams` payload is carried UNCHECKED.  The old §3.2.2 fix
+%%% pinned it with `count-leading-foralls`, but the switch to checking ALL
+%%% leading Π binders uniformly with `field-universes-ok` (no skip-params)
+%%% made that pin unnecessary — there is no skip count to over-claim against,
+%%% so the field-universe check no longer trusts NParams.  NParams is retained
+%%% only as informational metadata (iota/projection stages may consult it).
 declared/ok-indt :
    name N (is-decl T (indt Ctors NParams))
    -> name MRec (is-rec-for N)

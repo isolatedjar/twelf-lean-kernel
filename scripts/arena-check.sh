@@ -50,7 +50,7 @@ fi
 
 # Sanity: the trusted base must be where we expect — otherwise we'd silently
 # load whatever Twelf finds via its search path.
-for f in tcb.elf freeze.elf derived.elf final-checks.elf; do
+for f in nat.elf levels.elf tcb.elf freeze.elf derived.elf final-checks.elf; do
     if [[ ! -f "$LF_DIR/$f" ]]; then
         echo "error: missing $LF_DIR/$f" >&2
         exit 3
@@ -94,7 +94,9 @@ run_twelf() {
     printf '%s' "$out"
 }
 
-frozen_script="loadFile tcb.elf
+frozen_script="loadFile nat.elf
+loadFile levels.elf
+loadFile tcb.elf
 set unsafe true
 loadFile freeze.elf
 set unsafe false
@@ -111,7 +113,9 @@ fi
 # Stage 3: unfrozen load — disambiguate holes (decline) vs concrete error
 # (reject).  Same chain minus freeze.  An accept here means the only thing
 # the frozen load was rejecting were unfilled HOLEs.
-unfrozen_script="loadFile tcb.elf
+unfrozen_script="loadFile nat.elf
+loadFile levels.elf
+loadFile tcb.elf
 loadFile derived.elf
 loadFile $FULL
 loadFile final-checks.elf

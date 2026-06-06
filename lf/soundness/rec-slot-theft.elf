@@ -1,31 +1,13 @@
 %%% Soundness regression: recursor-slot theft.
-%%%
-%%% This file is a hand-written ADVERSARIAL development.  It models an
-%%% attack where a `def Foo.rec` is declared in the presence of an
-%%% inductive `Foo` that has already reserved the string "Foo.rec" via
-%%% `is-rec-for`.  The reservation and the def's `name` constant both claim
-%%% the same string with different nkind values; %unique name in
-%%% final-checks.elf detects the collision and ABORTs the load.
-%%%
-%%% In a legitimate development, the inductive's `Foo/rec-name` reservation
-%%% ensures that the canonical recursor slot "Foo.rec" is occupied.  Any
-%%% attempt to declare a plain `def Foo.rec = <fake value>` — as a way to
-%%% hijack delta-reduction of the recursor name — conflicts with the
-%%% reservation and is rejected globally.
-%%%
-%%% Expected outcome: ABORT.  `foo_rec_fake/name` conflicts with `foo/rec-name`
-%%% under %unique name, so the load ABORTs when final-checks.elf runs.
-
-%% Minimal Prop-valued inductive Foo.
-foo/wf       : defeq (esort lzero) (esort lzero) (esort (lsucc lzero))
-             = defeq/sort-eq lvl-eq/refl.
-foo/eis      : ends-in-sort (esort lzero) = ends-in-sort/sort.
-foo/name     : name "Foo" (is-decl (esort lzero) indt).
-foo/rec-name : name "Foo.rec" (is-rec-for "Foo").   %% reservation from the inductive
-foo/decl     : declared "Foo" (esort lzero) indt
-             = declared/ok foo/name (dkind-ok/indt foo/wf foo/eis).
-
-%% Attack: declare `def Foo.rec = esort lzero`, stealing the recursor slot.
-%% "Foo.rec" is already claimed as `is-rec-for "Foo"` above.
-%% %unique name fires because "Foo.rec" is given two different nkind values.
-foo_rec_fake/name : name "Foo.rec" (is-decl (esort lzero) (defn (esort lzero))).
+%%% Foo reserves the CANONICAL recursor slot "Foo.rec" (is-rec-for); a `def
+%%% Foo.rec` then claims the same string as a `defn` — %unique name in
+%%% final-checks.elf detects the two meanings and ABORTs.  Migrated to the
+%%% post-refactor vocabulary (2026-06-06).  Expected: ABORT (correct reject).
+Foo/wf   : defeq (esort lzero) (esort lzero) (esort (lsucc lzero)) = defeq/sort-refl.
+Foo/ends : ends-in-sort (esort lzero) = ends-in-sort/sort.
+Foo/name : name "Foo" (is-decl (esort lzero) (indt cnil z)).
+Foo/recname : name "Foo.rec" (is-rec-for "Foo").   %% canonical reservation
+Foo/decl : declared "Foo" (esort lzero) (indt cnil z)
+   = declared/ok-indt Foo/name Foo/recname cnames-distinct/nil (dkind-ok/indt Foo/wf Foo/ends).
+%% Attack: `def Foo.rec := Foo` claims "Foo.rec" a SECOND way -> %unique fires.
+foo_rec_fake/name : name "Foo.rec" (is-decl (esort lzero) (defn (econst "Foo" lnil))).

@@ -1,0 +1,90 @@
+%%% Soundness exploit (NEW, found 2026-06-06): `le-eligible/csingle` admits
+%%% LARGE elimination of a single-constructor `Prop` regardless of whether its
+%%% constructor carries DATA fields — but a 1-ctor Prop is a genuine subsingleton
+%%% (and thus large-eliminable) only when all its fields are proofs/Prop-valued.
+%%%
+%%%   inductive Box : Prop where | mk (a : D) : Box      -- D : Type 0
+%%%
+%%% Box is a valid Lean inductive (Prop impredicativity admits the Type field),
+%%% but Lean forbids large-eliminating it (you cannot project the D out of a
+%%% proof of Box).  The TCB's recursor derivation `rec-derived/enum` gates
+%%% elimination strength ONLY through `le-eligible UInd Ctors U`, and
+%%% `le-eligible/csingle` (tcb.elf) accepts ANY single-ctor inductive at ANY
+%%% motive level U — no check that the ctor's fields are Prop-valued.  So the
+%%% TCB DERIVES `Box.rec.{u}` at a polymorphic (large) motive level, witnessed
+%%% by `boxRecDecl : declared "Box.rec" <large-elim type> (irec "Box")` below.
+%%%
+%%% With large-elim Box.rec and proof irrelevance (`mk a1 ≡ mk a2` for distinct
+%%% data a1,a2 : D), the standard collapse gives `m a1 ≡ m a2` for the minor
+%%% premise m — i.e. it transports data equality out of a Prop, the Girard/
+%%% large-elim-of-Prop route to `False` (cf. large-elim-prop.elf).
+%%%
+%%% STATUS (2026-06-06): LATENT.  This file LOADS CLEAN — the unsound recursor
+%%% is admitted (check-soundness.sh reports 💥).  A *closed proof of False* is
+%%% not yet constructible only because Phase-1 has no field-bearing iota rule
+%%% (`Box.rec M m (mk a) ≡ m a`); every iota rule today matches only no-field
+%%% ctors `(econst C lnil)`.  When Phase-2 adds field iota, this becomes a live
+%%% False route UNLESS `le-eligible/csingle` is strengthened to require the
+%%% single ctor's fields to be Prop-valued (Lean's subsingleton-elimination
+%%% condition).
+%% D : Type 0 (a data type for the field)
+D/wf   : defeq (esort (lsucc lzero)) (esort (lsucc lzero)) (esort (lsucc (lsucc lzero))) = defeq/sort-refl.
+D/name : name "D" (is-decl (esort (lsucc lzero)) ax).
+D/decl : declared "D" (esort (lsucc lzero)) ax = declared/ok D/name dkind-non-inductive/ax (dkind-ok/ax D/wf).
+
+%% Box : Prop  with one ctor  Box.mk : D -> Box   (a DATA field, not a proof).
+%% Box is a valid Lean inductive (Prop impredicativity admits the Type field),
+%% but it is NOT a subsingleton, so large elimination must be forbidden.
+Box/wf   : defeq (esort lzero) (esort lzero) (esort (lsucc lzero)) = defeq/sort-refl.
+Box/ends : ends-in-sort (esort lzero) = ends-in-sort/sort.
+Box/name : name "Box" (is-decl (esort lzero) (indt (ccons "Box.mk" cnil) z)).
+Box/recname : name "Box.rec" (is-rec-for "Box").
+Box/decl : declared "Box" (esort lzero) (indt (ccons "Box.mk" cnil) z)
+   = declared/ok-indt Box/name Box/recname
+       (cnames-distinct/cons cnames-distinct/nil all-string-neq/nil)
+       (dkind-ok/indt Box/wf Box/ends).
+
+dNeqBox : string-neq "D" "Box".
+
+Box_mk/wf : defeq (eforall (econst "D" lnil) ([_] econst "Box" lnil))
+                  (eforall (econst "D" lnil) ([_] econst "Box" lnil))
+                  (esort (limax (lsucc lzero) lzero))
+   = defeq/forall (defeq/const D/decl (inst-expr/sort (inst-lvl/succ inst-lvl/zero)))
+       ([a] [h] defeq/const Box/decl (inst-expr/sort inst-lvl/zero)).
+Box_mk/pos : ctor-positive "Box" lnil (eforall (econst "D" lnil) ([_] econst "Box" lnil))
+   = ctor-positive/intro ([S] eforall (econst "D" lnil) ([_] S))
+       (ctor-spine/arg (strict-pos/no-occur (econst "D" lnil) (no-self-ref/const dNeqBox))
+          ([y] [ny] ctor-spine/result applies-self/refl)).
+Box_mk/fuo : field-universes-ok (eforall (econst "D" lnil) ([_] econst "Box" lnil)) lzero
+   = field-universes-ok/forall (defeq/const D/decl (inst-expr/sort (inst-lvl/succ inst-lvl/zero)))
+       (leq-lvl/imaxLz leq-lvl/lz)
+       ([a] [h] field-universes-ok/done not-forall/const).
+Box_mk/name : name "Box.mk" (is-decl (eforall (econst "D" lnil) ([_] econst "Box" lnil)) (ctor "Box" z)).
+Box_mk/decl : declared "Box.mk" (eforall (econst "D" lnil) ([_] econst "Box" lnil)) (ctor "Box" z)
+   = declared/ok-ctor Box_mk/name Box/name cmem/here ends-in-sort-with-level/sort Box_mk/fuo
+       (dkind-ok/ctor Box_mk/wf Box_mk/pos).
+
+%% Derive Box.rec at a LARGE / polymorphic motive level U = lvar z.
+boxRecTy : enum-rec-type
+     (eforall (eforall (econst "Box" lnil) ([_] esort (lvar z)))
+        ([M] eforall (eforall (econst "D" lnil) ([a1] eapp M (eapp (econst "Box.mk" lnil) a1)))
+                     ([m] eforall (econst "Box" lnil) ([t] eapp M t))))
+     "Box" lnil (ccons "Box.mk" cnil) (lvar z)
+   = enum-rec-type/intro
+       ([M] [hM] enum-rec-body/minor-1f
+                   (defeq/const D/decl (inst-expr/sort (inst-lvl/succ inst-lvl/zero)))
+                   ([m] [hm] enum-rec-body/done)).
+
+boxRec : rec-derived "Box.rec"
+     (eforall (eforall (econst "Box" lnil) ([_] esort (lvar z)))
+        ([M] eforall (eforall (econst "D" lnil) ([a1] eapp M (eapp (econst "Box.mk" lnil) a1)))
+                     ([m] eforall (econst "Box" lnil) ([t] eapp M t))))
+   = rec-derived/enum Box/decl Box/recname boxRecTy ends-in-sort-with-level/sort le-eligible/csingle.
+
+%% The smoking gun: a large-elim recursor for a non-subsingleton Prop is ADMITTED.
+boxRecDecl : declared "Box.rec"
+     (eforall (eforall (econst "Box" lnil) ([_] esort (lvar z)))
+        ([M] eforall (eforall (econst "D" lnil) ([a1] eapp M (eapp (econst "Box.mk" lnil) a1)))
+                     ([m] eforall (econst "Box" lnil) ([t] eapp M t))))
+     (irec "Box")
+   = rec-derived-declared boxRec Box/recname.
