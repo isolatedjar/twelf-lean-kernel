@@ -209,9 +209,9 @@ The essential-metadata audits live on `declared/ok-indt` and
 | Check                                                     | Our TCB                          | Status                                       |
 | --------------------------------------------------------- | -------------------------------- | -------------------------------------------- |
 | Inductive type ends in `Sort _`                           | `ends-in-sort`                   | ✓                                            |
-| `count-leading-foralls T NParams`                         | premise of `declared/ok-indt`    | ✓ (≥ NParams; closes the over-claim attack)  |
+| NParams payload                                           | carried unchecked on `indt`      | ✓ no longer pinned — `field-universes-ok` checks all binders, no skip count to over-claim (`count-leading-foralls` removed 2026-06-06) |
 | `cnames-distinct Ctors`                                   | premise of `declared/ok-indt`    | ✓ (via `string-neq` posit + global %query)   |
-| `name MRec (is-rec-for N)` reserved by indt               | premise of `declared/ok-indt`    | ◑ MRec unconstrained; see §3.3                |
+| `name MRec (is-rec-for N)` reserved by indt               | premise of `declared/ok-indt`    | ◑ MRec bound to a *re-derived* `<ind>.rec`; should carry the NDJSON's recorded `recs[].name` — decline-level, NOT soundness; see §3.3 |
 | `cmem N Ctors` (ctor's name in parent's list)             | premise of `declared/ok-ctor`    | ✓                                            |
 | Field-universe constraint (`field-universes-ok`)          | premise of `declared/ok-ctor`    | ✓ (translator-side prover fills `fuo`)        |
 | Strict positivity                                         | `ctor-positive` + `no-self-ref`  | ✓ (single-self, non-nested)                  |
@@ -282,28 +282,97 @@ over-claims `NParams` to make `/skip` consume real field binders runs
 out of leading Πs in the inductive's type and the `count-leading-foralls`
 witness fails to inhabit.
 
-### 3.3 Open: recursor-name canonicality
+### 3.3 recursor-name canonicality — reframed: NOT a soundness invariant
 
-`declared/ok-indt` requires `name MRec (is-rec-for N)` for some MRec.
-A trusted translator picks `MRec = "<ind>.rec"` and the canonical name
-slot is occupied; a junk `def <ind>.rec` then collides under
-`%unique name` (the `rec-slot-theft` pattern, which the TCB already
-catches).
+**Old framing (superseded).** `declared/ok-indt` requires `name MRec
+(is-rec-for N)` for *some* MRec, unconstrained.  The worry was that an
+adversarial translator picks a non-canonical MRec (`"Foo.evilrec"`),
+leaving `"Foo.rec"` free for a junk def, and that closing this needs a
+string-shape predicate (`N ++ ".rec" = MRec`, no LF primitive) or a
+posit-and-audit on concatenation.  `rec-name-slot.elf` was filed 💥 on
+this basis.  **This is the wrong model** — see below.
 
-The remaining gap: an adversarial translator can pick a non-canonical
-MRec (e.g. `"Foo.evilrec"`) and the `is-rec-for` premise still inhabits,
-leaving `"Foo.rec"` free for a junk def.  Closing this requires either
-(a) a string-shape predicate (no LF primitive for `N ++ ".rec" = MRec`)
-or (b) a TCB-side posit-and-audit on rec-name canonicality, paralleling
-the `string-neq` pattern but for concatenation — same fundamental
-problem (the audit has to *check* a posited concat claim, which requires
-inspecting string structure).
+**Finding (2026-06-06): the inductive↔recursor binding is already
+explicit in the NDJSON, by containment.**  lean4export emits one record
+per inductive family — `{"inductive": {"types":[…], "ctors":[…],
+"recs":[…]}}` — with the recursor(s) bundled in `recs`, each carrying its
+own `name` and reduction `rules` that reference the family's own ctors.
+In `lf/tests/030_boolType.json`:
 
-Best practical fix: leave the gap, document the translator's
-canonicality as a precondition, and hand-verify `generate-twelf.ts`
-always emits `name "<ind>.rec" (is-rec-for "<ind>")`.  The trust
-deferral is small and audit-local.  The `rec-name-slot.elf` hand-written
-regression remains 💥 as a known limitation.
+```
+"kind": "inductive",
+"types":     [ { "name": ["Bool"], … } ]                 # the inductive   (lines 5–7)
+"ctors":     [ ["Bool","false"], ["Bool","true"] ]        #                 (line 14)
+"recursors": [ { "name": ["Bool","rec"],                  # recursor: bundled + named (lines 32–34)
+                 "rules": [ {"ctor":["Bool","false"], …},  # rules ref Bool's own ctors (lines 80,113)
+                            {"ctor":["Bool","true"],  …} ] } ]
+```
+
+(`parse.ts:141` `indRecSpec` has a `name` field; `parse.ts:179` `recs:
+z.array(indRecSpec)` is a *sub-field of the `inductive` object*; the IR
+keeps it bundled as `IndInductive.recursors`, `parse.ts:387`.)  So a
+kernel reading the NDJSON never has to *infer* which recursor is Foo's,
+nor *assume* it is named `Foo.rec`: containment answers "which recursor",
+and `recs[].name` records the name verbatim.  The spec-level requirement
+(Carneiro / lean4export) is only that Foo's recursor be **identifiable
+and unique**, which containment already gives.  A non-canonical name is
+at most a **decline** ("not recognizable canonical Lean"), never
+unsoundness.
+
+**Why the gap appears at all — the generator discards the bundling.**
+`generate-twelf.ts:1021` emits
+
+```js
+emit(`${mn}/rec-name : name "${declName}.rec" (is-rec-for "${declName}").`);
+```
+
+It *re-derives* `<ind>.rec` from the inductive's name and ignores the
+recorded `recs[].name` (consulted only for the preflight large-elim check
+at `:825` and the human-readable comment at `:975`).  Flattening the
+bundled recursor to a free `is-rec-for "<ind>"` reservation keyed on a
+*synthesized* name is what manufactures the "must be `Foo.rec`"
+obligation.  Note the `rec-name-slot` attack is **not even reachable
+through the real pipeline**: the generator *always* reserves `<ind>.rec`,
+so no exported environment produces the `Foo.evilrec` reservation —
+`rec-name-slot.elf` is a hand-written-`.elf`-only artifact.
+
+**Sketch of the fix (carry the bundled identity; don't re-derive the
+name).**
+
+1. *Generator.* Replace the synthesized name at `:1021` with the recorded
+   one from the bundled recursor, and key `rec-derived/enum`'s RecName +
+   the iota LHS `econst RecName` off it too:
+
+   ```js
+   const recName = nameToString(ind.recursors[k].name);   // the NDJSON's recs[].name
+   emit(`${mn}/rec-name : name "${recName}" (is-rec-for "${declName}").`);
+   ```
+
+   The recursor's identity now flows from NDJSON containment, not a
+   naming convention.  `tcb.elf` is unchanged: `declared/ok-indt` keeps
+   `name MRec (is-rec-for N)` — MRec is just bound to the *recorded*
+   name rather than a guessed one.
+
+2. *Uniqueness stays free.* `%unique name` still catches a `def`
+   colliding with the recursor at *its actual name* — the
+   `rec-slot-theft` pattern is unaffected.
+
+3. *Canonicality → optional decline, translator-side.* If desired, the
+   generator checks `recName == declName ++ ".rec"` and on mismatch emits
+   `%%% SKIP` (→ decline, exit 2), noting "non-canonical recursor name."
+   This is a spec-compliance courtesy in `generate-twelf.ts`, **not** a
+   TCB premise — superseding old options (a) string-shape predicate and
+   (b) posit-and-audit; neither is needed.
+
+4. *Reclassify the regression.* `rec-name-slot.elf` stops being a 💥.
+   Delete it or re-file as a *decline* expectation; the genuine soundness
+   story (a junk `def` stealing the recursor slot) is already covered by
+   `rec-slot-theft.elf` under `%unique`.
+
+**Net:** no NDJSON format change — the binding is already explicit by
+containment.  The work is translation-side: stop re-deriving `<ind>.rec`,
+carry the recorded recursor name as the recursor's identity, and treat
+canonicality as a decline rather than a soundness condition.
 
 ### 3.4 Derived recursors (`rec-derived`)
 
