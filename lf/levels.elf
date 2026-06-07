@@ -127,25 +127,24 @@ leq-lvl/split  : {I : nat}
 %{!
 #### Properties
 
-While the rule `leq-lvl/imaxRs` seems to be necessary missing from Carneiro's 
-formalization, the corresponding rule that would be naturally named 
-`leq-lvl/imaxRz` is admissible:
+The rule `leq-lvl/imaxRs` seems to be both necessary and inadvertently missing
+from Carneiro's formalization. The seemingly-corresponding rule that
+`L <= 0 + N` implies `L <= (imax L' 0) + N` is admissible as a special case of
+a more general "weakening" property: `L <= 0 + N` implies `L <= L' + N` for
+any L'.
 
-```
-leq-lvl/imaxRz : leq-lvl L (limax L1 lzero) N
-                 <- leq-lvl L lzero N.
-```
-
-A couple of effectiveness lemmas (https://twelf.org/wiki/effectiveness-lemma/)
-are required to witness the totality of the `ord-nat`, `if-eq-lvl`, and
-`lvl-subst` relations.
+We can prove this weakening property in Twelf, though first we need a few
+effectiveness lemmas (https://twelf.org/wiki/effectiveness-lemma/) that 
+establish totality for `ord-nat`, `if-eq-lvl`, and `lvl-subst` relations as
+methatheorems.
 !}%
 
 ord-eff : {N:nat} {M:nat} {O:ord} ord-nat N M O -> type.
 ord-eff/lt   : ord-eff z (s N) gt ord-nat/lt.
 ord-eff/eq   : ord-eff z z eq ord-nat/eq.
 ord-eff/gt   : ord-eff (s N) z lt ord-nat/gt.
-ord-eff/cong : ord-eff (s N) (s M) O (ord-nat/cong D) <- ord-eff N M O D.
+ord-eff/cong : ord-eff (s N) (s M) O (ord-nat/cong D) 
+                <- ord-eff N M O D.
 
 %mode ord-eff +N +M -O -D.
 %worlds () (ord-eff _ _ _ _).
@@ -165,9 +164,11 @@ subst-eff/zero : subst-eff V I lzero lzero lvl-subst/zero.
 subst-eff/succ : subst-eff V I (lsucc L) (lsucc L') (lvl-subst/succ D)
                   <- subst-eff V I L L' D.
 subst-eff/max  : subst-eff V I (lmax A B) (lmax A' B') (lvl-subst/max DB DA)
-                  <- subst-eff V I A A' DA <- subst-eff V I B B' DB.
+                  <- subst-eff V I A A' DA
+                  <- subst-eff V I B B' DB.
 subst-eff/imax : subst-eff V I (limax A B) (limax A' B') (lvl-subst/imax DB DA)
-                  <- subst-eff V I A A' DA <- subst-eff V I B B' DB.
+                  <- subst-eff V I A A' DA
+                  <- subst-eff V I B B' DB.
 subst-eff/var  : subst-eff V I (lvar J) L (lvl-subst/var Deq Dord)
                   <- ord-eff I J O Dord
                   <- ifeq-eff O V (lvar J) L Deq.
@@ -176,41 +177,48 @@ subst-eff/var  : subst-eff V I (lvar J) L (lvl-subst/var Deq Dord)
 %worlds () (subst-eff _ _ _ _ _).
 %total L (subst-eff _ _ L _ _).
 
-%{! 
-With effectiveness lemmas in tow, we can prove that whenever a derivation of 
-`L <= 0 + N` exists, a derivation of `L <= (imax L' 0) + N` exists by 
-induction on the given derivation. The central observation is that there are
-two ways to proof  !}%
+%{!
+With the effectiveness lemmas in hand, we can prove the weakening property by
+induction on the derivation of `L <= 0 + N`. The interesting cases are the 
+leaf cases: we can immediately prove `L <= 0 + N` by `leq-lvl/lz` or
+`leq-lvl/self`; both of these imply `L` is zero, so we can prove `L <= L' + N`
+in both cases with `leq-lvl/lz`.
 
-%%% imaxRz-adm L1 D D' : from D : leq-lvl L lzero N, construct
-%%% D' : leq-lvl L (limax L1 lzero) N, using only the remaining rules.
-imaxRz-adm : {L1:lvl} leq-lvl L lzero N -> leq-lvl L (limax L1 lzero) N -> type.
-%mode imaxRz-adm +L1 +D -D'.
-imaxRz-adm/lz     : imaxRz-adm L1 leq-lvl/lz leq-lvl/lz.
-imaxRz-adm/self   : imaxRz-adm L1 leq-lvl/self leq-lvl/lz.
-imaxRz-adm/sL     : imaxRz-adm L1 (leq-lvl/sL D) (leq-lvl/sL D')
-                     <- imaxRz-adm L1 D D'.
-imaxRz-adm/maxL   : imaxRz-adm L1 (leq-lvl/maxL DB DA) (leq-lvl/maxL DB' DA')
-                     <- imaxRz-adm L1 DA DA' 
-                     <- imaxRz-adm L1 DB DB'.
-imaxRz-adm/imaxLz : imaxRz-adm L1 (leq-lvl/imaxLz D) (leq-lvl/imaxLz D') 
-                     <- imaxRz-adm L1 D D'.
-imaxRz-adm/imaxLs : imaxRz-adm L1 (leq-lvl/imaxLs D) (leq-lvl/imaxLs D')
-                     <- imaxRz-adm L1 D D'.
-imaxRz-adm/imaxLi : imaxRz-adm L1 (leq-lvl/imaxLi D) (leq-lvl/imaxLi D')
-                     <- imaxRz-adm L1 D D'.
-imaxRz-adm/imaxLm : imaxRz-adm L1 (leq-lvl/imaxLm D) (leq-lvl/imaxLm D')
-                     <- imaxRz-adm L1 D D'.
-imaxRz-adm/split  : imaxRz-adm L1
-      (leq-lvl/split I P_succ lvl-subst/zero S_As P_zero lvl-subst/zero S_Az)
-      (leq-lvl/split I P_succ' (lvl-subst/imax lvl-subst/zero S_L1s) S_As
-                              P_zero' (lvl-subst/imax lvl-subst/zero S_L1z) S_Az)
-                     <- subst-eff lzero I L1 L1z S_L1z
-                     <- subst-eff (lsucc (lvar I)) I L1 L1s S_L1s
-                     <- imaxRz-adm L1z P_zero P_zero'
-                     <- imaxRz-adm L1s P_succ P_succ'.
-%worlds () (imaxRz-adm _ _ _).
-%total D (imaxRz-adm _ D _).
+Everything else is bookkeeping, though in the case of `split` it's extensive
+bookkeeping.
+!}%
+
+leq-weaken-r : {L':lvl} leq-lvl L lzero N -> leq-lvl L L' N -> type.
+leq-weaken-r/lz     : leq-weaken-r L' leq-lvl/lz leq-lvl/lz.
+leq-weaken-r/self   : leq-weaken-r L' leq-lvl/self leq-lvl/lz.
+leq-weaken-r/sL     : leq-weaken-r L' (leq-lvl/sL D) (leq-lvl/sL D')
+                       <- leq-weaken-r L' D D'.
+leq-weaken-r/maxL   : leq-weaken-r L' (leq-lvl/maxL DB DA) (leq-lvl/maxL DB' DA')
+                       <- leq-weaken-r L' DA DA'
+                       <- leq-weaken-r L' DB DB'.
+leq-weaken-r/imaxLz : leq-weaken-r L' (leq-lvl/imaxLz D) (leq-lvl/imaxLz D')
+                       <- leq-weaken-r L' D D'.
+leq-weaken-r/imaxLs : leq-weaken-r L' (leq-lvl/imaxLs D) (leq-lvl/imaxLs D')
+                       <- leq-weaken-r L' D D'.
+leq-weaken-r/imaxLi : leq-weaken-r L' (leq-lvl/imaxLi D) (leq-lvl/imaxLi D')
+                       <- leq-weaken-r L' D D'.
+leq-weaken-r/imaxLm : leq-weaken-r L' (leq-lvl/imaxLm D) (leq-lvl/imaxLm D')
+                       <- leq-weaken-r L' D D'.
+leq-weaken-r/split  : leq-weaken-r L'
+      (leq-lvl/split I P_succ _ S_As P_zero _ S_Az: leq-lvl L lzero N)
+      (leq-lvl/split I P_succ' S_RBs S_As P_zero' S_RBz S_Az: leq-lvl L L' N)
+                     <- subst-eff lzero I L' L'z 
+                         (S_RBz: lvl-subst lzero I L' L'z)
+                     <- leq-weaken-r L'z P_zero 
+                         (P_zero': leq-lvl Lz L'z N)
+                     <- subst-eff (lsucc (lvar I)) I L' L's 
+                         (S_RBs: lvl-subst (lsucc (lvar I)) I L' L's)
+                     <- leq-weaken-r L's P_succ 
+                         (P_succ': leq-lvl Ls L's N).
+
+%mode leq-weaken-r +L' +D -D'.
+%worlds () (leq-weaken-r _ _ _).
+%total D (leq-weaken-r _ D _).
 
 %{! Level equality is easy to derive from level inequality !}%
 eq-lvl : lvl -> lvl -> type.
