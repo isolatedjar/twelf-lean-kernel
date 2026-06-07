@@ -116,13 +116,13 @@ leq-lvl/imaxLm : leq-lvl (limax L1 (lmax L2 L3)) L N
 leq-lvl/imaxRm : leq-lvl L (limax L1 (lmax L2 L3)) N
                   <- leq-lvl L (lmax (limax L1 L2) (limax L1 L3)) N.
 leq-lvl/split  : {I : nat}
-                 (leq-lvl A B N
+                 leq-lvl A B N
                   <- lvl-subst lzero I A Az
                   <- lvl-subst lzero I B Bz
                   <- leq-lvl Az Bz N
                   <- lvl-subst (lsucc (lvar I)) I A As
                   <- lvl-subst (lsucc (lvar I)) I B Bs
-                  <- leq-lvl As Bs N).
+                  <- leq-lvl As Bs N.
 
 %{!
 #### Properties
@@ -241,21 +241,21 @@ nth-lvl/s : nth-lvl (lcons _ LS) (s N) L
 inst-lvl : lvls -> lvl -> lvl -> type.
 inst-lvl/zero : inst-lvl LS lzero lzero.
 inst-lvl/succ : inst-lvl LS (lsucc L) (lsucc L')
-                <- inst-lvl LS L L'.
+                 <- inst-lvl LS L L'.
 inst-lvl/max  : inst-lvl LS (lmax L1 L2) (lmax L1' L2')
-                <- inst-lvl LS L1 L1'
-                <- inst-lvl LS L2 L2'.
+                 <- inst-lvl LS L1 L1'
+                 <- inst-lvl LS L2 L2'.
 inst-lvl/imax : inst-lvl LS (limax L1 L2) (limax L1' L2')
-                <- inst-lvl LS L1 L1'
-                <- inst-lvl LS L2 L2'.
+                 <- inst-lvl LS L1 L1'
+                 <- inst-lvl LS L2 L2'.
 inst-lvl/var  : inst-lvl LS (lvar I) L
-                <- nth-lvl LS I L.
+                 <- nth-lvl LS I L.
 
 inst-lvls : lvls -> lvls -> lvls -> type.
 inst-lvls/nil  : inst-lvls LS lnil lnil.
 inst-lvls/cons : inst-lvls LS (lcons L' LS') (lcons L'' LS'')
-                 <- inst-lvl LS L' L''
-                 <- inst-lvls LS LS' LS''.
+                  <- inst-lvl LS L' L''
+                  <- inst-lvls LS LS' LS''.
 
 %{! #### Properties !}%
 
