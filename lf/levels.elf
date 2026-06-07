@@ -32,16 +32,16 @@ lvl-subst : lvl -> nat -> lvl -> lvl -> type.
 
 lvl-subst/zero : lvl-subst V I lzero lzero.
 lvl-subst/succ : lvl-subst V I (lsucc L) (lsucc L')
-                 <- lvl-subst V I L L'.
+                  <- lvl-subst V I L L'.
 lvl-subst/max  : lvl-subst V I (lmax L1 L2) (lmax L1' L2')
-                 <- lvl-subst V I L1 L1' 
-                 <- lvl-subst V I L2 L2'.
+                  <- lvl-subst V I L1 L1' 
+                  <- lvl-subst V I L2 L2'.
 lvl-subst/imax : lvl-subst V I (limax L1 L2) (limax L1' L2')
-                 <- lvl-subst V I L1 L1' 
-                 <- lvl-subst V I L2 L2'.
+                  <- lvl-subst V I L1 L1' 
+                  <- lvl-subst V I L2 L2'.
 lvl-subst/var  : lvl-subst V I (lvar J) L
-                 <- ord-nat I J O
-                 <- if-eq-lvl O V (lvar J) L.
+                  <- ord-nat I J O
+                  <- if-eq-lvl O V (lvar J) L.
 
 %{! #### Properties !}%
 
@@ -76,8 +76,8 @@ with `leq-lvl L L' N` capturing that `L <= L' + N`. Two exceptions:
 
  - Carneiro's thesis has `N` range over integers; using nats is sound but
    not necessarily complete.
- - The rules `leq-lvl/imaxRz` and `leq-lvl/imaxRs` are missing in Carneiro's 
-   thesis; that appears to be a simple oversight.
+ - The rule `leq-lvl/imaxRs` is missing in Carneiro's thesis; that appears to
+   be a simple oversight.
 
 Despite being described by Carneiro as "algorithmic" inequality, this judgment
 is not algorithmic in Twelf and generally can't be run with %solve, since the
@@ -91,38 +91,38 @@ leq-lvl : lvl -> lvl -> nat -> type.
 leq-lvl/lz     : leq-lvl lzero L N.
 leq-lvl/self   : leq-lvl L L N.
 leq-lvl/sL     : leq-lvl (lsucc L) L' (s N)
-                 <- leq-lvl L L' N.
+                  <- leq-lvl L L' N.
 leq-lvl/sR     : leq-lvl L (lsucc L') N
-                 <- leq-lvl L L' (s N).
+                  <- leq-lvl L L' (s N).
 leq-lvl/maxL   : leq-lvl (lmax L1 L2) L N
-                 <- leq-lvl L1 L N
-                 <- leq-lvl L2 L N.
+                  <- leq-lvl L1 L N
+                  <- leq-lvl L2 L N.
 leq-lvl/maxR1  : leq-lvl L (lmax L1 L2) N
-                 <- leq-lvl L L1 N.
+                  <- leq-lvl L L1 N.
 leq-lvl/maxR2  : leq-lvl L (lmax L1 L2) N
-                 <- leq-lvl L L2 N.
+                  <- leq-lvl L L2 N.
 leq-lvl/imaxLz : leq-lvl (limax L1 lzero) L N
-                 <- leq-lvl lzero L N.
+                  <- leq-lvl lzero L N.
 leq-lvl/imaxLs : leq-lvl (limax L1 (lsucc L2)) L N
-                 <- leq-lvl (lmax L1 (lsucc L2)) L N.
+                  <- leq-lvl (lmax L1 (lsucc L2)) L N.
 leq-lvl/imaxRs : leq-lvl L (limax L1 (lsucc L2)) N
-                 <- leq-lvl L (lmax L1 (lsucc L2)) N.
+                  <- leq-lvl L (lmax L1 (lsucc L2)) N.
 leq-lvl/imaxLi : leq-lvl (limax L1 (limax L2 L3)) L N
-                 <- leq-lvl (lmax (limax L1 L3) (limax L2 L3)) L N.
+                  <- leq-lvl (lmax (limax L1 L3) (limax L2 L3)) L N.
 leq-lvl/imaxRi : leq-lvl L (limax L1 (limax L2 L3)) N
-                 <- leq-lvl L (lmax (limax L1 L3) (limax L2 L3)) N.
+                  <- leq-lvl L (lmax (limax L1 L3) (limax L2 L3)) N.
 leq-lvl/imaxLm : leq-lvl (limax L1 (lmax L2 L3)) L N
-                 <- leq-lvl (lmax (limax L1 L2) (limax L1 L3)) L N.
+                  <- leq-lvl (lmax (limax L1 L2) (limax L1 L3)) L N.
 leq-lvl/imaxRm : leq-lvl L (limax L1 (lmax L2 L3)) N
-                 <- leq-lvl L (lmax (limax L1 L2) (limax L1 L3)) N.
+                  <- leq-lvl L (lmax (limax L1 L2) (limax L1 L3)) N.
 leq-lvl/split  : {I : nat}
-                 (leq-lvl A B N
-                 <- lvl-subst lzero I A Az
-                 <- lvl-subst lzero I B Bz
-                 <- leq-lvl Az Bz N
-                 <- lvl-subst (lsucc (lvar I)) I A As
-                 <- lvl-subst (lsucc (lvar I)) I B Bs
-                 <- leq-lvl As Bs N).
+                 leq-lvl A B N
+                  <- lvl-subst lzero I A Az
+                  <- lvl-subst lzero I B Bz
+                  <- leq-lvl Az Bz N
+                  <- lvl-subst (lsucc (lvar I)) I A As
+                  <- lvl-subst (lsucc (lvar I)) I B Bs
+                  <- leq-lvl As Bs N.
 
 %{! Level equality is easy to derive from level inequality !}%
 eq-lvl : lvl -> lvl -> type.
@@ -153,21 +153,21 @@ nth-lvl/s : nth-lvl (lcons _ LS) (s N) L
 inst-lvl : lvls -> lvl -> lvl -> type.
 inst-lvl/zero : inst-lvl LS lzero lzero.
 inst-lvl/succ : inst-lvl LS (lsucc L) (lsucc L')
-                <- inst-lvl LS L L'.
+                 <- inst-lvl LS L L'.
 inst-lvl/max  : inst-lvl LS (lmax L1 L2) (lmax L1' L2')
-                <- inst-lvl LS L1 L1'
-                <- inst-lvl LS L2 L2'.
+                 <- inst-lvl LS L1 L1'
+                 <- inst-lvl LS L2 L2'.
 inst-lvl/imax : inst-lvl LS (limax L1 L2) (limax L1' L2')
-                <- inst-lvl LS L1 L1'
-                <- inst-lvl LS L2 L2'.
+                 <- inst-lvl LS L1 L1'
+                 <- inst-lvl LS L2 L2'.
 inst-lvl/var  : inst-lvl LS (lvar I) L
-                <- nth-lvl LS I L.
+                 <- nth-lvl LS I L.
 
 inst-lvls : lvls -> lvls -> lvls -> type.
 inst-lvls/nil  : inst-lvls LS lnil lnil.
 inst-lvls/cons : inst-lvls LS (lcons L' LS') (lcons L'' LS'')
-                 <- inst-lvl LS L' L''
-                 <- inst-lvls LS LS' LS''.
+                  <- inst-lvl LS L' L''
+                  <- inst-lvls LS LS' LS''.
 
 %{! #### Properties !}%
 
