@@ -76,8 +76,8 @@ with `leq-lvl L L' N` capturing that `L <= L' + N`. Two exceptions:
 
  - Carneiro's thesis has `N` range over integers; using nats is sound but
    not necessarily complete.
- - The rule `leq-lvl/imaxRs` is missing in Carneiro's thesis; that appears to
-   be a simple oversight.
+ - The rule `leq-lvl/imaxRs` is missing in Carneiro's thesis but is necessary
+   to prove facts like `1 <= imax 0 1 + 0`.
 
 Despite being described by Carneiro as "algorithmic" inequality, this judgment
 is not algorithmic in Twelf and generally can't be run with %solve, since the
@@ -127,11 +127,10 @@ leq-lvl/split  : {I : nat}
 %{!
 #### Properties
 
-The rule `leq-lvl/imaxRs` seems to be both necessary and inadvertently missing
-from Carneiro's formalization. The seemingly-corresponding rule that
-`L <= 0 + N` implies `L <= (imax L' 0) + N` is admissible as a special case of
-a more general "weakening" property: `L <= 0 + N` implies `L <= L' + N` for
-any L'.
+The rule `leq-lvl/imaxRs` is necessary, but the seemingly-corresponding rule
+that `L <= 0 + N` implies `L <= (imax L' 0) + N` is admissible as a special
+case of a more general weakening property: `L <= 0 + N` implies `L <= L' + N`
+for any L'.
 
 We can prove this weakening property in Twelf, though first we need a few
 effectiveness lemmas (https://twelf.org/wiki/effectiveness-lemma/) that 
