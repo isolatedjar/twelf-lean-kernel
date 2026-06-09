@@ -848,7 +848,28 @@ function generateInductive(prover: Prover, ind: Decl & { kind: "inductive" }): v
   for (const t of ind.types) {
     const indName = nameToString(t.name);
     const ctorsForT = ind.ctors.filter((c) => nameToString(c.induct) === indName);
-    generateIndType(prover, t, ctorsForT);
+    // §3.3: bind MRec to the recorded `recs[].name` rather than a
+    // synthesized `${indName}.rec`.  The NDJSON's `inductive` record
+    // bundles `recs[]` inside the family; for non-mutual inductives
+    // there's one recursor, used verbatim.  For mutual families we
+    // fall back to the `<indName>.<...>` prefix.
+    const rec =
+      ind.types.length === 1
+        ? ind.recursors[0]
+        : ind.recursors.find((r) => nameToString(r.name).startsWith(`${indName}.`));
+    // Canonicality decline: a non-canonical recursor name is not a
+    // soundness gap (the TCB binds MRec to whatever name we recorded),
+    // but it's also not a representable Lean kernel env — Lean's
+    // canonical recursor is always `<ind>.rec`.  Treat as a translator-
+    // side decline so the arena classifies the test correctly (bad
+    // tests expecting reject pass via 🤷, good tests would fail).
+    if (rec !== undefined && nameToString(rec.name) !== `${indName}.rec`) {
+      skip(
+        `inductive ${indName} — non-canonical recursor name "${nameToString(rec.name)}" (expected "${indName}.rec")`,
+      );
+      return;
+    }
+    generateIndType(prover, t, ctorsForT, rec);
   }
   // Constructors.
   for (const c of ind.ctors) {
@@ -995,7 +1016,12 @@ function emitRecursorComment(r: IndRecursor): void {
   });
 }
 
-function generateIndType(prover: Prover, t: IndType, ctorsForT: readonly IndCtor[]): void {
+function generateIndType(
+  prover: Prover,
+  t: IndType,
+  ctorsForT: readonly IndCtor[],
+  rec: IndRecursor | undefined,
+): void {
   const declName = nameToString(t.name);
   const mn = mangle(t.name);
   withLevelParams(t.levelParams, () => {
@@ -1016,9 +1042,16 @@ function generateIndType(prover: Prover, t: IndType, ctorsForT: readonly IndCtor
       `${mn}/ends-in-sort`,
       concat(text("ends-in-sort "), tDoc),
     );
-    // Reserve the canonical recursor slot: %unique name ensures no other
-    // declaration can claim this string (e.g., a def with the recursor name).
-    emit(`${mn}/rec-name : name "${declName}.rec" (is-rec-for "${declName}").`);
+    // §3.3: reserve the recorded recursor name, not a synthesized one.
+    // The NDJSON's `inductive` record bundles its recursors by
+    // containment, so the inductive↔recursor binding is already
+    // explicit at the source level; flattening it to a `<ind>.rec`
+    // convention would manufacture an artificial soundness gap.  If
+    // the env doesn't carry a recursor (atypical but possible), fall
+    // back to the canonical name.  `%unique name` still catches a
+    // junk `def` colliding with the *actual* reserved name.
+    const recName = rec ? nameToString(rec.name) : `${declName}.rec`;
+    emit(`${mn}/rec-name : name "${recName}" (is-rec-for "${declName}").`);
     emit(``);
     // §3.1 / §3.5: emit the inductive's `ends-in-sort-with-level` witness
     // *once* on the inductive (it's a property of the inductive's type

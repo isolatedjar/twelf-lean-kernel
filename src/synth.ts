@@ -7,7 +7,7 @@
 // β/δ-reduction obligations. Anything unhandled → null (→ HOLE), never wrong.
 
 import { freshVar, levelParamIndices, mangle, recordStringNeq } from "./render.ts";
-import type { Expr, Fmt, Level, Name, ParsedEnv } from "./shared.ts";
+import type { Expr, Fmt, IndType, Level, Name, ParsedEnv } from "./shared.ts";
 import { app, atom, lam, nameToString } from "./shared.ts";
 
 const ANON: Name = { kind: "anon" };
@@ -84,11 +84,19 @@ export function buildEnvMap(env: ParsedEnv): EnvMap {
         // shape rec-derived/enum currently covers.  Other shapes leave
         // recursorOf undefined → recursor decl synth fails → env
         // declines.  (Phase 2 in completeness-plan §3.6.)
+        //
+        // §3.3: parent-inductive lookup uses NDJSON containment, not
+        // a name-suffix convention.  `d.recursors` is bundled inside
+        // the `inductive` family record, so for non-mutual (single
+        // type) the parent is `d.types[0]`; for mutual we still need
+        // a heuristic (the IR doesn't carry an explicit type→recursor
+        // link), and we fall back to the `<tname>.` name prefix.
         const recName = nameToString(r.name);
-        const parentIndN = recName.endsWith(".rec") ? recName.slice(0, -4) : null;
-        const parentInd = parentIndN
-          ? d.types.find((t) => nameToString(t.name) === parentIndN)
-          : undefined;
+        const parentInd: IndType | undefined =
+          d.types.length === 1
+            ? d.types[0]
+            : d.types.find((t) => recName.startsWith(`${nameToString(t.name)}.`));
+        const parentIndN = parentInd ? nameToString(parentInd.name) : null;
         const ctorsForInd = parentIndN
           ? d.ctors.filter((c) => nameToString(c.induct) === parentIndN)
           : [];
@@ -1820,28 +1828,98 @@ export function buildEnumRecType(
   return app(atom("enum-rec-type/intro"), lam(M, lam(hM, body)));
 }
 
-// Structural witness for `le-eligible UInd Ctors U`.  Pattern-matches on
-// Ctors first (subsingleton cases need no mleq), then if ≥2 ctors decides
-// between `non-prop` (UInd ≥ 1) and `prop-prop` (UInd ≡ 0 ∧ U ≡ 0) via
-// `proveMleq` (each call's offset is concrete = 0).
-//
-// Returns null when neither rule's premises can be proved — e.g.
-// non-Prop UInd that's not statically ≥ 1 (parametric), or ≥2-ctor Prop
-// where U is statically non-Prop (the large-elim attack).  Null → HOLE →
-// freeze rejects → the recursor declines.  That's exactly the desired
-// soundness behavior.
-export function buildLeEligible(uInd: Level, numCtors: number, u: Level): Fmt | null {
-  if (numCtors <= 1) {
-    return atom(numCtors === 0 ? "le-eligible/cnil" : "le-eligible/csingle");
+// Structural witness for `ctor-fields-prop CType` (tcb.elf): walks
+// CType's Π chain demanding each domain has sort lzero (Prop).  Used
+// only by csingle-prop's subsingleton elimination gate (1-ctor Prop
+// inductive ⟹ ctor's fields must be Prop).  Returns null if any
+// field's sort isn't statically derivable as Prop.
+function buildCtorFieldsProp(
+  t: Expr,
+  used: string[],
+  envMap: EnvMap,
+): Fmt | null {
+  if (t.kind !== "forallE") {
+    const nf = notForallAtom(t);
+    if (nf === null) return null;
+    return app(atom("ctor-fields-prop/done"), nf);
   }
-  // ≥2 ctors.  Try non-prop first: mleq 1 UInd 0.
+  // Domain A must have type (esort lzero).  Synthesize defeq A A T'
+  // and prove T' ≡ (esort lzero) via reduceToSort + sort-level check.
+  const rA = synthRec(t.type, [], used, envMap);
+  if (rA === null) return null;
+  let domProof = rA.proof;
+  let uA = sortLevel(rA.ty);
+  if (uA === null) {
+    const r = reduceToSort(rA.ty, rA.proof, envMap, [], used);
+    if (r === null) return null;
+    domProof = r.proof;
+    uA = r.level;
+  }
+  // Must be lzero (Prop) specifically; we don't allow imax-disguised
+  // levels here because the soundness condition needs UA ≡ 0 directly.
+  if (uA.kind !== "zero") return null;
+  // Recurse under HOAS binders.
+  const x = freshVar(used);
+  const usedX = [x, ...used];
+  const h = freshHyp(usedX);
+  const usedH = [h, ...usedX];
+  const body = buildCtorFieldsProp(t.body, usedH, envMap);
+  if (body === null) return null;
+  return app(atom("ctor-fields-prop/forall"), domProof, lam(x, lam(h, body)));
+}
+
+// Structural witness for `le-eligible IndN UInd Ctors U` (tcb.elf).
+// Mario's subsingleton + large-elim restrictions:
+//   * 0 ctors: vacuous (any U).
+//   * 1 ctor, UInd ≥ 1 (non-Prop): csingle-nonprop, any U.
+//   * 1 ctor, UInd ≡ Prop: csingle-prop — ctor's fields must be Prop.
+//   * ≥2 ctors, UInd ≥ 1: non-prop, any U.
+//   * ≥2 ctors, UInd ≡ Prop: prop-prop, U must also be Prop.
+//
+// Returns null when no variant's premises can be proved — null → HOLE
+// → freeze rejects → the recursor declines.  Soundness behavior.
+//
+// `firstCtorMangleName` and `firstCtorType` are needed only for the
+// csingle-prop variant (looking up the ctor's declared witness and
+// walking its fields).  Pass `null` when numCtors !== 1.
+export function buildLeEligible(
+  uInd: Level,
+  numCtors: number,
+  u: Level,
+  firstCtorMangleName: string | null,
+  firstCtorType: Expr | null,
+  envMap: EnvMap,
+): Fmt | null {
+  if (numCtors === 0) return atom("le-eligible/cnil");
   const one: Level = { kind: "succ", arg: { kind: "zero" } };
   const zero: Level = { kind: "zero" };
+  if (numCtors === 1) {
+    // Try csingle-nonprop first (UInd ≥ 1): cheaper, broader.
+    const nonPropProof = proveMleq(one, uInd, 0);
+    if (nonPropProof !== null) {
+      return app(atom("le-eligible/csingle-nonprop"), nonPropProof);
+    }
+    // Fall back to csingle-prop: UInd ≡ Prop + ctor's fields all Prop.
+    if (firstCtorMangleName === null || firstCtorType === null) return null;
+    const uIndLeZ = proveMleq(uInd, zero, 0);
+    const zLeUInd = proveMleq(zero, uInd, 0);
+    if (uIndLeZ === null || zLeUInd === null) return null;
+    const cfp = buildCtorFieldsProp(firstCtorType, [], envMap);
+    if (cfp === null) return null;
+    return app(
+      atom("le-eligible/csingle-prop"),
+      uIndLeZ,
+      zLeUInd,
+      atom(`${firstCtorMangleName}/decl`),
+      cfp,
+    );
+  }
+  // ≥2 ctors.  Try non-prop first: leq-lvl 1 UInd 0.
   const nonPropProof = proveMleq(one, uInd, 0);
   if (nonPropProof !== null) {
     return app(atom("le-eligible/non-prop"), nonPropProof);
   }
-  // Fall back to prop-prop: UInd ≡ 0 ∧ U ≡ 0 (both via two-sided mleq).
+  // Fall back to prop-prop: UInd ≡ 0 ∧ U ≡ 0 (both via two-sided leq-lvl).
   const uIndLeZ = proveMleq(uInd, zero, 0);
   const zLeUInd = proveMleq(zero, uInd, 0);
   const uLeZ = proveMleq(u, zero, 0);
@@ -1863,7 +1941,22 @@ function buildRecursorDeclared(
 ): Fmt | null {
   const ert = buildEnumRecType(rec.ctors, envMap);
   if (ert === null) return null;
-  const lee = buildLeEligible(rec.indUInd, rec.ctors.length, rec.motiveU);
+  const firstCtor = rec.ctors[0];
+  // `mangle` applies the same `[^A-Za-z0-9_] -> _` substitution to the
+  // Name's stringification.  Since EnvEntry.recursorOf.ctors[].name is
+  // already a string (nameToString applied at construction), reapply
+  // the substitution directly.
+  const firstCtorMangleName = firstCtor
+    ? firstCtor.name.replace(/[^A-Za-z0-9_]/g, "_")
+    : null;
+  const lee = buildLeEligible(
+    rec.indUInd,
+    rec.ctors.length,
+    rec.motiveU,
+    firstCtorMangleName,
+    firstCtor ? firstCtor.type : null,
+    envMap,
+  );
   if (lee === null) return null;
   const recDerived = app(
     atom("rec-derived/enum"),

@@ -335,48 +335,9 @@ cnames-distinct/cons : cnames-distinct Rest
                     -> all-string-neq C Rest
                     -> cnames-distinct (ccons C Rest).
 
-%%% --- Large-elimination eligibility (§3.1 / `large-elim-prop.elf`) ----
-%%%
-%%% Lean's rule (simplified for non-recursive enum inductives, which are
-%%% the only shape `enum-rec-type` covers — see §3.1's notes on the
-%%% canonical-schema family for future generalization).  For an inductive
-%%% `IndN : Sort UInd` with constructors `Ctors`, a recursor whose motive
-%%% targets `Sort U` is sound iff:
-%%%
-%%%   * `Ctors` has ≤1 element (subsingleton — any U), OR
-%%%   * `UInd` is ≥ Sort 1 (not Prop — any U), OR
-%%%   * Both `UInd` and `U` are Prop (= lzero).
-%%%
-%%% The ≥2-ctor Prop case with non-Prop U is the Girard route: combined
-%%% with proof-irrelevance, it derives `defeq P Q` for distinct
-%%% propositions (see `lf/soundness/large-elim-prop.elf`).
-%%%
-%%% Level-equality checks use `leq-lvl` (Carneiro's algorithmic ≤) so
-%%% imax-disguised cases like `Sort (imax 1 0)` correctly normalize to
-%%% Prop and trip the prop-prop rule — covers `arena bad/large-elim-
-%%% imax-prop.ndjson`.
-
-le-eligible : lvl -> cnames -> lvl -> type.   %name le-eligible LEE.
-
-%%% Subsingletons: any motive target U.
-le-eligible/cnil    : le-eligible UInd cnil U.
-le-eligible/csingle : le-eligible UInd (ccons C cnil) U.
-
-%%% ≥2 ctors AND UInd ≥ Sort 1: no restriction.  `leq-lvl (lsucc lzero) UInd z`
-%%% holds iff every valuation puts UInd ≥ 1.
-le-eligible/non-prop :
-   leq-lvl (lsucc lzero) UInd z
-   -> le-eligible UInd (ccons C1 (ccons C2 Rest)) U.
-
-%%% ≥2 ctors AND UInd ≡ Prop: motive U must also be ≡ Prop.  Both `≡`
-%%% checks via leq-lvl's two-sided bridge — necessary so imax-disguised
-%%% UInd (e.g. `limax 1 0`) and U normalize through.
-le-eligible/prop-prop :
-   leq-lvl UInd lzero z
-   -> leq-lvl lzero UInd z
-   -> leq-lvl U    lzero z
-   -> leq-lvl lzero U    z
-   -> le-eligible UInd (ccons C1 (ccons C2 Rest)) U.
+%%% Large-elimination eligibility (`le-eligible`) and the subsingleton-
+%%% elim helper `ctor-fields-prop` live further down (after `not-forall`
+%%% and `declared` — both required by the rule premises).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Declaration Well-Formedness
@@ -1038,6 +999,98 @@ enum-rec-type/intro :
 %%% Empty, Bool, PropTwo.  Future stages add one constructor each per
 %%% inductive shape — see completeness-plan §3.6 for the roadmap.
 
+%%% --- Large-elimination eligibility (§3.1 / `large-elim-prop.elf`) ----
+%%%
+%%% Lean's rule (simplified for non-recursive enum inductives, which are
+%%% the only shape `enum-rec-type` covers — see §3.1's notes on the
+%%% canonical-schema family for future generalization).  For an inductive
+%%% `IndN : Sort UInd` with constructors `Ctors`, a recursor whose motive
+%%% targets `Sort U` is sound iff:
+%%%
+%%%   * `Ctors` is empty (vacuous — any U), OR
+%%%   * `Ctors` has 1 element AND `UInd` ≥ Sort 1 (non-Prop subsingleton
+%%%     — any U), OR
+%%%   * `Ctors` has 1 element AND `UInd` ≡ Prop AND the ctor's fields
+%%%     are all Prop-valued (Mario's subsingleton condition for Prop —
+%%%     closes the `large-elim-csingle-field` exploit), OR
+%%%   * `Ctors` has ≥2 elements AND `UInd` ≥ Sort 1 (non-Prop — any U),
+%%%     OR
+%%%   * `Ctors` has ≥2 elements AND both `UInd` and `U` are Prop.
+%%%
+%%% The ≥2-ctor Prop case with non-Prop U is the Girard route: combined
+%%% with proof-irrelevance, it derives `defeq P Q` for distinct
+%%% propositions (see `lf/soundness/large-elim-prop.elf`).
+%%%
+%%% Level-equality checks use `leq-lvl` (Carneiro's algorithmic ≤) so
+%%% imax-disguised cases like `Sort (imax 1 0)` correctly normalize to
+%%% Prop and trip the prop-prop rule — covers `arena bad/large-elim-
+%%% imax-prop.ndjson`.
+
+%%% `ctor-fields-prop CType` : every leading-Π domain in CType has sort
+%%% lzero (Prop).  Used to gate large elimination of a 1-ctor Prop
+%%% inductive: Mario's subsingleton-elim condition requires the ctor's
+%%% fields to be Prop-valued (so the data is judgmentally irrelevant by
+%%% proof-irrelevance, and large-eliminating doesn't transport data out
+%%% of a Prop).  Walks the Π chain; at each domain A demands `defeq A A
+%%% (esort lzero)`; terminates when the head isn't a Π.
+%%%
+%%% This differs from `field-universes-ok` (which uses the impredicative
+%%% `imax UA UInd ≤ UInd` check): that constraint is vacuously satisfied
+%%% for UInd = Prop regardless of UA (since `imax UA 0 = 0`).  The
+%%% subsingleton gate needs UA ≡ 0 *directly*, not via imax.
+
+ctor-fields-prop : expr -> type.   %name ctor-fields-prop CFP.
+
+ctor-fields-prop/done :
+   not-forall E
+   -> ctor-fields-prop E.
+
+ctor-fields-prop/forall :
+   defeq A A (esort lzero)
+   -> ({x : expr} defeq x x A -> ctor-fields-prop (B x))
+   -> ctor-fields-prop (eforall A B).
+
+le-eligible : string -> lvl -> cnames -> lvl -> type.   %name le-eligible LEE.
+
+%%% 0 ctors (Empty / False): any motive target U.  Vacuously sound — no
+%%% ctor to iota-reduce on, so the recursor's "compute the minor for c"
+%%% can never fire.
+le-eligible/cnil : le-eligible IndN UInd cnil U.
+
+%%% 1 ctor, UInd ≥ Sort 1 (non-Prop): any U is fine.  A non-Prop 1-ctor
+%%% inductive is a genuine subsingleton up to its element structure.
+le-eligible/csingle-nonprop :
+   leq-lvl (lsucc lzero) UInd z
+   -> le-eligible IndN UInd (ccons C cnil) U.
+
+%%% 1 ctor, UInd ≡ Prop: large elim allowed only if the ctor's fields
+%%% are all Prop (Mario's subsingleton condition — closes the
+%%% `large-elim-csingle-field` exploit found 2026-06-06).
+%%% Looks up the ctor's declared type and walks its Π chain demanding
+%%% each domain has sort lzero.
+le-eligible/csingle-prop :
+   leq-lvl UInd lzero z
+   -> leq-lvl lzero UInd z
+   -> declared C CType (ctor IndN Cidx)
+   -> ctor-fields-prop CType
+   -> le-eligible IndN UInd (ccons C cnil) U.
+
+%%% ≥2 ctors AND UInd ≥ Sort 1: no restriction.  `leq-lvl (lsucc lzero) UInd z`
+%%% holds iff every valuation puts UInd ≥ 1.
+le-eligible/non-prop :
+   leq-lvl (lsucc lzero) UInd z
+   -> le-eligible IndN UInd (ccons C1 (ccons C2 Rest)) U.
+
+%%% ≥2 ctors AND UInd ≡ Prop: motive U must also be ≡ Prop.  Both `≡`
+%%% checks via leq-lvl's two-sided bridge — necessary so imax-disguised
+%%% UInd (e.g. `limax 1 0`) and U normalize through.
+le-eligible/prop-prop :
+   leq-lvl UInd lzero z
+   -> leq-lvl lzero UInd z
+   -> leq-lvl U    lzero z
+   -> leq-lvl lzero U    z
+   -> le-eligible IndN UInd (ccons C1 (ccons C2 Rest)) U.
+
 rec-derived : string -> expr -> type.   %name rec-derived RD.
 
 %%% Phase 1: enum-shaped inductives.
@@ -1054,8 +1107,9 @@ rec-derived : string -> expr -> type.   %name rec-derived RD.
 %%%     non-parametric).
 %%%   * `ends-in-sort-with-level IndType UInd` — extract the inductive's
 %%%     sort UInd.
-%%%   * `le-eligible UInd Ctors U` — Lean's large-elimination
-%%%     restriction (≥2-ctor Prop ⟹ U must be Prop).
+%%%   * `le-eligible IndN UInd Ctors U` — Lean's large-elimination
+%%%     restriction (≥2-ctor Prop ⟹ U must be Prop; 1-ctor Prop ⟹
+%%%     ctor's fields must be Prop, see §`le-eligible`).
 %%%
 %%% The constructed `T` is the canonical recursor type — fixed by
 %%% structural unification through `enum-rec-type`.
@@ -1065,7 +1119,7 @@ rec-derived/enum :
    -> name RecName (is-rec-for IndN)
    -> enum-rec-type T IndN lnil Ctors U
    -> ends-in-sort-with-level IndType UInd
-   -> le-eligible UInd Ctors U
+   -> le-eligible IndN UInd Ctors U
    -> rec-derived RecName T.
 
 %%% Lift a `rec-derived` witness into a `declared _ _ (irec _)` so the
